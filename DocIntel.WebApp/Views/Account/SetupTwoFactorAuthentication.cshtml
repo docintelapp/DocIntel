@@ -1,0 +1,97 @@
+@using DocIntel.Core.Settings
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Options
+@model DocIntel.WebApp.ViewModels.Account.ConfigureTwoFactorAuthenticatorModel
+@inject ApplicationSettings _settings
+@inject IOptions<PasswordOptions> _passwordOptions
+
+@{
+    ViewData["Title"] = "Setup your multi-factor authentication";
+}
+
+@functions{
+    public string FormatKey(string key)
+    {
+        string formattedKey = "";
+        for (int i = 0; i < key.Length; i = i + 4)
+        {
+            formattedKey += key.Substring(i, 4) + " ";
+        }
+        return formattedKey;
+    }
+}
+
+<form method="post" action="VerifyAuthenticator">
+
+    <div class="row justify-content-center">
+        <div class="col-4">
+    <div class="subheader text-center">
+        <h1 class="subheader-title">
+            <i class="fal fa-user subheader-icon"></i> @ViewData["Title"]
+        </h1>
+    </div>
+
+            @{
+                var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+            }
+            @if (errors.Any())
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                    <ul class="mb-0 mt-1">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div id="panel-basic" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <input asp-for="AuthenticatorKey" type="hidden"/>
+
+                        <p>Scan the QR code or enter the following key into your two-factor authenticator app. Spaces 
+                        and casing do not matter.</p>
+
+                        <p class="panel-tag mb-2">@(FormatKey(Model.AuthenticatorKey))</p>
+
+                        <div class="text-center">
+                            <canvas id="canvas"></canvas>
+                        </div>
+                        
+                        <p>Once you have scanned the QR code or input the key above, your two-factor authenticator app 
+                        will provide you with a unique code. Enter the code in the confirmation box below.</p>
+
+                        <div class="form-group">
+                            <label asp-for="Code" class="control-label"></label>
+                            <input asp-for="Code" class="form-control"/>
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-lock-alt"></i> Verify
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+
+<script>
+$(document).ready(function()
+{
+    DocIntel.displayQRCode('canvas', '@Model.AuthenticatorUri');
+});
+</script>
+}

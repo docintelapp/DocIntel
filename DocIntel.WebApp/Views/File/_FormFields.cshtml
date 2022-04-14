@@ -1,0 +1,134 @@
+@model DocumentFile
+
+<div class="panel">
+    <div class="panel-container show">
+        <div class="panel-hdr">
+            <h2>
+                File
+                <span class="fw-300">
+                    <i>Information</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-content">
+
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control"/>
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SourceUrl" class="control-label"></label>
+                <input asp-for="SourceUrl" class="form-control"/>
+                <span asp-validation-for="SourceUrl" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-2">
+                <div class="custom-control custom-switch">
+                    @Html.CheckBoxFor(_ => _.Visible, new {@class = "custom-control-input"})
+                    <label class="custom-control-label" asp-for="Visible"></label>
+                </div>
+                <div style="padding-left: 2.46875rem">
+                    @Html.HelpTextFor(m => m.Visible)
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="custom-control custom-switch">
+                    @Html.CheckBoxFor(_ => _.Preview, new {@class = "custom-control-input"})
+                    <label class="custom-control-label" asp-for="Preview"></label>
+                </div>
+                <div style="padding-left: 2.46875rem">
+                    @Html.HelpTextFor(m => m.Preview)
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-container show">
+        <div class="panel-hdr">
+            <h2>
+                Classification
+                <span class="fw-300">
+                    <i>Information</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-content">
+
+            <div class="form-group mb-2">
+                <div class="custom-control custom-switch">
+                    @Html.CheckBoxFor(_ => _.OverrideClassification, new {@class = "custom-control-input", onchange = "toggle('#div-classification', this)"})
+                    <label class="custom-control-label" asp-for="OverrideClassification">Override Classification (@Model.Document.Classification.Title)</label>
+                </div>
+                @Html.HelpTextFor(m => m.OverrideClassification)
+            </div>
+
+            <div class="form-group" id="div-classification" style="@(!Model.OverrideClassification ? "display: none" : ""); padding-left: 2.46875rem;">
+                <select asp-for="ClassificationId" asp-items="ViewBag.AvailableClassifications" class="form-control"></select>
+                <span asp-validation-for="ClassificationId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-2 mt-4">
+                <div class="custom-control custom-switch">
+                    @Html.CheckBoxFor(_ => _.OverrideReleasableTo, new {@class = "custom-control-input", onchange = "toggle('#div-relto', this)"})
+                    <label class="custom-control-label" asp-for="OverrideReleasableTo">Override Releasable to @(string.Join(", ", Model.Document.ReleasableTo.Where(_ => !_.Hidden || _.Members.Any(__ => __.UserId == ViewBag.CurrentUser.Id)).Select(_ => _.Name)))</label>
+                </div>
+                @Html.HelpTextFor(m => m.OverrideReleasableTo)
+            </div>
+
+            <div class="form-group" id="div-relto" style="@(!Model.OverrideReleasableTo ? "display: none" : ""); padding-left: 2.46875rem;">
+                <select name="ReleasableTo" class="form-control select2" multiple="multiple">
+                    @foreach (var g in ViewBag.AllGroups)
+                    {
+                        @if (Model.ReleasableTo?.Any(_ => _.GroupId == g.GroupId) ?? false)
+                        {
+                            <option value="@g.GroupId" selected>@g.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@g.GroupId">@g.Name</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="ReleasableTo" class="text-danger"></span>
+                <p class="text-muted mt-1 mb-1">
+                    When on the platform, the file is always releasable to the following groups: @(string.Join(", ", ((IEnumerable<Group>) ViewBag.DefaultGroups).Select(_ => _.Name))).
+                </p>
+            </div>
+
+            <div class="form-group mb-2 mt-4">
+                <div class="custom-control custom-switch">
+                    @Html.CheckBoxFor(_ => _.OverrideEyesOnly, new {@class = "custom-control-input", onchange = "toggle('#div-eyeonly', this)"})
+                    <label class="custom-control-label" asp-for="OverrideEyesOnly">Override @(string.Join(", ", Model.Document.EyesOnly.Where(_ => !_.Hidden || _.Members.Any(__ => __.UserId == ViewBag.CurrentUser.Id)).Select(_ => _.Name))) Eyes Only</label>
+                </div>
+                @Html.HelpTextFor(m => m.OverrideEyesOnly)
+            </div>
+
+            <div class="form-group" id="div-eyeonly" style="@(!Model.OverrideEyesOnly ? "display: none" : ""); padding-left: 2.46875rem;">
+                <select name="EyesOnly" class="form-control select2" multiple="multiple">
+                    @foreach (var g in ViewBag.OwnGroups)
+                    {
+                        @if (Model.EyesOnly?.Any(_ => _.GroupId == g.GroupId) ?? false)
+                        {
+                            <option value="@g.GroupId" selected>@g.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@g.GroupId">@g.Name</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="EyesOnly" class="text-danger"></span>
+                <p class="text-muted mt-1 mb-1">
+                    You can only restrict the documents to groups you are a member of, even if a group is public.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>

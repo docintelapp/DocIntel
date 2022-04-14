@@ -1,0 +1,15 @@
+Source: docintel-cli
+Maintainer: Antoine Cailliau <antoine.cailliau@mil.be>
+Standards-Version: 2.0.0
+Section: contrib/admin
+Build-Depends: debhelper (>= 12)
+
+Package: docintel-cli
+Architecture: amd64
+Depends: dotnet-runtime-6.0, aspnetcore-runtime-6.0, postgresql, erlang-nox, rabbitmq-server, ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: debconf (>= 0.2.17)
+Section: contrib/admin
+Priority: optional
+Description: Threat Intelligence Platform - CLI
+	DocIntel is a threat intelligence platform.
+

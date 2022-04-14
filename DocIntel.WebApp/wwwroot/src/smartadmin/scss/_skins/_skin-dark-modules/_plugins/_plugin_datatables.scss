@@ -1,0 +1,48 @@
+//datatables
+.fc-head-container thead tr {
+	background-image: linear-gradient(to top, #35393e 0, #565a61 100%);
+}
+.dt-autofill-list {
+	background-color: #383b40;
+}
+div.dt-autofill-list ul li:hover {
+	background-color: darken(#383b40, 5%);
+}
+
+table.DTFC_Cloned tr {
+	background: transparent;
+}
+div.DTFC_LeftHeadWrapper table,
+table.dataTable.table-striped.DTFC_Cloned tbody, 
+div.DTFC_RightHeadWrapper table {
+	background: #25272b;
+}
+table.dataTable > tbody > tr.child ul.dtr-details > li {
+	border-bottom: 1px solid #373a40;
+}
+
+.sorting_asc,
+.sorting_desc,
+.even .sorting_1 {
+	background-color: rgba($rgba-primary, 0.1);
+	background-color: rgba(var(--theme-rgb-primary), 0.1);
+}
+.odd .sorting_1 {
+	background-color: rgba($rgba-primary, 0.2);
+	background-color: rgba(var(--theme-rgb-primary), 0.2);
+}
+.dataTables_filter {
+	&:not(.has-length) {
+		.input-group-text {
+			color: #a7a7a7;
+			background-color: #474950;
+			border-color: #262627;
+		}
+	}
+}
+table.dataTable:not(.table-dark) tr.dtrg-group td {
+	background: rgba(0, 0, 0, 0.13);
+}
+div.DTS div.dataTables_scrollBody table {
+	background-color: #3a3c45;
+}

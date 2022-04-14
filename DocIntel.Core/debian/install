@@ -1,0 +1,3 @@
+../appsettings.json.example /usr/share/doc/docintel/
+../nlog.config.example /usr/share/doc/docintel/
+../nlog.config.worker-example /usr/share/doc/docintel/

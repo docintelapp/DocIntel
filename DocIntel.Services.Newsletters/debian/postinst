@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+set -e
+
+. /usr/share/debconf/confmodule
+
+chown -R docintel:docintel /usr/lib/docintel/email-notifier/
+
+cp /usr/share/doc/docintel/nlog.config.worker-example /usr/lib/docintel/email-notifier/nlog.config
+sed -i "s,WORKER_NAME,email-notifier,g" /usr/lib/docintel/email-notifier/nlog.config
+
+exit 0
+
+

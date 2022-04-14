@@ -1,0 +1,75 @@
+﻿@model ImportRuleSet
+
+@{
+    ViewData["Title"] = "Create rewriting ruleset";
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-broom subheader-icon"></i> Create a new rewriting ruleset
+    </h1>
+</div>
+
+
+<div class="row">
+    <div class="col-12">
+
+        @{
+            var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+        }
+        @if (errors.Count() > 0)
+        {
+            <div class="alert alert-danger" role="alert">
+                <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                <ul class="mb-0 mt-1">
+                    @foreach (var error in errors)
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form asp-action="Create">
+            @Html.AntiForgeryToken()
+
+            <div id="panel-source-info" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+
+                        <div class="form-group">
+                            <label asp-for="Name" class="control-label"></label>
+                            <input asp-for="Name" class="form-control"/>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Description" class="control-label"></label>
+                            <input asp-for="Description" class="form-control"/>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ImportRules" class="control-label"></label>
+                            <textarea name="ImportRules" class="form-control" ></textarea>
+                            <span asp-validation-for="ImportRules" class="text-danger"></span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="save-btn" class="btn btn-success waves-effect waves-themed btn-iconified">
+                <i class="fal fa-save"></i> Save
+            </button>
+
+        </form>
+
+
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

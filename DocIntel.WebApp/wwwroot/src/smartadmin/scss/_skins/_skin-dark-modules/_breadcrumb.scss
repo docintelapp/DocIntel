@@ -1,0 +1,7 @@
+//breadcrumb
+.breadcrumb:not(.breadcrumb-arrow):not(.page-breadcrumb):not([class*="bg-"]) {
+	background: darken($dark-content-background, 8%);
+}
+.breadcrumb-arrow li a {
+	color: $dark-white !important;
+}

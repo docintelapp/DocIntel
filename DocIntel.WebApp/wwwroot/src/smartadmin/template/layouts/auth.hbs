@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+{{> include/_copyright-header}}
+<html lang="en">
+	<head>
+		{{> include/_head}}
+		
+		{{!-- Optional: page related CSS --}}
+		{{#>head-block}}{{/head-block}}
+	</head>
+	<!-- BEGIN Body -->
+	<!-- Possible Classes
+
+		* 'header-function-fixed'         - header is in a fixed at all times
+		* 'nav-function-fixed'            - left panel is fixed
+		* 'nav-function-minify'			  - skew nav to maximize space
+		* 'nav-function-hidden'           - roll mouse on edge to reveal
+		* 'nav-function-top'              - relocate left pane to top
+		* 'mod-main-boxed'                - encapsulates to a container
+		* 'nav-mobile-push'               - content pushed on menu reveal
+		* 'nav-mobile-no-overlay'         - removes mesh on menu reveal
+		* 'nav-mobile-slide-out'          - content overlaps menu
+		* 'mod-bigger-font'               - content fonts are bigger for readability
+		* 'mod-high-contrast'             - 4.5:1 text contrast ratio
+		* 'mod-color-blind'               - color vision deficiency
+		* 'mod-pace-custom'               - preloader will be inside content
+		* 'mod-clean-page-bg'             - adds more whitespace
+		* 'mod-hide-nav-icons'            - invisible navigation icons
+		* 'mod-disable-animation'         - disables css based animations
+		* 'mod-hide-info-card'            - hides info card from left panel
+		* 'mod-lean-subheader'            - distinguished page header
+		* 'mod-nav-link'                  - clear breakdown of nav links
+
+		>>> more settings are described inside documentation page >>>
+	-->		
+	<body>
+
+		{{!-- save-settings-script --}}
+		{{> include/_scripts-loading-saving}}
+
+		{{#>content-block}}{{/content-block}}
+
+		{{> include/_color-profile-reference }}
+		
+		{{!-- Google Analytics  code if GOOGLE_ANALYTICS_ID id available --}}
+		{{> include/_google_analytics }}
+		
+		{{> include/_scripts-base-plugins}}
+		{{#>scripts-block}}
+			{{!-- Custom scripts per page can be added. --}}
+		{{/scripts-block}}
+	</body>
+	<!-- END Body -->
+</html>

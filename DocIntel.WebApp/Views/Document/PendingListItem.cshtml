@@ -1,0 +1,62 @@
+@using DocIntel.Core.Authorization.Operations
+@model Document
+
+@{
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Delete)).Succeeded;
+}
+
+<div class="row mb-3">
+    @if (canDelete)
+    {
+        <div class="col align-self-auto col-md-auto">
+            <a asp-action="Discard" asp-controller="Document" asp-route-id="@Model.DocumentId" class="text-muted" alt="Discard">
+                <i class="fas fa-trash"></i>
+            </a>
+        </div>
+    }
+    <div class="col col-md-auto @(canDelete ? "" : "pl-0")">
+        @if (Model.Status == DocumentStatus.Submitted)
+        {
+            <span class="badge badge-warning">Pending</span>
+        }
+        else if (Model.Status == DocumentStatus.Analyzed)
+        {
+            <span class="badge badge-success">Ready</span>
+        }
+    </div>
+    <div class="col">
+        <div class="row mb-1">
+            @if (Model.Status == DocumentStatus.Submitted)
+            {
+                <span class="name">
+                    @Model.Title
+                </span>
+            }
+            else if (Model.Status == DocumentStatus.Analyzed)
+            {
+                <a asp-action="Create" asp-controller="Document" asp-route-id="@Model.DocumentId" class="name">
+                    @Model.Title
+                </a>
+            }
+        </div>
+        <div class="row mb-1">
+            @Html.Timeago(Model.DocumentDate)
+        </div>
+        <div class="row mb-1">
+            @if (Model.DocumentTags.Any())
+            {
+                <p class="m-0">
+                    @foreach (var tag in Model.DocumentTags.OrderBy(t => t.Tag.Label))
+                    {
+                        <a class="badge badge-pill @tag.Tag.BackgroundColor"
+                           asp-controller="Tag"
+                           asp-action="Details"
+                           asp-route-label="@tag.Tag.TagId">
+                            @tag.Tag.FriendlyName
+                        </a>
+                    }
+                </p>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,65 @@
+<form asp-action="Index" asp-controller="Search" class="form-inline flex-grow-1 d-flex">
+    <span class="navbar-icon">
+        <span data-feather="search"></span>
+    </span>
+    <input class="form-control flex-grow-1" id="SearchTerm" name="SearchTerm" type="text" placeholder="Search" aria-label="Search"
+           value="@ViewData["searchTerm"]">
+    <input id="tags" name="tags" type="hidden" value="@ViewData["searchTags"]"/>
+</form>
+
+<ul class="navbar-nav ">
+@*
+    <li class="nav-item dropdown">
+        <a class="nav-link text-nowrap" href="#" id="notificationDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+           aria-expanded="false">
+            <span class="navbar-icon mr-2">
+                @if (ViewBag.NotificationsCount > 0)
+                {
+                    <span data-feather="bell"></span>
+                    <span class="badge" style="vertical-align: text-bottom">@ViewBag.NotificationsCount</span>
+                }
+                else
+                {
+                    <span data-feather="bell-off"></span>
+                }
+            </span>
+        </a>
+    </li>
+    *@
+
+    <li class="nav-item dropdown mr-2 border-left ml-3 pl-3">
+        <a class="nav-link dropdown-toggle text-nowrap" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+           aria-expanded="false">
+            @Model.CurrentUser.FriendlyName
+            @if (string.IsNullOrEmpty(Model.CurrentUser.ProfilePicture))
+            {
+                <img alt="" class="rounded-circle ml-1" src="~/images/icons/color/icons8-male-user-48.png" style="width: 32px"/>
+            }
+            else
+            {
+                <img alt="" class="rounded-circle ml-1" src="@Url.Action("ProfilePicture", "Account", new {userName = Model.CurrentUser.UserName})" style="width: 32px"/>
+            }
+        </a>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" asp-controller="User" asp-action="Profile" asp-route-username="@Model.CurrentUser.UserName">
+                <span class="dropdown-icon">
+                    <span data-feather="user"></span>
+                </span>
+                My profile
+            </a>
+            <a class="dropdown-item text-nowrap" asp-controller="Account" asp-action="Edit">
+                <span class="dropdown-icon">
+                    <span data-feather="settings"></span>
+                </span>
+                Account settings
+            </a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" asp-controller="Account" asp-action="Logout">
+                <span class="dropdown-icon">
+                    <span data-feather="log-out"></span>
+                </span>
+                Log out
+            </a>
+        </div>
+    </li>
+</ul>

@@ -1,0 +1,56 @@
+﻿@{
+    ViewData["Title"] = "Merge Sources";
+}
+
+<form asp-action="Merge" method="post">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-code-merge subheader-icon"></i> @ViewData["Title"]
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div id="panel-basic" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+
+                        <div class="form-group">
+                            <label class="control-label">Primary source</label>
+                            <select name="source1" class="form-control autocomplete-source">
+                                @if (ViewData.ContainsKey("source1"))
+                                {
+                                    var source = (Source) ViewData["source1"];
+                                    <option selected="selected" value="@source.SourceId">@source.Title</option>
+                                }
+                            </select>
+                            <small class="form-text text-muted">This source will be kept.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Source to merge</label>
+                            <select name="source2" class="form-control autocomplete-source"></select>
+                            <small class="form-text text-muted">This source will be <strong>removed</strong>.</small>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-code-merge"></i> Merge
+                    </button>
+                    <a asp-action="Index" class="ml-3 text-secondary">Cancel</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

@@ -1,0 +1,105 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model IEnumerable<Group>
+
+@{
+    ViewData["Title"] = "List groups";
+    var canCreate = (await AuthorizationService.AuthorizeAsync(User, null, GroupOperations.Create)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-users subheader-icon"></i> Groups
+    </h1>
+    <div>
+        <div class="btn-group">
+            @if (canCreate)
+            {
+                <a asp-action="Create"
+                   class="btn btn-primary waves-effect waves-themed">
+                    <i class="fal fa-plus mr-1"></i> Create Group
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        @if (Model != null && Model.Any())
+        {
+            <div id="panel-source-info" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <table class="table table-bordered mb-0 data-table">
+                            <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Parent Group</th>
+                                <th scope="col">Members</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var t in Model)
+                            {
+                                <tr>
+                                    <th scope="row">
+                                        <a asp-action="Details" asp-route-id="@t.GroupId">@t.Name</a>
+                                        @if (t.Default)
+                                        {
+                                            <span class="badge badge-success ml-1">Default</span>
+                                        }
+                                        @if (t.Hidden)
+                                        {
+                                            <span class="badge badge-danger ml-1">Hidden</span>
+                                        }
+                                        @if ((ViewBag.DefaultGroup as Guid[])?.Contains(t.GroupId) ?? false)
+                                        {
+                                            <span class="badge badge-success ml-1">Default group</span>
+                                        }
+                                    </th>
+                                    <td>
+                                        @if (string.IsNullOrEmpty(t.Description))
+                                        {
+                                            <i class="text-muted">None</i>
+                                        }
+                                        else
+                                        {
+                                            <text>@t.Description</text>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (t.ParentGroup != default)
+                                        {
+                                            <text>@t.ParentGroup.Name</text>
+                                        }
+                                        else
+                                        {
+                                            <i class="text-muted">None</i>
+                                        }
+                                    </td>
+                                    <td>@t.Members.Count</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="text-center fs-xl m-3">
+                            <i class="fal fa-users fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            We found no groups matching your criterias.<br/>
+                            <small>Try later or contact your administrator.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

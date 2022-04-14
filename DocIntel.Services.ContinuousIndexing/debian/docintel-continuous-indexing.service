@@ -1,0 +1,18 @@
+[Unit]
+Description=DocIntel.ContinuousIndexing
+After=network.target
+
+[Service]
+Type=notify
+User=docintel
+Group=docintel
+WorkingDirectory=/usr/lib/docintel/continuous-indexer
+ExecStart=/usr/bin/dotnet DocIntel.Services.ContinuousIndexing.dll
+StandardOutput=journal
+StandardError=journal
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
+

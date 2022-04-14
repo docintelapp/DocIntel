@@ -1,0 +1,26 @@
+[Unit]
+Description=DocIntel.Scraper
+After=network.target
+
+[Service]
+Type=notify
+User=docintel
+Group=docintel
+WorkingDirectory=/usr/lib/docintel/scraper
+ExecStart=/usr/bin/dotnet DocIntel.Services.Scraper.dll service
+StandardOutput=journal
+StandardError=journal
+Restart=always
+RestartSec=60
+
+# Proxy in environment variable prevent Pupeteer to connect to the chrome instance for scraping
+Environment="HTTP_PROXY="
+Environment="HTTPS_PROXY="
+Environment="NO_PROXY="
+Environment="http_proxy="
+Environment="https_proxy="
+Environment="no_proxy="
+
+[Install]
+WantedBy=multi-user.target
+

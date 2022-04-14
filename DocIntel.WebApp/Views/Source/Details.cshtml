@@ -1,0 +1,139 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.SourceViewModel.DetailViewModel
+@{
+    ViewData["Title"] = Model.Source.Title;
+
+    var canEdit = (await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.Edit)).Succeeded;
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.Delete)).Succeeded;
+    var canSubscribe = (await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.Subscribe)).Succeeded;
+    var canMerge = (await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.Merge)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-book subheader-icon"></i> @Model.Source.Title
+    </h1>
+    <div>
+        <div class="btn-group @(canEdit ? "mr-3" : "")">
+            @if (canSubscribe)
+            {
+                if (Model.Subscribed.Subscribed)
+                {
+                    <span class="btn btn-primary waves-effect waves-themed btn-iconified">
+                        @if (Model.Subscribed.Notification)
+                        {
+                            <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-id="@Model.Source.SourceId">
+                                <i class="fas fa-bell"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="text-white" asp-action="Subscribe" asp-route-notification="true" asp-route-id="@Model.Source.SourceId">
+                                <i class="fal fa-bell"></i>
+                            </a>
+                        }
+                        <a class="text-white" asp-action="Unsubscribe" asp-route-id="@Model.Source.SourceId">Subscribed</a>
+                    </span>
+                }
+                else
+                {
+                    <a asp-action="Subscribe"
+                       asp-route-id="@Model.Source.SourceId"
+                       class="btn btn-primary waves-effect waves-themed btn-iconified">
+                        <i class="fal fa-bell-slash"></i> Subscribe
+                    </a>
+                }
+            }
+            @if (Model.Muted.Muted)
+            {
+                <a asp-action="Unmute"
+                   asp-route-id="@Model.Source.SourceId"
+                   class="btn btn-primary waves-effect waves-themed btn-iconified"
+                   data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
+                   title="Documents from a muted source will not appear in your subscriptions (e.g. newsletters and home page). Use the feature to tune down noisy sources.">
+                    <i class="fal fa-volume-slash"></i> Muted
+                </a>
+            }
+            else
+            {
+                <a asp-action="Mute"
+                   asp-route-id="@Model.Source.SourceId"
+                   class="btn btn-primary waves-effect waves-themed btn-iconified"
+                   data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
+                   title="Documents from a muted source will not appear in your subscriptions (e.g. newsletters and home page). Use the feature to tune down noisy sources.">
+                    <i class="fal fa-volume"></i> Mute
+                </a>
+            }
+        </div>
+        <div class="btn-group">
+            @if (canEdit)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Source.SourceId" class="btn btn-primary btn-iconified">
+                    <i class="fal fa-edit"></i> Edit
+                </a>
+            }
+            @if (canMerge)
+            {
+                <a asp-action="Merge" asp-route-primarySourceId="@Model.Source.SourceId"
+                   class="btn btn-primary waves-effect waves-themed btn-iconified">
+                    <i class="fal fa-code-merge"></i> Merge
+                </a>
+            }
+            @if (canDelete)
+            {
+                <a asp-action="Delete" asp-route-id="@Model.Source.SourceId" class="btn btn-primary btn-iconified">
+                    <i class="fal fa-trash-alt"></i> Delete
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-9">
+        @await Html.PartialAsync("_PanelSourceSummary", Model.Source, new ViewDataDictionary(ViewData))
+        @await Html.PartialAsync("_PanelDocumentList", Model, new ViewDataDictionary(ViewData))
+    </div>
+    <div class="col-3">
+        @await Html.PartialAsync("_PanelSourceRating", Model, new ViewDataDictionary(ViewData))
+        @await Html.PartialAsync("_PanelSourceMap", Model, new ViewDataDictionary(ViewData))
+        @await Html.PartialAsync("_PanelSourceStatistics", Model, new ViewDataDictionary(ViewData))
+    </div>
+</div>
+
+@section Scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function()
+        {
+            var root = am5.Root.new("chartdiv"); 
+            var chart = root.container.children.push(
+              am5map.MapChart.new(root, {
+                projection: am5map.geoMercator()
+              })
+            );
+            
+            // Create the world in grey
+            var polygonSeries = chart.series.push(
+              am5map.MapPolygonSeries.new(root, {
+                geoJSON: am5geodata_worldLow,
+                exclude: ["AQ"]
+              })
+            );
+            var areaPolygonTemplate = polygonSeries.mapPolygons.template;
+            areaPolygonTemplate.setAll({ 
+                fillOpacity: 0.6, 
+                fill: am5.color(0xaaaaaa)
+            });
+            
+            // Add the country in color
+            var polygonSeries2 = chart.series.push(
+              am5map.MapPolygonSeries.new(root, {
+                geoJSON: am5geodata_worldLow,
+                include: ["@Html.Raw(string.Join("\",\"",GeoHelpers.GetISO2Codes(Model.Source.Country)))"],
+                exclude: ["AQ"]
+              })
+            );
+        });    
+    </script>
+}

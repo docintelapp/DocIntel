@@ -1,0 +1,51 @@
+/* #THEME COLOR (variable overrides)
+========================================================================== */
+$color-primary:						#ffc800;
+$color-success:						#67B4AC;
+$color-info:						#2C73AB;
+$color-warning:						#D2a84D;
+$color-danger:						#Be2D2D;
+$color-fusion:						darken(#ffc800, 30%); 
+
+/*$white:								#fff !default;
+$black:								#000 !default;*/
+
+
+// Primary: #40526C
+// Danger: #Be2D2D
+// Success: #67B4AC
+// Warning: #D2a84D
+// Info: #2C73AB
+// Secondary: #707478
+
+
+//$header-bg: transparent;
+/*$base-text-color: $white;*/
+
+/* #GLOBAL IMPORTS
+========================================================================== */
+@import './src/scss/_imports/_theme-modules-import';
+
+/* #Reset userselect
+========================================================================== */
+#myapp-0 {
+	box-shadow: none !important;
+}
+#myapp-14 {
+	box-shadow: 0 0 0 3px #000000;
+}
+
+.page-sidebar, 
+.nav-footer, 
+.page-logo {
+	background-image: none;
+	background-color: #b98500;
+}
+.page-content-wrapper {
+	background: $white;
+}
+
+.page-content-wrapper a:not(.btn):not(.badge):not(.dropdown-item):not(.nav-link):not(.navbar-brand):not(.card-title):not([class*="fc-"]):not([class*="text-"]):not(.btn-search-close),
+.modal-body a:not(.btn):not(.badge):not(.dropdown-item):not(.nav-link):not(.page-link):not(.navbar-brand):not(.card-title) {
+	color: #333333;
+}

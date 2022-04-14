@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocIntel.Core\DocIntel.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig" Version="0.28.0" />
+    <PackageReference Include="PuppeteerSharp" Version="6.2.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ViewFiles Include="Views\**\*.*" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="Readability.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Remove="debian\docintel-scraper\**" />
+    <None Remove="debian\source\**" />
+    <None Remove="debian\changelog" />
+    <None Remove="debian\debhelper-build-stamp" />
+    <None Remove="debian\docintel-scraper.substvars" />
+    <None Remove="debian\docintel-scraper.debhelper.log" />
+    <None Remove="debian\docintel-scraper.postinst.debhelper" />
+    <None Remove="debian\docintel-scraper.postrm.debhelper" />
+    <None Remove="debian\docintel-scraper.prerm.debhelper" />
+    <None Remove="debian\files" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="debian\docintel-scraper\**" />
+    <Compile Remove="debian\source\**" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Remove="debian\docintel-scraper\**" />
+    <EmbeddedResource Remove="debian\source\**" />
+  </ItemGroup>
+
+  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="nlog.config" DestinationFolder="$(OutDir)" Condition="Exists('nlog.config')" />
+    <Copy SourceFiles="Readability.js" DestinationFolder="$(OutDir)" />
+  </Target>
+  
+  <Target Name="CopyViews" AfterTargets="AfterBuild">
+    <Copy SourceFiles="@(ViewFiles)" DestinationFolder="$(OutDir)\Views\%(RecursiveDir)" />
+  </Target>
+
+  <Target Name="CopyViewsPublish" AfterTargets="Publish">
+    <Copy SourceFiles="@(ViewFiles)" DestinationFolder="$(PublishDir)\Views\%(RecursiveDir)" />
+  </Target>
+
+</Project>

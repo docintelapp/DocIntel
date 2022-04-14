@@ -1,0 +1,53 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model DocumentFile
+
+@{
+    var canViewDoc = (await AuthorizationService.AuthorizeAsync(User, Model.Document, DocumentOperations.Read)).Succeeded;
+    ViewData["Title"] = $"Delete file '{Model.Title}''";
+}
+
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-file-edit subheader-icon"></i> @ViewData["Title"]
+    </h1>
+</div>
+
+<form asp-action="Delete">
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        <div class="col-12">
+
+            @if (canViewDoc)
+            {
+                <div class="panel">
+                    <div class="panel-hdr">
+                        <h2>
+                            Enclosing Document
+                        </h2>
+                    </div>
+                    <div class="panel-container show">
+                        <div class="panel-content">
+                            @await Html.PartialAsync("../Document/_DocumentSummary", Model.Document, new ViewDataDictionary(ViewData))
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="alert bg-danger-900 bg-info-gradient">
+                <strong>Are you sure you want to delete the file '@Model.Title'?</strong>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" asp-for="FileId"/>
+
+    <div class="row">
+        <div class="col-md-12">
+            <button type="submit" class="btn btn-danger" id="delete-confirmation-btn">Yes, delete!</button>
+            <a asp-action="Details" asp-route-id="@Model.FileId" class="ml-3 text-success">No, don't delete!</a>
+        </div>
+    </div>
+
+</form>

@@ -1,0 +1,20 @@
+//chat window
+.chat-segment-get {
+	.chat-message {
+		background: rgba(0,0,0,0.3);
+		color: rgba(255, 255, 255, 0.8);
+	}
+}
+.chat-segment-sent {
+	.chat-message {
+		background: rgba($rgba-success, 0.35);
+		background: rgba(var(--theme-rgb-success), 0.35);
+	}
+}
+
+.msgr-list + .msgr:before {
+	background: rgba(0, 0, 0, 0.5);
+}
+.time-stamp {
+	color: #bdbdbd;
+}

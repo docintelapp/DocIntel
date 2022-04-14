@@ -1,0 +1,24 @@
+//notification
+.notification {
+	.msg-a,
+	.msg-b,
+	.name {
+		color: $dark-content-color !important;
+	}
+
+	li {
+		background-color: $dark-content-background;
+
+		&.unread > :first-child {
+			background-color:  rgba(var(--theme-rgb-primary), 0.15);
+		}
+	}
+}	
+
+
+.notification.notification-layout-2 {
+	li,
+	li.unread {
+		background: $dark-content-background;
+	}
+}

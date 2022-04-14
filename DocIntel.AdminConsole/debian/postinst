@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+set -e
+
+. /usr/share/debconf/confmodule
+
+chown -R docintel:docintel /usr/lib/docintel/cli/
+
+exit 0
+
+

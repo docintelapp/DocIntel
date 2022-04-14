@@ -1,0 +1,23 @@
+/* nav tabs panel */
+.nav-tabs-clean {
+
+	.nav-item {
+
+		.nav-link {
+
+			&.active {
+				border-bottom: 1px solid $primary-500;
+				color: $primary-500;
+			}
+
+			&:hover {
+				color: $primary-500;
+			}
+		}
+	}
+}
+
+.nav-tabs .nav-link.active, 
+.nav-tabs .nav-item.show .nav-link {
+	color: $primary-500;
+}

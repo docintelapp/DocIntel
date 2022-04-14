@@ -1,0 +1,40 @@
+@using DocIntel.Core.Authorization.Operations
+@model IEnumerable<Source>
+
+@if (Model.Any())
+{
+    <div id="panel-source-info" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Sources
+                <span class="fw-300">
+                    <i>Related</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content p-0">
+                <ul class="list-group list-group-flush">
+                    @foreach (var source in Model)
+                    {
+                        <li class="list-group-item text-truncate">
+                            @if ((await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.View)).Succeeded)
+                            {
+                                <a asp-action="Details" asp-controller="Source" asp-route-id="@source.SourceId">@source.Title</a>
+                                <br/>
+                            }
+                            else
+                            {
+                                <text>@source.Title</text>
+                                <br/>
+                            }
+                            <small class="text-muted">
+                                @source.Description
+                            </small>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,42 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    
+    @RenderSection("head", required: false)
+    
+    <link rel="stylesheet" href="/dist/main.css">
+    <link id="vendorsbundle" rel="stylesheet" media="screen, print" href="/dist2/css/vendors.bundle.css" />
+    <link id="appbundle" rel="stylesheet" media="screen, print" href="/dist2/css/app.bundle.css" />
+    <link rel="stylesheet" media="screen, print" href="/dist2/css/fa-brands.css" />
+    <link rel="stylesheet" media="screen, print" href="/dist2/css/fa-light.css" />
+    <link rel="stylesheet" media="screen, print" href="/dist2/css/fa-regular.css" />
+    <link rel="stylesheet" media="screen, print" href="/dist2/css/fa-solid.css" />
+    <link rel="stylesheet" media="screen, print" href="/dist2/css/fa-duotone.css" />
+    
+    <style type="text/css">
+        img { max-width: 100%; height: auto; }
+    </style>
+</head>
+
+<body>
+
+<div class="page-wrapper">
+    <div class="page-inner">
+        <div class="page-content-wrapper">
+            <main class="page-content">
+                <!-- <div class="container"> -->
+                    <div style="background: white" class="p-4">
+                        @RenderBody()
+                    </div>
+                <!-- </div> -->
+            </main>
+        </div>
+    </div>
+</div>
+
+</body></html>

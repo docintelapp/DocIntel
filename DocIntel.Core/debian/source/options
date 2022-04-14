@@ -1,0 +1,4 @@
+tar-ignore=.git/*
+tar-ignore=bin/*
+tar-ignore=obj/*
+tar-ignore=.local-chromium/*

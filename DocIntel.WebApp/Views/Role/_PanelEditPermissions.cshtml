@@ -1,0 +1,85 @@
+@using Microsoft.AspNetCore.Html
+@using System.ComponentModel
+@using DocIntel.Core.Authorization.Operations
+@model AppRole
+
+@{
+    Func<Type, IHtmlContent> showPermissions = @<text>
+                                                   @{
+                                                       var customAttributes = item.GetCustomAttributes(typeof(DisplayNameAttribute), true);
+                                                       var name = item.Name;
+                                                       if (customAttributes.Length > 0)
+                                                       {
+                                                           name = ((DisplayNameAttribute) customAttributes[0]).DisplayName;
+                                                       }
+
+                                                       var properties = item.GetProperties();
+                                                       var fields = item.GetFields().Where(f => f.IsPublic);
+                                                   }
+                                                   <div class="mb-2 mt-0 border-bottom pb-2">
+                                                       <strong>@name</strong>
+                                                   </div>
+                                                   <div class="mb-4">
+                                                       @foreach (var prop in fields)
+                                                       {
+                                                           var value = prop.GetValue(null);
+                                                           <div class="form-check">
+                                                               <label class="form-check-label">
+                                                                   <input class="form-check-input" type="checkbox" value="@value"
+                                                                          id="@value"
+                                                                          name="permissions" @(Model.Permissions.Contains(value) ? "checked" : "")>
+
+                                                                   <text>@prop.GetValue(null)</text>
+                                                               </label>
+                                                           </div>
+                                                       }
+                                                       @foreach (var prop in properties)
+                                                       {
+                                                           var value = prop.GetValue(null);
+                                                           var displayNameAttribute = prop.GetCustomAttributes(typeof(DisplayNameAttribute), true);
+                                                           <div class="form-check">
+                                                               <label class="form-check-label">
+                                                                   <input class="form-check-input" type="checkbox" value="@value"
+                                                                          id="@value"
+                                                                          name="permissions" @(Model.Permissions.Contains(value) ? "checked" : "")>
+
+                                                                   @if (displayNameAttribute.Length > 0)
+                                                                   {
+                                                                       <text>@(((DisplayNameAttribute) displayNameAttribute[0]).DisplayName)</text>
+                                                                   }
+                                                                   else
+                                                                   {
+                                                                       <text>@prop.GetValue(null)</text>
+                                                                   }
+                                                               </label>
+                                                           </div>
+                                                       }
+                                                   </div>
+                                                </text>;
+}
+
+@if ((await AuthorizationService.AuthorizeAsync(User, null, RoleOperations.EditPermissions)).Succeeded)
+{
+    <div id="panel-source-info" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Permissions
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+
+                @showPermissions(typeof(UserOperationsConstants))
+                @showPermissions(typeof(RoleOperationsConstants))
+                @showPermissions(typeof(DocumentOperationsConstants))
+                @showPermissions(typeof(TagOperationsConstants))
+                @showPermissions(typeof(SourceOperationsConstants))
+                @showPermissions(typeof(IncomingFeedOperationsConstants))
+                @showPermissions(typeof(ImportRuleOperationsConstants))
+                @showPermissions(typeof(GroupOperationsConstants))
+                @showPermissions(typeof(ClassificationOperationsConstants))
+                @showPermissions(typeof(ScraperOperationsConstants))
+            </div>
+        </div>
+    </div>
+}

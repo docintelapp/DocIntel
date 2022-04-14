@@ -1,0 +1,444 @@
+﻿@using DocIntel.Core.Utils.Indexation.SolR
+@using System.Reflection
+@using DocIntel.Core.Helpers
+@using SolrNet.Attributes;
+@using System.ComponentModel
+@model DocIntel.WebApp.ViewModels.BaseViewModel
+
+@{
+    ViewData["Title"] = "Help: Query syntax explained!";
+}
+
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-search subheader-icon"></i> Help about searching
+    </h1>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div id="panel-source-info" class="panel">
+            <div class="panel-container show">
+                <div class="panel-content">
+
+<p>
+    The search in DocIntel is powered by SolR. SolR is an
+    open-source project for information retrieval. For querying the
+    index, SolR supports a wide variety of constructs that provide
+    advanced search functionalities. This page describes the syntax as
+    well as the features for advanced search.
+</p>
+
+<h2>Terms</h2>
+
+<p>
+    When searching in DocIntel, the keywords are looked in the fields described in the table below.
+</p>
+
+<p>
+    You can search individual keywords. For example:
+</p>
+
+<div class="panel-tag">
+    <pre class="mb-0">spearphishing word documents</pre>
+</div>
+
+<p>
+    You can also search for phrases, that is keywords
+    between double quotes (<code>"</code>). For example:
+</p>
+
+<div class="panel-tag">
+    <pre class="mb-0">spearphishing "word documents"</pre>
+</div>
+
+
+<h2>Fields</h2>
+
+<p>
+    When searching it is possible to search for specific keywords
+    or phrase in specific fields. For example, you might want to
+    search for a keyword in the title of the document.
+</p>
+
+                <div class="panel-tag">
+                    <pre class="mb-0">title:spearphishing</pre>
+                </div>
+                
+<p>For documents the following fields are supported:</p>
+
+                        <table class="table table-bordered data-table">
+                            <thead class="thead-light">
+    <tr>
+        <th>Filter</th><th>Field</th><th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        var properties = typeof(IndexedDocument).GetProperties();
+    }
+    @foreach (var property in properties)
+    {
+        var solrField = property.GetCustomAttribute<SolrFieldAttribute>();
+        var solrIdField = property.GetCustomAttribute<SolrUniqueKeyAttribute>();
+        var helpText = property.GetCustomAttribute<HelpTextAttribute>();
+        var displayName = property.GetCustomAttribute<DisplayNameAttribute>();
+        var example = property.GetCustomAttribute<ExampleAttribute>();
+
+        @if (solrField != null | solrIdField != null)
+        {
+            <tr>
+                <td>@(displayName?.DisplayName ?? property.Name)</td>
+                <td>
+                    <code>@(solrField?.FieldName ?? solrIdField?.FieldName ?? "")</code>
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(helpText?.Description))
+                    {
+                        <p class="m-0">@(helpText?.Description ?? "")</p>   
+                    }
+                    @if (!string.IsNullOrEmpty(example?.Description))
+                    {
+                        <p class="mt-2 mb-1"><strong>Example</strong></p>
+                        <div class="panel-tag mt-0 mb-0"><code>@(example?.Description)</code></div>
+                    }
+                </td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>
+
+<h2>Boolean operators</h2>
+
+<p>
+    Boolean operators allow keywords to be combined through logic
+    operators. DocIntel supports <code>AND</code>, <code>+</code>,
+    <code>OR</code>, <code>NOT</code> and <code>-</code> as Boolean
+    operators. Note that Boolean operators must be in UPPERCASE.
+</p>
+
+<h3>OR</h3>
+
+<p>
+    The <code>OR</code> operator is the default conjunction operator.
+    This means that if there is no Boolean operator between two terms,
+    the <code>OR</code> operator is used. The <code>OR</code> operator
+    links two terms and finds a matching document if either of the terms
+    exist in a document. This is equivalent to a union using sets.
+    The symbol <code>||</code> can be used in place of the word
+    <code>OR</code>.
+</p>
+
+<p>
+    To search for documents that contain either
+    <code>
+        office
+        word
+    </code>, <code>word office</code> or just <code>word</code>
+    use the following query:
+</p>
+
+                <div class="panel-tag">
+                    <pre class="mb-0">"word office" "office word" word</pre>
+                </div>
+                
+<p>
+    or
+</p>
+
+                <div class="panel-tag">
+                    <pre class="mb-0">"word office" OR "office word" OR word</pre>
+                </div>
+                
+
+<h3>AND</h3>
+
+<p>
+    The <code>AND</code> operator matches documents where both terms
+    exist anywhere in the text of a single document. This is equivalent
+    to an intersection using sets. The symbol <code>&&</code> can be
+    used in place of the word <code>AND</code>.
+</p>
+
+<p>
+    To search for documents that contain <code>spearphishing</code>
+    and <code>Word</code> use the query:
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">spearphishing AND word</pre>
+    </div>
+
+<h3>Required operator (+)</h3>
+
+<p>
+    The <code>+</code> or <em>required operator</em> requires that the
+    term after the <code>+</code> symbol exist somewhere in a the field
+    of a single document.
+</p>
+
+<p>
+    To search for documents that must contain "word" and may contain
+    "office" use the query:
+</p>
+
+                <div class="panel-tag">
+                    <pre class="mb-0">+word office</pre>
+                </div>
+                
+<p>
+    When performing a search, DocIntel
+    assign a score to each component of the query to each document.
+    For example, search for <code>word document</code> will assign
+    a score for <code>word</code> and for <code>document</code>
+    separately, the score for the document is then a combination of
+    these scores. When searching for <code>word AND document</code>
+    the documents that do not have both keyword have a score of 0
+    and will not be returned. When searching for
+    <code>
+        word
+        +document
+    </code> the documents must have the keyword
+    <code>document</code> but the those with <code>word</code> will get
+    a higher score.
+</p>
+
+<h3>NOT</h3>
+
+<p>
+    The <code>NOT</code> operator excludes documents that contain the
+    term after <code>NOT</code>. This is equivalent to a difference
+    using sets. The symbol <code>!</code> can be used in place of
+    the word <code>NOT</code>.
+</p>
+
+<p>
+    To search for documents that contain <code>spearphishing</code> but
+    not <code>"Adobe Flash"</code> use the query:
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">spearphishing NOT "Adobe Flash"</pre>
+    </div>
+
+<p>
+    Note that the <code>NOT</code> operator cannot be used with just
+    one term (because it will force the score of all documents to 0).
+    For example, the following search will return no results:
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">NOT "Adobe Flash"</pre>
+    </div>
+
+<h3>Prohibit operator (-)</h3>
+
+<p>
+    The <code>-</code> or <em>prohibit operator</em> excludes documents
+    that contain the term after the <code>-</code> symbol.
+</p>
+
+<p>
+    To search for documents that contain "spearphishing" but not
+    "macro" use the query:
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">spearphishing -macro</pre>
+    </div>
+
+<p>
+    Note that there is a subtle difference between the <code>-</code>
+    and <code>NOT</code> operators. When searching for
+    <code>
+        word NOT
+        excel
+    </code> the documents that have the keyword <code>excel</code>
+    will have a score of 0 (regardless if they contains
+    <code>word</code> or not) and will not be returned. When searching
+    for <code>word -excel</code> the documents with <code>excel</code>
+    will get a lower score.
+</p>
+
+<h2>Grouping</h2>
+
+<p>
+    DocIntel supports using parentheses to group clauses to form
+    sub queries. This can be very useful if you want to control the
+    Boolean logic for a query.
+</p>
+
+<p>
+    To search for either "spearphishing" and "word" or "excel" use
+    the query:
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">spearphishing AND (word OR excel)</pre>
+    </div>
+
+<p>
+    This eliminates any confusion.
+</p>
+
+<p>
+    DocIntel also supports using parentheses to group multiple clauses
+    to a single field.
+</p>
+
+<p>
+    To search for a title that contains both the word "spearphishing"
+    and the phrase "adobe flash" use the query:
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">title:(spearphishing AND "adobe flash")</pre>
+    </div>
+
+<h2>Term modifiers</h2>
+
+<p>
+    DocIntel supports modifying query terms to provide a wide range of
+    searching options.
+</p>
+
+<h3>Wildcards</h3>
+
+<p>
+    DocIntel supports the use of single and multiple character wildcard
+    within a keyword (not within phrase). To perform a single character
+    wildcard search use the <code>?</code> symbol. To perform a multiple
+    character wildcard search use the <code>*</code> symbol.
+</p>
+
+<p>
+    The single character wildcard (<code>?</code>) search looks for
+    keywords that match that with the single character replaced.
+    For example, to search for <code>text</code> or <code>test</code>
+    you can use the search:
+</p>
+
+                <div class="panel-tag">
+                    <pre class="mb-0">te?t</pre>
+                </div>
+                
+<p>
+    Multiple character wildcard searches (<code>*</code>) looks for 0
+    or more characters. For example, to search for test, tests or
+    tester, you can use the search:
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">test*</pre>
+    </div>
+
+<p>
+    The wildcard <code>*</code> can also be used at the end
+    of the keyword. And, of course, these can be combined with
+    the other search constructs, such as the search in a specific
+    field.
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">title:iran*</pre>
+    </div>
+
+<p>
+    Note that a query cannot start with a <code>?</code> or a
+    <code>*</code>.
+</p>
+
+<h3>Fuzzy search</h3>
+
+<p>
+    If you are unsure about the orthograph a specific word, you can
+    ask DocIntel to search for keywords that are close with <code>~</code>.
+    For example, the keyword <code>urobouros</code>
+    might be spelled in the <code>uroburos</code> or <code>uroboros</code>
+    in some documents.
+</p>
+
+                <div class="panel-tag">
+                    <pre class="mb-0">urobouros~</pre>
+                </div>
+                
+<h3>Proximity search</h3>
+
+<p>
+    To search for multiple keywords that are close together, you can use
+    the proximity operator (<code>~</code>) at the end of a phrase.
+    For example, you might want to search for the keywords <code>Word</code>
+    and <code>Document</code> but <code>Word Office Document</code>
+    is also a valid hit. The following query will search for the
+    keywords <code>Word</code> and <code>Documents</code> within 10
+    words of each other.
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">"word document"~10</pre>
+    </div>
+
+<h3>Range Searches</h3>
+
+<p>
+    Range Queries allow one to match documents whose field(s) values are
+    between the lower and upper bound specified. Range Queries can be
+    inclusive or exclusive of the upper and lower bounds.
+    Sorting is done lexicographically.
+</p>
+
+<p>
+    This will find documents whose modification date have values between
+    <mark>2018-05-01</mark> and <mark>2018-05-31</mark>, inclusive.
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">modifiedDate:[2018-05-01 TO 2018-05-31]</pre>
+    </div>
+
+                <p>
+                    For dates, you can search for an entire month like November 2000 with <code>2000-11</code>. It is also possible to do some simple calculation like <code>NOW+2MONTHS</code>. More details can be found in <a href="https://solr.apache.org/guide/8_11//working-with-dates.html">Working with Dates (SolR documentation)</a>.
+                </p>
+                
+<p>
+    To search for a range without including the bounds, use
+    <code>{}</code> in place of <code>[]</code>.
+</p>
+
+<h2>Boosting a term</h2>
+
+<p>
+    You can give more weight to some keyword than others. To achieve
+    this, you need to use the boosting operator (<code>^</code>).
+    For example, you are more interested in spearphishing with word
+    documents, but excel documents are fine too.
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">spearphishing word^2 excel^1</pre>
+    </div>
+
+<p>
+    Note that by default, the boosting factor is 1. The boosting factor
+    must be positive but can be fractional, e.g. <code>0.2</code>
+</p>
+
+<h2>Special characters escape</h2>
+
+<p>
+    If you wan to search for a specific character that has another
+    meaning, you need to add a <code>\</code> before (escape the
+    character.) For example
+</p>
+
+<div class="panel-tag">
+        <pre class="mb-0">title:\+</pre>
+    </div>
+
+</div>
+</div>
+</div>
+</div>
+</div>

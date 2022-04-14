@@ -1,0 +1,18 @@
+[Unit]
+Description=DocIntel.RabbitMQTagIndexer
+After=network.target
+
+[Service]
+Type=notify
+User=docintel
+Group=docintel
+WorkingDirectory=/usr/lib/docintel/tag-indexer
+ExecStart=/usr/bin/dotnet DocIntel.Services.TagIndexer.dll service
+StandardOutput=journal
+StandardError=journal
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
+

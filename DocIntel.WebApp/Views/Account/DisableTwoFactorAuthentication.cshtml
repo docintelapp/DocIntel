@@ -1,0 +1,65 @@
+@using DocIntel.Core.Settings
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Options
+@model DocIntel.WebApp.ViewModels.Account.DisableTwoFactorAuthenticationModel
+@inject ApplicationSettings _settings
+@inject IOptions<PasswordOptions> _passwordOptions
+
+@{
+    ViewData["Title"] = "Disable your multi-factor authentication";
+}
+
+<form method="post" action="DisableTwoFactorAuthentication">
+
+    <div class="row justify-content-center">
+        <div class="col-4">
+            <div class="subheader text-center">
+                <h1 class="subheader-title">
+                    <i class="fal fa-unlock-alt mr-2"></i> @ViewData["Title"]
+                </h1>
+            </div>
+
+            @{
+                var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+            }
+            @if (errors.Any())
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                    <ul class="mb-0 mt-1">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div id="panel-basic" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label asp-for="Code" class="control-label"></label>
+                            <input asp-for="Code" class="form-control"/>
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-danger btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-unlock-alt"></i> Disable
+                    </button>
+                    <a asp-action="Index" asp-controller="Home" class="ml-3 text-secondary">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}

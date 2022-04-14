@@ -1,0 +1,59 @@
+@using DocIntel.Core.Settings
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Options
+@using Nest
+@model DocIntel.WebApp.ViewModels.Account.VerifyAuthenticatorResult
+@inject ApplicationSettings _settings
+@inject IOptions<PasswordOptions> _passwordOptions
+
+@{
+    if (Model.Status == Status.Success)
+    {
+        ViewData["Title"] = "Multi-factor authentication enabled";   
+    }
+    else
+    {
+        ViewData["Title"] = "Multi-factor authentication failed";
+    }
+}
+
+<div class="row justify-content-center">
+    <div class="col-4">
+                    
+    @if (Model.Status == Status.Success)
+    {
+        <div id="panel-basic" class="panel mt-4">
+            <div class="panel-container">
+                <div class="text-center fs-xl m-4" style="margin-top: 4rem !important;margin-bottom: 4rem !important;">
+                    <i class="fas fa-shield-check fa-4x color-success mb-4"></i><br/>
+                    Congratulation, your multi-factor authentication is now enabled.<br/>
+                    <small>You will be asked your code when you log in next time.</small>
+
+                    @if (Model.Data != null && Model.Data.Any())
+                    {
+                        <p class="mt-3">Copy and save your recovery codes:</p>
+                        <ul>
+                            @foreach (var rc in Model.Data)
+                            {
+                                <li>@rc</li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div id="panel-basic" class="panel mt-4">
+            <div class="panel-container">
+                <div class="text-center fs-xl m-4" style="margin-top: 4rem !important;margin-bottom: 4rem !important;">
+                    <i class="fal fa-fa-exclamation-triangle fa-4x opacity-30 color-danger mb-4"></i><br/>
+                    Something went wrong, multi-factor authentication could not be enabled<br/>
+                    <small>May be you mistyped the code, try again later.</small>
+                </div>
+            </div>
+        </div>
+    }
+    </div>
+</div>

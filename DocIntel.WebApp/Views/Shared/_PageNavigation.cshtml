@@ -1,0 +1,104 @@
+﻿@model DocIntel.WebApp.ViewModels.SmartNavigation
+@{
+    var currentController = ViewContext.RouteData.Values["Controller"].ToString();
+    var currentAction = ViewContext.RouteData.Values["Action"].ToString();
+}
+<ul id="js-nav-menu" class="nav-menu">
+    @foreach (var group in Model.Lists)
+    {
+        @if (group.Items.Any())
+        {
+            var groups = group.Items.Select(x => System.IO.Path.GetFileNameWithoutExtension(x.Href)).Where(x => x != "javascript:void(0);").ToList();
+
+            group.Items.ForEach(item =>
+            {
+                var result = item.Items?.Select(x => System.IO.Path.GetFileNameWithoutExtension(x.Href)).Where(x => x != "javascript:void(0);").ToList();
+                if (result?.Any() == true)
+                {
+                    groups = groups.Concat(result).ToList();
+                }
+            });
+
+            <li class="@(group.Controller == currentController ? "active open" : "")">
+                <a href="#" title="@group.Title" data-filter-tags="@group.Tags" id="@group.Id">
+                    <i class="@group.Icon"></i>
+                    <span class="nav-link-text" data-i18n="@group.I18n">@group.Text</span>
+                    @if (group.Span.HasValue())
+                    {
+                        <span class="@group.Span.Class">@group.Span.Text</span>
+                    }
+                </a>
+                <ul>
+                    @{
+                        foreach (var item in group.Items)
+                        {
+                            var items = item.Items?.Select(x => System.IO.Path.GetFileNameWithoutExtension(x.Href)).Where(x => x != "javascript:void(0);").ToList();
+
+                            if (item.Disabled)
+                            {
+                                <text>
+                                    <li class="disabled">
+                                </text>
+                            }
+                            else
+                            {
+                                if (items?.Any() == true)
+                                {
+                                    <text>
+                                        <li class="@(items.Contains(ViewBag.PageName) ? "active open" : "")">
+                                    </text>
+                                }
+                                else
+                                {
+                                    <text>
+                                        <li class="@(item.Controller == currentController && item.Action == currentAction ? "active" : "")">
+                                    </text>
+                                }
+                            }
+                            <text>
+                                <a href="@item.Route" title="@item.Title" data-filter-tags="@item.Tags" id="@item.Id">
+                                    <span class="nav-link-text" data-i18n="@item.I18n">@item.Text</span>
+                                    @if (item.Span.HasValue())
+                                    {
+                                        <span class="@item.Span.Class">@item.Span.Text</span>
+                                    }
+                                </a>
+                            </text>
+                            if (item.Items?.Any() == true)
+                            {
+                                <text>
+                                    <ul>
+                                        @foreach (var subItem in item.Items)
+                                        {
+                                            if (subItem.Disabled)
+                                            {
+                                                <text>
+                                                    <li class="disabled">
+                                                </text>
+                                            }
+                                            else
+                                            {
+                                                <text>
+                                                    <li class="@(subItem.Controller == currentController && subItem.Action == currentAction ? "active" : "")">
+                                                </text>
+                                            }
+                                            <a href="@subItem.Route" title="@subItem.Title" data-filter-tags="@subItem.Tags">
+                                                <span class="nav-link-text" data-i18n="@subItem.I18n">@subItem.Text</span>
+                                            </a>
+                                            @:</li>
+                                        }
+                                    </ul>
+                                </text>
+                            }
+                            @:</li>
+                        }
+                    }
+                </ul>
+            </li>
+        }
+        else
+        {
+            <li class="nav-title">@group.Title</li>
+        }
+    }
+</ul>

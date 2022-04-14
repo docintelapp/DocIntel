@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup><!-- <PackageReference Include="MassTransit" Version="7.0.4-develop.2912" />
+    <PackageReference Include="MassTransit.AspNetCore" Version="7.0.4-develop.2912" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="7.0.4-develop.2912" />
+    <PackageReference Include="NLog" Version="4.7.2" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.6.4" /> -->
+  
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocIntel.Core\DocIntel.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="debian\docintel-tag-indexer\**" />
+    <Compile Remove="debian\source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="debian\docintel-tag-indexer\**" />
+    <EmbeddedResource Remove="debian\source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="debian\docintel-tag-indexer\**" />
+    <None Remove="debian\source\**" />
+    <None Remove="debian\changelog" />
+    <None Remove="debian\debhelper-build-stamp" />
+    <None Remove="debian\docintel-tag-indexer.substvars" />
+    <None Remove="debian\docintel-tag-indexer.debhelper.log" />
+    <None Remove="debian\docintel-tag-indexer.postinst.debhelper" />
+    <None Remove="debian\docintel-tag-indexer.postrm.debhelper" />
+    <None Remove="debian\docintel-tag-indexer.prerm.debhelper" />
+    <None Remove="debian\files" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="debian\docintel-tag-indexer\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="debian\docintel-tag-indexer\usr\lib\docintel\tag-indexer\DocIntel.RabbitMQTagIndexer.deps.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-tag-indexer\usr\lib\docintel\tag-indexer\DocIntel.RabbitMQTagIndexer.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-tag-indexer\usr\lib\docintel\tag-indexer\DocIntel.Services.TagIndexer.deps.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-tag-indexer\usr\lib\docintel\tag-indexer\DocIntel.Services.TagIndexer.runtimeconfig.json" />
+  </ItemGroup>
+
+  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="nlog.config" DestinationFolder="$(OutDir)" Condition="Exists('nlog.config')" />
+  </Target>
+
+  <Target Name="PublishCustomContent" AfterTargets="Publish">
+    <Copy SourceFiles="nlog.config" DestinationFolder="$(PublishDir)" Condition="Exists('nlog.config')" />
+  </Target>
+
+</Project>

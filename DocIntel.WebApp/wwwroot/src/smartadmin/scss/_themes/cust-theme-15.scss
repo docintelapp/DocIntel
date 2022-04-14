@@ -1,0 +1,38 @@
+/* #THEME COLOR (variable overrides)
+========================================================================== */
+$color-primary:						#627ca0;
+$color-success:						#67B4AC;
+$color-info:						#2196F3;
+$color-warning:						#e5bc62;
+$color-danger:						#Be2d2d;
+$color-fusion:						darken(desaturate(adjust-hue($color-primary, 5), 80%), 25%); 
+
+/* #GLOBAL IMPORTS
+========================================================================== */
+@import './src/scss/_imports/_theme-modules-import';
+
+/* #Reset userselect
+========================================================================== */
+#myapp-0 {
+	box-shadow: none !important;
+}
+#myapp-15 {
+	box-shadow: 0 0 0 3px #000000;
+}
+
+/*body {
+    background: url(/img/backgrounds/glass.jpg) no-repeat center top fixed;
+    background-size: cover;
+    color: $black;
+}*/
+
+.page-sidebar {
+	//background: url(/img/backgrounds/glass.jpg) no-repeat center top fixed;
+    //background-size: cover;
+	//background-color: rgba(0,0,0,0.43);
+	//background-color: darken($color-fusion, 20%);
+}
+
+.page-content-wrapper {
+	background: $white;
+}

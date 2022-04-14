@@ -1,0 +1,18 @@
+@model DocIntel.Services.Scraper.ReadabilityArticle
+@using RazorLight
+@inherits TemplatePage<DocIntel.Services.Scraper.ReadabilityArticle>
+
+@{ 
+    Layout = "Shared/ScrapedDocumentLayout.cshtml";
+}
+
+@section head {
+    <title>@Model.Title</title>
+}
+
+<h1 class="display-4 fw-500 color-primary-600">@Model.Title</h1>
+<p>@Model.Byline</p>
+
+<div>
+@Raw(Model.Content)
+</div>

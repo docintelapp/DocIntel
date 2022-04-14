@@ -1,0 +1,3 @@
+tar-ignore=.git/*
+tar-ignore=bin/*
+tar-ignore=obj/*

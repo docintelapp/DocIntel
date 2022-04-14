@@ -1,0 +1,63 @@
+@model Source
+
+<div class="mr-4">
+    <div class="border thumbnail">
+        <img src="@Url.Action("Logo", "Source", new {id = Model.SourceId})?v=@(((DateTimeOffset)Model.ModificationDate).ToUnixTimeSeconds())" width="140px"/>
+    </div>
+</div>
+<div>
+    @if (!string.IsNullOrEmpty(Model.Description))
+    {
+        @Html.Raw(Model.Description)
+    }
+    else
+    {
+        <p class="text-muted">
+            <i>No description available</i>
+        </p>
+    }
+    @if (!string.IsNullOrEmpty(Model.Keywords))
+    {
+        <p class="text-muted mb-0">
+            <b>a.k.a.</b> @Model.Keywords
+        </p>
+    }
+    <p class="text-muted m-0">
+        @if (!string.IsNullOrEmpty(Model.HomePage))
+        {
+            <a href="@Model.HomePage" class="mr-1" title="Go to website">
+                <i class="fas fa-browser"></i>
+            </a>
+        }
+        @if (!string.IsNullOrEmpty(Model.Facebook))
+        {
+            <a href="@Model.Facebook" class="mr-1" title="Go to Facebook">
+                <i class="fab fa-facebook"></i>
+            </a>
+        }
+        @if (!string.IsNullOrEmpty(Model.Twitter))
+        {
+            <a href="@Model.Twitter" class="mr-1" title="Go to Twitter">
+                <i class="fab fa-twitter-square"></i>
+            </a>
+        }
+        @if (!string.IsNullOrEmpty(Model.Reddit))
+        {
+            <a href="@Model.Reddit" class="mr-1" title="Go to Reddit">
+                <i class="fab fa-reddit"></i>
+            </a>
+        }
+        @if (!string.IsNullOrEmpty(Model.LinkedIn))
+        {
+            <a href="@Model.LinkedIn" class="mr-1" title="Go to LinkedIn">
+                <i class="fab fa-linkedin"></i>
+            </a>
+        }
+        @if (!string.IsNullOrEmpty(Model.RSSFeed))
+        {
+            <a href="@Model.RSSFeed" class="mr-1" title="Go to RSS Feed">
+                <i class="fas fa-rss"></i>
+            </a>
+        }
+    </p>
+</div>

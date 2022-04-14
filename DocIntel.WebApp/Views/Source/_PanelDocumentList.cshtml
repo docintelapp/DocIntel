@@ -1,0 +1,38 @@
+@model DocIntel.WebApp.ViewModels.SourceViewModel.DetailViewModel
+
+<div id="panel-documents" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Documents
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content p-0">
+            @if (Model.Documents != null && Model.Documents.Any())
+            {
+                <ul class="list-group list-group-flush">
+                    @foreach (var document in Model.Documents)
+                    {
+                        <li class="list-group-item py-3 px-3">
+                            @await Html.PartialAsync("../Document/_DocumentSummary", document, new ViewDataDictionary(ViewData))
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="text-center fs-xl m-3">
+                    <i class="fal fa-file-alt fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                    No registered documents with this source.<br/>
+                    <small>Edit or register a document with '@Model.Source.Title' and it will show up here.</small>
+                </div>
+            }
+        </div>
+        @if (Model.PageCount > 1)
+        {
+            <div class="panel-content py-2 rounded-bottom border-faded border-left-0 border-right-0 border-bottom-0 text-muted">
+                <pagination page="@Model.Page" page-count="@Model.PageCount"></pagination>
+            </div>
+        }
+    </div>
+</div>

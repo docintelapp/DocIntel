@@ -1,0 +1,39 @@
+@media (min-width: 992px) {
+	.mod-skin-dark {
+		&.nav-function-minify:not(.nav-function-top) {
+			&:not(.mod-nav-dark) .page-sidebar .primary-nav:hover .nav-menu>li:hover>a {
+				background: inherit !important;
+				color: #d0d0d0 !important;
+			}
+			.page-sidebar .primary-nav .nav-menu>li>a {
+				+ul {
+					background-color: $dark-nav-background !important;
+					&:before {
+						color: $dark-nav-background !important;
+					}
+				}
+				>.nav-link-text {
+					color: inherit !important;
+				}
+			}
+		}
+		&.nav-function-top {
+			.page-header {
+				background: $dark-nav-background;
+				.header-icon:not(.btn)> {
+					[class*='fa-']:first-child:hover,
+					.ni:first-child:hover {
+						color: #ffffff !important;
+					}
+				}
+			}
+			#search-field {
+				color: #ffffff;
+			}
+		}
+
+		.subheader-title {
+			color: #ffffff !important;
+		}
+	}
+}

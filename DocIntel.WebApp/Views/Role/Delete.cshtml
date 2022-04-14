@@ -1,0 +1,39 @@
+﻿@model AppRole
+
+@{
+    ViewData["Title"] = $"Delete role '{Model.Name}''";
+}
+
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-file-edit subheader-icon"></i> Delete '@Model.Name'
+    </h1>
+</div>
+
+<form asp-action="Delete">
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        <div class="col-9">
+            <div id="panel-danger" class="panel">
+                <div class="panel-hdr bg-danger-900 bg-info-gradient">
+                    <h2>
+                        Are you sure you want to delete the role '@Model.Name'?
+                    </h2>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" asp-for="Id"/>
+
+    <div class="row">
+        <div class="col-md-12">
+            <button type="submit" class="btn btn-danger" id="delete-confirmation-btn">Yes, delete!</button>
+            <a asp-action="Details" asp-route-id="@Model.Id" class="ml-3 text-success">No, don't delete!</a>
+        </div>
+    </div>
+
+</form>

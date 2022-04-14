@@ -1,0 +1,52 @@
+@model DocIntel.WebApp.ViewModels.Shared.PaginationViewModel
+
+<input type="hidden" value="@Model.Page" name="page"/>
+
+<ul class="pagination pagination-sm mb-0">
+    @if (Model.Page > 1)
+    {
+        <li class="page-item">
+            <a href="javascript:void(0)" data-page="1" class="page-link page-link-autosubmit">First</a>
+        </li>
+    }
+    <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+        <a href="javascript:void(0)" data-page="@(Model.Page - 1)" class="page-link page-link-autosubmit">&laquo;</a>
+    </li>
+    @if (Model.PageCount > 10)
+    {
+        var low = Math.Max(1, Model.Page - 4);
+        var high = Math.Min(Model.Page + 4, Model.PageCount);
+        if (low > 1)
+        {
+            <li class="page-item text-muted">...</li>
+        }
+        for (var i = low; i <= high; i++)
+        {
+            <li class="page-item @(i == Model.Page ? "active" : "")">
+                <a href="javascript:void(0)" data-page="@i" class="page-link page-link-autosubmit">@i</a>
+            </li>
+        }
+        if (high < Model.PageCount)
+        {
+            <li class="page-item text-muted">...</li>
+        }
+    }
+    else
+    {
+        for (var i = 1; i <= Model.PageCount; i++)
+        {
+            <li class="page-item @(i == Model.Page ? "active" : "")">
+                <a href="javascript:void(0)" data-page="@i" class="page-link page-link-autosubmit">@i</a>
+            </li>
+        }
+    }
+    <li class="page-item  @(Model.Page == Model.PageCount ? "disabled" : "")">
+        <a href="javascript:void(0)" data-page="@(Model.Page + 1)" class="page-link page-link-autosubmit">&raquo;</a>
+    </li>
+    @if (Model.Page < Model.PageCount)
+    {
+        <li class="page-item">
+            <a href="javascript:void(0)" data-page="@(Model.PageCount)" class="page-link page-link-autosubmit">Last</a>
+        </li>
+    }
+</ul>

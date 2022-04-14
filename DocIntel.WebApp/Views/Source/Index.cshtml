@@ -1,0 +1,153 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@using DocIntel.Core.Utils.Search.Sources
+@using System.Reflection
+@using System.ComponentModel.DataAnnotations
+@using DocIntel.Core.Utils.Search.Documents
+@model DocIntel.WebApp.ViewModels.SourceViewModel.IndexViewModel
+
+@{
+    ViewData["Title"] = "View all";
+
+    var canCreate = (await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.Create)).Succeeded;
+    var canMerge = (await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.Merge)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-book subheader-icon"></i> Sources
+    </h1>
+    <div>
+        <div class="btn-group">
+            @if (canMerge)
+            {
+                <a asp-action="Merge" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                    <i class="fal fa-code-merge"></i> Merge Sources
+                </a>
+            }
+            @if (canCreate)
+            {
+                <a asp-action="Create" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                    <i class="fal fa-plus"></i> Add Source
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<form asp-action="Index" asp-controller="Source" method="GET" id="search-sources">
+
+    <div class="row">
+        <div class="col-9">
+            <div class="input-group input-group-lg mb-2 shadow-1 rounded mb-4">
+                <input type="text" class="form-control shadow-inset-2" id="filter-icon"
+                       aria-label="type 2 or more letters" placeholder="Search for anything..." value="@Model.SearchQuery.SearchTerms" name="SearchTerm"/>
+                <div class="input-group-append">
+                    <button class="btn btn-primary hidden-sm-down waves-effect waves-themed" type="submit">
+                        <i class="fal fa-search mr-lg-2"></i><span class="hidden-md-down">Search sources</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Sources  <span class="fw-300">(@Model.SearchResults.TotalHits @Html.Pluralize("source", Model.SearchResults.TotalHits) found)</span>
+                    </h2>
+                    <div class="panel-toolbar">
+                        <div class="text-nowrap mr-2">
+                            <label class="form-label" for="sortBy">Sort by</label>
+                        </div>
+                        <select asp-for="SearchQuery.SortCriteria" asp-items="Html.GetEnumSelectList<SourceSortCriteria>()" class="custom-select custom-select-sm auto-submit"></select>
+                    </div>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content p-0">
+                        @if (Model != null && Model.SearchResults.Hits.Any())
+                        {
+                            <ul class="list-group list-group-flush">
+                                @foreach (var source in Model.SearchResults.Hits)
+                                {
+                                    <li class="list-group-item py-3 px-3">
+                                        @await Html.PartialAsync("_SourceSearchResult", source, new ViewDataDictionary(ViewData))
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <div class="text-center fs-xl m-3">
+                                <i class="fal fa-book fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                                We found no source matching your criterias.<br/>
+                                <small>Try a different query, or with different terms.</small>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-content py-2 rounded-bottom border-faded border-left-0 border-right-0 border-bottom-0 text-muted">
+                        <pagination page="@Model.SearchQuery.Page" page-count="@Model.PageCount" method="GET"></pagination>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-3">
+        
+        
+                <div id="panel-metadata" class="panel">
+                    <div class="panel-container show">
+                        <div class="panel-content p-0">
+                            <div class="accordion" id="accordion_meta">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <a href="javascript:void(0);" class="card-title" data-toggle="collapse" data-target="#collapseReliabilities" aria-expanded="false">
+                                            Source Reliability
+                                        </a>
+                                    </div>
+                                    <div id="collapseReliabilities" class="" aria-labelledby="headingReliabilities" data-parent="#accordion_meta">
+                                        <div class="card-body">
+                                            @foreach (var sr in Enum.GetValues<SourceReliability>())
+                                            {
+                                                VerticalResult<SourceReliability> item;
+                                                if ((item = Model.SearchResults.Reliabilities.FirstOrDefault(_ => _.Value == sr)) == null)
+                                                    item = new VerticalResult<SourceReliability>(sr, 0);
+                                                
+                                                var type = item.Value.GetType();
+                                                var attribute = type.GetMember(item.Value.ToString()).FirstOrDefault()?.GetCustomAttribute<DisplayAttribute>();
+                                                <div class="custom-control custom-switch mb-1">
+                                                    <input type="checkbox" class="custom-control-input auto-submit" id="Reliability-@item.Value"
+                                                           checked="@Model.SearchQuery.SelectedReliabilities.Any(_ => (int)_ == (int)item.Value)"
+                                                           name="reliabilities" value="@((int)item.Value)">
+                                                    <label class="custom-control-label" for="Reliability-@item.Value">
+                                                        @if (!string.IsNullOrEmpty(attribute?.Name))
+                                                        {
+                                                            <text>@(attribute?.Name)</text>
+                                                        }
+                                                        else
+                                                        {
+                                                            <text>@item.Value</text>
+                                                        }
+                                                    </label>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+            
+        </div>
+    </div>
+
+</form>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function()
+        {
+            DocIntel.initSearchPage('form#search-sources');
+        });
+    </script>
+}

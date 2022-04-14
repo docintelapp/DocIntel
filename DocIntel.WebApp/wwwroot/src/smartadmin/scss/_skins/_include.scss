@@ -1,0 +1,34 @@
+#skin-default,
+#skin-light,
+#skin-dark {
+	position:relative;
+
+	&:hover {
+		opacity: 0.8;
+		cursor: pointer;
+	}
+
+	&:before {
+		font-family: 'Font Awesome 5 Pro';
+		content: "\f058";
+		font-size: 3rem;
+		position: absolute;
+		display: none;
+		width: 100%;
+		height: 100%;
+		align-items: center;
+		justify-content: center;
+		padding-left: 0.75rem;
+		padding-top: 0.25rem;
+		color:var(--success-500);
+	}	
+}
+
+body:not(.mod-skin-light):not(.mod-skin-dark) {
+	#skin-default {
+		&:before {
+			display: flex;
+		}
+	}
+}
+

@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<partial name="_CopyrightHeader"/>
+<html lang="en">
+<head>
+    <partial name="_HeadPublic"/>
+    <title>
+        @ViewData["Title"] -
+        DocIntel
+    </title>
+    @RenderSection("Header", false)
+</head>
+<body>
+<!-- BEGIN Page Wrapper -->
+<div class="page-wrapper">
+    <div class="page-inner bg-brand-gradient">
+        <div class="page-content-wrapper bg-transparent m-0">
+            @* <partial name="_PageHeaderPublic"/> *@
+            <div class="flex-1 pattern-1-background" style="background: url(/dist2/img/svg/pattern-1.svg) no-repeat center bottom fixed; background-size: cover;">
+                <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                    <div class="container p-0 m-0">
+                        <div class="row">
+                            @RenderSection("PageHeading", false)
+                            @RenderBody()
+                        </div>
+                    </div>
+                </div>
+                <partial name="_PageFooterPublic"/>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END Page Wrapper -->
+<script src="~/dist/login.js"></script>
+@RenderSection("Scripts", false)
+</body>
+</html>

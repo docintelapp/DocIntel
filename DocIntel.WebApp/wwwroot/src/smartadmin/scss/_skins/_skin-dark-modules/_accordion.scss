@@ -1,0 +1,12 @@
+/* accordion */
+.accordion .card .card-header .card-title {
+	color: rgba($dark-white, 0.85);
+}
+.accordion.accordion-clean {
+	.card {
+		background-color: transparent;
+	}
+	.card-header {
+		background: transparent;
+	}
+}

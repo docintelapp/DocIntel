@@ -1,0 +1,27 @@
+@using Markdig
+@model Tag
+
+@if (!string.IsNullOrEmpty(Model.Description) | !string.IsNullOrEmpty(Model.Keywords))
+{
+    <div id="panel-summary" class="panel">
+        <div class="panel-container show">
+            <div class="panel-content">
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="@(string.IsNullOrEmpty(Model.Keywords) ? "mb-0" : "")">
+                        @{
+                            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley().UseBootstrap().Build();
+                        }
+                        <text>@Html.Raw(Markdown.ToHtml(Model.Description, pipeline))</text>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Keywords))
+                {
+                    <p class="mb-0">
+                        <b>Keywords:</b> @Model.Keywords
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+}

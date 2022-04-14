@@ -1,0 +1,331 @@
+
+//Links or pagelinks
+.page-content-wrapper a:not(.btn):not(.badge):not(.dropdown-item):not(.nav-link):not(.navbar-brand):not(.card-title):not([class*="fc-"]):not([class*="text-"]):not(.btn-search-close),
+.modal-body a:not(.btn):not(.badge):not(.dropdown-item):not(.nav-link):not(.page-link):not(.navbar-brand):not(.card-title) {
+	color: #ffffff;
+	color: $dark-content-links;
+}
+//color correction
+.text-success  {
+	//color: $dark-white;
+	color: var(--theme-success-300) !important;
+}
+.text-danger  {
+	//color: $dark-white;
+	color: var(--theme-danger-300) !important;
+}
+.text-warning  {
+	//color: $dark-white;
+	color: var(--theme-warning-300) !important;
+}
+.text-info {
+	//color: $dark-white;
+	color: var(--theme-info-300) !important;
+}
+
+.text-dark {
+	color: rgba(255, 255, 255, 0.75) !important;
+}
+.text-muted {
+	color: rgba(255, 255, 255, 0.80) !important;
+}
+.text-contrast {
+	color: $dark-white;
+}
+.text-secondary {
+	color: rgba($dark-white, 0.9) !important;
+}
+.text-primary {
+	color: #ffffff;
+	color: var(--theme-primary-300) !important;
+}
+a.text-primary:hover, 
+a.text-primary:focus {
+	color: #ffffff;
+	color: var(--theme-primary-200) !important;
+}
+
+//backgrounds
+.bg-faded {
+	background-color: #3c3f48;
+	color: $dark-content-color;
+}
+.bg-gray-50 {
+	background-color: #47484c;
+}
+.bg-light {
+	background-color: #565656 !important;
+}
+.bg-subtlelight-fade {
+	background: #2d2f32;
+	background: rgba(var(--theme-rgb-fusion), 0.2);
+}	
+.bg-trans-gradient {
+	background: linear-gradient(250deg,  rgba(var(--theme-rgb-info), 0.50), rgba(var(--theme-rgb-primary), 0.50));
+}
+.bg-highlight {
+	background-color: rgba($rgba-warning, 0.15);
+	background-color: rgba(var(--theme-rgb-warning), 0.15);
+}
+.bg-white:not([class*='popover']) {
+	background-color: #383b44 !important;
+	color: #ffffff;
+
+	&.popover {
+		color: inherit;
+	}
+}
+.bg-primary-50:not([class*='popover']) {
+	background-color: rgba($rgba-primary, 0.10);
+	background-color: rgba(var(--theme-rgb-primary), 0.10);
+	color: #ffffff;
+}
+.bg-primary-100:not([class*='popover']) {
+	background-color: rgba($rgba-primary, 0.20);
+	background-color: rgba(var(--theme-rgb-primary), 0.20);
+	color: #ffffff;
+}
+.bg-primary-200:not([class*='popover']) {
+	background-color: rgba($rgba-primary, 0.30);
+	background-color: rgba(var(--theme-rgb-primary), 0.30);
+	color: #ffffff;
+}
+.bg-primary-300:not([class*='popover']) {
+	background-color: rgba($rgba-primary, 0.40);
+	background-color: rgba(var(--theme-rgb-primary), 0.40);
+	color: #ffffff;
+}
+.bg-primary-400:not([class*='popover']) {
+	background-color: rgba($rgba-primary, 0.50);
+	background-color: rgba(var(--theme-rgb-primary), 0.50);
+}
+.bg-primary-500:not([class*='popover']) {
+	background-color: rgba($rgba-primary, 0.60);
+	background-color: rgba(var(--theme-rgb-primary), 0.60);
+}
+.bg-primary-600:not([class*='popover']) {
+	background-color: rgba($rgba-primary, 0.70);
+	background-color: rgba(var(--theme-rgb-primary), 0.70);
+}
+.bg-primary-700:not([class*='popover']) {
+	background-color: rgba($rgba-primary, 0.80);
+	background-color: rgba(var(--theme-rgb-primary), 0.80);
+}
+.bg-primary-800:not([class*='popover']) {
+	background-color: rgba($rgba-primary, 0.90);
+	background-color: rgba(var(--theme-rgb-primary), 0.90);
+}
+.bg-primary-900:not([class*='popover']) {
+	background-color: rgba(var(--theme-rgb-primary), 1);
+}
+.bg-success-50:not([class*='popover']) {
+	background-color: rgba($rgba-success, 0.10);
+	background-color: rgba(var(--theme-rgb-success), 0.1);
+	color: #ffffff;
+}
+.bg-success-100:not([class*='popover']) {
+	background-color: rgba($rgba-success, 0.20);
+	background-color: rgba(var(--theme-rgb-success), 0.2);
+	color: #ffffff;
+}
+.bg-success-200:not([class*='popover']) {
+	background-color: rgba($rgba-success, 0.30);
+	background-color: rgba(var(--theme-rgb-success), 0.3);
+	color: #ffffff;
+}
+.bg-success-300:not([class*='popover']) {
+	background-color: rgba($rgba-success, 0.40);
+	background-color: rgba(var(--theme-rgb-success), 0.4);
+	color: #ffffff;
+}
+.bg-success-400:not([class*='popover']) {
+	background-color: rgba($rgba-success, 0.50);
+	background-color: rgba(var(--theme-rgb-success), 0.5);
+}
+.bg-success-500:not([class*='popover']) {
+	background-color: rgba($rgba-success, 0.60);
+	background-color: rgba(var(--theme-rgb-success), 0.6);
+}
+.bg-success-600:not([class*='popover']) {
+	background-color: rgba($rgba-success, 0.70);
+	background-color: rgba(var(--theme-rgb-success), 0.7);
+}
+.bg-success-700:not([class*='popover']) {
+	background-color: rgba($rgba-success, 0.80);
+	background-color: rgba(var(--theme-rgb-success), 0.8);
+}
+.bg-success-800:not([class*='popover']) {
+	background-color: rgba($rgba-success, 0.90);
+	background-color: rgba(var(--theme-rgb-success), 0.9);
+}
+.bg-success-900:not([class*='popover']) {
+	background-color: rgba($rgba-success, 1);
+	background-color: rgba(var(--theme-rgb-success), 1);
+}
+.bg-danger-50:not([class*='popover']) {
+	background-color: rgba($rgba-danger, 0.1);
+	background-color: rgba(var(--theme-rgb-danger), 0.1);
+	color: #ffffff;
+}
+.bg-danger-100:not([class*='popover']) {
+	background-color: rgba($rgba-danger, 0.2);
+	background-color: rgba(var(--theme-rgb-danger), 0.2);
+	color: #ffffff;
+}
+.bg-danger-200:not([class*='popover']) {
+	background-color: rgba($rgba-danger, 0.3);
+	background-color: rgba(var(--theme-rgb-danger), 0.3);
+	color: #ffffff;
+}
+.bg-danger-300:not([class*='popover']) {
+	background-color: rgba($rgba-danger, 0.4);
+	background-color: rgba(var(--theme-rgb-danger), 0.4);
+	color: #ffffff;
+}
+.bg-danger-400:not([class*='popover']) {
+	background-color: rgba($rgba-danger, 0.5);
+	background-color: rgba(var(--theme-rgb-danger), 0.5);
+	color: #ffffff;
+}
+.bg-danger-500:not([class*='popover']) {
+	background-color: rgba($rgba-danger, 0.6);
+	background-color: rgba(var(--theme-rgb-danger), 0.6);
+}
+.bg-danger-600:not([class*='popover']) {
+	background-color: rgba($rgba-danger, 0.7);
+	background-color: rgba(var(--theme-rgb-danger), 0.7);
+}
+.bg-danger-700:not([class*='popover']) {
+	background-color: rgba($rgba-danger, 0.8);
+	background-color: rgba(var(--theme-rgb-danger), 0.8);
+}
+.bg-danger-800:not([class*='popover']) {
+	background-color: rgba($rgba-danger, 0.9);
+	background-color: rgba(var(--theme-rgb-danger), 0.9);
+}
+.bg-danger-900:not([class*='popover']) {
+	background-color: rgba($rgba-danger, 1);
+	background-color: rgba(var(--theme-rgb-danger), 1);
+}
+.bg-warning-50:not([class*='popover']) {
+	background-color: rgba($rgba-warning, 0.1);
+	background-color: rgba(var(--theme-rgb-warning), 0.1);
+	color: #ffffff;
+}
+.bg-warning-100:not([class*='popover']) {
+	background-color: rgba($rgba-warning, 0.2);
+	background-color: rgba(var(--theme-rgb-warning), 0.2);
+	color: #ffffff;
+}
+.bg-warning-200:not([class*='popover']) {
+	background-color: rgba($rgba-warning, 0.3);
+	background-color: rgba(var(--theme-rgb-warning), 0.3);
+	color: #ffffff;
+}
+.bg-warning-300:not([class*='popover']) {
+	background-color: rgba($rgba-warning, 0.4);
+	background-color: rgba(var(--theme-rgb-warning), 0.4);
+	color: #ffffff;
+}
+.bg-warning-400:not([class*='popover']) {
+	background-color: rgba($rgba-warning, 0.5);
+	background-color: rgba(var(--theme-rgb-warning), 0.5);
+	color: #ffffff;
+}
+.bg-warning-500:not([class*='popover']) {
+	background-color: rgba($rgba-warning, 0.6);
+	background-color: rgba(var(--theme-rgb-warning), 0.6);
+}
+.bg-warning-600:not([class*='popover']) {
+	background-color: rgba($rgba-warning, 0.7);
+	background-color: rgba(var(--theme-rgb-warning), 0.7);
+}
+.bg-warning-700:not([class*='popover']) {
+	background-color: rgba($rgba-warning, 0.8);
+	background-color: rgba(var(--theme-rgb-warning), 0.8);
+}
+.bg-warning-800:not([class*='popover']) {
+	background-color: rgba($rgba-warning, 0.9);
+	background-color: rgba(var(--theme-rgb-warning), 0.9);
+}
+.bg-warning-900:not([class*='popover']) {
+	background-color: rgba($rgba-warning, 1);
+	background-color: rgba(var(--theme-rgb-warning), 1);
+}
+.bg-info-50:not([class*='popover']) {
+	background-color: rgba($rgba-info, 0.1);
+	background-color: rgba(var(--theme-rgb-info), 0.1);
+	color: #ffffff;
+}
+.bg-info-100:not([class*='popover']) {
+	background-color: rgba($rgba-info, 0.2);
+	background-color: rgba(var(--theme-rgb-info), 0.2);
+	color: #ffffff;
+}
+.bg-info-200:not([class*='popover']) {
+	background-color: rgba($rgba-info, 0.3);
+	background-color: rgba(var(--theme-rgb-info), 0.3);
+	color: #ffffff;
+}
+.bg-info-300:not([class*='popover']) {
+	background-color: rgba($rgba-info, 0.4);
+	background-color: rgba(var(--theme-rgb-info), 0.4);
+	color: #ffffff;
+}
+.bg-info-400:not([class*='popover']) {
+	background-color: rgba($rgba-info, 0.5);
+	background-color: rgba(var(--theme-rgb-info), 0.5);
+}
+.bg-info-500:not([class*='popover']) {
+	background-color: rgba($rgba-info, 0.6);
+	background-color: rgba(var(--theme-rgb-info), 0.6);
+}
+.bg-info-600:not([class*='popover']) {
+	background-color: rgba($rgba-info, 0.7);
+	background-color: rgba(var(--theme-rgb-info), 0.7);
+}
+.bg-info-700:not([class*='popover']) {
+	background-color: rgba($rgba-info, 0.8);
+	background-color: rgba(var(--theme-rgb-info), 0.8);
+}
+.bg-info-800:not([class*='popover']) {
+	background-color: rgba($rgba-info, 0.9);
+	background-color: rgba(var(--theme-rgb-info), 0.9);
+}
+.bg-info-900:not([class*='popover']) {
+	color: #000000;
+	background-color: rgba($rgba-info, 1);
+	background-color: rgba(var(--theme-rgb-info), 1);
+}
+[data-replaceclass] {
+	.bg-white {
+		background: #ffffff !important;
+	}
+	.bg-faded {
+		background-color: #f7f9fa !important;
+	}
+}
+
+//hover bg
+.hover-bg {
+	background: #303136;
+	color: inherit;
+
+	&:hover {
+		background: inherit;
+		color: inherit;
+	}
+}
+
+.hover-white {
+	&:hover {
+		background: #313438 !important;
+	}
+	&:active {
+		background: darken(#313438, 5%) !important;
+	}
+
+	.app-list-name {
+		color: $dark-content-color;
+	}
+}

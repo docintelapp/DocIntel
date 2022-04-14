@@ -1,0 +1,79 @@
+@using DocIntel.Core.Authorization.Operations
+@model SubmittedDocument
+@{
+    Layout = "_BookmarkletLayout";
+    ViewData["Title"] = $"Submit {Model.Title}";
+    var canCreateTags = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Create)).Succeeded;
+}
+
+<form asp-action="PreviewURL" method="post" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-12">
+            @{
+                var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+            }
+            @if (errors.Count() > 0)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                    <ul class="mb-0 mt-1">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div id="panel-basic" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <div class="d-flex justify-content-between">
+                                <label asp-for="Title" class="form-label"></label>
+                                <div>
+                                    <a href="javascript:void(0)" class="normalize-title" data-target="Title">Normalize title</a>
+                                </div>
+                            </div>
+                            <input asp-for="Title" class="form-control"/>
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tags</label>
+                            <select data-placeholder="Select a tag"
+                                    data-tags="@(canCreateTags ? "true" : "false")"
+                                    class="autocomplete-tag form-control" name="tags" multiple="multiple">
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="URL" class="form-label"></label>
+                            <input asp-for="URL" class="form-control"/>
+                            <span asp-validation-for="URL" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <button type="submit" id="save-btn" class="btn btn-success waves-effect waves-themed btn-iconified">
+                <i class="fal fa-save"></i> Submit
+            </button>
+            <a href="javascript:void(0)" class="ml-3 text-secondary">Cancel</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script type="text/javascript">
+    </script>
+}

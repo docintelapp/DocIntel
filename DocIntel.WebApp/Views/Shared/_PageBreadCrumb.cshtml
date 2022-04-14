@@ -1,0 +1,19 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["Controller"];
+    var currentAction = ViewContext.RouteData.Values["Action"];
+}
+<ol class="breadcrumb page-breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="/">DocIntel</a>
+    </li>
+    @if (currentController != null && !string.IsNullOrEmpty(currentController as string))
+    {
+        <li class="breadcrumb-item">
+            <a asp-action="Index">@currentController</a>
+        </li>
+    }
+    <li class="breadcrumb-item active">@ViewBag.Title</li>
+    <li class="position-absolute pos-top pos-right d-none d-sm-block">
+        <span class="js-get-date">@DateTime.Now.ToString("dddd, dd MMMM, yyyy")</span>
+    </li>
+</ol>

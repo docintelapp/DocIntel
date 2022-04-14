@@ -1,0 +1,82 @@
+@using DocIntel.Core.Utils.Search.Documents
+@using DocIntel.Core.Helpers
+@model DocIntel.WebApp.ViewModels.SearchViewModel.SearchIndexViewModel
+
+<div id="panel-1" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            @Model.DocumentCount @Html.Pluralize("document", Model.DocumentCount) found <span class="fw-300">(@(Math.Round(Model.Elapsed.Milliseconds / 1000.0, 2)) seconds)</span>
+        </h2>
+        <div class="panel-toolbar">
+            <div class="text-nowrap mr-2">
+                <label class="form-label" for="pageSize">Page size</label>
+            </div>
+            <select class="custom-select custom-select-sm auto-submit" name="pageSize">
+                <option selected="@(Model.PageSize == 10)" value="10">
+                    10
+                </option>
+                <option selected="@(Model.PageSize == 25)" value="25">
+                    25
+                </option>
+                <option selected="@(Model.PageSize == 50)" value="50">
+                    50
+                </option>
+            </select>
+            <div class="text-nowrap mr-2 ml-3">
+                <label class="form-label" for="sortBy">Sort by</label>
+            </div>
+            <select class="custom-select custom-select-sm auto-submit" name="sortCriteria">
+                <option selected="@(Model.SortBy == SortCriteria.Relevance)" value="relevance">
+                    @(EnumHelper<SortCriteria>.GetDisplayValue(SortCriteria.Relevance))
+                </option>
+                <option selected="@(Model.SortBy == SortCriteria.DocumentDate)" value="documentDate">
+                    @(EnumHelper<SortCriteria>.GetDisplayValue(SortCriteria.DocumentDate))
+                </option>
+                <option selected="@(Model.SortBy == SortCriteria.RegistrationDate)" value="registrationDate">
+                    @(EnumHelper<SortCriteria>.GetDisplayValue(SortCriteria.RegistrationDate))
+                </option>
+                <option selected="@(Model.SortBy == SortCriteria.ModificationDate)" value="modificationDate">
+                    @(EnumHelper<SortCriteria>.GetDisplayValue(SortCriteria.ModificationDate))
+                </option>
+            </select>
+        </div>
+        @* <div class="panel-toolbar">
+            <div class="text-nowrap mr-2">
+                <label class="form-label" for="sortBy">Filter by</label>
+            </div>
+            <select class="custom-select custom-select-sm auto-submit" name="filterBy">
+                <option selected="@(Model.FilterBy == "noFilter" || string.IsNullOrEmpty(Model.FilterBy))" value="noFilter">No filter</option>
+                <option selected="@(Model.FilterBy == "showReadOnly")" value="showReadOnly">Read only</option>
+                <option selected="@(Model.FilterBy == "showUnreadOnly")" value="showUnreadOnly">Unread only</option>
+            </select>
+        </div> *@
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content p-0">
+            <ul class="list-group list-group-flush">
+                @if (Model.SearchResultDocuments != null && Model.SearchResultDocuments.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var document in Model.SearchResultDocuments)
+                        {
+                            <li class="list-group-item py-3 px-3">
+                                @await Html.PartialAsync("_DocumentSearchResult", document, new ViewDataDictionary(ViewData))
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-center fs-xl m-3">
+                        <i class="fal fa-telescope fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                        Oh snap. We have no search results for you.<br/>
+                        <small>Try later, register documents or contact your administrator.</small>
+                    </div>
+                }
+            </ul>
+        </div>
+        <div class="panel-content py-2 rounded-bottom border-faded border-left-0 border-right-0 border-bottom-0 text-muted">
+            <pagination page="@Model.Page" page-count="@Model.PageCount" method="POST"></pagination>
+        </div>
+    </div>
+</div>

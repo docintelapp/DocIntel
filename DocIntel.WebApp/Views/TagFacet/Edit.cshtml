@@ -1,0 +1,65 @@
+@using DocIntel.Core.Authorization.Operations
+@model TagFacet
+
+@{
+    ViewData["Title"] = "Edit facet '" + Model.Title + "'";
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Delete)).Succeeded;
+}
+
+<form asp-action="Edit">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-tags subheader-icon"></i> @ViewData["Title"]
+        </h1>
+        <div>
+            <div class="btn-group">
+                @if (canDelete)
+                {
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-trash-alt"></i> Delete
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            @{
+                var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+            }
+            @if (errors.Any())
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                    <ul class="mb-0 mt-1">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div id="panel-basic" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <input asp-for="Id" type="hidden"/>
+
+                        @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-save"></i> Save
+                    </button>
+                    <a asp-action="Index" asp-controller="Tag" class="ml-3 text-secondary">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

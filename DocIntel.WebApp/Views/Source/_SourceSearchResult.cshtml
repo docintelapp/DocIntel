@@ -1,0 +1,92 @@
+@model DocIntel.Core.Utils.Search.Sources.SourceSearchHit
+
+<div class="d-flex flex-row">
+    <div class="mr-4">
+        <div class="border thumbnail">
+            <img src="@Url.Action("Logo", "Source", new {id = Model.Source.SourceId})?v=@(((DateTimeOffset)Model.Source.ModificationDate).ToUnixTimeSeconds())" width="140px"/>
+        </div>
+    </div>
+    <div>
+        @{
+            var reliabilityScore = (int) Model.Source.Reliability;
+            var textColor = "";
+            if ((reliabilityScore >= 1) & (reliabilityScore <= 2))
+            {
+                textColor = "badge-success";
+            }
+            else if (reliabilityScore == 3)
+            {
+                textColor = "badge-warning";
+            }
+            else if (reliabilityScore >= 4)
+            {
+                textColor = "badge-danger";
+            }
+            else if (reliabilityScore == 0)
+            {
+                textColor = "badge-secondary";
+            }
+        }
+        <a class="text-truncate fs-lg fw-500" asp-action="Details" asp-controller="Source" asp-route-id="@Model.Source.SourceId">
+            @if (string.IsNullOrEmpty(Model.TitleExcerpt))
+            {
+                <text>@Model.Source.Title</text>
+            }
+            else
+            {
+                @Html.Raw(Model.TitleExcerpt)
+                ;
+            }
+        </a>
+        <div class="mt-1">
+            <p class="mb-2">
+                <span class="badge @textColor mr-1">
+                    @if (Model.Source.Reliability == SourceReliability.F)
+                    {
+                        <text>F - Reliability Unknown</text>
+                    }
+                    else if (Model.Source.Reliability == SourceReliability.A)
+                    {
+                        <text>A - Reliable</text>
+                    }
+                    else if (Model.Source.Reliability == SourceReliability.B)
+                    {
+                        <text>B - Usually reliable</text>
+                    }
+                    else if (Model.Source.Reliability == SourceReliability.C)
+                    {
+                        <text>C - Fairly reliable</text>
+                    }
+                    else if (Model.Source.Reliability == SourceReliability.D)
+                    {
+                        <text>D - Not usually reliable</text>
+                    }
+                    else if (Model.Source.Reliability == SourceReliability.E)
+                    {
+                        <text>E - Unreliable</text>
+                    }
+                </span>
+                <span class="mr-1">
+                    @Model.Source.NumDocs @Html.Pluralize("document", Model.Source.NumDocs)
+                </span>
+                @if (Model.Source.NumDocs > 0)
+                {
+                    <text>
+                        <span class="mr-1">-</span> Last document
+                        <time class="mr-1 timeago" datetime="@Model.Source.LastDocumentDate.ToString("o")">
+                            @Model.Source.LastDocumentDate.ToString("dd/MM/yyyy")
+                        </time>
+                    </text>
+                }
+            </p>
+            @if (string.IsNullOrEmpty(Model.Excerpt))
+            {
+                @Html.Raw(Model.Source.Description)
+            }
+            else
+            {
+                @Html.Raw(Model.Excerpt)
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,232 @@
+@import "_modules/variables";
+
+.app-body-demo {
+	height:350px;
+	max-width: 550px;
+	margin: 0 auto;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.125);
+
+	.app-nav-demo:not(.app-nav-demo-minify) {
+		width:20%;
+	}
+
+	.app-nav-demo-minify {
+		width: 7%;
+		padding:3px;
+
+		.page-logo {
+			width:auto;
+		}
+	}
+
+	.app-nav-demo-hidden {
+		width:10px;
+	}
+
+	.app-header-demo {
+		height:30px;
+	}
+
+	.app-nav-demo-top {
+		height:26px;
+	}
+
+	.app-container-demo {
+		//background-color: #fff;
+	}
+
+	.app-header-btn-demo {
+		width: 26px;
+		height: 18px;
+		border-radius: 2px;
+		padding: 0 !important;
+		font-size: 10px;
+	}
+
+	.app-hematite-demo {
+		background: #434a51;
+	}
+
+	.app-amethyst-demo {
+		background: #5c4581;
+	}
+
+	.app-aquamarine-demo {
+		background: #476f85;
+	}
+
+	.app-sapphire-demo {
+		background: #334768;
+	}
+}
+
+#app-eventlog {
+	height:260px;
+	min-height:260px;
+    max-height:300px; 
+	overflow: auto;
+	display: block;
+
+    > div:not(:last-child) {
+        border-bottom: 1px solid #eaeaea;
+    }
+
+	/*> div:last-child {
+		background:#f9f4b5;
+	}
+
+	> div:nth-last-child(2) {
+		background:#fffde1;
+	}*/
+
+	&:empty {
+	   background:#eee;
+
+
+	   &:before {
+			content: "Event Logs";
+			font-size: $fs-xxl;
+			font-weight: 300;
+			color: #c7c7c7;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: absolute;
+			top: -20px;
+			bottom: 0;
+			left: 0;
+			right: 0;
+	   }
+	}
+
+
+	.fs-base {
+		.badge {
+			font-size: 90% !important;
+			font-weight: 400 !important;
+			background: #a9a9a9;
+			text-align: left;
+			min-width: 50px;
+		}
+	}
+
+}
+
+.prettyprint {
+    overflow:auto; 
+    background: $frame-border-color; 
+    font-size: 100%;
+    padding: $panel-spacer-y $panel-spacer-x !important;
+    border: 0 !important;
+}
+
+/*! Color themes for Google Code Prettify | MIT License | github.com/jmblog/color-themes-for-google-code-prettify */
+.prettyprint {
+	background: #efecf4;
+	background: rgba(var(--theme-rgb-primary), 0.1);
+	font-family: Menlo,Bitstream Vera Sans Mono,DejaVu Sans Mono,Monaco,Consolas,monospace;
+	border: 0 !important;
+}
+.pln {
+	color: #19171c;
+}
+ol.linenums {
+	margin-top: 0;
+	margin-bottom: 0;
+	color: #7e7887;
+}
+li.L0 {
+	padding-left: 1em;
+	background-color: #efecf4;
+	list-style-type: decimal;
+}
+li.L1 {
+	padding-left: 1em;
+	background-color: #efecf4;
+	list-style-type: decimal;
+}
+li.L2 {
+	padding-left: 1em;
+	background-color: #efecf4;
+	list-style-type: decimal;
+}
+li.L3 {
+	padding-left: 1em;
+	background-color: #efecf4;
+	list-style-type: decimal;
+}
+li.L4 {
+	padding-left: 1em;
+	background-color: #efecf4;
+	list-style-type: decimal;
+}
+li.L5 {
+	padding-left: 1em;
+	background-color: #efecf4;
+	list-style-type: decimal;
+}
+li.L6 {
+	padding-left: 1em;
+	background-color: #efecf4;
+	list-style-type: decimal;
+}
+li.L7 {
+	padding-left: 1em;
+	background-color: #efecf4;
+	list-style-type: decimal;
+}
+li.L8 {
+	padding-left: 1em;
+	background-color: #efecf4;
+	list-style-type: decimal;
+}
+li.L9 {
+	padding-left: 1em;
+	background-color: #efecf4;
+	list-style-type: decimal;
+}
+@media screen {
+	.str {
+		color: #2a9292;
+	}
+	.kwd {
+		color: #955ae7;
+	}
+	.com {
+		color: #7e7887;
+	}
+	.typ {
+		color: #576ddb;
+	}
+	.lit {
+		color: #aa573c;
+	}
+	.pun {
+		color: #19171c;
+	}
+	.opn {
+		color: #19171c;
+	}
+	.clo {
+		color: #19171c;
+	}
+	.tag {
+		color: #be4678;
+	}
+	.atn {
+		color: #aa573c;
+	}
+	.atv {
+		color: #398bc6;
+	}
+	.dec {
+		color: #aa573c;
+	}
+	.var {
+		color: #be4678;
+	}
+	.fun {
+		color: #576ddb;
+	}
+}

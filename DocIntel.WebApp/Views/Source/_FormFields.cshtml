@@ -1,0 +1,157 @@
+@model Source
+
+
+<div id="panel-basic" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Basic
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+            
+            <div class="row">
+                <div class="col-9">
+                    <div class="form-group">
+                        <label asp-for="Title" class="control-label"></label>
+                        <input asp-for="Title" class="form-control"/>
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Description" class="control-label"></label>
+                        <textarea asp-for="Description" class="form-control summernote" ></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Keywords" class="control-label"></label>
+                        <input asp-for="Keywords" class="form-control"/>
+                        <span asp-validation-for="Keywords" class="text-danger"></span>
+                        <small class="form-text text-muted">
+                            Keywords are used when suggesting tags.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="col-3">
+                    <div class="form-group">
+                        <label class="control-label">Logo</label>
+                        <div class="border thumbnail mt-2 mb-4">
+                            <img src="@Url.Action("Logo", "Source", new {id = Model.SourceId})?v=@(((DateTimeOffset)Model.ModificationDate).ToUnixTimeSeconds())" width="100%"/>
+                        </div>
+                        <input type="file" name="logo" class="form-control-file"/>
+                    </div>
+                    <div class="mt-2">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="panel-basic" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Additional
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+            <div class="form-group">
+                <label asp-for="Country" class="control-label"></label>
+                <select asp-for="Country" asp-items="Html.GetM49List(Model.Country)" class="form-control select2"></select>
+                <span asp-validation-for="Country" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Reliability" class="form-label"></label>
+                <select asp-for="Reliability" asp-items="Html.GetEnumSelectList<SourceReliability>()" class="form-control"></select>
+                <span asp-validation-for="Reliability" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="panel-basic" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            External links
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+            <div class="form-group">
+                <label asp-for="HomePage" class="control-label"></label>
+                <input asp-for="HomePage" class="form-control"/>
+                <span asp-validation-for="HomePage" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Facebook" class="control-label"></label>
+                <input asp-for="Facebook" class="form-control"/>
+                <span asp-validation-for="Facebook" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Twitter" class="control-label"></label>
+                <input asp-for="Twitter" class="form-control"/>
+                <span asp-validation-for="Twitter" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LinkedIn" class="control-label"></label>
+                <input asp-for="LinkedIn" class="form-control"/>
+                <span asp-validation-for="LinkedIn" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Reddit" class="control-label"></label>
+                <input asp-for="Reddit" class="form-control"/>
+                <span asp-validation-for="Reddit" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="panel-basic" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Syndication
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+            <div class="form-group">
+                <label asp-for="RSSFeed" class="control-label"></label>
+                <input asp-for="RSSFeed" class="form-control"/>
+                <span asp-validation-for="RSSFeed" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="hidden" name="MetaData[1].Key" value="rss_keywords"/>
+                <label for="MetaData[1].Value" class="control-label">RSS Keywords</label>
+                <input type="text" name="MetaData[1].Value" id="MetaData[1].Value" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <div class="form-check form-switch">
+                    <input type="hidden" name="MetaData[0].Key" value="rss_enabled"/>
+                    @if (Model.MetaData != null && Model.MetaData.ContainsKey("rss_enabled") && Model.MetaData.Value<bool>("rss_enabled"))
+                    {
+                        <input class="form-check-input" type="checkbox" id="MetaData[0].Value" value="true" name="MetaData[0].Value" checked="checked">
+                    }
+                    else
+                    {
+                        <input class="form-check-input" type="checkbox" id="MetaData[0].Value" value="true" name="MetaData[0].Value">
+                    }
+                    <input type="hidden" value="false" name="MetaData[0].Value" />
+                    <label class="form-check-label" for="rss_enabled">Scrape RSS feed?</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

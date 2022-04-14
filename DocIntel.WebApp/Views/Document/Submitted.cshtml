@@ -1,0 +1,85 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model IEnumerable<SubmittedDocument>
+
+@{
+    ViewData["Title"] = "Submitted URL";
+
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Delete)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-inbox-in subheader-icon"></i> Submitted URL
+    </h1>
+</div>
+
+@{
+    var total = (int) ViewData["ProcessedCount"] + (int) ViewData["DuplicateCount"] + (int) ViewData["DiscardedCount"];
+}
+<div class="panel">
+    <div class="panel-container show">
+        <div class="panel-content">
+            <div class="row">
+                <div class="col-6 col-xl-3 d-sm-flex align-items-center">
+                    <div class="p-2 mr-3 bg-warning rounded">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <label class="fs-sm mb-0">Pending</label>
+                        <h4 class="font-weight-bold mb-0">@ViewData["SubmittedCount"]</h4>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3 d-sm-flex align-items-center">
+                    <div class="p-2 mr-3 bg-success rounded">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div>
+                        <label class="fs-sm mb-0">Processed</label>
+                        <h4 class="font-weight-bold mb-0">@ViewData["ProcessedCount"]</h4>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3 d-sm-flex align-items-center">
+                    <div class="p-2 mr-3 bg-info rounded">
+                        <i class="fas fa-clone"></i>
+                    </div>
+                    <div>
+                        <label class="fs-sm mb-0">Duplicate</label>
+                        <h4 class="font-weight-bold mb-0">
+                            @Math.Round((int) ViewData["DuplicateCount"] * 100.0 / total, 2).ToString()%
+                        </h4>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3 d-sm-flex align-items-center">
+                    <div class="p-2 mr-3 bg-secondary rounded">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                    <div>
+                        <label class="fs-sm mb-0">Discarded</label>
+                        <h4 class="font-weight-bold mb-0">@Math.Round((int) ViewData["DiscardedCount"] * 100.0 / total, 2).ToString()%</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        @if (Model.Any())
+        {
+            <div class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content pb-0">
+                        @{ var i = 0; }
+                        @foreach (var item in Model.OrderByDescending(_ => _.SubmissionDate))
+                        {
+                            var viewDataDictionary = new ViewDataDictionary(ViewData);
+                            viewDataDictionary.Add("RowId", i++);
+                            @await Html.PartialAsync("_SubmittedDocumentRowSummary", item, viewDataDictionary)
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

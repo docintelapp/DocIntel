@@ -1,0 +1,9 @@
+@model Source
+
+<div id="panel-summary" class="panel">
+    <div class="panel-container show">
+        <div class="panel-content d-flex">
+            @await Html.PartialAsync("_SourceSummary", Model, new ViewDataDictionary(ViewData))
+        </div>
+    </div>
+</div>

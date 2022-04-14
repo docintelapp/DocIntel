@@ -1,0 +1,48 @@
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentSearchResult
+
+<li class="list-group-item py-3 px-3">
+    <div class="d-flex flex-row">
+        <div class="mr-4">
+            <div style="height:100px; overflow:hidden;" class="border thumbnail">
+                <img src="@Url.Action("Thumbnail", "Document", new {reference = Model.Reference})" width="140px"/>
+            </div>
+        </div>
+        <div class="text-truncate">
+            <a class="text-truncate fs-lg fw-500" asp-action="Details" asp-controller="Document" asp-route-reference="@Model.Reference">
+                @Html.DisplayFor(modelItem => Model.Title)
+            </a>
+            <div class="fs-xs mt-1">
+                <p class="mb-1">
+                    <span class="mr-1">
+                        by <a asp-controller="Source" asp-action="Details" asp-route-id="@Model.Source.SourceId">@Model.Source.Title</a>
+                    </span>
+                    -
+                    <time datetime="@Model.DocumentDate.ToString("o")" class="mr-1 ml-1 timeago">
+                        @Model.DocumentDate.ToString("dd/MM/yyyy")
+                    </time>
+                </p>
+                @if (!string.IsNullOrEmpty(Model.ShortDescription))
+                {
+                    <p class="m-0 color-fusion-50">
+                        @Model.ShortDescription
+                    </p>
+                }
+            </div>
+            @if (Model.DocumentTags.Any())
+            {
+                <p class="mt-2 mb-0">
+                    @foreach (var tag in Model.DocumentTags.OrderBy(t => t.Tag.Label))
+                    {
+                        <a class="badge"
+                           style="background-color: @tag.Tag.BackgroundColor"
+                           asp-controller="Tag"
+                           asp-action="Details"
+                           asp-route-id="@tag.Tag.TagId">
+                            @tag.Tag.Label
+                        </a>
+                    }
+                </p>
+            }
+        </div>
+    </div>
+</li>

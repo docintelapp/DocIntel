@@ -1,0 +1,27 @@
+@model DocIntel.WebApp.ViewModels.SearchViewModel.SearchIndexViewModel
+
+<div class="card">
+    <div class="card-header">
+        <a href="javascript:void(0);" class="card-title collapsed" data-toggle="collapse" data-target="#collapseFactualScore" aria-expanded="false">
+            Factual Score
+        </a>
+    </div>
+    <div id="collapseFactualScore" class="collapse" aria-labelledby="headingFactualScore" data-parent="#accordion_reliability">
+        <div class="card-body">
+
+            <div class="form-group">
+                <div class="mx-3 mt-2">
+                    <input type="text" class="source-search-range-slider"
+                           name="factualScore"
+                           data-type="double"
+                           data-min="-1"
+                           data-max="10"
+                           data-grid="true"
+                           data-grid-snap="true"
+                           data-step="1"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

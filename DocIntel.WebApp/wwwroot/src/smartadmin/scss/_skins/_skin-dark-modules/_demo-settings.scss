@@ -1,0 +1,19 @@
+
+.settings-panel {
+	h5 {
+		color: rgba(255, 255, 255, 0.5);
+	}
+	.list {
+		color: #d0d0d0;
+		.onoffswitch-title-desc {
+			color: #8c8c8c;
+		}
+		&:hover {
+			background: rgba(255, 255, 255, 0.03);
+			color: #ffffff;
+		}
+	}
+	.expanded:not(.theme-colors) {
+		background: #2f323b;
+	}
+}

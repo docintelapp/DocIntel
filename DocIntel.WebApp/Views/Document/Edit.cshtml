@@ -1,0 +1,308 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model Document
+
+@{
+    ViewData["Title"] = $"Edit {Model.Title}";
+
+    var canDownload = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Download)).Succeeded;
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Delete)).Succeeded;
+    var canCreateTags = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Create)).Succeeded;
+    var canCreateSources = (await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.Create)).Succeeded;
+}
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-file-edit subheader-icon"></i> @Model.Title
+    </h1>
+    <div>
+        <div class="btn-group mr-4">
+            <button type="submit" id="save-btn" class="btn btn-success waves-effect waves-themed btn-iconified">
+                <i class="fal fa-save"></i> Save
+            </button>
+        </div>
+        
+            <div class="btn-group">
+                <a asp-action="EditObservables" asp-route-id="@Model.DocumentId" id="observables-btn"
+                   class="btn btn-primary waves-effect waves-themed btn-iconified">
+                    <i class="fal fa-eye"></i> Edit Observables
+                </a>
+                <a asp-action="Index" asp-controller="File" asp-route-id="@Model.DocumentId"
+                   class="btn btn-primary waves-effect waves-themed btn-iconified">
+                    <i class="fal fa-file"></i> Edit Files
+                </a>
+                @if (canDelete)
+                {
+                    <a asp-action="Delete" asp-route-id="@Model.DocumentId" id="delete-btn"
+                       class="btn btn-primary waves-effect waves-themed btn-iconified">
+                        <i class="fal fa-trash-alt"></i> Delete
+                    </a>
+                }
+            </div>
+        </div>
+</div>
+
+<div class="row">
+<div class="col-9">
+    @{
+        var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+    }
+    @if (errors.Count() > 0)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+            <ul class="mb-0 mt-1">
+                @foreach (var error in errors)
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <input type="hidden" asp-for="DocumentId"/>
+
+    <div id="panel-basic" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Document
+                <span class="fw-300">
+                    <i>Information</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+                <div class="form-group">
+                    <div class="d-flex justify-content-between">
+                        <label asp-for="Title" class="form-label"></label>
+                        <div>
+                            <a href="javascript:void(0)" class="normalize-title" data-target="Title">Normalize title</a>
+                        </div>
+                    </div>
+                    <input asp-for="Title" class="form-control"/>
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Analyst&lsquo;s Summary</label>
+                    <textarea asp-for="ShortDescription" class="form-control summernote"  ></textarea>
+                    <span asp-validation-for="ShortDescription" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Document Date</label>
+                    <div class="input-group">
+                        <input asp-for="DocumentDate" value="@Model.DocumentDate.ToString("yyyy-MM-dd")" type="text"
+                               class="form-control datepicker-control" placeholder="Select date" id="datepicker-documentDate">
+                        <div class="input-group-append">
+                            <span class="input-group-text fs-xl">
+                                <i class="fal fa-calendar"></i>
+                            </span>
+                        </div>
+                        <span asp-validation-for="DocumentDate" class="text-danger"></span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Tags</label>
+                    <select data-placeholder="Select a tag"
+                            data-tags="@(canCreateTags ? "true" : "false")"
+                            class="autocomplete-tag form-control" name="tags" multiple="multiple">
+                        @foreach (var tag in Model.DocumentTags)
+                        {
+                            <option selected="selected" value="@((string.IsNullOrEmpty(tag.Tag.Facet.Prefix) ? tag.Tag.Label : tag.Tag.Facet.Prefix + ":" + tag.Tag.Label).Trim())"
+                                    data-backgroundColor="@tag.Tag.BackgroundColor"
+                                    data-prefix="@tag.Tag.Facet.Prefix">
+                                @(!string.IsNullOrEmpty(tag.Tag.Facet.Prefix) ? tag.Tag.Facet.Prefix + ":" : "")@tag.Tag.Label
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Thumbnail
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+                <div class="cc-selector-2">
+                    @foreach (var file in Model.Files.Where(_ => _.MimeType.StartsWith("image")))
+                    {
+                        if (Model.ThumbnailId == file.FileId)
+                        {
+                            <input id="thumb-@file.FileId" type="radio" name="thumbnailId" value="@file.FileId" checked/>
+                        }
+                        else
+                        {
+                            <input id="thumb-@file.FileId" type="radio" name="thumbnailId" value="@file.FileId"/>
+                        }
+                        <label class="drinkcard-cc" for="thumb-@file.FileId" style="background-image:url('@(Url.Action("Download", "File", new {id = file.FileId}))')"></label>
+                    }
+                    @if (Model.ThumbnailId == null)
+                    {
+                        <input id="thumb-none" type="radio" name="thumbnailId" value="" checked/>
+                    }
+                    else
+                    {
+                        <input id="thumb-none" type="radio" name="thumbnailId" value=""/>
+                    }
+                    <label class="drinkcard-cc" for="thumb-none" style="background-image:url('/images/thumbnail-placeholder.png')"></label>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="panel-notes" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Notes
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+                <div class="form-group">
+                    <textarea asp-for="Note" class="form-control" rows="10"></textarea>
+                    <span asp-validation-for="Note" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <button type="submit" id="save-btn" class="btn btn-success waves-effect waves-themed btn-iconified">
+                <i class="fal fa-save"></i> Save
+            </button>
+            <a asp-action="Details" asp-route-id="@Model.DocumentId" class="ml-3 text-secondary">Cancel</a>
+        </div>
+    </div>
+</div>
+<div class="col-3">
+    <div id="panel-basic" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Classification
+                <span class="fw-300">
+                    <i>Information</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+
+                <div class="form-group">
+                    <label asp-for="ClassificationId" class="control-label">Classification</label>
+                    <select name="ClassificationId" class="form-control select2">
+                        @foreach (var g in (IEnumerable<Classification>) ViewBag.AllClassifications)
+                        {
+                            @if (Model.ClassificationId == g.ClassificationId)
+                            {
+                                <option value="@g.ClassificationId" selected>@g.Title</option>
+                            }
+                            else
+                            {
+                                <option value="@g.ClassificationId">@g.Title</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="ClassificationId" class="text-danger"></span>
+                </div>
+
+                @if (((List<Group>) ViewBag.AllGroups).Any())
+                {
+                <div class="form-group">
+                    <label class="form-label">Releasable To</label>
+                    <select class="select2 form-control" name="releasableTo" multiple="multiple">
+                        @foreach (var tag in (List<Group>) ViewBag.AllGroups)
+                        {
+                            @if (Model.ReleasableTo.Any(_ => _.GroupId == tag.GroupId))
+                            {
+                                <option value="@tag.GroupId" selected>@tag.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@tag.GroupId">@tag.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Eyes Only</label>
+                    <select class="select2 form-control" name="eyesOnly" multiple="multiple">
+                        @foreach (var tag in (List<Group>) ViewBag.AllGroups)
+                        {
+                            @if (Model.EyesOnly.Any(_ => _.GroupId == tag.GroupId))
+                            {
+                                <option value="@tag.GroupId" selected>@tag.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@tag.GroupId">@tag.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div id="panel-source" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Source
+                <span class="fw-300">
+                    <i>Information</i>
+                </span>
+            </h2>
+            <div class="panel-toolbar">
+                <button class="btn btn-panel waves-effect waves-themed"
+                        data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse">
+                </button>
+            </div>
+        </div>
+        <div class="panel-container">
+            <div class="panel-content">
+                <div class="form-group">
+                    <label class="form-label">Source</label>
+                    <select data-tags="@(canCreateSources ? "true" : "false")" data-placeholder="Select a source" class="autocomplete-source form-control" name="Source.SourceId">
+                        @if (Model.Source != null)
+                        {
+                            <option selected="" value="@Model.Source.SourceId">@Model.Source.Title</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Source.SourceId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="SourceUrl" class="form-label"></label>
+                    <input asp-for="SourceUrl" class="form-control"/>
+                    <span asp-validation-for="SourceUrl" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ExternalReference" class="form-label"></label>
+                    <input asp-for="ExternalReference" class="form-control"/>
+                    <p class="text-muted mt-1 mb-2">The reference provided by the source.</p>
+                    <span asp-validation-for="ExternalReference" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script type="text/javascript">
+    </script>
+}

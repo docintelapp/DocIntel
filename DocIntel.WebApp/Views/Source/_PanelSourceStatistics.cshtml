@@ -1,0 +1,40 @@
+@model DocIntel.WebApp.ViewModels.SourceViewModel.DetailViewModel
+
+@if (Model.DocumentCount > 0)
+{
+    <div class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Statistics
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+                <dl class="row mb-0">
+                    <dt class="col-sm-6">
+                        First Document
+                    </dt>
+                    <dd class="col-sm-6">
+                        <time datetime="@(((DateTime) Model.FirstDocument).ToString("o"))" class="mr-1 timeago">
+                            @(((DateTime) Model.FirstDocument).ToString("dd/MM/yyyy"))
+                        </time>
+                    </dd>
+                    <dt class="col-sm-6">
+                        Last Document
+                    </dt>
+                    <dd class="col-sm-6">
+                        <time datetime="@(((DateTime) Model.FirstDocument).ToString("o"))" class="mr-1 timeago">
+                            @(((DateTime) Model.LastDocument).ToString("dd/MM/yyyy"))
+                        </time>
+                    </dd>
+                    <dt class="col-sm-6">
+                        Document Count
+                    </dt>
+                    <dd class="col-sm-6">
+                        @Model.DocumentCount
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,94 @@
+@using Microsoft.AspNetCore.Html
+@using System.ComponentModel
+@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.RoleViewModel.DetailsViewModel
+
+@{
+    Func<Type, IHtmlContent> showPermissions = @<text>
+                                                   @{
+                                                       var customAttributes = item.GetCustomAttributes(typeof(DisplayNameAttribute), true);
+                                                       var name = item.Name;
+                                                       if (customAttributes.Length > 0)
+                                                       {
+                                                           name = ((DisplayNameAttribute) customAttributes[0]).DisplayName;
+                                                       }
+
+                                                       var properties = item.GetProperties();
+                                                       var fields = item.GetFields().Where(f => f.IsPublic);
+                                                   }
+                                                   @if (properties.Any(_ => Model.Role.Permissions.Contains(_.GetValue(null)))
+                                                        | fields.Any(_ => Model.Role.Permissions.Contains(_.GetValue(null))))
+                                                   {
+                                                       <div class="mb-2 mt-0 border-bottom pb-2">
+                                                           <strong>@name</strong>
+                                                       </div>
+
+                                                       <ul class="mb-4">
+                                                           @foreach (var prop in fields)
+                                                           {
+                                                               var value = prop.GetValue(null);
+                                                               var displayNameAttribute = prop.GetCustomAttributes(typeof(DisplayNameAttribute), true);
+                                                               @if (Model.Role.Permissions.Contains(value))
+                                                               {
+                                                                   <li>
+                                                                       @if (displayNameAttribute.Length > 0)
+                                                                       {
+                                                                           <text>@(((DisplayNameAttribute) displayNameAttribute[0]).DisplayName)</text>
+                                                                       }
+                                                                       else
+                                                                       {
+                                                                           <text>@prop.GetValue(null)</text>
+                                                                       }
+                                                                   </li>
+                                                               }
+                                                           }
+                                                           @foreach (var prop in properties)
+                                                           {
+                                                               var value = prop.GetValue(null);
+                                                               var displayNameAttribute = prop.GetCustomAttributes(typeof(DisplayNameAttribute), true);
+                                                               @if (Model.Role.Permissions.Contains(value))
+                                                               {
+                                                                   <li>
+                                                                       @if (displayNameAttribute.Length > 0)
+                                                                       {
+                                                                           <text>@(((DisplayNameAttribute) displayNameAttribute[0]).DisplayName)</text>
+                                                                       }
+                                                                       else
+                                                                       {
+                                                                           <text>@prop.GetValue(null)</text>
+                                                                       }
+                                                                   </li>
+                                                               }
+                                                           }
+                                                       </ul>
+                                                   }
+                                                </text>;
+}
+
+@if ((await AuthorizationService.AuthorizeAsync(User, null, RoleOperations.EditPermissions)).Succeeded)
+{
+    <div id="panel-source-info" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Permissions
+                <span class="fw-300">
+                    <i>for the role '@Model.Role.Name'</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+                @showPermissions(typeof(UserOperationsConstants))
+                @showPermissions(typeof(RoleOperationsConstants))
+                @showPermissions(typeof(DocumentOperationsConstants))
+                @showPermissions(typeof(TagOperationsConstants))
+                @showPermissions(typeof(SourceOperationsConstants))
+                @showPermissions(typeof(IncomingFeedOperationsConstants))
+                @showPermissions(typeof(ImportRuleOperationsConstants))
+                @showPermissions(typeof(ClassificationOperationsConstants))
+                @showPermissions(typeof(GroupOperationsConstants))
+                @showPermissions(typeof(ScraperOperationsConstants))
+            </div>
+        </div>
+    </div>
+}

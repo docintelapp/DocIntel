@@ -1,0 +1,30 @@
+&:not(.mod-pace-custom) {
+	.pace {
+		.pace-progress {
+			background: $color-primary;
+		}
+	}
+
+}
+
+&.mod-pace-custom {
+
+	.pace {
+		background: $white;
+
+		.pace-progress {
+			background-color:$color-primary;
+			background-image: linear-gradient(135deg, $color-primary 0%, $color-primary 25%, darken($color-primary,10%) 25%, darken($color-primary,10%)
+				50%, $color-primary 50%, $color-primary 75%, darken($color-primary,10%) 75%, darken($color-primary,10%) 100%);
+
+		}
+	}
+
+	&.pace-running {
+		.page-content {
+			&:before {
+				background-color: $page-bg;
+			}
+		}
+	}
+}

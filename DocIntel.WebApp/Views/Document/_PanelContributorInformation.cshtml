@@ -1,0 +1,37 @@
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentDetailsViewModel
+
+<div id="panel-contributors-info" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Contributors
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content p-0">
+            <div class="row row-grid no-gutters">
+                @foreach (var user in Model.Contributors)
+                {
+                    if (user != null)
+                    {
+                        <div class="col-4">
+                            <a asp-controller="User" asp-action="Profile" asp-route-username="@user.UserName" class="text-center p-3 d-flex flex-column hover-highlight">
+                                @if (string.IsNullOrEmpty(user.ProfilePicture))
+                                {
+                                    <span class="profile-image rounded-circle d-block m-auto" style="background-image:url('/images/icons/color/icons8-male-user-48.png'); background-size: cover;"></span>
+                                }
+                                else
+                                {
+                                    <span class="profile-image rounded-circle d-block m-auto" style="background-image:url(@Url.Action("ProfilePicture", "Account", new {userName = user.UserName})); background-size: cover;"></span>
+                                }
+                                <span class="d-block text-truncate text-muted  mt-1">@user.FriendlyName</span>
+                            </a>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+@model DocIntel.WebApp.ViewModels.TagViewModel.TagDetailViewModel
+
+@if (Model.Documents.Any())
+{
+    <div id="panel-documents" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Publications
+                <span class="fw-300">
+                    <i>last 6 months</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content p-3">
+                <div class="line-container" data-url="@Url.Action("GetStatistics", "Tag", new {tagId = Model.Tag.TagId})"></div>
+            </div>
+        </div>
+    </div>
+}

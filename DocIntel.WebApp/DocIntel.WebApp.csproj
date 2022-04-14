@@ -1,0 +1,123 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>DocIntel.WebApp</RootNamespace>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591;1573</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="27.2.1" />
+    <PackageReference Include="GoogleAuthenticator" Version="2.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.3" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.4" />
+    <PackageReference Include="Pluralize.NET.Core" Version="1.0.0" />
+    <PackageReference Include="SolrNet" Version="1.0.19" />
+    <PackageReference Include="SolrNet.Microsoft.DependencyInjection" Version="1.0.19" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
+        
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.42" />
+
+    <PackageReference Include="Novell.Directory.Ldap.NETStandard2_0" Version="3.1.0" />
+
+   <PackageReference Include="Markdig" Version="0.28.0" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocIntel.Core\DocIntel.Core.csproj" />
+    <ProjectReference Include="..\DocIntel.Services.Scraper\DocIntel.Services.Scraper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+      <FontFiles Include="..\fonts\*.ttf" /> 
+   </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="out.json" />
+    <Content Remove="debian\docintel-webapp\**" />
+    <Content Remove="debian\source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="data_file_new.csv" />
+    <None Remove="debian\docintel-webapp\**" />
+    <None Update="unsd-m49.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Remove="debian\source\**" />
+    <None Remove="debian\changelog" />
+    <None Remove="debian\debhelper-build-stamp" />
+    <None Remove="debian\docintel-webapp.substvars" />
+    <None Remove="debian\docintel-webapp.debhelper.log" />
+    <None Remove="debian\docintel-webapp.postinst.debhelper" />
+    <None Remove="debian\docintel-webapp.postrm.debhelper" />
+    <None Remove="debian\docintel-webapp.prerm.debhelper" />
+    <None Remove="debian\files" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="activity-schemas\document-registration.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\lib\docintel\webapp\nlog.config" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\lib\docintel\webapp\activity-schemas\document-registration.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\lib\docintel\webapp\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\lib\docintel\webapp\DocIntel.WebApp.deps.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\lib\docintel\webapp\DocIntel.WebApp.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\lib\docintel\webapp\nav.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\lib\docintel\webapp\package.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\2500.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\ch.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\en.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\es.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\fa-brand-list.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\fa-duotone.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\fa-icon-list.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\ng-bg-colors.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\ng-icon-base.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\ng-icon-list.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\ng-text-colors.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\plugin-reference.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\project-structure.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-webapp\usr\share\docintel\webapp\wwwroot\dist2\media\data\server-demo.json" />
+    <_ContentIncludedByDefault Remove="Views\Admin\RabbitMQ.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\_RabbitMQQueueSummary.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Inbox\Create.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Inbox\Index.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Inbox\Upload.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="debian\docintel-webapp\**" />
+    <Compile Remove="debian\source\**" />
+    <Compile Update="EmailViews\Emails\WelcomeViewModel.cs">
+      <DependentUpon>Welcome.cshtml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="debian\docintel-webapp\**" />
+    <EmbeddedResource Remove="debian\source\**" />
+  </ItemGroup>
+
+  <Target Name="CopyFonts" AfterTargets="AfterBuild">
+    <Copy SourceFiles="@(FontFiles)" DestinationFolder="$(OutDir)\wwwroot\fonts\%(RecursiveDir)" />
+    <Copy SourceFiles="nlog.config" DestinationFolder="$(OutDir)" Condition="Exists('nlog.config')" />
+  </Target>
+
+  <Target Name="CopyFontsPublish" AfterTargets="Publish">
+    <Copy SourceFiles="@(FontFiles)" DestinationFolder="$(PublishDir)\wwwroot\fonts\%(RecursiveDir)" />
+  </Target>
+
+</Project>

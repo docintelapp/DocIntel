@@ -1,0 +1,19 @@
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "Access denied.";
+}
+
+<div class="row">
+    <div class="hidden-xs-down col"></div>
+    <div class="col">
+        <div class="card" style="margin: 20px 0;">
+            <div class="card-header">
+                You are not allowed to view that page.
+            </div>
+            <div class="card-body">
+                Please contact your administrator, or <a asp-action="Login">login</a> with a different user.
+            </div>
+        </div>
+    </div>
+    <div class="hidden-xs-down col"></div>
+</div>

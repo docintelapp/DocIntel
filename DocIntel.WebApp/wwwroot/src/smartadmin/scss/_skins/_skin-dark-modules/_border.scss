@@ -1,0 +1,9 @@
+.border:not(.border-primary):not(.tab-content):not(.border-secondary):not(.border-success):not(.border-danger):not(.border-warning):not(.border-info):not(.border-light):not(.border-dark):not(.border-white) { border-color: $border-color !important; }
+.border-top     { border-top: $border-width solid $border-color !important; }
+.border-right   { border-right: $border-width solid $border-color !important; }
+.border-bottom  { border-bottom: $border-width solid $border-color !important; }
+.border-left    { border-left: $border-width solid $border-color !important; }
+
+.border-faded {
+	border-color: rgba(0, 0, 0, 0.15) !important;
+}

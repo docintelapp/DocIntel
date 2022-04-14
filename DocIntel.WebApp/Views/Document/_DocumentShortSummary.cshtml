@@ -1,0 +1,41 @@
+@model Document
+
+<div>
+    <div class="row">
+        <a class="col-12 text-truncate fw-500" asp-action="Details" asp-controller="Document" asp-route-url="@Model.Reference">
+            @Html.DisplayFor(modelItem => Model.Title)
+        </a>
+    </div>
+    <div class="row">
+        <div class="col-12 mt-1">
+            <p class="mb-1">
+                @if (Model.Source != null)
+                {
+                    <span class="mr-1">
+                        by <a asp-controller="Source" asp-action="Details" asp-route-id="@Model.Source.SourceId">@Model.Source.Title</a>
+                    </span>
+                    <span class="mr-1">-</span>
+                }
+                @Html.Timeago(Model.DocumentDate)
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            @if (Model.DocumentTags.Any())
+            {
+                <p class="mt-0 mb-0">
+                    @foreach (var tag in Model.DocumentTags.Where(_ => !_.Tag.Facet.Hidden).OrderBy(t => t.Tag.Label))
+                    {
+                        <a class="badge badge-pill @tag.Tag.BackgroundColor"
+                           asp-controller="Tag"
+                           asp-action="Details"
+                           asp-route-label="@tag.Tag.FriendlyName">
+                            @tag.Tag.FriendlyName
+                        </a>
+                    }
+                </p>
+            }
+        </div>
+    </div>
+</div>

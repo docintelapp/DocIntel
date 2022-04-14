@@ -1,0 +1,243 @@
+﻿@model AppUser
+
+@{
+    ViewData["Title"] = "Edit your profile";
+}
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-user subheader-icon"></i> Edit your profile
+        </h1>
+        <div>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                    <i class="fal fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-9">
+        
+            @if (Model.TwoFactorEnabled)
+            {
+                <div class="alert alert-success mb-3">
+                    <p class="mb-0 text-success"><i class="fas fa-badge-check mr-2"></i> Your account is protected by two-factor authentication. <a asp-action="DisableTwoFactorAuthentication">Click here to disable.</a></p>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger mb-3">
+                    <p class="mb-0 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i> Your account is not protected by two-factor authentication. <a asp-action="SetupTwoFactorAuthentication">Click here to enable.</a></p>
+                </div>
+            }
+            
+            
+            @if(Model.EmailConfirmed) {
+                <div class="alert alert-success mb-3">
+                <p class="mb-0 text-success"><i class="fas fa-badge-check mr-2"></i> Your email is verified.</p>
+                </div>
+            } else {
+                <div class="alert alert-danger mb-3">
+                    <p class="mb-0 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i> Your email is not verified. <a asp-action="SendConfirmationLink">Click here to verify your email.</a></p>
+                    </div>
+            }
+
+            <div id="panel-basic" class="panel mt-4">
+                <div class="panel-hdr">
+                    <h2>
+                        General
+                        <span class="fw-300">
+                            <i>Information</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label asp-for="UserName" class="control-label">Username</label>
+                            <input disabled asp-for="UserName" class="form-control"/>
+                            <input hidden asp-for="UserName" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Email" class="control-label">E-mail</label>
+                            <input asp-for="Email" class="form-control"></input>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="panel-notes" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Personnal
+                        <span class="fw-300">
+                            <i>Information</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label asp-for="FirstName" class="control-label"></label>
+                            <input asp-for="FirstName" class="form-control"></input>
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="LastName" class="control-label"></label>
+                            <input asp-for="LastName" class="form-control"></input>
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Function" class="control-label"></label>
+                            <input asp-for="Function" class="form-control"></input>
+                            <span asp-validation-for="Function" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Communication
+                        <span class="fw-300">
+                            <i>Preference</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label asp-for="Preferences.Digest.Frequency" class="form-label"></label>
+                            <select asp-for="Preferences.Digest.Frequency" asp-items="Html.GetEnumSelectList<UserPreferences.DigestPreferences.DigestFrequency>()" class="form-control"></select>
+                            <span asp-validation-for="Preferences.Digest.Frequency" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        User Interface
+                        <span class="fw-300">
+                            <i>Preference</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label asp-for="Preferences.UI.TimeZone" class="form-label"></label>
+                            <select asp-for="Preferences.UI.TimeZone" asp-items="ViewBag.TimeZones" class="form-control"></select>
+                            <span asp-validation-for="Preferences.UI.TimeZone" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Preferences.UI.FontSize" class="form-label"></label>
+                            <select asp-for="Preferences.UI.FontSize" asp-items="Html.GetEnumSelectList<UserPreferences.UIPreferences.UIFontSize>()" class="form-control"></select>
+                            <span asp-validation-for="Preferences.UI.FontSize" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Preferences.UI.Theme" class="form-label"></label>
+                            <select asp-for="Preferences.UI.Theme" asp-items="Html.GetEnumSelectList<UserPreferences.UIPreferences.UITheme>()" class="form-control"></select>
+                            <span asp-validation-for="Preferences.UI.Theme" class="text-danger"></span>
+                        </div>
+                        <div class="custom-control custom-checkbox custom-switch mb-3">
+                            <input type="checkbox" class="custom-control-input" asp-for="Preferences.UI.BiggerContentFont"/>
+                            <label class="custom-control-label" asp-for="Preferences.UI.BiggerContentFont"></label>
+                        </div>
+                        <div class="custom-control custom-checkbox custom-switch">
+                            <input type="checkbox" class="custom-control-input" asp-for="Preferences.UI.HighContrastText"/>
+                            <label class="custom-control-label" asp-for="Preferences.UI.HighContrastText"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-save"></i> Save
+                    </button>
+                    <a asp-action="Profile" asp-controller="User" asp-route-username="@Model.UserName" class="ml-3 text-danger">Cancel</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-3">
+
+            <div id="panel-basic" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Profile
+                        <span class="fw-300">
+                            <i>Picture</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <div class="media p-0 mb-2 mt-1">
+                                @if (string.IsNullOrEmpty(Model.ProfilePicture))
+                                {
+                                    <img alt="" class="rounded-circle" src="~/images/icons/color/icons8-male-user-48.png"/>
+                                }
+                                else
+                                {
+                                    <img alt="" class="rounded-circle" src="@Url.Action("ProfilePicture", "Account", new {userName = Model.UserName})" style="max-width: 100px"/>
+                                }
+                                <div class="media-body ml-4">
+
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#subscribedTagsModalCenter">
+                                        Upload new photo
+                                    </button> &nbsp;
+                                    <button class="btn btn-outline-secondary btn-sm" type="button">Reset</button>
+                                    <div class="text-muted small mt-1">Allowed JPG or PNG. Max size of 800K.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form asp-action="UploadProfilePicture" method="post" enctype="multipart/form-data">
+
+    <!-- Modal -->
+    <div class="modal fade" id="subscribedTagsModalCenter" tabindex="-1" role="dialog" aria-labelledby="subscribedTagsModalCenter" aria-hidden="true">
+        <div class="modal-dialog modal-top" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload a new profile picture</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input hidden asp-for="UserName" class="form-control"/>
+                    <div class="form-group">
+                        <input type="file" name="profilePicture" class="form-control"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-upload"></i> Upload Picture
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script type="text/javascript">
+    </script>
+}

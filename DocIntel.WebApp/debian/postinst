@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+set -e
+
+. /usr/share/debconf/confmodule
+
+chown -R docintel:docintel /usr/lib/docintel/webapp/
+
+# when upgrading a packet, it is called as postinst configure X.X.X where X.X.X is the previous version
+# when installing a packet (from scratch) there is no parameter 
+if [ -z "$2" ]
+then
+  # Configure an administrative account?
+    db_input high docintel-webapp/createuser || true
+    db_go
+
+    # Check their answer.
+    db_get docintel-webapp/createuser
+    if [ "$RET" = "true" ]; then
+        db_input high docintel-webapp/username || true
+        db_go
+        db_get docintel-webapp/username
+        USERNAME=$RET
+
+        db_input high docintel-webapp/firstname || true
+        db_go
+        db_get docintel-webapp/firstname
+        FIRSTNAME=$RET
+
+        db_input high docintel-webapp/lastname || true
+        db_go
+        db_get docintel-webapp/lastname
+        LASTNAME=$RET
+
+        db_input high docintel-webapp/email || true
+        db_go
+        db_get docintel-webapp/email
+        EMAIL=$RET
+
+        db_input high docintel-webapp/password || true
+        db_go
+        db_get docintel-webapp/password
+        PASSWORD=$RET
+
+        db_input high docintel-webapp/proxy || true
+        db_go
+        db_get docintel-webapp/proxy
+        PRX=$RET
+
+        db_input medium docintel-webapp/no-proxy || true
+        db_go
+        db_get docintel-webapp/no-proxy
+        NO_PRX=$RET
+
+        db_input medium docintel-webapp/default-classification || true
+        db_go
+        db_get docintel-webapp/default-classification
+        CLASSIFICATION=$RET
+
+        echo "Creating account: automation"
+        dotnet /usr/lib/docintel/cli/DocIntel.AdminConsole.dll user init --username="automation" --random --firstName="Automation" --lastName="Bot" --email="docintel@localhost"
+
+        echo "Creating account: $USERNAME"
+        dotnet /usr/lib/docintel/cli/DocIntel.AdminConsole.dll user add --username="$USERNAME" --password=$PASSWORD --firstName="$FIRSTNAME" --lastName="$LASTNAME" --email="$EMAIL"
+
+        echo "Assign role Administrator to $USERNAME"
+        dotnet /usr/lib/docintel/cli/DocIntel.AdminConsole.dll user role --username="$USERNAME" --role="Administrator" 
+
+        echo "Creating default classification"
+        dotnet /usr/lib/docintel/cli/DocIntel.AdminConsole.dll classification -j add "${CLASSIFICATION}" --default
+
+        echo "Updating configuration file"
+        sed -i "s,\"Proxy\": \"\",\"Proxy\": \"${PRX}\",g" /etc/docintel/appsettings.json
+        sed -i "s,\"NoProxy\": \"\",\"NoProxy\": \"${NO_PRX}\",g" /etc/docintel/appsettings.json
+    fi
+fi
+
+cp /usr/share/doc/docintel/nlog.config.worker-example /usr/lib/docintel/webapp/nlog.config
+sed -i "s,WORKER_NAME,webapp,g" /usr/lib/docintel/webapp/nlog.config
+
+exit 0
+
+

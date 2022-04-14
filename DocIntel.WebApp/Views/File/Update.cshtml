@@ -1,0 +1,92 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model DocumentFile
+
+@{
+    var canViewDoc = (await AuthorizationService.AuthorizeAsync(User, Model.Document, DocumentOperations.Read)).Succeeded;
+    ViewData["Title"] = $"Edit {Model.Title}";
+}
+
+<form asp-action="Update" method="post" enctype="multipart/form-data">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-file-edit subheader-icon"></i> Edit File '@Model.Title'
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            @{
+                var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+            }
+            @if (errors.Count() > 0)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                    <ul class="mb-0 mt-1">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="FileId"/>
+
+            @if (canViewDoc)
+            {
+                <div class="panel">
+                    <div class="panel-hdr">
+                        <h2>
+                            Document
+                        </h2>
+                    </div>
+                    <div class="panel-container show">
+                        <div class="panel-content">
+                            @await Html.PartialAsync("../Document/_DocumentSummary", Model.Document, new ViewDataDictionary(ViewData))
+                        </div>
+                    </div>
+                </div>
+            }
+
+
+            @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
+
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        File
+                        <span class="fw-300">
+                            <i>Replacement</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <input type="file" name="file" class="form-control form-control-file" id="document-upload-input"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" id="save-btn" class="btn btn-success waves-effect waves-themed btn-iconified">
+                        <i class="fal fa-save"></i> Save
+                    </button>
+                    <a asp-action="Details" asp-controller="File" asp-route-id="@Model.FileId" class="ml-3 text-secondary">Cancel</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script type="text/javascript">
+    </script>
+}

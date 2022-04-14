@@ -1,0 +1,22 @@
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentSearchResult
+
+<div class="d-flex flex-row search-result">
+    <div class="col p-0">
+        <p class="text-truncate mb-0">
+            <a asp-action="Details" asp-controller="Document" asp-route-reference="@Model.Reference">
+                @Html.DisplayFor(modelItem => Model.Title)
+            </a>
+        </p>
+        <p class="text-secondary mb-0">
+            <small>
+                @Model.Reference
+                @if (Model.Read)
+                {
+                    <text>| <span class="badge badge-secondary">Read</span></text>
+                }
+                | By <a asp-controller="Source" asp-action="Details" asp-route-id="@Model.Source.SourceId">@Model.Source.Title</a>
+                | <time class="timeago" datetime="@Model.DocumentDate.ToString("o")">@Model.DocumentDate.ToString("yyyy-MM-dd")</time>
+            </small>
+        </p>
+    </div>
+</div>

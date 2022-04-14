@@ -1,0 +1,116 @@
+﻿@model DocIntel.Core.Models.Tag
+
+@{
+    ViewData["Title"] = "Add new";
+}
+
+<form asp-action="Create">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-tag subheader-icon"></i> Add a new tag
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-9">
+
+            @{
+                var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+            }
+            @if (errors.Count() > 0)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                    <ul class="mb-0 mt-1">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div id="panel-basic" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Tag
+                        <span class="fw-300">
+                            <i>Information</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group">
+                            <label asp-for="Label" class="control-label"></label>
+                            <input asp-for="Label" class="form-control"/>
+                            <span asp-validation-for="Label" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Facet</label>
+                            <select asp-for="FacetId" asp-items="@ViewBag.Facets" class="form-control">
+                            </select>
+                            <span asp-validation-for="FacetId" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Description" class="control-label"></label>
+                            <textarea asp-for="Description" class="form-control" ></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Keywords" class="control-label"></label>
+                            <input asp-for="Keywords" class="form-control"/>
+                            <span asp-validation-for="Keywords" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                Keywords are used when suggesting tags.
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="BackgroundColor" class="control-label"></label>
+                            <select asp-for="BackgroundColor" class="form-control autocomplete-color">
+                                @{
+                                    var mapping = new Dictionary<string, string>
+                                    {
+                                        {"success", "Green"},
+                                        {"info", "Purple"},
+                                        {"warning", "Yellow"},
+                                        {"primary", "Blue"},
+                                        {"danger", "Red"},
+                                        {"fusion", "Grey"}
+                                    };
+                                }
+                                @foreach (var color in new[] {"success", "info", "warning", "primary", "danger", "fusion"})
+                                {
+                                    @foreach (var intensity in new[] {50, 100, 200, 300, 400, 500, 600, 700, 800, 900})
+                                    {
+                                        <option value="bg-@color-@intensity">@mapping[color] (@intensity)</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="BackgroundColor" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                The color of the text will be determined automatically. You can view the available colors <a href="https://www.w3schools.com/colors/colors_names.asp">here</a>.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success waves-effect waves-themed btn-iconified mr-4">
+                        <i class="fal fa-plus"></i> Add
+                    </button>
+                    <a asp-action="Index" class="text-danger">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

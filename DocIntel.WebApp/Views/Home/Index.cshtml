@@ -1,0 +1,80 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.HomeViewModel.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Welcome";
+    var canUpload = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Create)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        Welcome back, <span class="fw-300">@ViewBag.CurrentUser.FirstName</span>
+    </h1>
+    <div class="subheader-block d-lg-flex align-items-center">
+        @if (canUpload)
+        {
+            <a asp-action="Upload" asp-controller="Document" class="btn btn-success btn-iconified waves-effect waves-themed">
+                <i class="fal fa-upload"></i> Upload
+            </a>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-8">
+        <div id="panel-1" class="panel">
+            <div class="panel-hdr">
+                <h2>
+                    Latest documents from your subscriptions
+                </h2>
+            </div>
+            <div class="panel-container show">
+                <div class="panel-content p-0">
+                    @if (Model.DocumentCount != null && Model.NewsFeed.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var document in Model.NewsFeed.OrderByDescending(_ => _.DocumentDate))
+                            {
+                                <li class="list-group-item py-3 px-3">
+                                    @await Html.PartialAsync("../Document/_DocumentSummary", document, new ViewDataDictionary(ViewData))
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-center fs-xl m-4">
+                            <i class="fal fa-telescope fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            Are you sure that you subscribed to interesting tags and sources?<br/>
+                            <small>Try later, register some documents or contact your administrator.</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div id="panel-1" class="panel">
+            <div class="panel-hdr">
+                <h2>
+                    Latest documents
+                </h2>
+            </div>
+            <div class="panel-container show">
+                <div class="panel-content p-0">
+                    @if (Model.RecentDocs.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                        @foreach (var document in Model.RecentDocs)
+                        {
+                            <li class="list-group-item py-3 px-3">
+                                @await Html.PartialAsync("../Document/_DocumentShortSummary", document, new ViewDataDictionary(ViewData))
+                            </li>
+                        }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,53 @@
+@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.RoleViewModel.DetailsViewModel
+
+@if (Model.Role.UserRoles != null)
+{
+    <div id="panel-source-info" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Users
+                <span class="fw-300">
+                    <i>with role '@Model.Role.Name'</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+                @if (Model.Role.UserRoles.Select(_ => _.User).Any())
+                {
+                    <table class="table table-bordered mb-0">
+                        <thead class="thead-light">
+                        <tr>
+                            <th scope="col">Username</th>
+                            <th scope="col">First name</th>
+                            <th scope="col">Last name</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var user in Model.Role.UserRoles.Select(_ => _.User))
+                        {
+                            <tr>
+                                <th scope="row">@user.UserName</th>
+                                <td>@user.FirstName</td>
+                                <td>@user.LastName</td>
+                                <td>
+                                    @if ((await AuthorizationService.AuthorizeAsync(User, null, RoleOperations.RemoveRole)).Succeeded)
+                                    {
+                                        <a asp-action="Removerole" asp-route-userName="@user.UserName" asp-route-roleId="@Model.Role.Id">Remove</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="m-2 text-center color-secondary">No users have this role or you don't have the rights to see these users.</p>
+                }
+            </div>
+        </div>
+    </div>
+}

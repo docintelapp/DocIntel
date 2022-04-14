@@ -1,0 +1,28 @@
+@using DocIntel.Core.Settings
+@model DocIntel.WebApp.ViewModels.Account.ForgotPasswordViewModel
+@inject ApplicationSettings _settings
+
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "Email Confirmation";
+}
+
+<div class="col-12">
+    <div class="row justify-content-center">
+        <div class="col-6">
+            <div style="margin: 60px 0 60px 0">
+                <h1 class="font-weight-bold mb-4 text-center text-white">Email Confirmation</h1>
+            </div>
+            <div class="card p-4 rounded-plus bg-faded mt-4">
+                <p>
+                    Thank you for confirming your email. <a asp-action="Login">Click here to login.</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}

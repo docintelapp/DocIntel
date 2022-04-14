@@ -1,0 +1,141 @@
+$baseURL:           "../smartadmin/";
+$webfontsURL:       "../smartadmin/custom/webfonts/nextgen-fonts-master/webfonts";
+$fa-font-path:      "../smartadmin/custom/webfonts/fontawesome-pro-master/webfonts/";
+
+@import "../smartadmin/scss/_modules/variables";
+@import "~bootstrap/scss/bootstrap.scss";
+@import "../smartadmin/scss/app.core.scss";
+@import "../smartadmin/scss/app.icons.scss";
+
+// Fonts
+@import '../smartadmin/custom/webfonts/fontawesome-pro-master/scss/fontawesome.scss';
+@import '../smartadmin/custom/webfonts/fontawesome-pro-master/scss/fa-brands.scss';
+@import '../smartadmin/custom/webfonts/fontawesome-pro-master/scss/fa-light.scss';
+@import '../smartadmin/custom/webfonts/fontawesome-pro-master/scss/fa-regular.scss';
+@import '../smartadmin/custom/webfonts/fontawesome-pro-master/scss/fa-solid.scss';
+@import '../smartadmin/custom/webfonts/nextgen-fonts-master/scss/ng-icons.scss';
+
+// Otherwise bootstrap-sass-datepicker fails on unknown variable
+$gray-lighter:          $gray-300; 
+$gray-dark:             $gray-600;
+$gray-light:            $gray-400;
+$gray:                  $gray-500;
+
+$btn-primary-color:     $white; 
+$btn-primary-bg:        $color-primary; 
+$btn-primary-border:    $color-primary; 
+
+$brand-primary:         $primary-300;
+$brand-info:            $color-info;
+
+@import '~bootstrap-sass-datepicker/sass/datepicker.scss';
+@import '../smartadmin/custom/plugins/datepicker/datepicker-custom.scss';
+
+@import '~select2/src/scss/core.scss';
+@import '../smartadmin/custom/plugins/select2/select2-cust.scss';
+
+@import '~node-waves/src/scss/waves.scss';
+
+@import '~britecharts/dist/css/britecharts.min.css';
+
+@import '~ion-rangeslider/css/ion.rangeSlider.css';
+
+
+.card-columns-5 {
+    -webkit-column-count:5 !important;
+    -moz-column-count:5 !important;
+    column-count:5 !important;
+}
+
+del.diffmod {
+    background: $danger-50;
+    padding: 0 4px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+del.diffdel {
+    background: $danger-50;
+    padding: 0 4px;
+    border-radius: 4px;
+}
+
+ins.diffmod {
+    background: $success-50;
+    text-decoration: none;
+    padding: 0 4px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+ins.diffins {
+    background: $success-50;
+    text-decoration: none;
+    padding: 0 4px;
+    border-radius: 4px;
+}
+@import '~codemirror/lib/codemirror.css';
+@import '~codemirror/theme/monokai.css';
+@import '~summernote/dist/summernote-bs4.css';
+@import '../smartadmin/custom/plugins/summernote/summernote-custom.scss';
+
+@import '~vis-network/styles/vis-network.css';
+
+#mynetwork {
+width: 100%;
+height: 500px;
+}
+
+.britechart,
+.tick text {
+    font-size: 0.75rem;
+}
+
+.bg-progress-bar {
+    background: #f0f0f0;
+}
+
+.thumbnail img {
+    transition: filter .25s ease-in-out;
+    -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    filter: grayscale(100%);
+
+    &:hover {
+        -webkit-filter: grayscale(0%); /* Safari 6.0 - 9.0 */
+        filter: grayscale(0%);
+    }
+}
+
+.btn-iconified {
+    i {
+        margin-right: ($input-btn-padding-x / 2);
+    }
+}
+
+.bg-unread {
+    background: #fffaee;
+}
+
+.bg-grey {
+    background: $gray-200;
+}
+
+/*
+ * Textcomplete 
+ */
+ .dropdown-menu .textcomplete-item a,
+ .dropdown-menu .textcomplete-item a:hover {
+   font-size: .9rem;
+   cursor: pointer;
+   font-weight: normal;
+   color: #000;
+   position: relative;
+   padding: 3px 10px;
+ }
+ .dropdown-menu .textcomplete-item.active {
+   background: #F0F0F0;
+ }
+ .dropdown-menu .textcomplete-item a em {
+   font-style: normal;
+   font-weight: bold;
+ }

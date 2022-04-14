@@ -1,0 +1,89 @@
+@model Classification
+
+<div class="panel">
+    <div class="panel-container show">
+        <div class="panel-content">
+
+            <input asp-for="ClassificationId" type="hidden"/>
+
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control"/>
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Subtitle" class="control-label"></label>
+                <input asp-for="Subtitle" class="form-control"/>
+                <span asp-validation-for="Subtitle" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Abbreviation" class="control-label"></label>
+                <input asp-for="Abbreviation" class="form-control"/>
+                <span asp-validation-for="Abbreviation" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ParentClassificationId" class="control-label">Parent Classification</label>
+                <select name="ParentClassificationId" class="form-control select2">
+                    <option value="" selected>None</option>
+                    @foreach (var g in (IEnumerable<Classification>) ViewBag.AllClassifications)
+                    {
+                        @if (Model.ParentClassificationId == g.ClassificationId)
+                        {
+                            <option value="@g.ClassificationId" selected>@g.Title</option>
+                        }
+                        else
+                        {
+                            <option value="@g.ClassificationId">@g.Title</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="ParentClassificationId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" ></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Color" class="control-label"></label>
+                <select asp-for="Color" class="form-control autocomplete-color">
+                    @{
+                        var mapping = new Dictionary<string, string>
+                        {
+                            {"success", "Green"},
+                            {"info", "Purple"},
+                            {"warning", "Yellow"},
+                            {"primary", "Blue"},
+                            {"danger", "Red"},
+                            {"fusion", "Grey"}
+                        };
+                    }
+                    @foreach (var color in new[] {"success", "info", "warning", "primary", "danger", "fusion"})
+                    {
+                        @foreach (var intensity in new[] {50, 100, 200, 300, 400, 500, 600, 700, 800, 900})
+                        {
+                            <option value="bg-@color-@intensity">@mapping[color] (@intensity)</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="Color" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <div class="custom-control custom-switch">
+                    @Html.CheckBoxFor(_ => _.Default, new {@class = "custom-control-input"})
+                    <label class="custom-control-label" asp-for="Default">Default Classification</label>
+                </div>
+                @Html.HelpTextFor(m => m.Default)
+                <span asp-validation-for="Default" class="text-danger"></span>
+            </div>
+
+
+        </div>
+    </div>
+</div>

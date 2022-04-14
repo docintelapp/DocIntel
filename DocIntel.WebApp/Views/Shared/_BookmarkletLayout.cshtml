@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<partial name="_CopyrightHeader"/>
+<html lang="en">
+<head>
+    <partial name="_Head"/>
+    <title>
+        @ViewData["Title"] -
+        DocIntel
+    </title>
+    @RenderSection("Header", false)
+</head>
+<body>
+
+<!-- BEGIN Page Wrapper -->
+<div class="page-wrapper">
+    <div class="page-inner bg-brand-gradient">
+        <div class="page-content-wrapper bg-transparent m-4">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+<partial name="_PageSettings"/>
+<partial name="_ScriptBasePlugins"/>
+<!-- Scripts -->
+@RenderSection("Scripts", false)
+<!-- end of Scripts -->
+
+</body>
+</html>

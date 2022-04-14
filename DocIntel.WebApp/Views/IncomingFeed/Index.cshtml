@@ -1,0 +1,102 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model IEnumerable<Importer>
+
+@{
+    ViewData["Title"] = "Importers";
+    var canCreate = (await AuthorizationService.AuthorizeAsync(User, null, IncomingFeedOperations.Create)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-inbox-in subheader-icon"></i> @ViewData["Title"]
+        <small>
+            Importers feed scrapers, that will automagically populate DocIntel.
+        </small>
+    </h1>
+    <div>
+        <div class="btn-group">
+            @if (canCreate)
+            {
+                <a asp-action="Create"
+                   class="btn btn-primary waves-effect waves-themed">
+                    <i class="fal fa-plus mr-1"></i> Install
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        @if (Model != null)
+        {
+            <div id="panel-source-info" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Importers
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-0">
+                        @foreach (var t in Model)
+                        {
+                            var badgeColor = "badge-secondary";
+                            if (t.Status == ImporterStatus.Enabled)
+                            {
+                                badgeColor = "badge-success";
+                            }
+                            else if (t.Status == ImporterStatus.Error)
+                            {
+                                badgeColor = "badge-error";
+                            }
+
+                            <div class="row d-flex mb-3">
+                                <div class="col-8">
+                                    <p class="mb-0">
+                                        <strong>@t.Name</strong>
+                                        <span class="badge @badgeColor ml-1">@t.Status</span>
+                                    </p>
+                                    <p class="text-muted mb-0">@t.Description</p>
+                                </div>
+                                <div class="col-2 align-self-center">
+                                    @if (t.LastCollection != null)
+                                    {
+                                        <text>
+                                            Next update: @Html.Timeago((DateTime) t.LastCollection + t.CollectionDelay) <br/>
+                                        </text>
+                                    }
+                                    else
+                                    {
+                                        <text>
+                                            Next update: @Html.Timeago(t.CollectionDelay) <br/>
+                                        </text>
+                                    }
+                                    @if (t.LastCollection != null)
+                                    {
+                                        <text>
+                                            Last update: @Html.Timeago((DateTime) t.LastCollection)
+                                        </text>
+                                    }
+                                </div>
+                                <div class="col-2 text-right">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Edit" asp-route-id="@t.ImporterId" class="btn btn-default waves-effect waves-themed">Edit</a>
+                                        <a asp-action="Uninstall" asp-route-id="@t.ImporterId" class="btn btn-default waves-effect waves-themed">Uninstall</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">There is no plugins!</h5>
+                </div>
+            </div>
+        }
+    </div>
+</div>

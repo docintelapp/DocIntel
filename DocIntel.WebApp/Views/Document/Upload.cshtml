@@ -1,0 +1,107 @@
+﻿@{
+    ViewData["Title"] = "Upload a new document";
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-file-alt subheader-icon"></i> Register a new document
+    </h1>
+</div>
+
+@{
+    var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+}
+@if (errors.Count() > 0)
+{
+    <div class="row">
+        <div class="col-md-9">
+            <div class="alert alert-danger" role="alert">
+                <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                <ul class="mb-0 mt-1">
+                    @foreach (var error in errors)
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row">
+
+    <div class="col-6">
+        <form method="post" asp-action="SubmitURL" asp-controller="Document" class="mb-3">
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Document URL
+                        <span class="fw-300">
+                            <i>Submission</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Provide URLs (one per line)</label>
+                                    <textarea type="text" name="url" class="form-control" rows="5"></textarea>
+                                </div>
+                                <div class="mt-2">
+                                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                                        <i class="fal fa-upload"></i> Submit URLs
+                                    </button>
+                                    <div>
+                                        Add this bookmarklet:
+                                        <a href="javascript:void%20function(){location.href=%22http://localhost:5001/Document/PreviewURL%3Furl=%22+window.location.toString()+%22%26title=%22+document.title+%22%26description=%22+document.querySelector(%22meta[name=\%22description\%22]%22).content}();">
+                                            Submit
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-6">
+        <form method="post" enctype="multipart/form-data" asp-action="Upload" asp-controller="Document">
+
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Document
+                        <span class="fw-300">
+                            <i>Upload</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Select file(s)</label>
+                                    <div class="input-group">
+                                        <input type="file" name="file" class="form-control form-control-file" multiple="multiple" id="document-upload-input"/>
+                                        <div class="input-group-append">
+                                            <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                                                <i class="fal fa-upload"></i> Submit
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>

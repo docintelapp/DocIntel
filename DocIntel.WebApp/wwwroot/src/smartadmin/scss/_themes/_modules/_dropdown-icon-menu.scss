@@ -1,0 +1,16 @@
+.dropdown-icon-menu {
+
+	> ul {
+
+
+		> li {
+			
+			.btn {
+				@extend %header-btn;
+			}
+
+		}
+
+	}
+
+}

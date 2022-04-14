@@ -1,0 +1,64 @@
+﻿@model APIKey
+
+@{
+    ViewData["Title"] = "Create new application password";
+}
+
+<form method="post" enctype="multipart/form-data">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-key subheader-icon"></i> Create new API Key
+        </h1>
+        <div>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                    <i class="fal fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-9">
+
+            <div id="panel-basic" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Application
+                        <span class="fw-300">
+                            <i>Information</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label asp-for="Name" class="control-label">Name</label>
+                            <input asp-for="Name" class="form-control"/>
+                            <input hidden asp-for="Name" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Description" class="control-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" ></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-save"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script type="text/javascript">
+    </script>
+}

@@ -1,0 +1,61 @@
+@model DocIntel.WebApp.ViewModels.Account.SubscriptionViewModel
+
+@if (Model.DocumentSubscriptions.Any())
+{
+    <div class="panel panel-collapsed">
+        <div class="panel-hdr">
+            <h2>
+                Document
+                <span class="fw-300">
+                    <i>Subscribed</i>
+                </span>
+            </h2>
+            <div class="panel-toolbar">
+                <button class="btn btn-panel waves-effect waves-themed"
+                        data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse">
+                </button>
+            </div>
+        </div>
+        <div class="panel-container collapse">
+            <div class="panel-content p-0">
+                <ul class="notification notification-layout-2">
+                    @foreach (var item in Model.DocumentSubscriptions)
+                    {
+                        <li>
+                            <div class="d-flex align-items-center px-3 px-sm-2 px-lg-3 py-1 py-lg-0 height-4 height-mobile-auto">
+                                <div class="d-flex flex-row flex-wrap flex-1 align-items-stretch align-self-stretch order-2 order-lg-3">
+                                    <div class="row">
+                                        <div class="d-flex align-items-center pt-0 pb-1 py-lg-1 flex-1 col-12 col-lg-auto">
+                                            @if (item.status.Notification)
+                                            {
+                                                <a asp-action="Subscribe" asp-controller="Document" asp-route-notification="false" asp-route-id="@item.document.DocumentId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                                    <i class="fas fa-bell"></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-action="Subscribe" asp-controller="Document" asp-route-notification="true" asp-route-id="@item.document.DocumentId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                                    <i class="fal fa-bell"></i>
+                                                </a>
+                                            }
+                                            <div class="ml-2">
+                                                <a class="name" asp-controller="Document" asp-action="Details" asp-route-reference="@item.document.Reference">
+                                                    @item.document.Title <span class="fw-300">(@item.document.Reference)</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="fs-sm text-muted ml-auto hide-on-hover-parent order-4 position-on-mobile-absolute pos-top pos-right mt-2 mr-3 mr-sm-4 mt-lg-0 mr-lg-0">
+                                    <a asp-controller="Document" asp-action="Unsubscribe" asp-route-reference="@item.document.Reference">
+                                        <i class="fal fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+}

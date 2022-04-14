@@ -1,0 +1,17 @@
+#!/usr/bin/make -f
+
+DPKG_EXPORT_BUILDFLAGS=1
+
+%:
+	dh $@  --no-parallel --with systemd 
+    
+override_dh_auto_install:
+	dh_auto_install
+
+override_dh_fixperms:
+	dh_fixperms
+	find debian -name '*.dll' -exec chmod 0644 {} +
+	
+override_dh_prep:
+	dh_prep
+

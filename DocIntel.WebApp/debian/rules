@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+DPKG_EXPORT_BUILDFLAGS=1
+RELEASE="net5.0"
+
+%:
+	dh $@  --no-parallel --with systemd 
+
+override_dh_auto_install:
+	dh_auto_install
+
+    
+override_dh_fixperms:
+	dh_fixperms
+	find debian -name '*.dll' -exec chmod 0644 {} +
+	
+override_dh_prep:
+	dh_prep
+	# Remove all files that are packaged with docintel-core
+	# find ../DocIntel.Core/bin/Debug/$RELEASE/linux-x64/publish/ -type f -printf "./bin/Debug/$RELEASE/linux-x64/publish/%f\n" | xargs rm -f 
+	# Remove all files that are packaged with docintel-cli
+	# find ../DocIntel.CLI/bin/Debug/$RELEASE/linux-x64/publish/ -type f -printf "./bin/Debug/$RELEASE/linux-x64/publish/%f\n" | xargs rm -f 

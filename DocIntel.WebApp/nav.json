@@ -1,0 +1,125 @@
+{
+	"version": 4.0,
+	"lists": [
+		{
+			"title": "Documents",
+			"icon": "fal fa-file-alt",
+      "controller": "Document",
+      "id": "navigation-document",
+			"items": [
+				{
+					"title": "View all",
+                    "controller": "Document",
+                    "action": "Index",
+                    "permissions": ["SearchDocument"]
+				},
+				{
+                    "id": "navigation-register-document",
+					"title": "Upload or Submit",
+                    "controller": "Document",
+                    "action": "Upload",
+                    "permissions": ["RegisterDocument"]
+				},
+				{
+                    "id": "navigation-pending-documents",
+					"title": "View pending",
+                    "controller": "Document",
+                    "action": "Pending",
+                    "permissions": ["RegisterDocument"]
+				}
+			]
+		},
+		{
+			"title": "Tags",
+			"icon": "fal fa-tag",
+            "controller": "Tag",
+			"items": [
+				{
+					"title": "View all",
+                    "controller": "Tag",
+                    "action": "Index",
+                    "permissions": ["ViewTag"]
+				},
+				{
+					"title": "Create Tag",
+                    "controller": "Tag",
+                    "action": "Create",
+                    "permissions": ["CreateTag"]
+				},
+				{
+					"title": "Create Facet",
+                    "controller": "TagFacet",
+                    "action": "Create",
+                    "permissions": ["CreateFacet"]
+				}
+			]
+		},
+		{
+			"title": "Sources",
+			"icon": "fal fa-book",
+            "controller": "Source",
+			"items": [
+				{
+					"title": "View all",
+                    "controller": "Source",
+                    "action": "Index",
+                    "permissions": ["ViewSource"]
+				},
+				{
+					"title": "Add Source",
+                    "controller": "Source",
+                    "action": "Create",
+                    "permissions": ["CreateSource"]
+				}
+			]
+		},
+		{
+            "title": "Administration",
+			"icon": "fal fa-atom",
+            "items": [
+                {
+                    "title": "Users",
+                    "controller": "User",
+                    "action": "Index",
+                    "permissions": ["ViewProfile"]
+                },
+                {
+                    "title": "Roles",
+                    "controller": "Role",
+                    "action": "Index",
+                    "permissions": ["ReadRole"]
+                },
+                {
+                  "title": "Groups",
+                  "controller": "Group",
+                  "action": "Index",
+                  "permissions": ["ViewGroup"]
+                },
+                {
+                  "title": "Classifications",
+                  "controller": "Classification",
+                  "action": "Index",
+                  "permissions": ["ViewClassification"]
+                },
+                {
+                  "title": "Importers",
+                  "controller": "IncomingFeed",
+                  "action": "Index",
+                  "permissions": ["ViewIncomingFeed"]
+                },
+                {
+                  "title": "Scrapers",
+                  "controller": "Scraper",
+                  "action": "Index",
+                  "permissions": ["ViewScraper"]
+                },
+                {
+                    "title": "Import Ruleset",
+                    "controller": "ImportRuleSet",
+                    "action": "Index",
+                    "permissions": ["ViewIncomingFeed"]
+                }
+            ]
+        }
+	]
+}

@@ -1,0 +1,54 @@
+//buttons
+.btn {
+	&.btn-panel.bg-transparent {
+		color: #ffffff;
+	}
+}
+
+.btn-light {
+	box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.1);
+	border-color: rgba(0, 0, 0, 0.35);
+}
+
+.btn-outline-dark {
+	color: #989898;
+	border-color: #000000;
+}
+
+.btn-outline-default {
+	background-color: #37393e;
+	color: #c5c5c5;
+	border-color: #1d1f23;
+}
+
+.btn-default {
+    background: #5e646b;
+    //background-image: linear-gradient(to top, #35393e, #565a61);
+    color: #cccccc;
+    border-color: transparent;
+
+	&:hover {
+		border-color: transparent;
+		color: #ffffff;
+	}
+
+	&:focus {
+		border-color: $dark-content-color !important;
+	}
+
+	&.active {
+		background:  rgba(var(--theme-rgb-primary), 0.85);
+		color: $dark-white;
+	}
+}	
+
+.btn-icon:not([class*="-primary"]):not([class*="-secondary"]):not([class*="-default"]):not([class*="-success"]):not([class*="-info"]):not([class*="-warning"]):not([class*="-danger"]):not([class*="-dark"]):not([class*="-light"]):not(.nav-item) {
+	&:not(.active):not(:active):not(:hover) {
+		color: $dark-content-color !important;
+	}
+
+	&:hover {
+		color: lighten($dark-content-color, 10%) !important;
+		background: rgba(255,255,255,0.1);
+	}
+}

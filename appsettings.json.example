@@ -1,0 +1,61 @@
+﻿{
+    "Logging": {
+        "IncludeScopes": false,
+        "LogLevel": {
+            "Default": "Trace"
+        }
+    },
+    
+    "ApplicationName" :  "DocIntel",
+    "ApplicationBaseURL" :  "http://localhost:5001/",
+    
+    "OpenRegistration": true,
+    
+    "MaxClassification" : 1,
+    
+    "DocFolder":  "/data/docintel/",
+    "DocumentPrefix" : "DI-",
+    "StaticFiles": "/usr/share/docintel/webapp/wwwroot/",
+    
+    "Proxy": "",
+    "NoProxy": "",
+    
+    "AutomationAccount": "automation",
+    
+    "ConnectionStrings": {
+        "DefaultConnection": "User ID=_DBC_DBUSER_;Password=_DBC_DBPASS_;Host=_DBC_DBSERVER_;Port=_DBC_DBPORT_;Database=_DBC_DBNAME_;Pooling=true;"
+    },
+          
+    "Jwt": {    
+        "Key": "ThisismySecretKey",    
+        "Issuer": "localhost",
+        "Audience": "test"
+    },
+  
+    "ElasticSearch": {
+        "Uri": "http://localhost:9200"
+    },
+    
+    "Email": {
+        "NoReplyName": "No-Reply",
+        "NoReplyEmail": "no-reply@example.org",
+        "SMTPServer": "localhost",
+        "SMTPPort": 587,
+        "SMTPUser": "",
+        "SMTPPassword": "",
+        "EmailEnabled": false
+    },
+    
+    "LDAP": {
+      "ServerName": "dc.example.org",
+      "ServerPort": 636,
+      "UseSSL": true,
+      "Credentials": {
+        "DomainUserName": "docintel",
+        "Password": ""
+      },
+      "SearchBase": "CN=users,DC=example,DC=org",
+      "DomainName": "example",
+      "Group": "CN=DocintUsers,CN=Users,DC=example,DC=org"
+    }
+}

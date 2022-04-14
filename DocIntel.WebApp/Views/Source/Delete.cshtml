@@ -1,0 +1,64 @@
+﻿@model Source
+
+@{
+    ViewData["Title"] = $"Delete Source '{Model.Title}'";
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-book subheader-icon"></i> @Model.Title
+    </h1>
+</div>
+
+<form asp-action="Delete">
+    <div class="row">
+        <div class="col-12">
+
+            @if (Model.Documents != null && Model.Documents.Any())
+            {
+                <div class="alert bg-warning-500 fade show">
+                    <div class="d-flex align-items-center">
+                        <div class="alert-icon">
+                            <span class="icon-stack icon-stack-sm">
+                                <i class="base-7 icon-stack-3x color-warning-200"></i>
+                                <i class="base-7 icon-stack-2x color-warning-500"></i>
+                                <i class="far fa-exclamation icon-stack-1x color-warning-900"></i>
+                            </span>
+                        </div>
+                        <div class="flex-1">
+                            <span class="h5">Deleting a source also remove the source from the related documents!</span>
+                            <br>
+                            This action will remove the source in <strong>@Model.Documents.Count() @Html.Pluralize("document", Model.Documents.Count())</strong>.
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div id="panel-danger" class="panel">
+                <div class="panel-hdr bg-danger-900 bg-info-gradient">
+                    <h2>
+                        Are you sure you want to delete this source?
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        @await Html.PartialAsync("_SourceSummary", Model, new ViewDataDictionary(ViewData))
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" asp-for="SourceId"/>
+
+    <div class="row">
+        <div class="col-md-12">
+            <button type="submit" class="btn btn-danger waves-effect waves-themed">
+                <i class="fal fa-trash mr-2"></i> Yes, delete!
+            </button>
+
+            <a asp-action="Details" asp-route-id="@Model.SourceId" class="ml-3 text-success">No, don't delete!</a>
+        </div>
+    </div>
+
+</form>

@@ -1,0 +1,82 @@
+
+//placeholder color
+::-webkit-input-placeholder { /* Edge */
+	color: #ffffff;
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+	color: #ffffff;
+}
+
+::placeholder {
+	color: #ffffff;
+}
+
+//select
+select option {
+    box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.25);
+    background-color: #383b40;
+    color: #ffffff;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+
+//forms
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+	color: $dark-content-color;
+}
+.custom-select {
+	color: #FFFFFF;
+	background-color: #1f2125;
+	&:not(:focus) {
+		border: 1px solid #19191c;
+	}
+}
+
+.form-label {
+	color: $dark-content-color;
+}
+.form-control,
+.custom-file-label {
+	color: #ffffff;
+	background-color: rgba(0, 0, 0, 0.15);
+	border-color: rgba(0, 0, 0, 0.35);
+	&:focus {
+		border-color: rgba(var(--theme-rgb-primary), 0.7);
+	}
+	&[readonly],
+	&:disabled {
+		background-color: rgb(63, 66, 70);
+		border-color: rgba(132, 132, 132, 0.35);
+	}
+}
+.input-group:not(.has-length) .input-group-text {
+	color: #838386;
+	background-color: #37393e;
+	border: 1px solid #232528;
+}
+.custom-control-label::before {
+	background-color:  rgba($rgba-primary, 0.1);
+	background-color:  rgba(var(--theme-rgb-primary), 0.2);
+	border-color: #37393e;
+}
+.custom-control-input:checked ~ .custom-control-label::before {
+	background-color:  rgba($rgba-primary, 0.8);
+	background-color:  rgba(var(--theme-rgb-primary), 0.8);
+	border-color: rgba($rgba-primary, 1);	
+	border-color: rgba(var(--theme-rgb-primary), 1);	
+}
+
+
+.custom-control-input[disabled] ~ .custom-control-label::before, 
+.custom-control-input:disabled ~ .custom-control-label::before {
+	background-color: #565656;
+}
+.custom-checkbox .custom-control-input:disabled:checked ~ .custom-control-label::before,
+.custom-radio .custom-control-input:disabled:checked ~ .custom-control-label::before,
+.custom-switch .custom-control-input:disabled:checked ~ .custom-control-label::before {
+	background-color: #565656;
+	background-color: rgba(var(--theme-rgb-primary), 0.35)
+}

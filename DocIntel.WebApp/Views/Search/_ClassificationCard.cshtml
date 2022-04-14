@@ -1,0 +1,35 @@
+@model DocIntel.WebApp.ViewModels.SearchViewModel.SearchIndexViewModel
+
+@if (Model.Classifications.Any())
+{
+    var selected = Model.SelectedClassifications.Any();
+    <div class="card">
+        <div class="card-header">
+            <a href="javascript:void(0);" class="card-title @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#collapseClassifications" aria-expanded="false">
+                Classification
+                @if (selected)
+                {
+                    <span class="ml-auto">
+                        <span class="badge badge-light">@Model.SelectedClassifications.Count() selected</span>
+                    </span>   
+                }
+            </a>
+        </div>
+        <div id="collapseClassifications" class="@(!selected ? "collapse" : "")" aria-labelledby="headingClassifications" data-parent="#accordion_meta">
+            <div class="card-body">
+                @foreach (var item in Model.Classifications)
+                {
+                    <div class="custom-control custom-checkbox mb-1">
+                        <input type="checkbox" class="custom-control-input auto-submit" id="Classification-@item.Value.ClassificationId"
+                               checked="@Model.SelectedClassifications.Any(_ => _.ClassificationId == item.Value.ClassificationId)"
+                               name="classifications" value="@item.Value.ClassificationId">
+                        <label class="custom-control-label" for="Classification-@item.Value.ClassificationId">
+                            @item.Value.Title
+                        </label>
+                        <span class="text-muted float-right fs-xs">(@item.Count)</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

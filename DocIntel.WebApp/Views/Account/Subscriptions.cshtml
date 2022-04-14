@@ -1,0 +1,59 @@
+﻿@model DocIntel.WebApp.ViewModels.Account.SubscriptionViewModel
+
+@{
+    ViewData["Title"] = "Your subscriptions";
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-bell subheader-icon"></i> Your subscriptions
+        <small>Review and manage your subscriptions and notification settings.</small>
+    </h1>
+</div>
+
+<div class="row">
+    <div class="col-9">
+        @if (!Model.DocumentSubscriptions.Any() & !Model.TagSubscriptions.Any() & !Model.SourceSubscriptions.Any())
+        {
+            <div class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="text-center fs-xl m-3">
+                            <i class="fal fa-bell fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            You have no subscriptions at the moment.<br/>
+                            <small>Subscribe to a source, a tag, or document.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            @await Html.PartialAsync("_PanelSourceSubscription", Model, new ViewDataDictionary(ViewData))
+            @await Html.PartialAsync("_PanelTagSubscription", Model, new ViewDataDictionary(ViewData))
+            @await Html.PartialAsync("_PanelDocumentSubscription", Model, new ViewDataDictionary(ViewData))
+        }
+    </div>
+    <div class="col-3">
+        <div class="card mb-g">
+            <div class="card-body">
+                <div class="d-flex flex-row">
+                    <div class="icon-stack display-3 flex-shrink-0">
+                        <i class="fal fa-circle icon-stack-3x opacity-100 color-info-400"></i>
+                        <i class="fas fa-thumbs-up icon-stack-1x opacity-100 color-info-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p>
+                            <strong>
+                                Tips &amp; tricks for subscriptions
+                            </strong>
+                        </p>
+                        <p>The activities that are related to your subscriptions will be displayed on your home dashboard.</p>
+                        <p>You will be only notified of activities that are related to your subscriptions with a solid bell. You can click on the bell to activate notifications.</p>
+                        <p class="mb-0">Note that you will always be notified when someone mentions you in a comment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

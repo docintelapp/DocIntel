@@ -1,0 +1,35 @@
+@using DocIntel.Core.Helpers
+@model DocIntel.WebApp.ViewModels.SearchViewModel.SearchIndexViewModel
+
+@if (Model.Reliabilities.Any())
+{
+    var selected = Model.SelectedReliabilities.Any();
+    <div class="card">
+        <div class="card-header">
+            <a href="javascript:void(0);" class="card-title @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#collapseReliability" aria-expanded="false">
+                Source Reliability
+                @if (Model.SelectedReliabilities.Any())
+                {
+                    <span class="ml-auto">
+                        <span class="badge badge-light">@Model.SelectedReliabilities.Count() selected</span>
+                    </span>   
+                }
+            </a>
+        </div>
+        <div id="collapseReliability" class="@(!selected ? "collapse" : "")" aria-labelledby="" data-parent="#accordion_meta">
+            <div class="card-body">
+                @foreach (var item in Model.Reliabilities)
+                {
+                    <div class="custom-control custom-checkbox mb-1">
+                        <input type="checkbox" class="custom-control-input auto-submit" id="reliability-@item.Value"
+                               checked="@Model.SelectedReliabilities.Any(_ => _ == item.Value)"
+                               name="reliabilities" value="@item.Value">
+                        <label class="custom-control-label" for="reliability-@item.Value">
+                            @(EnumHelper<SourceReliability>.GetDisplayValue(item.Value))
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

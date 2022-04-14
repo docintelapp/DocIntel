@@ -1,0 +1,69 @@
+@model AppUser
+
+<div id="panel-basic" class="panel">
+    <div class="panel-container show">
+        <div class="panel-content">
+
+            <div class="form-group">
+                <label asp-for="UserName" class="control-label">Username</label>
+                <input asp-for="UserName" class="form-control"/>
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+
+            <div class="row mb-3">
+
+                <div class="col-6">
+                    <div class="form-group">
+                        <label asp-for="FirstName" class="control-label"></label>
+                        <input asp-for="FirstName" class="form-control"/>
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div class="form-group">
+                        <label asp-for="LastName" class="control-label"></label>
+                        <input asp-for="LastName" class="form-control"/>
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Groups</label>
+                <select class="select2 form-control" name="groups" multiple="multiple">
+                    @foreach (var tag in (List<Group>) ViewBag.AllGroups)
+                    {
+                        <!option value="@tag.GroupId" @(Model.Memberships?.Any(_ => _.GroupId == tag.GroupId) ?? false ? "selected" : "")>@tag.Name</!option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control"/>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <div class="custom-control custom-switch">
+                    @Html.CheckBoxFor(_ => _.Enabled, new {@class = "custom-control-input"})
+                    <label class="custom-control-label" asp-for="Enabled">Enabled</label>
+                </div>
+                <small class="form-text text-muted">Disabled users cannot login.</small>
+                <span asp-validation-for="Enabled" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <div class="custom-control custom-switch">
+                    @Html.CheckBoxFor(_ => _.Bot, new {@class = "custom-control-input"})
+                    <label class="custom-control-label" asp-for="Bot">Bot</label>
+                </div>
+                <small class="form-text text-muted">Bot users cannot login but can use the API.</small>
+                <span asp-validation-for="Bot" class="text-danger"></span>
+            </div>
+
+        </div>
+    </div>
+</div>

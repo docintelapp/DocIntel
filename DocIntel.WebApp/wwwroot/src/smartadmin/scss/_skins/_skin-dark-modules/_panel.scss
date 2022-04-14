@@ -1,0 +1,42 @@
+.panel .card {
+	background-color: #37383e;
+}
+//panel
+.panel,
+.card {
+	background-color: #26272b;
+}
+.panel {
+	border-bottom-color: rgba(0, 0, 0, 0.3)
+}
+.panel-hdr,
+.card-header {
+	background: rgba(0,0,0,0.03);
+	background: rgba(var(--theme-rgb-fusion), 0.5);
+	h2 {
+		color: $dark-white;
+	}
+}
+.panel-toolbar .btn-panel {
+	border: 1px solid #333;
+}
+
+.panel-hdr,
+.accordion:not(.accordion-clean) .card .card-header {
+	background: #303136;
+}
+.panel-tag {
+	background: rgba($rgba-success, 0.15);
+	background: rgba(var(--theme-rgb-success), 0.15);
+	color: #ffffff;
+}
+
+/* placeholder */
+.panel-placeholder {
+	background-color: var(--theme-primary);
+	opacity: 0.2;
+
+	&:before {
+		background: var(--theme-primary-900);
+	}
+}

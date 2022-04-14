@@ -1,0 +1,60 @@
+{{#> 
+	layouts/auth 
+	title="Landing Page" 
+	pagename="landing_page"
+}}
+
+{{#*inline "head-block"}}
+<link rel="stylesheet" media="screen, print" href="css/fa-brands.css">
+{{/inline}}
+
+{{#*inline "content-block"}}
+<div class="page-wrapper auth">
+	<div class="page-inner bg-brand-gradient">
+		<div class="page-content-wrapper bg-transparent m-0">
+			<div class="height-10 w-100 shadow-lg px-4 bg-brand-gradient">
+				<div class="d-flex align-items-center container p-0">
+
+					<div class="page-logo width-mobile-auto m-0 align-items-center justify-content-center p-0 bg-transparent bg-img-none shadow-0 height-9 border-0">
+						<a href="javascript:void(0)" class="page-logo-link press-scale-down d-flex align-items-center">
+						<img src="img/logo.png" alt="{{app}} WebApp" aria-roledescription="logo">
+						<span class="page-logo-text mr-1">{{app-name}}</span>
+						</a>
+					</div>
+					<a href="page_register.html" class="btn-link text-white ml-auto">
+						Create Account
+					</a>
+				</div>
+			</div>
+			<div class="flex-1" style="background: url(img/svg/pattern-1.svg) no-repeat center bottom fixed; background-size: cover;">
+				<div class="container py-4 py-lg-5 my-lg-5 px-4 px-sm-0">
+					test
+					<div class="position-absolute pos-bottom pos-left pos-right p-3 text-center text-white">
+						{{{copyright-inverse}}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{{/inline}}
+
+{{#*inline "scripts-block"}}
+<script>
+	$("#js-login-btn").click(function(event) {
+
+		// Fetch form to apply custom Bootstrap validation
+		var form = $("#js-login")
+
+		if (form[0].checkValidity() === false) {
+			event.preventDefault()
+			event.stopPropagation()
+		}
+
+		form.addClass('was-validated');
+		// Perform ajax submit here...
+	});
+</script>
+{{/inline}}
+
+{{/layouts/auth}}

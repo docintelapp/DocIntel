@@ -1,0 +1,16 @@
+.nav-tabs:not(.nav-tabs-clean) .nav-link.active, 
+.nav-tabs:not(.nav-tabs-clean) .nav-item.show .nav-link {
+  border-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.15) #25272b;
+}
+.nav-tabs {
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+}
+
+.nav-tabs .nav-link:not(.active):hover, 
+.nav-tabs .nav-link:not(.active):focus {
+    border-color: rgba(255, 255, 255, 0.07) rgba(255, 255, 255, 0.07) transparent;
+}
+
+.tab-content.border {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}

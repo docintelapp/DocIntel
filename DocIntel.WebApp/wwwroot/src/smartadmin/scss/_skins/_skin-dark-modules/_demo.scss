@@ -1,0 +1,39 @@
+//demo
+.bd-highlight {
+	background-color: rgba(86, 61, 124, 0.6);
+	border: 1px solid rgba(121, 95, 160, 0.8);
+}
+.bd-example-row .row > .col, .bd-example-row .row > [class^=col-] {
+	background-color: rgba(86, 61, 124, 0.75);
+	border: 1px solid rgba(133, 106, 175, 0.5);
+}
+.card .d-block.bg-danger-50 {
+	background-color: rgba($rgba-danger, 0.7);
+	background-color: rgba(var(--theme-rgb-danger), 0.7);
+}
+.card .d-block.bg-info-50 {
+	background-color: rgba($rgba-info, 0.7);
+	background-color: rgba(var(--theme-rgb-info), 0.7);
+}
+//demo window
+.demo-window:before {
+	background: #000000;
+}
+.app-body-demo {
+	border: 1px solid rgba(0, 0, 0, 1);
+}
+.frame-wrap {
+	background: transparent;
+}
+
+//events
+#app-eventlog {
+	&:empty {
+		background: #2c2e31;
+	}
+	& > div {
+		&:not(:last-child) {
+			border-bottom: 1px dashed rgba(255,255,255,0.1);
+		}
+	}
+}

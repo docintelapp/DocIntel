@@ -1,0 +1,89 @@
+﻿@{
+    @* var currentController = ViewContext.RouteData.Values["Controller"]; *@
+    @* var currentAction = ViewContext.RouteData.Values["Action"]; *@
+}
+<!DOCTYPE html>
+<partial name="_CopyrightHeader"/>
+
+
+@{
+    var fontsize = "";
+    var bodyClasses = "";
+
+    var currentUser = (AppUser) ViewBag.CurrentUser;
+    if (currentUser.Preferences != null && currentUser.Preferences.UI != null)
+    {
+        switch (currentUser.Preferences.UI.FontSize)
+        {
+            case UserPreferences.UIPreferences.UIFontSize.Small:
+                fontsize = "root-text-sm";
+                break;
+            case UserPreferences.UIPreferences.UIFontSize.Large:
+                fontsize = "root-text-lg";
+                break;
+            case UserPreferences.UIPreferences.UIFontSize.ExtraLarge:
+                fontsize = "root-text-xl";
+                break;
+        }
+
+        if (currentUser.Preferences.UI.BiggerContentFont)
+        {
+            bodyClasses += " mod-bigger-font";
+        }
+
+        if (currentUser.Preferences.UI.HighContrastText)
+        {
+            bodyClasses += " mod-high-contrast";
+        }
+
+        switch (currentUser.Preferences.UI.Theme)
+        {
+            case UserPreferences.UIPreferences.UITheme.Dark:
+                bodyClasses += " mod-skin-dark";
+                break;
+            case UserPreferences.UIPreferences.UITheme.Light:
+                bodyClasses += " mod-skin-light";
+                break;
+        }
+    }
+
+}
+
+<html lang="en" class="@fontsize">
+<head>
+    <partial name="_Head"/>
+    <title>
+        @ViewData["Title"] -
+        @if (ViewData["Controller"] != null && !string.IsNullOrEmpty(ViewData["Controller"] as string))
+        {
+            <text>@ViewData["Controller"] - </text>
+        }
+        DocIntel
+    </title>
+    @RenderSection("Header", false)
+</head>
+
+<body class="mod-bg-1 @bodyClasses">
+<partial name="_ScriptsLoadingSaving"/>
+<div class="page-wrapper">
+    <div class="page-inner">
+        <partial name="_LeftPanel"/>
+        <div class="page-content-wrapper">
+            <partial name="_PageHeader"/>
+            <main id="js-page-content" role="main" class="page-content">
+                <!-- <partial name="_PageBreadCrumb" /> -->
+                @RenderSection("PageHeading", false)
+                @RenderBody()
+            </main>
+            <partial name="_PageContentOverlay"/>
+            <partial name="_PageFooter"/>
+        </div>
+    </div>
+</div>
+<partial name="_PageSettings"/>
+<partial name="_ScriptBasePlugins"/>
+<!-- Scripts -->
+@RenderSection("Scripts", false)
+<!-- end of Scripts -->
+</body>
+</html>

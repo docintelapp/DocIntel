@@ -1,0 +1,25 @@
+//tooltip
+.bs-tooltip-top .arrow::before, 
+.bs-tooltip-auto[x-placement^="top"] .arrow::before {
+	border-top-color: rgba(0, 0, 0, 0.9);
+}
+.bs-tooltip-right .arrow::before, 
+.bs-tooltip-auto[x-placement^="right"] .arrow::before {
+	border-right-color: rgba(0, 0, 0, 0.9);
+}
+.bs-tooltip-left .arrow::before, 
+.bs-tooltip-auto[x-placement^="left"] .arrow::before {
+	border-left-color: rgba(0, 0, 0, 0.9);
+}
+.bs-tooltip-bottom .arrow::before, 
+.bs-tooltip-auto[x-placement^="bottom"] .arrow::before {
+	border-bottom-color: rgba(0, 0, 0, 0.9);
+}
+.tooltip-inner {
+	background-color: rgba(0, 0, 0, 0.9);
+}
+
+
+.popover:not([class*="bg-"]) {
+	border: 3px solid rgba(255, 255, 255, 0.4);
+}

@@ -1,0 +1,36 @@
+@model DocumentFile
+
+<div id="panel-registration-info" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Registration
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+            <dl class="row mb-0">
+                <dt class="col-sm-6">
+                    @Html.DisplayNameFor(model => model.DocumentDate)
+                </dt>
+                <dd class="col-sm-6">
+                    @Html.Timeago(Model.DocumentDate)
+                </dd>
+                <dt class="col-sm-6">
+                    @Html.DisplayNameFor(model => model.RegistrationDate)
+                </dt>
+                <dd class="col-sm-6">
+                    @Html.Timeago(Model.RegistrationDate)
+                </dd>
+                <dt class="col-sm-6">
+                    Last Modification
+                </dt>
+                <dd class="col-sm-6">
+                    @Html.Timeago(Model.ModificationDate)
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+﻿@{
+    var pageName = ViewBag.PageName ?? string.Empty;
+    var canLogin = new[] {"register", "forgotpassword", "lockout"}.ToList().Contains(pageName);
+}
+<div class="height-10 w-100 shadow-lg px-4 bg-brand-gradient">
+    <div class="d-flex align-items-center container p-0">
+        <partial name="_LogoPublic"/>
+        @if (canLogin)
+        {
+            <span class="text-white opacity-50 ml-auto mr-2 hidden-sm-down">
+                Already a member?
+            </span>
+            <a class="btn-link text-white ml-auto ml-sm-0" asp-action="Login" asp-controller="Account">
+                Login
+            </a>
+        }
+        else
+        {
+            <span class="text-white opacity-50 ml-auto mr-2 hidden-sm-down">
+                Not yet a member?
+            </span>
+            <a class="btn-link text-white ml-auto ml-sm-0" asp-action="Register" asp-controller="Account">
+                Register account
+            </a>
+        }
+    </div>
+</div>

@@ -1,0 +1,75 @@
+﻿@using DocIntel.Core.Scrapers
+@model Scraper
+
+@{
+    ViewData["Title"] = "Install a new scraper";
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-inbox-in subheader-icon"></i> @ViewData["Title"]
+    </h1>
+</div>
+
+
+<div class="row">
+    <div class="col-9">
+
+        @{
+            var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+        }
+        @if (errors.Count() > 0)
+        {
+            <div class="alert alert-danger" role="alert">
+                <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                <ul class="mb-0 mt-1">
+                    @foreach (var error in errors)
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form asp-action="Create">
+            @Html.AntiForgeryToken()
+
+            <div id="panel-source-info" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+
+                        @{
+                            var l = ((IEnumerable<ScraperInformation>) ViewBag.Scrapers).Select(ii =>
+                            {
+                                var item = new SelectListItem {Value = ii.Id.ToString(), Text = ii.Name};
+                                return item;
+                            }).ToList();
+                        }
+
+                        <div class="form-group">
+                            <label for="Scraper" class="control-label">Scraper</label>
+                            <select id="Scraper" name="Scraper" asp-items="@l" class="form-control"></select>
+                        </div>
+
+                        @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
+
+                    </div>
+                </div>
+            </div>
+
+            @await Html.PartialAsync("_FormFieldsClassification", Model, new ViewDataDictionary(ViewData))
+
+            <button type="submit" id="save-btn" class="btn btn-success waves-effect waves-themed btn-iconified">
+                <i class="fal fa-save"></i> Install
+            </button>
+
+        </form>
+
+
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

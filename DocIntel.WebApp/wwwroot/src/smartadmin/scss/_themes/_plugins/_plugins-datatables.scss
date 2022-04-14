@@ -1,0 +1,126 @@
+.sorting_asc,
+.sorting_desc, 
+.even .sorting_1 {
+	background-color: rgba($primary-500, 0.03);
+}
+
+.odd .sorting_1 {
+	background-color: rgba($primary-500, 0.04);
+}
+
+.table-dark {
+	.sorting_asc,
+	.sorting_desc, 
+	.even .sorting_1 {
+		background-color: rgba($warning-500, 0.15);
+	}
+
+	.odd .sorting_1 {
+		background-color: rgba($warning-500, 0.15);
+	}
+}
+
+table.dataTable.dtr-inline.collapsed > tbody > tr[role="row"] > td:first-child:before, 
+table.dataTable.dtr-inline.collapsed > tbody > tr[role="row"] > th:first-child:before,
+table.dataTable.dtr-column > tbody > tr > td.control:before, 
+table.dataTable.dtr-column > tbody > tr > th.control:before {
+	background-color: $primary-500;
+}
+
+table.dataTable.dtr-inline.collapsed > tbody > tr.parent > td:first-child:before, 
+table.dataTable.dtr-inline.collapsed > tbody > tr.parent > th:first-child:before,
+table.dataTable.dtr-column > tbody > tr.parent td.control:before, 
+table.dataTable.dtr-column > tbody > tr.parent th.control:before {
+	background-color: $success-500;
+}
+
+
+.dataTables_empty {
+	color: $danger-500;
+}
+
+.dataTables_wrapper tr.child td.child {
+
+	.dtr-details {
+
+		&:before {
+			color: $success-400;
+		}
+
+		&:after {
+			background: $success-200;
+
+		}
+	}
+
+}
+
+div.dt-autofill-background {
+	opacity: 0.2;
+	background-color: $black;
+}
+
+div.dt-autofill-handle {
+	background: $primary-500;
+}
+
+div.dt-autofill-select {
+  background-color: $primary-500;
+}
+
+/* FixedColumns */
+.DTFC_LeftHeadWrapper,
+.DTFC_LeftBodyWrapper,
+.DTFC_LeftFootWrapper {
+	
+	&:before {
+		background: $danger-500;
+	}
+
+}
+
+/* KeyTable */
+table.dataTable tbody th.focus, 
+table.dataTable tbody td.focus {
+    box-shadow: inset 0 0 0px 1px $primary-500;
+    background: rgba($primary-500, 0.1);
+}
+
+table.dataTable:not(.table-dark) tr.dtrg-group td {
+	background: $white;
+}
+
+tr.dt-rowReorder-moving {
+  outline-color: $success-500;
+}
+
+table.dt-rowReorder-float {
+  outline-color: $primary-500;
+}  
+
+
+/* Select */
+table.dataTable  {
+
+	&.table-bordered {
+		.selected {
+			td {
+				border-color: rgba($black,0.1);
+			}
+		}
+		td.selected {
+			border-color: rgba($black,0.1);
+		}
+	}
+
+	tbody {
+		> tr.selected, 
+		> tr > .selected {
+			box-shadow: inset 0 0 0px 1px $primary-500;
+			background: rgba($primary-500, 0.1);
+		}
+	}
+
+		
+}
+

@@ -1,0 +1,107 @@
+.footer-function-fixed {
+
+	.page-footer {
+		position: fixed;
+		right: 0;
+		left: $nav-width;
+		bottom: 0;
+		z-index: $depth-header;
+
+		border-top: 1px solid rgba(0,0,0,0.08);
+
+		@extend %general-animation;
+	}
+
+	.page-content {
+		padding-bottom: 2rem + $footer-height !important;
+	}
+
+	&.nav-function-minify {
+		.page-footer { left: $nav-minify-width; }
+	}
+	
+	&.nav-function-top {
+		.page-footer { left: 0; }
+	}
+
+	&.nav-function-hidden {
+		.page-footer { left: $nav-hidden-visiblity; }
+	}
+
+	&.mod-main-boxed {
+		.page-footer {     
+			width: 100%;
+			max-width: $mod-main-boxed-width - 2;
+			margin: 0 auto !important;
+			padding-left: $nav-width + $header-inner-padding-x;
+			left: 0;
+		}
+		&.nav-function-top {
+			.page-footer { padding-left: $header-inner-padding-x; }
+		}
+		&.nav-function-minify {
+			.page-footer { padding-left: $nav-minify-width + $header-inner-padding-x; }
+		}
+		&.nav-function-hidden {
+			.page-footer { padding-left: $nav-hidden-visiblity + $header-inner-padding-x; }
+		}
+	}
+}
+
+@media only screen and ( max-width: $mobile-breakpoint-size ){
+	.footer-function-fixed {
+		.page-footer {
+			left: 0;
+		}
+	}
+}
+
+// .page-footer-fixed {
+
+// 	.page-content {
+// 		padding-bottom: 2rem + $footer-height;
+// 	}
+
+// 	&:not(.nav-function-top) {
+
+// 		.page-footer {
+// 			left:0;
+// 			position:fixed !important;
+// 			right:0;
+// 			top:0;
+			
+// 			@extend %general-animation;
+// 		}
+
+// 	}
+// }
+
+// @include media-breakpoint-up($mobile-breakpoint) {
+
+// 	.page-footer-fixed {
+
+// 		&:not(.nav-function-top) {
+
+// 			.page-footer {
+// 				margin-left: $nav-width;
+// 			}
+// 		}
+
+// 		&.nav-function-top {
+// 			.page-footer {
+// 				position: fixed !important;
+// 				/*top: 0;
+// 				right: 0;
+// 				left: 0;*/
+
+// 				box-shadow: 0px 0px 28px 2px $header-border-bottom-color;
+
+// 				/*chrome flickering solution*/
+// 				-webkit-transform: translateZ(0);
+// 			}
+// 			/*.page-wrapper {
+// 				padding-top: $header-height-nav-top;
+// 			}*/			
+// 		}
+// 	}
+// }

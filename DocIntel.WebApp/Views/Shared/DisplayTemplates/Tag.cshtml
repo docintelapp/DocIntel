@@ -1,0 +1,19 @@
+﻿@model Tag
+
+@if (string.IsNullOrEmpty(Model.BackgroundColor))
+{
+    <a asp-controller="Tag"
+       asp-action="Details"
+       asp-route-id="@Model.TagId" class="badge">
+        @Model.Label
+    </a>
+}
+else
+{
+    <a asp-controller="Tag"
+       asp-action="Details"
+       asp-route-id="@Model.TagId" class="badge"
+       style="background-color: @Model.BackgroundColor">
+        @Model.Label
+    </a>
+}

@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+set -e
+
+. /usr/share/debconf/confmodule
+
+chown -R docintel:docintel /usr/lib/docintel/scraper/
+
+cp /usr/share/doc/docintel/nlog.config.worker-example /usr/lib/docintel/scraper/nlog.config
+sed -i "s,WORKER_NAME,scraper,g" /usr/lib/docintel/scraper/nlog.config
+
+exit 0
+
+

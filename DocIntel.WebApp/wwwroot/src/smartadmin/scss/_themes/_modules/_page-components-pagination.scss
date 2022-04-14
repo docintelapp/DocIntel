@@ -1,0 +1,47 @@
+
+
+.page-link {
+  color: $primary-500;
+  background-color: $pagination-bg;
+  border: $pagination-border-width solid $pagination-border-color;
+
+  &:hover {
+    color: $pagination-hover-color;
+    background-color: $pagination-hover-bg;
+    border-color: $pagination-hover-border-color;
+  }
+
+  /*&:focus {
+    outline: $pagination-focus-outline;
+  }*/
+}
+
+.page-item {
+  &.active .page-link {
+    color: $pagination-active-color;
+    background-color: $primary-500;
+  }
+
+  &.disabled .page-link {
+    color: $pagination-disabled-color;
+    background-color: $pagination-disabled-bg;
+  }
+}
+
+.pagination {
+
+	.page-item:first-child:not(.active),
+	.page-item:last-child:not(.active),
+	.page-item.disabled {
+		.page-link {
+			background: lighten($primary-50, 10%);
+		}
+	}
+
+	.page-link {
+		&:hover {
+			background-color: $primary-500 !important;
+			color: $white;
+		}
+	}
+}

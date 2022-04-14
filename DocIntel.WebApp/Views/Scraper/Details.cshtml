@@ -1,0 +1,123 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@using DocIntel.Core.Importers
+@model Scraper
+
+@{
+    ViewData["Title"] = $"{Model.Name}";
+    var canEdit = (await AuthorizationService.AuthorizeAsync(User, null, IncomingFeedOperations.Edit)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-inbox-in subheader-icon"></i> @ViewData["Title"]
+    </h1>
+    <div>
+        <div class="btn-group">
+            @if (canEdit)
+            {
+                <a asp-action="Configure" asp-route-id="@Model.ScraperId"
+                   class="btn btn-primary waves-effect waves-themed">
+                    <i class="fal fa-sliders-h-square mr-1"></i> Configure
+                </a>
+                <a asp-action="Edit" asp-route-id="@Model.ScraperId"
+                   class="btn btn-primary waves-effect waves-themed">
+                    <i class="fal fa-edit mr-1"></i> Edit
+                </a>
+            }
+            @if (canEdit)
+            {
+                <a asp-action="Delete" asp-route-id="@Model.ScraperId"
+                   class="btn btn-primary waves-effect waves-themed">
+                    <i class="fal fa-trash mr-1"></i> Delete
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-12">
+
+        @if (!Model.Enabled)
+        {
+            <div class="alert alert-warning" role="alert">
+                <strong>Heads up!</strong> This importer is currently disabled.
+            </div>
+        }
+
+        <div class="panel">
+            <div class="panel-container show">
+                <div class="panel-content">
+                    <p>
+                        @Model.Description
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-hdr">
+                <h2>
+                    Settings
+                </h2>
+            </div>
+            <div class="panel-container show">
+                <div class="panel-content pb-2">
+                    @foreach (var setting in (List<FormField>) ViewBag.Settings)
+                    {
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <strong>@setting.Key</strong> <span class="badge badge-primary">@setting.DataType.Name</span>
+                            </div>
+                            <div class="col-6">
+                                @if (setting.Type == AttributeFieldType.Password)
+                                {
+                                    <span class="text-blur">@(new string('*', setting.Value?.Length ?? 0))</span>
+                                }
+                                else
+                                {
+                                    @setting.Value
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-hdr">
+                <h2>
+                    Rewriting Rulesets
+                </h2>
+            </div>
+            <div class="panel-container show">
+                <div class="panel-content">
+                    @if (Model.ImportRuleSets.Any())
+                    {
+                        foreach (var ruleSet in Model.ImportRuleSets)
+                        {
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>@ruleSet.ImportRuleSet.Name</strong>
+                                </div>
+                                <div class="col-6">
+                                    @ruleSet.ImportRuleSet.ImportRules.Count() @Html.Pluralize("rule", ruleSet.ImportRuleSet.ImportRules.Count())
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center fs-xl m-3 my-4">
+                            <i class="fal fa-broom fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            No rewriting rules.<br/>
+                            <small>All the tags will be imported as providers decide.</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

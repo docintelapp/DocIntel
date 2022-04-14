@@ -1,0 +1,11 @@
+.page-wrapper {
+	&.alt,
+	&.auth,
+	&.auth .page-inner,
+	&.alt .page-inner,
+	&.auth .page-content-wrapper > div,
+	&.alt .page-content-wrapper > div {
+		background: #37393e;
+	}
+
+}

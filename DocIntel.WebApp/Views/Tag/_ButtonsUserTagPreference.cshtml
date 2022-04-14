@@ -1,0 +1,66 @@
+@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.TagViewModel.TagDetailViewModel
+
+@{
+    var canSubscribe = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Subscribe)).Succeeded;
+    var canEdit = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Edit)).Succeeded;
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Delete)).Succeeded;
+}
+
+<div class="btn-group @(canEdit | canDelete ? "mr-3" : "")">
+    @if (canSubscribe)
+    {
+        if (Model.Subscribed.Subscribed)
+        {
+            <span class="btn btn-primary waves-effect waves-themed btn-iconified">
+                @if (Model.Subscribed.Notification)
+                {
+                    <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-id="@Model.Tag.TagId"
+                       data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
+                       title="Documents tagged with a subscribed tag will appear in your newsletters and home page feed. Use the feature to track the topics that interests you. The bell will cause you to received a notification when a related documents is added or modified.">
+                        <i class="fas fa-bell"></i>
+                    </a>
+                }
+                else
+                {
+                    <a class="text-white" asp-action="Subscribe" asp-route-notification="true" asp-route-id="@Model.Tag.TagId"
+                       data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
+                       title="Documents tagged with a subscribed tag will appear in your newsletters and home page feed. Use the feature to track the topics that interests you. The bell will cause you to received a notification when a related documents is added or modified.">
+                        <i class="fal fa-bell"></i>
+                    </a>
+                }
+                <a class="text-white" asp-action="Unsubscribe" asp-route-id="@Model.Tag.TagId">Subscribed</a>
+            </span>
+        }
+        else
+        {
+            <a asp-action="Subscribe"
+               asp-route-id="@Model.Tag.TagId"
+               class="btn btn-primary waves-effect waves-themed btn-iconified"
+               data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
+               title="Documents tagged with a subscribed tag will appear in your newsletters and home page feed. Use the feature to track the topics that interests you. The bell will cause you to received a notification when a related documents is added or modified.">
+                <i class="fal fa-bell-slash"></i> Subscribe
+            </a>
+        }
+        @if (Model.Muted.Muted)
+        {
+            <a asp-action="Unmute"
+               asp-route-id="@Model.Tag.TagId"
+               class="btn btn-primary waves-effect waves-themed btn-iconified"
+               data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
+               title="Documents tagged with a muted tag will not appear in your subscriptions (e.g. newsletters and home page). Use the feature to tune down noisy tags.">
+                <i class="fal fa-volume-slash"></i> Muted
+            </a>
+        }
+        else
+        {
+            <a asp-action="Mute"
+               asp-route-id="@Model.Tag.TagId"
+               class="btn btn-primary waves-effect waves-themed btn-iconified"
+               data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
+               title="Documents tagged with a muted tag will not appear in your subscriptions (e.g. newsletters and home page). Use the feature to tune down noisy tags.">
+                <i class="fal fa-volume"></i> Mute
+            </a>
+        }
+    }
+</div>

@@ -1,0 +1,72 @@
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentDetailsViewModel
+
+@if (Model.Document.Files.Any(_ => _.Preview) | Model.Observables.Any())
+{
+    <div id="panel-content" class="panel">
+
+        <div class="panel-hdr border-faded border-top-0 border-right-0 border-left-0 shadow-0">
+            <h2>
+                Content
+            </h2>
+            <div class="panel-toolbar pr-3 align-self-end">
+                <ul id="demo_panel-tabs" class="nav nav-tabs border-bottom-0" role="tablist">
+                    @{ var first = true; }
+                    @foreach (var f in Model.Document.Files.Where(_ => _.Preview))
+                    {
+                        <li class="nav-item @(first ? "active" : "")">
+                            <a class="nav-link" data-toggle="tab" href="#tab-@f.FileId" role="tab" aria-selected="true">@f.Title</a>
+                        </li>
+                        first = false;
+                    }
+                    @* <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#tab-cti" role="tab" aria-selected="false">Threat Intelligence</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#tab-notes" role="tab" aria-selected="false">Notes</a>
+                </li> *@
+                </ul>
+            </div>
+            <div class="panel-toolbar">
+                <button class="btn btn-panel waves-effect waves-themed" id="fs-btn" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+            </div>
+        </div>
+
+        <div class="panel-container show">
+            <div class="panel-content p-0">
+                <div class="tab-content px-0">
+
+                    <!-- PDF Pane  -->
+                    @{ first = true; }
+                    @foreach (var f in Model.Document.Files.Where(_ => _.Preview))
+                    {
+                        <div class="tab-pane fade @(first ? "show active" : "")" id="tab-@f.FileId" role="tabpanel">
+                            @await Html.PartialAsync("../File/_FilePreview", f, new ViewDataDictionary(ViewData))
+                        </div>
+                        first = false;
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.Observables != null && Model.Observables.Any())
+{
+    <div id="panel-content" class="panel">
+        <div class="panel-hdr border-faded border-top-0 border-right-0 border-left-0 shadow-0">
+            <h2>
+                Observables
+            </h2>
+            <div class="panel-toolbar">
+                <button class="btn btn-panel waves-effect waves-themed" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+            </div>
+        </div>
+
+        <div class="panel-container show">
+            <div class="panel-content">
+                @await Html.PartialAsync("_ObservableList", Model.Observables, new ViewDataDictionary(ViewData))
+            </div>
+        </div>
+    </div>
+}

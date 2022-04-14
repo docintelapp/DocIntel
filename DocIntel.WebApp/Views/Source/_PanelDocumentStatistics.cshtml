@@ -1,0 +1,20 @@
+@model DocIntel.WebApp.ViewModels.SourceViewModel.DetailViewModel
+
+@if (Model.Documents.Any())
+{
+    <div class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Publications
+                <span class="fw-300">
+                    <i>last 6 months</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content p-3">
+                <div class="line-container" data-url="@Url.Action("GetStatistics", "Source", new {sourceId = Model.Source.SourceId})"></div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,35 @@
+//table
+.table,
+.table-bordered th,
+.table-bordered td,
+.table thead th,
+.table th,
+.table td {
+	border-color: rgba(255, 255, 255, 0.25);
+}
+.table {
+	color: lighten($dark-content-color, 10%);
+
+	&.table-dark {
+		color: #ffffff;
+		background-color: #202225;
+	}
+
+	&.table-striped tbody tr:nth-of-type(odd) {
+		background-color: rgba(0, 0, 0, 0.15);
+	}
+}	
+.table-hover tbody tr:hover {
+	background-color: rgba($rgba-primary, 0.15) !important;
+	background-color: rgba(var(--theme-rgb-primary), 0.15) !important;
+	color: inherit;
+}
+.thead-themed {
+	background-color: rgba(var(--theme-rgb-primary), 0.10);
+	background-image: linear-gradient(to top, rgba(var(--theme-rgb-primary), 0.15), rgba(var(--theme-rgb-primary), 0.55))
+}
+.table-active,
+.table-active>th,
+.table-active>td {
+	background-color: transparent;
+}

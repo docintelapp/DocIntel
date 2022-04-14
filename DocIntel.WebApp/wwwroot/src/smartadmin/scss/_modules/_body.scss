@@ -1,0 +1,21 @@
+html {
+	scroll-behavior:smooth; //smooth scrolling for anchor links (IE11 not supported)
+
+	body {	
+		direction: ltr;
+		text-rendering: optimizeLegibility;
+		background-color: $body-background-color;
+
+		
+		a {
+			color: $link-color;
+			text-decoration: $link-decoration;
+			background-color: transparent; // Remove the gray background on active links in IE 10.
+
+		  	@include hover() {
+				color: $link-hover-color;
+				text-decoration: $link-hover-decoration;
+			}
+		}
+	}
+}

@@ -1,0 +1,12 @@
+@model AppUser
+
+@if (string.IsNullOrEmpty(Model.FirstName) & string.IsNullOrEmpty(Model.LastName))
+{
+    <a asp-controller="User" asp-action="Profile" asp-route-username="@Model.UserName">@Model.UserName</a>
+}
+else
+{
+    <text>
+        <a asp-controller="User" asp-action="Profile" asp-route-username="@Model.UserName">@Model.FirstName @Model.LastName</a>
+    </text>
+}

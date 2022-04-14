@@ -1,0 +1,29 @@
+/* dropdown menu multi-level */
+.dropdown-menu {
+	.dropdown-menu {
+		background:$white;
+	}
+	.dropdown-multilevel {
+		&:hover {
+			> .dropdown-item:not(.disabled) {
+				background: $gray-100;
+				color: $dropdown-link-hover-color;
+			}
+		}
+	}
+	
+}
+
+.dropdown-item {
+  @include hover-focus() {
+    color: $primary-700;
+    @include gradient-bg(#f8f9fa);
+  }
+
+  &.active,
+  &:active {
+   	color: $primary-800;
+    @include gradient-bg(lighten($primary-50, 10%));
+  }
+
+}

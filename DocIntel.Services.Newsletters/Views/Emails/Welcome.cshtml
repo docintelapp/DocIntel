@@ -1,0 +1,28 @@
+@using RazorLight
+@inherits TemplatePage<DocIntel.Services.Newsletters.Views.Emails.WelcomeViewModel>
+
+@model DocIntel.Services.Newsletters.Views.Emails.WelcomeViewModel
+@using System.Linq
+@{ 
+    // Rider complains that it cannot compile, but it works fine.
+    Layout = "Shared/EmailLayout.cshtml";
+}
+
+@section preheader {
+    Here is your daily summary of documents added to DocIntel during the last 24 hours with @Model.Documents.Count() documents.
+}
+
+@section header {
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+        <tr>
+            <td bgcolor="#ffffff" align="left" valign="top" style="padding: 20px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 0.1px; line-height: 48px;">
+                <h1 style="font-size: 24px; font-weight: 400; margin: 0;">Daily Digest for @Model.Date.ToString("MMM dd, yyyy")</h1>
+            </td>
+        </tr>
+    </table>
+}
+
+@foreach(var doc in Model.Documents.OrderByDescending(_ => _.DocumentDate)) {
+    // Rider complains that it cannot compile, but it works fine.
+    await IncludeAsync("Emails/_DocumentSummary.cshtml", doc);
+}

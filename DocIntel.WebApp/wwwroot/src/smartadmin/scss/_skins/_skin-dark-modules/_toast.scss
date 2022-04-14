@@ -1,0 +1,9 @@
+//toast
+.toast:not([class*="toast-"]) {
+	background-color: rgba(31, 31, 31, 0.85);
+
+	.toast-header {
+		color: #ffffff;
+		background-color: rgba(35, 35, 35, 0.85);
+	}
+}

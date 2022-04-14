@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+set -e
+
+. /usr/share/debconf/confmodule
+. /usr/share/dbconfig-common/dpkg/config.pgsql
+dbc_dbuser="docintel"
+dbc_dbname="docintel"
+dbc_authmethod_user="password"
+dbc_dbtypes="pgsql"
+dbc_go docintel-core $@
+
+exit 0
+

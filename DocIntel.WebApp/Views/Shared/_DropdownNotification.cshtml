@@ -1,0 +1,54 @@
+﻿@*
+
+@using System.Linq;
+
+<div class="dropdown-header bg-trans-gradient d-flex justify-content-center align-items-center rounded-top">
+    <h4 class="m-0 text-center color-white">
+        @ViewBag.NotificationsCount New
+        <small class="mb-0 opacity-80">Notifications</small>
+    </h4>
+</div>
+
+<div class="tab-pane" id="tab-feeds" role="tabpanel">
+    <div class="custom-scroll h-100">
+        <ul class="notification">
+            @foreach (var notification in ((IEnumerable<Notification>) ViewBag.LastNotifications))
+            {
+                <li class="@(notification.Read ? "" : "unread")">
+                    <div class="d-flex align-items-center">
+                        <span class="d-flex flex-column flex-1">
+                            <span class="name">@await Html.PartialAsync("../Home/_ActivityTextSummary", notification.Activity, new ViewDataDictionary(this.ViewData))</span>
+                            <span>
+                                @if (notification.Activity.ObjectType == DocIntel.Core.Models.ActivityObject.DOCUMENT)
+                                {
+                                    var document = (DocIntel.Core.Models.Document) notification.Activity.Object;
+                                    @if (document != null)
+                                    {
+                                        <a asp-controller="Document" asp-action="Details" asp-route-reference="@document.Reference">@document.Title</a>
+                                    }
+                                }
+                                else if (notification.Activity.ObjectType == DocIntel.Core.Models.ActivityObject.COMMENT)
+                                {
+                                    var comment = (DocIntel.Core.Models.Comment) notification.Activity.Object;
+                                    var document = (DocIntel.Core.Models.Document) notification.Activity.Changes.FirstOrDefault(_ => _.TargetType == DocIntel.Core.Models.ActivityObject.DOCUMENT).Target;
+                                    @if (comment != null & document != null)
+                                    {
+                                        <a asp-controller="Document" asp-action="Details" asp-route-reference="@document.Reference">@document.Title</a>
+                                    }
+                                }
+                            </span>
+                            <span class="fs-nano text-muted mt-1">
+                                <time class="timeago" datetime="@notification.Activity.Date.ToString("o")">@notification.Activity.Date.ToString("yyyy-MM-dd")</time>
+                            </span>
+                        </span>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+<div class="py-2 px-3 bg-faded d-block rounded-bottom text-right border-faded border-bottom-0 border-right-0 border-left-0">
+    <a asp-controller="Account" asp-action="Notifications" class="fs-xs fw-500 ml-auto">view all notifications</a>
+</div>
+
+*@

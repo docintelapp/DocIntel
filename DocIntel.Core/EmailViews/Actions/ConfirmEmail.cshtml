@@ -1,0 +1,43 @@
+@using RazorLight
+@inherits TemplatePage<DocIntel.Core.EmailViews.Actions.ConfirmEmailModel>
+
+@using DocIntel.Core.EmailViews.Shared
+@model DocIntel.Core.EmailViews.Actions.ConfirmEmailModel
+@{ 
+    Layout = "Shared.EmailLayout";
+}
+
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section header {
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+        <tr>
+            <td bgcolor="#ffffff" align="left" valign="top" style="padding: 20px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 0.1px; line-height: 48px;">
+                <h1 style="font-size: 24px; font-weight: 400; margin: 0;">Confirm your email</h1>
+            </td>
+        </tr>
+    </table>
+}
+
+<p>Hey @Model.User.FriendlyName,</p>
+
+<p>Welcome to DocIntel. You're almost ready to get started, simply verify your email address by clicking on the button below,</p>
+
+@{
+    await IncludeAsync("Shared.EmailButton", new EmailButtonViewModel("Confirm my email", Model.Callback));
+}
+
+<p>
+    Or copy-paste the following URL in your browser:
+</p>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td bgcolor="#f4f4f4">
+            <p style="word-break:break-all; padding: 20px; margin: 0px;">
+                <font style="word-break:break-all;"><code>@Model.Callback</code></font>
+            </p>
+        </td>
+    </tr>
+</table>
+
+<p>Afterwards, you can login to the platform with your username <b>@Model.User.UserName</b> or request a new password.</p>

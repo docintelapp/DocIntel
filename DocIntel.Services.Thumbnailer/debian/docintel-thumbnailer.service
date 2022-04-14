@@ -1,0 +1,18 @@
+[Unit]
+Description=DocIntel.RabbitMQThumbnailer
+After=network.target
+
+[Service]
+Type=notify
+User=docintel
+Group=docintel
+WorkingDirectory=/usr/lib/docintel/thumbnailer
+ExecStart=/usr/bin/dotnet DocIntel.Services.Thumbnailer.dll service
+StandardOutput=journal
+StandardError=journal
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
+

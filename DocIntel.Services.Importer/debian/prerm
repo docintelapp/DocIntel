@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+set -e
+
+. /usr/share/debconf/confmodule
+
+exit 0

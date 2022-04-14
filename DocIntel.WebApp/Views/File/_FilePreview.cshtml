@@ -1,0 +1,16 @@
+@model DocumentFile
+
+@await Html.PartialAsync("../File/_ClassificationBanner", Model, new ViewDataDictionary(ViewData))
+
+<div class="p-2">
+    @if ((Model.MimeType == "application/pdf") | Model.MimeType.StartsWith("image") | Model.MimeType.StartsWith("text"))
+    {
+        <iframe src="@Url.Action("Download", "File", new {id = Model.FileId})" style="width: 100%"></iframe>
+    }
+    else
+    {
+        <p>Sorry, we could not render the file.</p>
+    }
+</div>
+
+@await Html.PartialAsync("../File/_ClassificationBanner", Model, new ViewDataDictionary(ViewData))

@@ -1,0 +1,92 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.TagViewModel.IndexViewModel
+
+@{
+    ViewData["Title"] = "All tags";
+}
+
+@{
+    var canMerge = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Merge)).Succeeded;
+    var canMergeFacets = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.MergeFacet)).Succeeded;
+    var canCreate = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Create)).Succeeded;
+    var canView = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.View)).Succeeded;
+    var canCreateFacet = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.CreateFacet)).Succeeded;
+    var canEditFacet = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.EditFacet)).Succeeded;
+}
+<form asp-action="Index" asp-controller="Tag" method="GET" id="search-sources">
+
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-tag subheader-icon"></i> Tags
+        </h1>
+        <div>
+                @if (canMerge | canMergeFacets)
+                {
+            <div class="btn-group">
+                @if (canMerge)
+                {
+                    <a asp-action="Merge" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-code-merge"></i> Merge Tags
+                    </a>
+                }
+                @if (canMergeFacets)
+                {
+                    <a asp-action="Merge" asp-controller="TagFacet" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-code-merge"></i> Merge Facets
+                    </a>
+                }
+            </div>
+            }
+                @if (canCreate | canCreateFacet)
+                {
+            <div class="btn-group ml-4">
+                    @if (canCreate)
+                    {
+                        <a class="btn btn-primary btn-iconified waves-effect waves-themed" asp-action="Create"><i class="fal fa-plus"></i> Create Tag</a>
+                    }
+                    @if (canCreateFacet)
+                    {
+                        <a class="btn btn-primary btn-iconified waves-effect waves-themed" asp-action="Create" asp-controller="TagFacet"><i class="fal fa-plus"></i> Create Facet</a>
+                    }
+            </div>
+                }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="input-group input-group-lg mb-2 shadow-1 rounded mb-4">
+                <input type="text" class="form-control shadow-inset-2" id="filter-icon"
+                       aria-label="type 2 or more letters" placeholder="Search for anything..." value="@Model.Query.SearchTerms" name="SearchTerm"/>
+                <div class="input-group-append">
+                    <button class="btn btn-primary hidden-sm-down waves-effect waves-themed" type="submit">
+                        <i class="fal fa-search mr-lg-2"></i><span class="hidden-md-down">Search tags</span>
+                    </button>
+                </div>
+            </div>
+
+            @if (Model.Results != null && Model.Results.Hits.Any())
+            {
+                @foreach (var facet in Model.Results.Hits.GroupBy(_ => new Tuple<Guid,string, string>(_.Tag.FacetId, _.Tag.FacetTitle, _.Tag.FacetDescription)))
+                {
+                    @await Html.PartialAsync("_PanelIGroupTagFacet", facet, new ViewDataDictionary(ViewData))
+                }
+            }
+            else
+            {
+                <div class="panel">
+                    <div class="panel-container show">
+                        <div class="panel-content">
+                            <div class="text-center fs-xl m-3">
+                                <i class="fal fa-tag fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                                We found no tags matching your criterias.<br/>
+                                <small>Try later, tag documents or contact your administrator.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+</form>

@@ -1,0 +1,35 @@
+@model DocIntel.WebApp.ViewModels.SearchViewModel.SearchIndexViewModel
+
+@if (Model.Registrants.Any())
+{
+    var selected = Model.SelectedRegistrants.Any();
+    <div class="card">
+        <div class="card-header">
+            <a href="javascript:void(0);" class="card-title @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#collapseRegisteredBy" aria-expanded="false">
+                Registered by
+                @if (selected)
+                {
+                    <span class="ml-auto">
+                        <span class="badge badge-light">@Model.SelectedRegistrants.Count() selected</span>
+                    </span>   
+                }
+            </a>
+        </div>
+        <div id="collapseRegisteredBy" class="@(!selected ? "collapse" : "")" aria-labelledby="headingRegisteredBy" data-parent="#accordion_meta">
+            <div class="card-body">
+                @foreach (var item in Model.Registrants)
+                {
+                    <div class="custom-control custom-checkbox mb-1">
+                        <input type="checkbox" class="custom-control-input auto-submit" id="registrant-@item.Value.UserName"
+                               checked="@Model.SelectedRegistrants.Any(_ => _.NormalizedUserName == item.Value.NormalizedUserName)"
+                               name="registrants" value="@item.Value.Id">
+                        <label class="custom-control-label" for="registrant-@item.Value.UserName">
+                            @item.Value.FriendlyName
+                        </label>
+                        <span class="text-muted float-right fs-xs">(@item.Count)</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

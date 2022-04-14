@@ -1,0 +1,57 @@
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentDetailsViewModel
+
+<div class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Files
+            <span class="fw-300">
+                <i>Attachments</i>
+            </span>
+        </h2>
+        <div class="panel-toolbar">
+            <a asp-action="Index" asp-controller="File" asp-route-id="@Model.Document.DocumentId" class="btn btn-default btn-xs mr-1 shadow-0 waves-effect waves-themed">
+                View all
+            </a>
+        </div>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content pb-0">
+            @foreach (var f in Model.Document.Files.Where(_ => _.Visible))
+            {
+                <div class="d-flex mb-3">
+                    <div class='icon-stack display-4 mr-3 flex-shrink-0'>
+                        <i class="base base-7 icon-stack-3x opacity-100 color-primary-500"></i>
+                        <i class="base base-7 icon-stack-2x opacity-100 color-primary-300"></i>
+                        <i class="fal @(f.MimeType == "application/pdf" ? "fa-file-pdf" : "fa-file") icon-stack-1x opacity-100 color-white"></i>
+                    </div>
+                    <div class="d-inline-flex flex-column">
+                        <div class="d-block">
+                            @if (f.OverrideClassification & !string.IsNullOrEmpty(f.Classification?.Abbreviation))
+                            {
+                                <span class="badge @f.Classification.Color">
+                                    @f.Classification.Abbreviation
+                                </span>
+                            }
+                            else if (!f.OverrideClassification & !string.IsNullOrEmpty(Model.Document.Classification?.Abbreviation))
+                            {
+                                <span class="badge @Model.Document.Classification.Color">
+                                    @Model.Document.Classification.Abbreviation
+                                </span>
+                            }
+                            <a asp-action="Download" asp-controller="File" asp-route-id="@f.FileId" target="_blank">@(!string.IsNullOrEmpty(f.Title) ? f.Title.Trim() : "File")</a>
+                        </div>
+                        <div class="d-block text-muted fs-sm">
+                            @Html.Timeago(f.DocumentDate)
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (Model.Document.Files.Any(_ => !_.Visible))
+            {
+                <p class="text-muted">
+                    @(Model.Document.Files.Count(_ => !_.Visible)) @Html.Pluralize("file", Model.Document.Files.Count(_ => !_.Visible)) hidden.
+                </p>
+            }
+        </div>
+    </div>
+</div>

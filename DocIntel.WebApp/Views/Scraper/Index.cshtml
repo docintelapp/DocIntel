@@ -1,0 +1,83 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model IEnumerable<Scraper>
+
+@{
+    ViewData["Title"] = "Scrapers";
+    var canCreate = (await AuthorizationService.AuthorizeAsync(User, null, IncomingFeedOperations.Create)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-inbox-in subheader-icon"></i> @ViewData["Title"]
+        <small>
+            Scrapers convert an URI into a document, possibly using a vendor specific API.
+        </small>
+    </h1>
+    <div>
+        <div class="btn-group">
+            @if (canCreate)
+            {
+                <a asp-action="Create"
+                   class="btn btn-primary waves-effect waves-themed">
+                    <i class="fal fa-plus mr-1"></i> Install
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        @if (Model != null)
+        {
+            <div id="panel-source-info" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Scapers
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-0">
+                        @foreach (var t in Model.OrderBy(_ => _.Position))
+                        {
+                            <div class="row mb-3">
+                                <div class="col align-self-auto col-md-auto">
+                                    <a asp-action="Configure" asp-route-id="@t.ScraperId" class="text-muted mr-3" alt="Configure">
+                                        <i class="fas fa-sliders-h-square"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@t.ScraperId" class="text-muted" alt="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                                <div class="col">
+                                    <p class="mb-0">
+                                        <a asp-action="Details" asp-route-id="@t.ScraperId">
+                                            <strong>@t.Name</strong>
+                                        </a>
+                                        @if (t.Enabled)
+                                        {
+                                            <span class="badge badge-success ml-1">Enabled</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary ml-1">Disabled</span>
+                                        }
+                                    </p>
+                                    <p class="text-muted mb-0">@t.Description</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">There is no plugins!</h5>
+                </div>
+            </div>
+        }
+    </div>
+</div>

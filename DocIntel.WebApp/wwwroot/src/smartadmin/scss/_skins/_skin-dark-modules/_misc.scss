@@ -1,0 +1,74 @@
+.row-grid > {
+  .col:before, 
+  [class^="col-"]:before, 
+  [class*=" col-"]:before, 
+  [class^="col "]:before, 
+  [class*=" col "]:before, 
+  [class$=" col"]:before, 
+  [class="col"]:before {
+    border-top-color: rgba(0, 0, 0, 0.15);
+  }
+
+  .col:after, 
+  [class^="col-"]:after, 
+  [class*=" col-"]:after, 
+  [class^="col "]:after, 
+  [class*=" col "]:after, 
+  [class$=" col"]:after, 
+  [class="col"]:after {
+    border-left-color: rgba(0, 0, 0, 0.15);
+  }
+}
+//close icon
+.close {
+	color: #fff;
+	text-shadow: 0 1px 0 #000;
+}
+
+.state-selected {
+	background: rgba($rgba-info, 0.15) !important;
+	background: rgba(var(--theme-rgb-info), 0.15) !important;
+}
+
+
+.notes {
+	background: rgba($rgba-warning, 0.15);
+	background: rgba(var(--theme-rgb-warning), 0.15);
+}
+pre {
+	color: $dark-white;
+}
+//status
+.status:before {
+	border-color: rgba(0, 0, 0, 0.5)
+}
+//progress 
+.progress {
+	background-color: rgba(0, 0, 0, 0.15);
+}
+
+
+hr {
+	border-bottom-color: rgba(var(--theme-rgb-fusion), 0.85);
+}
+
+code {
+	background: rgba(0, 0, 0, 0.3);
+	color: #ffffff;
+}
+
+//list-group
+.list-group-item {
+	background: transparent;
+}
+
+//jumbotron
+.jumbotron {
+  background-color: rgba(0,0,0,0.2);
+}
+
+
+&.mod-nav-link:not(.nav-function-top):not(.nav-function-minify):not(.mod-hide-nav-icons) ul.nav-menu:not(.nav-menu-compact)>li>ul:before {
+	border-left: 1px dashed rgba(255, 255, 255, 0.1);
+}
+

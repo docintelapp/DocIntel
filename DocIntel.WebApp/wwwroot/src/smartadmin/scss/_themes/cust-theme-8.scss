@@ -1,0 +1,20 @@
+/* #THEME COLOR (variable overrides)
+========================================================================== */
+$color-primary: #7c91df; 
+$color-success: #47b73a; 
+$color-info: #4791cc; 
+$color-warning: #ffbf87; 
+$color-danger: #ff2f44;
+
+/* #GLOBAL IMPORTS
+========================================================================== */
+@import './src/scss/_imports/_theme-modules-import';
+
+/* #Reset userselect
+========================================================================== */
+#myapp-0 {
+	box-shadow: none !important;
+}
+#myapp-8 {
+	box-shadow: 0 0 0 3px #000000;
+}

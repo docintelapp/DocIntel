@@ -1,0 +1,79 @@
+﻿@model DocIntel.WebApp.ViewModels.TagViewModel.MergeViewModel
+
+@{
+    ViewData["Title"] = "Merge Tags";
+}
+
+<form asp-action="Merge" method="post">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-tag subheader-icon"></i> @ViewData["Title"]
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+
+            @{
+                var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+            }
+            @if (errors.Count() > 0)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                    <ul class="mb-0 mt-1">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div id="panel-basic" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+
+                        <div class="form-group">
+                            <label class="control-label">Primary tag</label>
+                            <select name="primaryTagName" class="form-control autocomplete-tag" data-tags="false">
+                                @if (ViewData.ContainsKey("primaryTagName"))
+                                {
+                                    var tag = (Tag) ViewData["primaryTagName"];
+                                    <option selected="selected" value="@tag.TagId"
+                                            data-backgroundColor="@tag.BackgroundColor"
+                                            data-prefix="@tag.Facet.Prefix">
+                                        @tag.Label
+                                    </option>
+                                }
+                            </select>
+                            <small class="form-text text-muted">This tag will be kept.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Tag to merge</label>
+                            <select name="secondaryTagName" class="form-control autocomplete-tag" data-tags="false"></select>
+                            <small class="form-text text-muted">This tag will be <strong>discarded</strong>.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-code-merge"></i> Merge
+                    </button>
+                    <a asp-action="Index" class="ml-3 text-secondary">Cancel</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

@@ -1,0 +1,11 @@
+.mod-nav-dark:not(.mod-skin-dark) {
+	.page-sidebar {
+		background-color: darken($color-fusion, 20%);
+	}
+	&.nav-function-top .page-sidebar .primary-nav .nav-menu > li a:not(:hover):not(focus) {
+		color:  $nav-link-color;
+	}
+	&.mod-skin-dark:not(.mod-skin-light) .page-logo {
+		border-bottom: inherit;
+	}
+}

@@ -1,0 +1,26 @@
+@using DocIntel.Core.Settings
+@inject ApplicationSettings _settings
+
+@{
+    ViewData["Title"] = "Confirmation email sent";
+}
+
+<div class="row justify-content-center">
+    <div class="col-4">
+        <div id="panel-basic" class="panel mt-4">
+            <div class="panel-container">
+                <div class="text-center fs-xl m-4" style="margin-top: 4rem !important;margin-bottom: 4rem !important;">
+                    <i class="fal fa-envelope-open-text fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                    Check your email and open the link we sent to verify your email.<br/>
+                    <small>Check your spam folder if you did not receive any email, or relax and wait a bit more.</small>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+    
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}

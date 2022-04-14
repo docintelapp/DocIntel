@@ -1,0 +1,42 @@
+Template: docintel-webapp/createuser
+Type: boolean
+Default: true
+Description: Create an admin user for DocIntel?
+
+Template: docintel-webapp/username
+Type: string
+Default: admin
+Description: Username for the administrative account
+
+Template: docintel-webapp/firstname
+Type: string
+Default: John
+Description: First Name for the administrative account
+
+Template: docintel-webapp/lastname
+Type: string
+Default: Doe
+Description: Last name for the administrative account
+
+Template: docintel-webapp/email
+Type: string
+Default: docintel@localhost
+Description: Email for the administrative account
+
+Template: docintel-webapp/password
+Type: password
+Description: Password for the administrative account
+
+Template: docintel-webapp/proxy
+Type: string
+Description: Proxy to be used by the application
+
+Template: docintel-webapp/no-proxy
+Type: string
+Default: 
+Description: No Proxy list (e.g. localhost, )
+
+Template: docintel-webapp/default-classification
+Type: string
+Default: Unclassified
+Description: Name for the default classification

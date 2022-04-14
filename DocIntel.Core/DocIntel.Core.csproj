@@ -1,0 +1,123 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>DocIntel.Core</RootNamespace>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591;1573;1572</NoWarn>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <Folder Include="Utils\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="3.1.1" />
+    <PackageReference Include="Markdig" Version="0.28.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="6.0.0" />
+    <PackageReference Include="MimeKit" Version="3.1.1" />
+    <PackageReference Include="Npgsql.Json.NET" Version="6.0.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.0" />
+    <PackageReference Include="Spectre.Cli.Extensions.DependencyInjection" Version="0.4.0" />
+    <PackageReference Include="Spectre.Console" Version="0.43.1-preview.0.45" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
+
+    <!-- <PackageReference Include="EntityFrameworkCore.DbContextScope" Version="1.0.0" /> -->
+    <PackageReference Include="AutoMapper" Version="11.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    
+    <PackageReference Include="HtmlSanitizer" Version="7.1.488" />
+    
+    <PackageReference Include="MassTransit" Version="8.0.0" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.0" />
+    <PackageReference Include="NEST" Version="7.17.0" />
+
+    <PackageReference Include="NLog" Version="4.7.14" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
+
+    <PackageReference Include="Novell.Directory.Ldap.NETStandard2_0" Version="3.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.2.4" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>  
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />  
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.3" />
+    <PackageReference Include="RawRabbit" Version="2.0.0-rc5" />  
+    <PackageReference Include="RawRabbit.DependencyInjection.ServiceCollection" Version="2.0.0-rc5" />  
+    <PackageReference Include="RawRabbit.Operations.Publish" Version="2.0.0-rc5" />  
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>  
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />  
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.3" />  
+    
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />  
+    
+    <PackageReference Include="System.ServiceModel.Syndication" Version="6.0.0" />  
+    
+    <PackageReference Include="TimeZoneNames" Version="5.0.1" />
+    
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="6.13.15" />
+    <PackageReference Include="RazorLight" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="SolrNet">
+      <HintPath>..\Library\SolrNet.dll</HintPath>
+    </Reference>
+    <Reference Include="SolrNet.Microsoft.DependencyInjection">
+      <HintPath>..\Library\Microsoft.DependencyInjection.SolrNet.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharpCore">
+      <HintPath>..\Library\PdfSharpCore.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocIntel.Integrations\DocIntel.Integrations.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="debian\docintel-core\**" />
+    <Compile Remove="debian\source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="debian\docintel-core\**" />
+    <EmbeddedResource Remove="debian\source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="debian\docintel-core\**" />
+    <None Remove="debian\source\**" />
+    <None Remove="debian\changelog" />
+    <None Remove="debian\debhelper-build-stamp" />
+    <None Remove="debian\docintel-core.substvars" />
+    <None Remove="debian\docintel-core.debhelper.log" />
+    <None Remove="debian\docintel-core.postrm.debhelper" />
+    <None Remove="debian\files" />
+    <None Remove="debian\docintel-core.lintian-overrides" />
+    <None Remove="debian\docintel-core.purge" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="EmailViews\**\*.cshtml" />
+  </ItemGroup>
+  
+</Project>

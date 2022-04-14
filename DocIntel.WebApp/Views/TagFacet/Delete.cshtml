@@ -1,0 +1,91 @@
+@using DocIntel.Core.Authorization.Operations
+@model TagFacet
+
+@{
+    ViewData["Title"] = "Delete facet '" + Model.Title + "'";
+    var canEdit = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Edit)).Succeeded;
+}
+
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-tags subheader-icon"></i> @ViewData["Title"]
+    </h1>
+    <div>
+        <div class="btn-group">
+            @if (canEdit)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary btn-iconified waves-effect waves-themed">
+                    <i class="fal fa-edit"></i> Edit
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+
+<form asp-action="Delete">
+
+    <div class="row">
+        <div class="col-12">
+
+            @if (Model.Tags.Any())
+            {
+                <div class="alert bg-warning-500 fade show">
+                    <div class="d-flex align-items-center">
+                        <div class="alert-icon">
+                            <span class="icon-stack icon-stack-sm">
+                                <i class="base-7 icon-stack-3x color-warning-200"></i>
+                                <i class="base-7 icon-stack-2x color-warning-500"></i>
+                                <i class="far fa-exclamation icon-stack-1x color-warning-900"></i>
+                            </span>
+                        </div>
+                        <div class="flex-1">
+                            <span class="h5">Deleting a facet also delete the tags!</span>
+                            <br>
+                            This action will delete <strong>@Model.Tags.Count() @Html.Pluralize("tag", Model.Tags.Count())</strong>.
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div id="panel-danger" class="panel">
+                <div class="panel-hdr bg-danger-900 bg-info-gradient">
+                    <h2>
+                        Are you sure you want to delete this facet?
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                            @if (!string.IsNullOrEmpty(Model.Description))
+                            {
+                                <text>@Html.Raw(Model.Description)</text>
+                                <hr />
+                            }
+                        <p class="mb-0">
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <a class="badge badge-pill @tag.BackgroundColor"
+                                   asp-action="Details" asp-controller="Tag" asp-route-id="@tag.TagId">
+                                    @tag.Label
+                                </a>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" asp-for="Id"/>
+
+    <div class="row">
+        <div class="col-md-12">
+            <button type="submit" class="btn btn-danger btn-iconified waves-effect waves-themed">
+                <i class="fal fa-trash-alt"></i> Yes, delete!
+            </button>
+            <a asp-action="Index" asp-controller="Tag" class="ml-3 text-secondary">No, don't delete!</a>
+        </div>
+    </div>
+
+</form>

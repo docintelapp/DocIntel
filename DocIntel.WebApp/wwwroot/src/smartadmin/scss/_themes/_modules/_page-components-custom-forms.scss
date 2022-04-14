@@ -1,0 +1,255 @@
+// Embedded icons from Open Iconic.
+// Released under MIT and copyright 2014 Waybury.
+// https://useiconic.com/open
+
+
+// Checkboxes and radios
+//
+// Base class takes care of all the key behavioral aspects.
+
+
+.custom-control-input {
+
+  &:checked ~ .custom-control-label::before {
+    color: $custom-control-indicator-checked-color;
+    border-color: $custom-control-indicator-checked-border-color;
+    @include gradient-bg($custom-control-indicator-checked-bg);
+  }
+
+  &:focus:not(:checked) ~ .custom-control-label::before {
+    border-color: $custom-control-indicator-focus-border-color;
+  }
+
+  &:not(:disabled):active ~ .custom-control-label::before {
+    color: $custom-control-indicator-active-color;
+    background-color: $custom-control-indicator-active-bg;
+    border-color: $custom-control-indicator-active-border-color;
+  }
+
+  // Use [disabled] and :disabled to work around https://github.com/twbs/bootstrap/issues/28247
+  &[disabled],
+  &:disabled {
+    ~ .custom-control-label {
+      color: $custom-control-label-disabled-color;
+
+      &::before {
+        background-color: $custom-control-indicator-disabled-bg;
+      }
+    }
+  }
+}
+
+// Custom control indicators
+//
+// Build the custom controls out of pseudo-elements.
+
+.custom-control-label {
+  color: $custom-control-label-color;
+
+  // Background-color and (when enabled) gradient
+  &::before {
+    background-color: $custom-control-indicator-bg;
+    border: $custom-control-indicator-border-color solid $custom-control-indicator-border-width;
+  }
+}
+
+
+// Checkboxes
+//
+// Tweak just a few things for checkboxes.
+
+.custom-checkbox {
+
+  .custom-control-input:indeterminate ~ .custom-control-label {
+    &::before {
+      border-color: $custom-checkbox-indicator-indeterminate-border-color;
+      @include gradient-bg($custom-checkbox-indicator-indeterminate-bg);
+    }
+    &::after {
+      background-image: escape-svg($custom-checkbox-indicator-icon-indeterminate);
+    }
+  }
+
+  .custom-control-input:disabled {
+    &:checked ~ .custom-control-label::before {
+      background-color: $custom-control-indicator-checked-disabled-bg;
+    }
+    &:indeterminate ~ .custom-control-label::before {
+      background-color: $custom-control-indicator-checked-disabled-bg;
+    }
+  }
+}
+
+// Radios
+//
+// Tweak just a few things for radios.
+
+.custom-radio {
+  .custom-control-input:disabled {
+    &:checked ~ .custom-control-label::before {
+      background-color: $custom-control-indicator-checked-disabled-bg;
+    }
+  }
+}
+
+
+// switches
+//
+// Tweak a few things for switches
+
+.custom-switch {
+
+  .custom-control-label {
+
+    &::after {
+      background-color: $custom-control-indicator-border-color;
+    }
+  }
+
+  .custom-control-input:checked ~ .custom-control-label {
+    &::after {
+      background-color: $custom-control-indicator-bg;
+    }
+  }
+
+  .custom-control-input:disabled {
+    &:checked ~ .custom-control-label::before {
+      background-color: $custom-control-indicator-checked-disabled-bg;
+    }
+  }
+}
+
+
+// Select
+//
+// Replaces the browser default select with a custom one, mostly pulled from
+// https://primer.github.io/.
+//
+
+.custom-select {
+  color: $custom-select-color;
+  background: $custom-select-bg $custom-select-background;
+  border: $custom-select-border-width solid $custom-select-border-color;
+
+
+  &:focus {
+    border-color: $custom-select-focus-border-color;
+
+    &::-ms-value {
+      // For visual consistency with other platforms/browsers,
+      // suppress the default white text on blue background highlight given to
+      // the selected option text when the (still closed) <select> receives focus
+      // in IE and (under certain conditions) Edge.
+      // See https://github.com/twbs/bootstrap/issues/19398.
+      color: $input-color;
+      background-color: $input-bg;
+    }
+  }
+
+  &:disabled {
+    color: $custom-select-disabled-color;
+    background-color: $custom-select-disabled-bg;
+  }
+}
+
+
+// File
+//
+// Custom file input.
+
+.custom-file-input {
+  &:focus ~ .custom-file-label {
+    border-color: $custom-file-focus-border-color;
+  }
+
+  // Use [disabled] and :disabled to work around https://github.com/twbs/bootstrap/issues/28247
+  &[disabled] ~ .custom-file-label,
+  &:disabled ~ .custom-file-label {
+    background-color: $custom-file-disabled-bg;
+  }
+
+  ~ .custom-file-label[data-browse]::after {
+    content: attr(data-browse);
+  }
+}
+
+.custom-file-label {
+  color: $custom-file-color;
+  background-color: $custom-file-bg;
+  border: $custom-file-border-width solid $custom-file-border-color;
+
+  &::after {
+    color: $custom-file-button-color;
+    @include gradient-bg($custom-file-button-bg);
+  }
+}
+
+// Range
+//
+// Style range inputs the same across browsers. Vendor-specific rules for pseudo
+// elements cannot be mixed. As such, there are no shared styles for focus or
+// active states on prefixed selectors.
+
+.custom-range {
+  background-color: transparent;
+
+  &::-webkit-slider-thumb {
+    @include gradient-bg($custom-range-thumb-bg);
+    border: $custom-range-thumb-border;
+
+    &:active {
+      @include gradient-bg($custom-range-thumb-active-bg);
+    }
+  }
+
+  &::-webkit-slider-runnable-track {
+    background-color: $custom-range-track-bg;
+  }
+
+  &::-moz-range-thumb {
+    @include gradient-bg($custom-range-thumb-bg);
+    border: $custom-range-thumb-border;
+
+    &:active {
+      @include gradient-bg($custom-range-thumb-active-bg);
+    }
+  }
+
+  &::-moz-range-track {
+    background-color: $custom-range-track-bg;
+  }
+
+  &::-ms-thumb {
+    @include gradient-bg($custom-range-thumb-bg);
+    border: $custom-range-thumb-border;
+
+    &:active {
+      @include gradient-bg($custom-range-thumb-active-bg);
+    }
+  }
+
+
+  &::-ms-fill-lower {
+    background-color: $custom-range-track-bg;
+  }
+
+  &::-ms-fill-upper {
+    background-color: $custom-range-track-bg;
+  }
+
+  &:disabled {
+    &::-webkit-slider-thumb {
+      background-color: $custom-range-thumb-disabled-bg;
+    }
+
+
+    &::-moz-range-thumb {
+      background-color: $custom-range-thumb-disabled-bg;
+    }
+
+
+    &::-ms-thumb {
+      background-color: $custom-range-thumb-disabled-bg;
+    }
+  }
+}

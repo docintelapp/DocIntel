@@ -1,0 +1,99 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model IEnumerable<Classification>
+
+@{
+    ViewData["Title"] = "Classifications";
+    var canCreate = (await AuthorizationService.AuthorizeAsync(User, null, ClassificationOperations.Add)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-stamp subheader-icon"></i> Classifications
+    </h1>
+    <div>
+        <div class="btn-group">
+            @if (canCreate)
+            {
+                <a asp-action="Create"
+                   class="btn btn-primary waves-effect waves-themed">
+                    <i class="fal fa-plus mr-1"></i> Add Classification
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        @if (Model != null && Model.Any())
+        {
+            <div id="panel-source-info" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <table class="table table-bordered mb-0 data-table">
+                            <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Title</th>
+                                <th scope="col">Subtitle</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Parent Classification</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var t in Model)
+                            {
+                                <tr>
+                                    <th scope="row">
+                                        <a asp-action="Details" asp-route-id="@t.ClassificationId" class="badge @t.Color">@t.Title</a>
+                                        @if (t.Default)
+                                        {
+                                            <span class="badge badge-success ml-1">Default</span>
+                                        }
+                                    </th>
+                                    <td>
+                                        @t.Subtitle
+                                    </td>
+                                    <td>
+                                        @if (string.IsNullOrEmpty(t.Description))
+                                        {
+                                            <i class="text-muted">None</i>
+                                        }
+                                        else
+                                        {
+                                            <text>@t.Description</text>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (t.ParentClassificationId != default)
+                                        {
+                                            <text>@t.ParentClassification.Title</text>
+                                        }
+                                        else
+                                        {
+                                            <i class="text-muted">None</i>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="text-center fs-xl m-3">
+                            <i class="fal fa-stamp fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            We found no classification matching your criterias.<br/>
+                            <small>Try later or contact your administrator.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

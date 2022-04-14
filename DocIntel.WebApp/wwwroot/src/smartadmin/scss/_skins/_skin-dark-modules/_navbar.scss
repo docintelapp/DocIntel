@@ -1,0 +1,41 @@
+//navbar
+.navbar-light {
+  .navbar-brand {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .navbar-nav {
+    .show > .nav-link, .active > .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .nav-link {
+      &.show, &.active {
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      &:hover, &:focus {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  .navbar-text {
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+//Nav
+.nav-tabs .nav-item .nav-link.active:not(:hover), 
+.nav-tabs-clean .nav-item .nav-link:hover {
+  background: transparent;
+  color: #ffffff !important;
+}
+
+.nav-tabs {
+  .nav-link.active, .nav-item.show .nav-link {
+    background: transparent;
+  }
+}

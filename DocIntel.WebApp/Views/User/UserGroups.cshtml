@@ -1,0 +1,55 @@
+@model DocIntel.WebApp.ViewModels.UserViewModel.ProfileViewModel
+
+@if (Model.User.Memberships.Any())
+{
+    
+    <div class="card mb-g">
+        <div class="row row-grid no-gutters">
+            <div class="col-12">
+                <div class="p-3">
+                    <h2 class="mb-0 fs-xl">
+                        Groups
+                    </h2>
+                </div>
+            </div>
+            @foreach (var g in Model.User.Memberships)
+            {
+                @if (!g.Group.Hidden || Model.User.Id == ViewBag.CurrentUser.Id || ((AppUser) ViewBag.CurrentUser).Memberships.Any(_ => _.GroupId == g.GroupId))
+                {
+                    <div class="col-12">
+                        <div class="p-3">
+                            <h5 class="mb-0">
+                                @g.Group.Name
+                                @if (!string.IsNullOrEmpty(g.Group.Description))
+                                {
+                                    <small class="mt-0 mb-0 text-muted">
+                                        @g.Group.Description
+                                    </small>
+                                }
+                                @{
+                                    var mutual = ((AppUser) ViewBag.CurrentUser).Memberships.Any(_ => _.GroupId == g.GroupId);
+                                }
+                                @if ((Model.User.Id == ViewBag.CurrentUser.Id || mutual) && g.Group.Hidden)
+                                {
+                                    if (mutual)
+                                    {
+                                        <span class="badge badge-danger fw-n position-absolute pos-top pos-right mt-3 mr-3">Hidden / Mutual</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger fw-n position-absolute pos-top pos-right mt-3 mr-3">Hidden</span>
+                                    }
+                                }
+                                else if (mutual)
+                                {
+                                    <span class="badge badge-primary fw-n position-absolute pos-top pos-right mt-3 mr-3">Mutual</span>
+                                }
+                            </h5>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+    
+}

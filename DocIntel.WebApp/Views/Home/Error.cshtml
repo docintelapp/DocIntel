@@ -1,0 +1,42 @@
+@model DocIntel.WebApp.ViewModels.ErrorViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "Error";
+}
+
+<div class="row">
+    <div class="hidden-xs-down col"></div>
+    <div class="col">
+        <div class="card" style="margin: 20px 0;">
+            <div class="card-header">
+                Ooops 😭, something went really wrong.
+            </div>
+            <div class="card-body">
+                <h5>@Model.ExceptionName</h5>
+
+                <p>
+                    Please submit the issue to our <a href="https://gitlab01.low.cert.mil.be/cailliaua/DocIntel/issues">GitLab</a> so that we can fix it!
+                    Don't forget to specify all the details below, in addition to what you were doing.
+                    If you were uploading a file, please upload the file on the issue.
+                </p>
+
+                <dl>
+                    <dt>Datetime</dt>
+                    <dd>@Model.Time</dd>
+                    <dt>Route</dt>
+                    <dd>@Model.Route</dd>
+                    <dt>RequestID</dt>
+                    <dd>
+                        <code>@Model.RequestId</code>
+                    </dd>
+                    <dt>Stack trace</dt>
+                    <dd>
+                        <pre style="overflow: auto; max-width: 530px;"><code>@Model.StackTrace</code></pre>
+                    </dd>
+                </dl>
+
+            </div>
+        </div>
+    </div>
+    <div class="hidden-xs-down col"></div>
+</div>

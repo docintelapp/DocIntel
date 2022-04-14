@@ -1,0 +1,63 @@
+<!-- 
+TIP: The menu items are not auto translated. You must have a residing lang file associated with the menu saved inside dist/media/data with reference to each 'data-i18n' attribute.
+-->
+<ul id="js-nav-menu" class="nav-menu">
+	<li {{#is pagename "in" "blankpage"}}class="active" {{/is}}>
+		<a href="blank.html" title="Blank Project" data-filter-tags="blank page">
+			<i class="{{iconPrefix}} fa-globe"></i>
+			<span class="nav-link-text" data-i18n="nav.blankpage">Blank Project</span>
+		</a>
+	</li>
+	<li class="nav-title">Navigation Title</li>
+	<li {{#is pagename "in" "category menu child sublevel item"}}class="active open" {{/is}}>
+		<a href="#" title="Category" data-filter-tags="category">
+			<i class="{{iconPrefix}} fa-file"></i>
+			<span class="nav-link-text" data-i18n="nav.category">Category</span>
+		</a>
+		<ul>
+			<li {{#is pagename "in" ""}}class="active open" {{/is}}>
+				<a href="javascript:void(0);" title="Menu child" data-filter-tags="utilities menu child">
+					<span class="nav-link-text" data-i18n="nav.utilities_menu_child">Sub-category</span>
+				</a>
+				<ul>
+					<li {{#is pagename "===" "javascript:void(0);"}}class="active" {{/is}}>
+						<a href="javascript:void(0);" title="Sublevel Item" data-filter-tags="utilities menu child sublevel item">
+							<span class="nav-link-text" data-i18n="nav.utilities_menu_child_sublevel_item">Sublevel Item</span>
+						</a>
+					</li>
+					<li {{#is pagename "===" "javascript:void(0);"}}class="active" {{/is}}>
+						<a href="javascript:void(0);" title="Another Item" data-filter-tags="utilities menu child another item">
+							<span class="nav-link-text" data-i18n="nav.utilities_menu_child_another_item">Another Item</span>
+						</a>
+					</li>
+				</ul>
+			</li>
+			<li class="disabled">
+				<a href="javascript:void(0);" title="Disabled item" data-filter-tags="utilities disabled item">
+					<span class="nav-link-text" data-i18n="nav.utilities_disabled_item">Disabled item</span>
+				</a>
+			</li>
+		</ul>
+	</li>
+	<!-- Example of open and active states -->
+	<li class="active open">
+		<a href="#" title="Category" data-filter-tags="category">
+			<i class="{{iconPrefix}} fa-plus"></i>
+			<span class="nav-link-text" data-i18n="nav.category">Open Item</span>
+		</a>
+		<ul>
+			<li class="active open">
+				<a href="javascript:void(0);" title="Menu child" data-filter-tags="utilities menu child">
+					<span class="nav-link-text" data-i18n="nav.utilities_menu_child">Open Sub-category</span>
+				</a>
+				<ul>
+					<li class="active">
+						<a href="javascript:void(0);" title="Sublevel Item" data-filter-tags="utilities menu child sublevel item">
+							<span class="nav-link-text" data-i18n="nav.utilities_menu_child_sublevel_item">Active Item</span>
+						</a>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</li>
+</ul>

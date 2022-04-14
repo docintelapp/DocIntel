@@ -1,0 +1,133 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@model DocIntel.WebApp.ViewModels.SearchViewModel.SearchIndexViewModel
+
+@{
+    if (string.IsNullOrEmpty(Model.SearchTerm))
+    {
+        ViewData["Title"] = "All documents";
+    }
+    else
+    {
+        ViewData["Title"] = "Searching for '" + Model.SearchTerm + "'";
+    }
+    ViewData["Category1"] = "Documents";
+    ViewData["SearchTerms"] = Model.SearchTerm;
+}
+
+<form asp-action="Index" asp-controller="Search" id="search-documents" method="GET">
+    <div class="row">
+        <div class="col-xl-9">
+            <div class="input-group input-group-lg mb-2 shadow-1 rounded">
+                <input type="text" class="form-control shadow-inset-2" id="filter-icon"
+                       aria-label="type 2 or more letters" placeholder="Search for anything..." value="@Model.SearchTerm" name="SearchTerm"/>
+                <div class="input-group-append">
+                    <button class="btn btn-primary hidden-sm-down waves-effect waves-themed" type="submit">
+                        <i class="fal fa-search mr-lg-2"></i><span class="hidden-md-down">Search documents</span>
+                    </button>
+                </div>
+            </div>
+
+            <p class="mb-4">
+                <a asp-action="Index" asp-controller="Search" class="badge badge-pill badge-success mr-2">Clear search</a>
+                @if (Model.SelectedTags.Any()
+                     | Model.SelectedRegistrants.Any()
+                     | Model.SelectedSources.Any()
+                     | Model.SelectedReliabilities.Any()
+                     | Model.SelectedClassifications.Any())
+                {
+                    <span class="fw-500">Selected filters:</span>
+                    @foreach (var tag in Model.SelectedTags)
+                    {
+                        <span class="badge badge-pill @tag.BackgroundColor">@tag.Label</span>
+                    }
+                    @foreach (var c in Model.SelectedRegistrants)
+                    {
+                        <span class="badge badge-pill badge-secondary">Registered by @c.FriendlyName</span>
+                    }
+                    @foreach (var c in Model.SelectedSources)
+                    {
+                        <span class="badge badge-pill badge-secondary">@c.Title</span>
+                    }
+                    @foreach (var c in Model.SelectedReliabilities)
+                    {
+                        var attribute = typeof(SourceReliability).GetMember(c.ToString()).FirstOrDefault()?.GetCustomAttribute<DisplayAttribute>();
+                        <span class="badge badge-pill badge-secondary">@(attribute?.Name ?? c.ToString())</span>
+                    }
+                    @foreach (var c in Model.SelectedClassifications)
+                    {
+                        <span class="badge badge-pill @c.Color">@c.Title</span>
+                    }
+                }
+                <a asp-action="Help" asp-controller="Search">Help</a>
+            </p>
+
+            @if (Model.DidYouMean != Model.SearchTerm)
+            {
+                <p>
+                    Did you mean? <a href="@Url.DidYouMean(Model.DidYouMean)">@Model.DidYouMean</a>
+                </p>
+            }
+
+
+            @await Html.PartialAsync("_SearchDocumentList", Model, new ViewDataDictionary(ViewData))
+        </div>
+        <div class="col-xl-3">
+
+            @if (Model.Classifications.Any() | Model.Registrants.Any() | Model.Sources.Any() | Model.Reliabilities.Any())
+            {
+                <div id="panel-metadata" class="panel">
+                    <div class="panel-container show">
+                        <div class="panel-content p-0">
+                            <div class="accordion" id="accordion_meta">
+                                @if (Model.Classifications.Any())
+                                {
+                                    @await Html.PartialAsync("_ClassificationCard", Model, new ViewDataDictionary(ViewData))
+                                }
+                                @if (Model.Registrants.Any())
+                                {
+                                    @await Html.PartialAsync("_RegistrantCard", Model, new ViewDataDictionary(ViewData))
+                                }
+                                @if (Model.Sources.Any())
+                                {
+                                    @await Html.PartialAsync("_SourceCard", Model, new ViewDataDictionary(ViewData))
+                                }
+                                @if (Model.Reliabilities.Any())
+                                {
+                                    @await Html.PartialAsync("_ReliabilitiesCard", Model, new ViewDataDictionary(ViewData))
+                                }
+                            </div>
+                            @* <div class="accordion" id="accordion_factualscore">
+                                @await Html.PartialAsync("_FactualScoreCard", Model, new ViewDataDictionary(this.ViewData))
+                            </div> *@
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Tags.Any())
+            {
+                <div id="panel-tags" class="panel">
+                    <div class="panel-container show">
+                        <div class="panel-content p-0">
+                            <div class="accordion" id="accordion_tags">
+
+                                @await Html.PartialAsync("_TagCards", Model, new ViewDataDictionary(ViewData))
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function()
+        {
+            DocIntel.initSearchPage('form#search-documents');
+        });
+    </script>
+}

@@ -1,0 +1,83 @@
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentDetailsViewModel
+
+<div id="panel-registration-info" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Registration
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+            <dl class="row mb-0">
+                <dt class="col-sm-6">
+                    @Html.DisplayNameFor(model => model.Document.Reference)
+                </dt>
+                <dd class="col-sm-6">
+                    @Html.DisplayFor(model => model.Document.Reference)
+                </dd>
+                @if (!string.IsNullOrEmpty(Model.Document.ExternalReference))
+                {
+                    <dt class="col-sm-6">
+                        @Html.DisplayNameFor(model => model.Document.ExternalReference)
+                    </dt>
+                    <dd class="col-sm-6">
+                        @Html.DisplayFor(model => model.Document.ExternalReference)
+                    </dd>
+                }
+                <dt class="col-sm-6">
+                    @Html.DisplayNameFor(model => model.Document.Classification)
+                </dt>
+                <dd class="col-sm-6">
+                    @Model.Document.Classification.Title
+                </dd>
+                @if (Model.Document.ReleasableTo?.Any() ?? false)
+                {
+                    <dt class="col-sm-6">
+                        Releasable to
+                    </dt>
+                    <dd class="col-sm-6">
+                            <text>@string.Join(", ", Model.Document.ReleasableTo.Select(_ => _.Name))</text>
+                    </dd>
+                }
+                @if (Model.Document.EyesOnly?.Any() ?? false)
+                {
+                    <dt class="col-sm-6">
+                        Eyes only
+                    </dt>
+                    <dd class="col-sm-6">
+                        <text>@string.Join(", ", Model.Document.EyesOnly.Select(_ => _.Name))</text>
+                    </dd>
+                }
+                <dt class="col-sm-6">
+                    @Html.DisplayNameFor(model => model.Document.DocumentDate)
+                </dt>
+                <dd class="col-sm-6">
+                    @Html.Timeago(Model.Document.DocumentDate)
+                </dd>
+                <dt class="col-sm-6">
+                    @Html.DisplayNameFor(model => model.Document.RegistrationDate)
+                </dt>
+                <dd class="col-sm-6">
+                    @Html.Timeago(Model.Document.RegistrationDate)
+                </dd>
+                <dt class="col-sm-6">
+                    Last Modification
+                </dt>
+                <dd class="col-sm-6">
+                    @Html.Timeago(Model.Document.ModificationDate)
+                </dd>
+                @if(!string.IsNullOrEmpty(Model.Document.SourceUrl)) {
+                    <dt class="col-sm-6">
+                        Source URL
+                    </dt>
+                    <dd class="col-sm-6">
+                        <a href="@Model.Document.SourceUrl" target="_blank">Go to original document</a>
+                    </dd>
+                }
+            </dl>
+        </div>
+    </div>
+</div>

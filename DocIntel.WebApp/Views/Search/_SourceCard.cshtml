@@ -1,0 +1,35 @@
+@using DocIntel.Core.Helpers
+@model DocIntel.WebApp.ViewModels.SearchViewModel.SearchIndexViewModel
+
+@if (Model.Sources.Any())
+{
+    var selected = Model.SelectedSources.Any();
+    <div class="card">
+        <div class="card-header">
+            <a href="javascript:void(0);" class="card-title @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#collapseSources" aria-expanded="false">
+                Source
+                @if (Model.SelectedSources.Any())
+                {
+                    <span class="ml-auto">
+                        <span class="badge badge-light">@Model.SelectedSources.Count() selected</span>
+                    </span>   
+                }
+            </a>
+        </div>
+        <div id="collapseSources" class="@(!selected ? "collapse" : "")" aria-labelledby="headingSources" data-parent="#accordion_meta">
+            <div class="card-body">
+                @foreach (var item in Model.Sources)
+                {
+                    <div class="custom-control custom-checkbox mb-1">
+                        <input type="checkbox" class="custom-control-input auto-submit" id="source-@item.Value.SourceId"
+                               checked="@Model.SelectedSources.Any(_ => _.SourceId == item.Value.SourceId)"
+                               name="sources" value="@item.Value.SourceId">
+                        <label class="custom-control-label" for="source-@item.Value.SourceId">
+                            @item.Value.Title
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

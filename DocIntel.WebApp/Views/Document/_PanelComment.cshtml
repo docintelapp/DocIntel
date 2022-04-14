@@ -1,0 +1,88 @@
+@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentDetailsViewModel
+
+@{
+    var canComment = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.AddComment)).Succeeded;
+    var canDeleteComment = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.DeleteComment)).Succeeded;
+    var canDeleteOwnComment = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.DeleteOwnComment)).Succeeded;
+    var canEditComment = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.EditComment)).Succeeded;
+    var canEditOwnComment = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.EditOwnComment)).Succeeded;
+}
+
+<div id="panel-comment" class="panel" data-panel-fullscreen="false" role="widget">
+    <div class="panel-hdr" role="heading">
+        <h2 class="ui-sortable-handle">
+            Comments
+        </h2>
+    </div>
+    <div class="panel-container show" role="content">
+        @if(Model.Comments.Any()) {
+        <div class="panel-content p-0 pb-2">
+            <div class="d-flex flex-column">
+                @foreach (var comment in Model.Comments.OrderBy(_ => _.CommentDate))
+                {
+                    <div class="d-flex flex-row px-3 pt-3 pb-2 show-child-on-hover position-relative">
+                        @if (string.IsNullOrEmpty(comment.Author.ProfilePicture))
+                        {
+                            <span class="profile-image rounded-circle d-block" style="background-image:url('/images/icons/color/icons8-male-user-48.png'); background-size: cover;"></span>
+                        }
+                        else
+                        {
+                            <span class="profile-image rounded-circle d-block" style="background-image:url(@Url.Action("ProfilePicture", "Account", new {userName = comment.Author.UserName})); background-size: cover;"></span>
+                        }
+                        <div class="ml-3 flex-grow-1">
+                            <span class="d-block">
+                                <a asp-controller="User" asp-action="Profile" asp-route-username="@comment.Author.UserName" title="@comment.Author.FriendlyName" class="fw-700 text-dark">@comment.Author.FriendlyName</a>
+                                <small class="ml-2">
+                                    @Html.Timeago(comment.CommentDate)
+                                </small>
+                            </span>
+                            @Html.SanitizeAndMap(comment.Body)
+                        </div>
+
+                        @if (((comment.Author.Id == ViewBag.CurrentUser.Id) & canDeleteOwnComment) | canDeleteComment
+                             | (((comment.Author.Id == ViewBag.CurrentUser.Id) & canEditOwnComment) | canEditComment))
+                        {
+                            <div class="show-on-hover-parent position-absolute pos-right pos-top p-3">
+                                <div class="btn-group">
+                                    @if (((comment.Author.Id == ViewBag.CurrentUser.Id) & canDeleteOwnComment) | canDeleteComment)
+                                    {
+                                        <a asp-action="Delete" asp-controller="Comment" asp-route-id="@comment.CommentId"
+                                           class="btn btn-xs btn-default  waves-effect waves-themed" title="delete">
+                                            Delete
+                                        </a>
+                                    }
+
+                                    @if (((comment.Author.Id == ViewBag.CurrentUser.Id) & canEditOwnComment) | canEditComment)
+                                    {
+                                        <a asp-action="Update" asp-controller="Comment" asp-route-id="@comment.CommentId"
+                                           class="btn btn-xs btn-default  waves-effect waves-themed" title="delete">
+                                            Edit
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+        }
+        @if (canComment)
+        {
+            <form asp-action="Create" asp-controller="Comment" asp-route-documentId="@Model.Document.DocumentId">
+                <input type="hidden" asp-for="Document.DocumentId"/>
+                <div class="panel-content border-faded border-left-0 border-right-0 border-bottom-0 bg-faded">
+                    <textarea rows="3" class="form-control rounded-top border-bottom-left-radius-0 border-bottom-right-radius-0 border summernote" 
+                        placeholder="write a reply..." name="Body" id="textcomplete"></textarea>
+                    <div class="d-flex align-items-center py-2 px-2 bg-white border border-top-0 rounded-bottom bg-primary">
+                        <button type="submit" class="btn btn-success btn-sm waves-effect waves-themed">
+                            Reply
+                        </button>
+                    </div>
+                </div>
+            </form>
+        }
+
+    </div>
+</div>

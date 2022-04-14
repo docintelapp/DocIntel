@@ -1,0 +1,73 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.UserViewModel.ProfileViewModel
+
+@{
+    ViewData["Title"] = Model.User.FriendlyName;
+    ViewData["Category1"] = "Users";
+    var canEdit = (Model.User.Id == ViewBag.CurrentUser.Id && (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.EditOwn)).Succeeded) 
+                  || (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.Edit)).Succeeded;
+    var canResetPassword = (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.ResetPassword)).Succeeded;
+}
+
+
+<div class="subheader d-flex justify-content-end">
+        <div class="btn-group">
+            @if (canEdit)
+            {
+                <a asp-action="Edit" asp-route-username="@Model.User.UserName" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                    <i class="fal fa-edit"></i> Edit
+                </a>
+            }
+            @if (canResetPassword)
+            {
+                <a asp-action="ResetPassword" asp-route-username="@Model.User.UserName"
+                   class="btn btn-primary waves-effect waves-themed btn-iconified">
+                    <i class="fal fa-key"></i> Change password
+                </a>
+            }
+        </div>
+</div>
+
+<div class="row">
+
+    <div class="col-3">
+        @await Html.PartialAsync("UserInfoPanel", Model, new ViewDataDictionary(ViewData))
+        @await Html.PartialAsync("UserGroups", Model, new ViewDataDictionary(ViewData))
+        @* @await Html.PartialAsync("AchievementsPanel", Model, new ViewDataDictionary(this.ViewData)) *@
+    </div>
+
+    <div class="col-9">
+        
+        <div id="panel-1" class="panel">
+            <div class="panel-hdr">
+                <h2>
+                    Latest registered documents
+                </h2>
+            </div>
+            <div class="panel-container show">
+                <div class="panel-content p-0">
+                    @if (Model.RegisteredDocuments?.Any() ?? false)
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var document in Model.RegisteredDocuments)
+                            {
+                                <li class="list-group-item py-3 px-3">
+                                    @await Html.PartialAsync("../Document/_DocumentSummary", document, new ViewDataDictionary(ViewData))
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-center fs-xl m-4">
+                            <i class="fal fa-telescope fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            The user did not yet register a document.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+</div>

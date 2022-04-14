@@ -1,0 +1,21 @@
+@model DocumentFile
+
+<p class="m-0 p-1 text-center font-weight-bold @(Model.OverrideClassification ? Model.Classification.Color : Model.Document.Classification.Color)">
+    <text>@(Model.OverrideClassification ? Model.Classification.Title : Model.Document.Classification.Title)</text>
+    @if ((Model.OverrideReleasableTo && (Model.ReleasableTo?.Any() ?? false)) | Model.Document.ReleasableTo?.Any() ?? false)
+    {
+        <text> // REL TO @string.Join(", ", (Model.OverrideReleasableTo ? Model.ReleasableTo : Model.Document.ReleasableTo).Select(_ => _.Name))</text>
+    }
+    @if (Model.OverrideEyesOnly & Model.EyesOnly.Any())
+    {
+        <text> // @string.Join(", ", Model.EyesOnly.Select(_ => _.Name)) EYES ONLY</text>
+    }
+    else if (!Model.OverrideEyesOnly & Model.Document.EyesOnly?.Any() ?? false)
+    {
+        <text> // @string.Join(", ", Model.Document.EyesOnly.Select(_ => _.Name)) EYES ONLY</text>
+    }
+    @if (!string.IsNullOrEmpty(Model.OverrideClassification ? Model.Classification.Subtitle : Model.Document.Classification.Subtitle))
+    {
+        <text><br/>(@(Model.OverrideClassification ? Model.Classification.Subtitle : Model.Document.Classification.Subtitle))</text>
+    }
+</p>

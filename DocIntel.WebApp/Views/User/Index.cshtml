@@ -1,0 +1,46 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.UserViewModel.IndexViewModel
+
+@{
+    ViewData["Title"] = "List users";
+
+    var canCreate = (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.Create)).Succeeded;
+    var canEdit = (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.Edit)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-user"></i> Users
+        <small>
+            Manage your users.
+        </small>
+    </h1>
+    <div class="btn-group">
+        @if (canCreate)
+        {
+            <a asp-action="Create" class="btn btn-primary btn-iconified">
+                <i class="fal fa-plus"></i> Create
+            </a>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+
+        @if (Model.Users != null && Model.Users.Any())
+        {
+            <div class="row">
+                @foreach (var t in Model.Users)
+                {
+                    @await Html.PartialAsync("_UserCard", t, new ViewDataDictionary(ViewData))
+                }
+            </div>
+        }
+
+        <div class="py-2">
+            <pagination page="@Model.Page" page-count="@Model.PageCount" method="GET"></pagination>
+        </div>
+
+    </div>
+</div>

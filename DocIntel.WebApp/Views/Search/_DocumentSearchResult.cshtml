@@ -1,0 +1,80 @@
+@model DocIntel.WebApp.ViewModels.SearchViewModel.DocumentSearchResult
+
+<div class="d-flex flex-row">
+    <div class="mr-4">
+        <div style="height:100px; overflow:hidden;" class="border thumbnail">
+            <img src="@Url.Action("Thumbnail", "Document", new {id = Model.Document.DocumentId})" width="140px"/>
+        </div>
+    </div>
+    <div style="min-width: 0;">
+        <div class="text-truncate ">
+            @if (!string.IsNullOrEmpty(Model.Document.Classification.Abbreviation))
+            {
+                <span class="badge @Model.Document.Classification.Color mr-1">
+                    @Model.Document.Classification.Abbreviation
+                </span>
+            }
+            @if (!string.IsNullOrEmpty(Model.TitleExcerpt))
+            {
+                <a class="fs-lg fw-500" asp-action="Details" asp-controller="Document" asp-route-url="@Model.Document.URL">
+                    @Html.Raw(Model.TitleExcerpt)
+                </a>
+            }
+            else
+            {
+                <a class="fs-lg fw-500" asp-action="Details" asp-controller="Document" asp-route-url="@Model.Document.URL">
+                    @Model.Document.Title
+                </a>
+            }
+        </div>
+        <div class="mt-1">
+            <p class="mb-1">
+                @if (Model.Document.Source != null)
+                {
+                    <text>
+                        <span class="mr-1">
+                            by <a asp-controller="Source" asp-action="Details" asp-route-id="@Model.Document.Source.SourceId">@Model.Document.Source.Title</a>
+                        </span>
+                        <span class="mr-1">-</span>
+                    </text>
+                }
+                <span class="mr-1">
+                    @Model.Document.Reference
+                </span>
+                <span class="mr-1">-</span>
+                @Html.Timeago(Model.Document.DocumentDate)
+            </p>
+            @if (!string.IsNullOrEmpty(Model.Excerpt))
+            {
+                <p class="m-0 mt-1 mb-2 color-fusion-50">&hellip;@Html.Raw(Model.Excerpt)&hellip;</p>
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(Model.Document.ShortDescription))
+                {
+                    <div class="m-0 mt-1 mb-2 color-fusion-50 short-summary">
+                        @Html.SanitizeAndMap(Model.Document.ShortDescription)
+                    </div>
+                }
+            }
+        </div>
+        @if (Model.Document.DocumentTags.Any())
+        {
+            <ul class="list-style-none m-0 p-0">
+                @foreach (var g in Model.Document.DocumentTags.Select(dt => dt.Tag).GroupBy(t => t.Facet).OrderBy(t => t.Key.Title))
+                {
+                    <li class="m-0 mb-1"><strong class="mr-2">@g.Key.Title</strong>
+                        @foreach (var tag in g)
+                        {
+                            <a class="badge badge-pill @tag.BackgroundColor"
+                               asp-controller="Tag"
+                               asp-action="Details" asp-route-label="@tag.TagId">
+                                @tag.Label
+                            </a>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>

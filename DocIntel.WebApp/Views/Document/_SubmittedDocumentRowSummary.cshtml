@@ -1,0 +1,63 @@
+@using DocIntel.Core.Authorization.Operations
+@model SubmittedDocument
+
+@{
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Delete)).Succeeded;
+}
+
+<div class="row mb-3">
+    @if (canDelete)
+    {
+        <div class="col align-self-auto col-md-auto">
+            <a asp-action="DiscardSubmission" asp-controller="Document" asp-route-id="@Model.SubmittedDocumentId" class="text-muted" alt="Discard">
+                <i class="fas fa-trash"></i>
+            </a>
+        </div>
+    }
+    <div class="col col-md-auto">
+        @if (Model.Status == SubmissionStatus.Submitted)
+        {
+            <span class="badge badge-warning">Pending</span>
+        }
+        else if (Model.Status == SubmissionStatus.Error)
+        {
+            <span class="badge badge-error">Error</span>
+        }
+        else if (Model.Status == SubmissionStatus.Processed)
+        {
+            <span class="badge badge-success">Processed</span>
+        }
+        else if (Model.Status == SubmissionStatus.Discarded)
+        {
+            <span class="badge badge-secondary">Discarded</span>
+        }
+        else if (Model.Status == SubmissionStatus.Duplicate)
+        {
+            <span class="badge badge-info">Duplicate</span>
+        }
+    </div>
+    <div class="col">
+        <div class="row mb-1">
+            @if (!string.IsNullOrEmpty(Model.Classification?.Abbreviation))
+            {
+                <span class="badge @Model.Classification.Color mr-1">
+                    @Model.Classification.Abbreviation
+                </span>
+            }
+            @Model.Title
+        </div>
+        <div class="row mb-1">
+            @Html.Timeago(Model.SubmissionDate)
+            @{
+                var delta = Model.IngestionDate - Model.SubmissionDate;
+            }
+            @if ((Model.Status == SubmissionStatus.Processed) & (delta > TimeSpan.Zero))
+            {
+                <span>@Html.Timeago(delta)</span>
+            }
+        </div>
+        <div class="row mb-1 text-sm">
+            <a href="@Model.URL" target="_blank">@Model.URL</a>
+        </div>
+    </div>
+</div>

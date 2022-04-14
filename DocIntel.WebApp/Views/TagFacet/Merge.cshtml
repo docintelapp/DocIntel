@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "Merge facets";
+}
+
+<form asp-action="Merge" method="post">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-tag subheader-icon"></i> @ViewData["Title"]
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+
+            @{
+                var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+            }
+            @if (errors.Any())
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                    <ul class="mb-0 mt-1">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div id="panel-basic" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label class="control-label">Primary facet</label>
+                            <select name="primaryFacetName" class="form-control autocomplete-facet" data-tags="false">
+                                @if (ViewData.ContainsKey("primaryFacetName"))
+                                {
+                                    var tag = (TagFacet) ViewData["primaryFacetName"];
+                                    <option selected="selected" value="@tag.Id"
+                                            data-prefix="@tag.Prefix">
+                                        @tag.Title
+                                    </option>
+                                }
+                            </select>
+                            <small class="form-text text-muted">This facet will be kept.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Facet to merge</label>
+                            <select name="secondaryFacetName" class="form-control autocomplete-facet" data-tags="false"></select>
+                            <small class="form-text text-muted">This facet will be <strong>discarded</strong>.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-code-merge"></i> Merge
+                    </button>
+                    <a asp-action="Index" asp-controller="Tag" class="ml-3 text-secondary">Cancel</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

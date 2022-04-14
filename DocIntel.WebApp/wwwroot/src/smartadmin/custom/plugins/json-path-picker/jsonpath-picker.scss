@@ -1,0 +1,91 @@
+@import './src/scss/_imports/_global-import';
+
+ul.json-dict, ol.json-array {
+	list-style-type: none;
+	margin: 0 0 0 1px;
+	border-left: 1px dotted #ccc;
+	padding-left: 2em;
+	font-size: 0.875rem !important;
+
+	li:hover {
+		> .json-string {
+			color: $danger-500;
+			font-weight: bold;
+		}
+	}
+}
+
+.json-tree > .json-toggle {
+	&:before {
+		display: none;
+	}
+}
+
+.json-string {
+	color: $success-700;
+}
+
+.json-literal {
+	color: #1a01cc;
+	font-weight: bold;
+}
+
+a {
+	&.json-toggle {
+		position: relative;
+		color: $primary-500;
+		text-decoration: none;
+
+		padding: 0.25rem 0;
+    	display: inline-block;
+
+		font-weight: bold;
+
+		&:focus {
+			outline: 0;
+		}
+
+		//open
+		&:before {
+			font-family: 'Font Awesome 5 Pro';
+			font-weight: 900;			
+			margin-right: 0.25rem;
+			color: $warning-500;
+			content: "\f07c";
+
+			
+		}
+
+		//Close
+		&.collapsed {
+			&:before {
+				font-family: 'Font Awesome 5 Pro';	
+				content: "\f07b";
+				color: $success-500;
+			}
+		}
+	}
+
+	&.json-placeholder {
+		color: #aaa;
+		padding: 0 1em;
+		text-decoration: none;
+
+		&:hover {
+			color: $success-700;
+			font-weight: bold;
+		}
+	}
+}
+
+/*.pick-path {
+	color: lightgray;
+	cursor: pointer;
+	margin-left: 3px;
+
+	display:none;
+
+	&:hover {
+		color: darkgray;
+	}
+}*/

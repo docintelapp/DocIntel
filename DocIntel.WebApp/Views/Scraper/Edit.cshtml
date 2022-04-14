@@ -1,0 +1,79 @@
+﻿@model Scraper
+
+@{
+    ViewData["Title"] = $"Edit scraper '{Model.Name}'";
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-inbox-in subheader-icon"></i> @ViewData["Title"]
+    </h1>
+</div>
+
+
+<div class="row">
+    <div class="col-12">
+
+        @{
+            var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+        }
+        @if (errors.Count() > 0)
+        {
+            <div class="alert alert-danger" role="alert">
+                <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                <ul class="mb-0 mt-1">
+                    @foreach (var error in errors)
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form asp-action="Edit">
+            @Html.AntiForgeryToken()
+
+            <div id="panel-source-info" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+
+                        <input asp-for="ScraperId" type="hidden"/>
+
+                        @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
+
+                    </div>
+                </div>
+            </div>
+
+            @await Html.PartialAsync("_FormFieldsClassification", Model, new ViewDataDictionary(ViewData))
+
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Rewriting Rulesets
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <textarea name="ImportRuleSet" class="form-control" row="30">@foreach (var rule in Model.ImportRuleSets.OrderBy(_ => _.Position))
+                                                                                     {
+                                                                                         <text>@rule.ImportRuleSetId</text>
+                                                                                     }</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="save-btn" class="btn btn-success waves-effect waves-themed btn-iconified">
+                <i class="fal fa-save"></i> Save
+            </button>
+
+        </form>
+
+
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

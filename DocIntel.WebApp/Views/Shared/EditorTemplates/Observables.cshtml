@@ -1,0 +1,58 @@
+@using DocIntel.Core.Helpers
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.ObservableViewModel
+
+@{
+    Layout = null;
+}
+
+<tr>
+    <td class="text-center align-middle pr-0 pl-2" style="width:40px; white-space: nowrap;">
+
+        <input asp-for="Id" type="hidden"/>
+        <input asp-for="Status" type="hidden"/>
+        <input asp-for="History" type="hidden"/>
+        <input asp-for="HashType" type="hidden"/>
+        <input asp-for="Type" type="hidden"/>
+        <input asp-for="Status" type="hidden"/>
+
+        <input asp-for="@Model.IsAccepted" class="check_accepted" id="accepted_@(Model.Id)" onclick="$('#whitelist_@(Model.Id)').prop('checked', false);" disabled="@(Model.Status == ObservableStatus.Whitelisted)"/>
+    </td>
+    <td class="text-center align-middle px-0" style="width:40px; white-space: nowrap;">
+        <input asp-for="@Model.IsWhitelisted" id="whitelist_@(Model.Id)" onclick="$('#accepted_@(Model.Id)').prop('checked', false);" disabled="@(Model.Status == ObservableStatus.Whitelisted)"/>
+    </td>
+    <td class="align-middle" style="width:5px; white-space: nowrap;">
+        <span class="badge badge-info">@(EnumHelper<ObservableType>.GetDisplayValue(Model.Type))</span>
+        @if (Model.History == ObservableStatus.Accepted)
+        {
+            <span class="badge badge-success">Previously accepted</span>
+        }
+        else if (Model.History == ObservableStatus.Rejected)
+        {
+            <span class="badge badge-danger">Previously rejected</span>
+        }
+    </td>
+    <td>
+        @if (Model.Status == ObservableStatus.Whitelisted)
+        {
+            <input asp-for="@Model.Value" class="form-control" readonly/>
+        }
+        else
+        {
+            <input asp-for="@Model.Value" class="form-control"/>
+        }
+        <span asp-validation-for="@Model.Value" class="text-danger"></span>
+    </td>
+    <td class="align-middle">
+        @if (Model.Tags is not null)
+        {
+            for (var i = 0; i < Model.Tags.Count(); i++)
+            {
+                <input asp-for="@Model.Tags[i].TagId" type="hidden"/>
+                <input asp-for="@Model.Tags[i].FacetId" type="hidden"/>
+                <input asp-for="@Model.Tags[i].Label" type="hidden"/>
+                <input asp-for="@Model.Tags[i].BackgroundColor" type="hidden"/>
+                <span class="badge" style="background-color: @Model.Tags[i].BackgroundColor">@Model.Tags[i].Label</span>
+            }
+        }
+    </td>
+</tr>

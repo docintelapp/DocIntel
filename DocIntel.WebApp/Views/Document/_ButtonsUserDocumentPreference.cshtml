@@ -1,0 +1,38 @@
+@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentDetailsViewModel
+
+@{
+    var canSubscribe = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Subscribe)).Succeeded;
+}
+
+<div class="btn-group mr-3">
+    @if (canSubscribe)
+    {
+        if (Model.Subscribed.Subscribed)
+        {
+            <span class="btn btn-primary waves-effect waves-themed btn-iconified">
+                @if (Model.Subscribed.Notification)
+                {
+                    <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-id="@Model.Document.DocumentId">
+                        <i class="fas fa-bell"></i>
+                    </a>
+                }
+                else
+                {
+                    <a class="text-white" asp-action="Subscribe" asp-route-notification="true" asp-route-id="@Model.Document.DocumentId">
+                        <i class="fal fa-bell"></i>
+                    </a>
+                }
+                <a class="text-white" asp-action="Unsubscribe" asp-route-id="@Model.Document.DocumentId">Subscribed</a>
+            </span>
+        }
+        else
+        {
+            <a asp-action="Subscribe"
+               asp-route-id="@Model.Document.DocumentId"
+               class="btn btn-primary waves-effect waves-themed btn-iconified">
+                <i class="fal fa-bell-slash"></i> Subscribe
+            </a>
+        }
+    }
+</div>

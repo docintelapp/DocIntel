@@ -1,0 +1,52 @@
+﻿@model Source
+
+@{
+    ViewData["Title"] = "Add Source";
+}
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-book subheader-icon"></i> @ViewData["Title"]
+        </h1>
+    </div>
+
+
+    <div class="row">
+        <div class="col-12">
+
+            @{
+                var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+            }
+            @if (errors.Count() > 0)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                    <ul class="mb-0 mt-1">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+
+            @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success waves-effect waves-themed btn-iconified mr-4">
+                        <i class="fal fa-plus"></i> Add
+                    </button>
+                    <a asp-action="Index" class="text-secondary">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

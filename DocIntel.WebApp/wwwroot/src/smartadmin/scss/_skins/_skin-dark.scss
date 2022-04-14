@@ -1,0 +1,49 @@
+/* #DARK MODE
+========================================================================== */
+
+@import '_skin-dark-modules/variables';
+
+.mod-skin-dark:not(.mod-skin-light) {
+
+	background-color: #303133;
+	color: $dark-content-color;
+
+	#skin-dark {
+		&:before {
+			display: flex;
+		}
+	}
+
+	@import '_skin-dark-modules/_accordion';
+	@import '_skin-dark-modules/_alerts';
+	@import '_skin-dark-modules/_alt';
+	@import '_skin-dark-modules/_border';
+	@import '_skin-dark-modules/_breadcrumb';
+	@import '_skin-dark-modules/_button';
+	@import '_skin-dark-modules/_chat-segment';
+	@import '_skin-dark-modules/_colors';
+	@import '_skin-dark-modules/_demo';
+	@import '_skin-dark-modules/_demo-settings';
+	@import '_skin-dark-modules/_dropdown';
+	@import '_skin-dark-modules/_forms';
+	@import '_skin-dark-modules/_misc';
+	@import '_skin-dark-modules/_modal';
+	@import '_skin-dark-modules/_nav';
+	@import '_skin-dark-modules/_navbar';
+	@import '_skin-dark-modules/_navtabs';
+	@import '_skin-dark-modules/_notitfication';
+	@import '_skin-dark-modules/_page_etc';
+	@import '_skin-dark-modules/_pagination';
+	@import '_skin-dark-modules/_progressbar';
+	@import '_skin-dark-modules/_panel';
+	@import '_skin-dark-modules/_tables';
+	@import '_skin-dark-modules/_toast';
+	@import '_skin-dark-modules/_tooltip';
+	@import '_skin-dark-modules/_plugins/_plugin_datatables';
+	@import '_skin-dark-modules/_plugins/_plugin_other';
+	@import '_skin-dark-modules/_plugins/_plugin_prettyprint';
+	@import '_skin-dark-modules/_plugins/_plugin_select2';
+
+}
+
+@import '_skin-dark-modules/_mobile';

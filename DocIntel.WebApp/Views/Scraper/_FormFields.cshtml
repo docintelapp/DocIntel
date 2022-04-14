@@ -1,0 +1,50 @@
+@using DocIntel.Core.Authorization.Operations
+@model Scraper
+
+@{
+    var canCreateSources = (await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.Create)).Succeeded;
+}
+
+<div class="form-group">
+    <div class="custom-control custom-switch">
+        @Html.CheckBoxFor(_ => _.Enabled, new {@class = "custom-control-input"})
+        <label class="custom-control-label" asp-for="Enabled">Enabled?</label>
+    </div>
+    @Html.HelpTextFor(_ => _.Enabled)
+    <span asp-validation-for="Enabled" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <div class="custom-control custom-switch">
+        @Html.CheckBoxFor(_ => _.SkipInbox, new {@class = "custom-control-input"})
+        <label class="custom-control-label" asp-for="SkipInbox">Skip Inbox?</label>
+    </div>
+    @Html.HelpTextFor(_ => _.SkipInbox)
+    <span asp-validation-for="SkipInbox" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <div class="custom-control custom-switch">
+        @Html.CheckBoxFor(_ => _.OverrideSource, new {@class = "custom-control-input"})
+        <label class="custom-control-label" asp-for="OverrideSource">Override Source?</label>
+    </div>
+    @Html.HelpTextFor(_ => _.OverrideSource)
+    <span asp-validation-for="OverrideSource" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="SourceId" class="control-label"></label>
+    <select data-tags="@(canCreateSources ? "true" : "false")" data-placeholder="Select a source" class="autocomplete-source form-control" name="SourceId">
+        @if (Model.SourceId != null)
+        {
+            <option selected="" value="@Model.SourceId">@(Model.Source?.Title ?? Model.SourceId.ToString())</option>
+        }
+    </select>
+    <span asp-validation-for="SourceId" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Position" class="control-label"></label>
+    <input asp-for="Position" class="form-control"/>
+    <span asp-validation-for="Position" class="text-danger"></span>
+</div>

@@ -1,0 +1,37 @@
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentDetailsViewModel
+
+@if (Model.Document.Source != null)
+{
+    <div id="panel-source-info" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Source
+                <span class="fw-300">
+                    <i>Information</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+                <div class="d-flex flex-row text-truncate mb-3 pb-3 border-bottom">
+                    <div class="mr-3">
+                        <div style="height:50px; overflow:hidden;" class="border thumbnail">
+                            <img src="@Url.Action("Logo", "Source", new {id = Model.Document.Source.SourceId})" width="70px"/>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 text-truncate">
+                        <a class="text-truncate fs-lg fw-500" asp-action="Details" asp-controller="Source" asp-route-id="@Model.Document.Source.SourceId">
+                            @Model.Document.Source.Title
+                        </a>
+                        <div class="mt-1 flex-shrink-1">
+                            <p class="text-truncate mb-1">
+                                -
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @await Html.PartialAsync("../Source/_PartialSourceScoreCard", Model.Document.Source, new ViewDataDictionary(ViewData))
+            </div>
+        </div>
+    </div>
+}

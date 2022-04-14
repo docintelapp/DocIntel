@@ -1,0 +1,73 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@model IEnumerable<AppRole>
+
+@{
+    ViewData["Title"] = "List roles";
+    var canCreate = (await AuthorizationService.AuthorizeAsync(User, null, RoleOperations.Create)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-users subheader-icon"></i> Roles
+        <small>
+            Roles organize users for permissions
+        </small>
+    </h1>
+    <div>
+        <div class="btn-group">
+            @if (canCreate)
+            {
+                <a asp-action="Create"
+                   class="btn btn-primary waves-effect waves-themed">
+                    <i class="fal fa-plus mr-1"></i> Create
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-9">
+        @if (Model != null && Model.Any())
+        {
+            <div id="panel-source-info" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Roles
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <table class="table table-bordered mb-0">
+                            <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var t in Model)
+                            {
+                                <tr>
+                                    <th scope="row">
+                                        <a asp-action="Details" asp-route-id="@t.Id">@t.Name</a>
+                                    </th>
+                                    <td>@t.Description</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">There is no roles!</h5>
+                </div>
+            </div>
+        }
+    </div>
+</div>

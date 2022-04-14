@@ -1,0 +1,59 @@
+@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentSearchResult
+
+<div class="d-flex flex-row search-result">
+    <div class="search-result-image">
+        <div style="height:100px; overflow:hidden;" class="border thumbnail">
+            <img src="@Url.Action("Thumbnail", "Document", new {reference = Model.Reference})" width="140px"/>
+        </div>
+    </div>
+    <div class="flex-grow-1">
+        <p style="font-size:1.2rem;" class="mb-0">
+            <a class="text-truncate" asp-action="Details" asp-controller="Document" asp-route-reference="@Model.Reference">
+                @Html.DisplayFor(modelItem => Model.Title)
+            </a>
+        </p>
+        <p class="mb-1">@Model.ShortDescription</p>
+        <p class="text-secondary">
+            @Model.Reference
+            @if (Model.Read)
+            {
+                <text>| <span class="badge badge-secondary">Read</span></text>
+            }
+            | By
+            @if ((await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.View)).Succeeded)
+            {
+                <a asp-controller="Source" asp-action="Details" asp-route-id="@Model.Source.SourceId">@Model.Source.Title</a>
+            }
+            else
+            {
+                @Model.Source.Title
+            }
+            | <time class="timeago" datetime="@Model.DocumentDate.ToString("o")">@Model.DocumentDate.ToString("yyyy-MM-dd")</time>
+            @if (Model.DocumentTags.Any())
+            {
+                <text>|</text>
+                foreach (var tag in Model.DocumentTags.OrderBy(t => t.Tag.Label))
+                {
+                    if ((await AuthorizationService.AuthorizeAsync(User, null, TagOperations.View)).Succeeded)
+                    {
+                        <a class="badge"
+                           style="background-color: @tag.Tag.BackgroundColor"
+                           asp-controller="Tag"
+                           asp-action="Details"
+                           asp-route-id="@tag.Tag.TagId">
+                            @tag.Tag.Label
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="badge"
+                              style="background-color: @tag.Tag.BackgroundColor">
+                            @tag.Tag.Label
+                        </span>
+                    }
+                }
+            }
+        </p>
+    </div>
+</div>

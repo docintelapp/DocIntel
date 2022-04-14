@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+set -e
+
+. /usr/share/debconf/confmodule
+
+chown -R docintel:docintel /usr/lib/docintel/document-analyzer/
+
+cp /usr/share/doc/docintel/nlog.config.worker-example /usr/lib/docintel/document-analyzer/nlog.config
+sed -i "s,WORKER_NAME,document-analyzer,g" /usr/lib/docintel/document-analyzer/nlog.config
+
+exit 0
+
+

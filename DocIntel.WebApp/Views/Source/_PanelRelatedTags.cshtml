@@ -1,0 +1,34 @@
+@model IEnumerable<Tag>
+
+@if (Model.Any())
+{
+    <div id="panel-source-info" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Tags
+                <span class="fw-300">
+                    <i>Related</i>
+                </span>
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+                @foreach (var tag in Model)
+                {
+                    <a class="badge badge-pill @tag.BackgroundColor"
+                       asp-controller="Tag"
+                       asp-action="Details" asp-route-id="@tag.TagId">
+                        @if (!string.IsNullOrEmpty(tag.Facet?.Prefix))
+                        {
+                            <text>@tag.Facet.Prefix:@tag.Label</text>
+                        }
+                        else
+                        {
+                            <text>@tag.Label</text>
+                        }
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+}

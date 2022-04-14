@@ -1,0 +1,54 @@
+@model Source
+
+<div class="row">
+
+    <div class="col-12">
+        @{
+            var reliabilityScore = (int) Model.Reliability;
+            var textColor = "";
+            if ((reliabilityScore >= 1) & (reliabilityScore <= 2))
+            {
+                textColor = "text-success";
+            }
+            else if (reliabilityScore == 3)
+            {
+                textColor = "text-warning";
+            }
+            else if (reliabilityScore >= 4)
+            {
+                textColor = "text-danger";
+            }
+        }
+        <p class="mb-0 text-center font-weight-bold @textColor">Reliability</p>
+        <p class="fs-xxl mb-0 text-center @textColor">
+            @Model.Reliability
+        </p>
+        <p class="text-center @textColor mb-0">
+            @if (Model.Reliability == SourceReliability.F)
+            {
+                <text>Unknown</text>
+            }
+            else if (Model.Reliability == SourceReliability.A)
+            {
+                <text>Reliable</text>
+            }
+            else if (Model.Reliability == SourceReliability.B)
+            {
+                <text>Usually reliable</text>
+            }
+            else if (Model.Reliability == SourceReliability.C)
+            {
+                <text>Fairly reliable</text>
+            }
+            else if (Model.Reliability == SourceReliability.D)
+            {
+                <text>Not usually reliable</text>
+            }
+            else if (Model.Reliability == SourceReliability.E)
+            {
+                <text>Unreliable</text>
+            }
+        </p>
+    </div>
+
+</div>

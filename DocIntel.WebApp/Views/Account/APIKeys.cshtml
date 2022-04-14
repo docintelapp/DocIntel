@@ -1,0 +1,135 @@
+﻿@model IEnumerable<APIKey>
+
+@{
+    ViewData["Title"] = "Your API Keys";
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-key subheader-icon"></i> Your API Keys
+        <small>Review and manage your API Keys.</small>
+    </h1>
+    <div>
+        <div class="btn-group">
+            <a asp-action="CreateAPIKey"
+               class="btn btn-primary waves-effect waves-themed btn-iconified">
+                <i class="fal fa-plus mr-1"></i> Create new API key
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-9">
+
+        @if (!Model.Any())
+        {
+            <div class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="text-center fs-xl m-3">
+                            <i class="fal fa-key fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            You have no application password at the moment.<br/>
+                            <small>You can create different password for each application you use.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Application passwords
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <table class="table table-bordered m-0">
+                            <thead class="thead-themed">
+                            <tr>
+                                <th>Name</th>
+                                <th>API Key</th>
+                                <th>Last used</th>
+                                <th>Last IP address</th>
+                            </tr>
+                            </thead>
+                            @foreach (var apiKey in Model)
+                            {
+                                <tr>
+                                    <td>@apiKey.Name</td>
+                                    <td>
+                                        <p class="m-0 p-0" style="max-width: 200px;">@apiKey.Key</p>
+                                    </td>
+                                    <td>
+                                        @if (apiKey.LastUsage == null)
+                                        {
+                                            <span class="text-muted">Never</span>
+                                        }
+                                        else
+                                        {
+                                            <text>@Html.Timeago((DateTime) apiKey.LastUsage)</text>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (string.IsNullOrEmpty(apiKey.LastIP))
+                                        {
+                                            <span class="text-muted">Never</span>
+                                        }
+                                        else
+                                        {
+                                            <text>@apiKey.LastIP</text>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-3">
+
+        <div class="card mb-g">
+            <div class="card-body">
+                <div class="d-flex flex-row">
+                    <div class="icon-stack display-3 flex-shrink-0">
+                        <i class="fal fa-circle icon-stack-3x opacity-100 color-success-400"></i>
+                        <i class="fas fa-book icon-stack-1x opacity-100 color-success-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p>
+                            <strong>
+                                Documentation
+                            </strong>
+                        </p>
+                        <p class="mb-0">
+                            Browse <a href="/swagger/index.html">API Documentation</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-g">
+            <div class="card-body">
+                <div class="d-flex flex-row">
+                    <div class="icon-stack display-3 flex-shrink-0">
+                        <i class="fal fa-circle icon-stack-3x opacity-100 color-info-400"></i>
+                        <i class="fas fa-thumbs-up icon-stack-1x opacity-100 color-info-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p>
+                            <strong>
+                                Tips &amp; tricks
+                            </strong>
+                        </p>
+                        <p class="mb-0">It is best to use different application password for each application so you can disable access if needed.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

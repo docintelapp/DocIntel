@@ -1,0 +1,42 @@
+@model DocIntel.Core.Models.Document
+@using RazorLight
+@inherits TemplatePage<DocIntel.Core.Models.Document>
+
+@inject DocIntel.Core.Settings.ApplicationSettings _settings
+
+<!--[if (gte mso 9)|(IE)]>
+<table align="center" border="0" cellspacing="0" cellpadding="0" width="600">
+<tr>
+<td align="center" valign="top" width="600">
+<![endif]-->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+    <tr>
+        <td bgcolor="#ffffff" align="left" style="padding: 0px 20px 0px 20px; color: #3e93d6; font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 500; line-height: 22px;">
+            <a href="http://docint01.low.cert.mil.be/Document/Details/@Model.Reference" style="text-decoration: none; color: #3e93d6;">@Model.Title</a>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#ffffff" align="left" style="padding: 5px 20px 0px 20px; color: #8a8a8a; font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 400; line-height: 17px;">
+            @if(Model.Source != null) {
+                <text>by @Model.Source.Title - </text>
+            }
+            @Model.DocumentDate.ToString("MMM dd, yyyy")
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#ffffff" align="left" style="padding: 5px 20px 0px 20px; color: #8a8a8a; font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 400; line-height: 17px;">
+            @Model.ShortDescription
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#ffffff" align="left" style="padding: 3px 20px 30px 20px; color: #000000; font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 500; line-height: 17px;">
+            @* Rider complains that it cannot compile, but it runs fine. *@
+            @Raw(string.Join(", ", Model.DocumentTags.Select(_ => $"<a href=\"{_settings.ApplicationBaseURL}/Tag/Details/{_.Tag.FriendlyName}\" style=\"text-decoration: none; color: #000000;\">{_.Tag.FriendlyName}</a>")))
+        </td>
+    </tr>
+</table>
+<!--[if (gte mso 9)|(IE)]>
+</td>
+</tr>
+</table>
+<![endif]-->

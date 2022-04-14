@@ -1,0 +1,58 @@
+@using DocIntel.Core.Settings
+@model DocIntel.WebApp.ViewModels.Account.LoginTwoStepModel
+@inject ApplicationSettings _settings
+
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "Log in";
+}
+
+<div class="col-12">
+    <div class="row justify-content-center">
+        <div class="col-6">
+            <div style="margin: 60px 0 60px 0">
+                <h1 class="font-weight-bold mb-4 text-center text-white">Welcome to @_settings.ApplicationName</h1>
+            </div>
+            <div class="card p-4 rounded-plus bg-faded mt-4">
+                <form id="js-login" method="post">
+                    @if (TempData.ContainsKey("ErrorMessage"))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+                    <input asp-for="ReturnUrl" type="hidden"/>
+                    
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Code">Code</label>
+                        <input asp-for="Code" class="form-control form-control-lg" placeholder="123 123" required="required"/>
+                        <span class="invalid-feedback" asp-validation-for="Code">Sorry, you missed this one.</span>
+                    </div>
+                    
+                    <div class="row no-gutter">
+                        <div class="col-12">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <button id="js-login-btn" type="submit" class="btn btn-danger waves-effect waves-themed btn-iconified">
+                                        Log in
+                                    </button>
+                                    <div class="form-group ml-4">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" asp-for="RememberMe"/>
+                                            <label class="custom-control-label" asp-for="RememberMe">Don't ask for multi-factor on this browser</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}

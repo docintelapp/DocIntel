@@ -1,0 +1,196 @@
+@using DocIntel.Core.Authorization.Operations
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentObservablesViewModel
+@{
+    ViewData["Title"] = $"Edit {Model.Title}";
+    var canDownload = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Download)).Succeeded;
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Delete)).Succeeded;
+    var canCreateTags = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Create)).Succeeded;
+    var canCreateSources = (await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.Create)).Succeeded;
+}
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-file-edit subheader-icon"></i> @Model.Title
+        </h1>
+        <div>
+            <div class="btn-group">
+                <a asp-action="Edit" asp-route-id="@Model.DocumentId" class="btn btn-primary waves-effect waves-themed btn-iconified" id="edit-btn"><i class="fal fa-edit mr-1"></i> Edit</a>
+
+                <a asp-action="Discard" asp-route-id="@Model.DocumentId"
+                   class="btn btn-primary waves-effect waves-themed btn-iconified">
+                    <i class="fal fa-trash-alt"></i> Discard
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            
+            @{
+                var viewDataDictionary = new ViewDataDictionary(ViewData);
+                viewDataDictionary.Add("StartIndex", 0);
+            }
+            
+            @{
+                var observablesToReview = Model.Observables.Where(d => !d.IsAccepted & !d.IsWhitelisted);
+            }
+            @if (observablesToReview.Any())
+            {
+                <div class="panel">
+                    <div class="panel-hdr">
+                        <h2>
+                            @observablesToReview.Count() @Html.Pluralize("observable", observablesToReview.Count()) to review
+                        </h2>
+                    </div>
+                    <div class="panel-container show">
+                        <div class="panel-content p-0">
+                            @await Html.PartialAsync("_ObservablesEditor", observablesToReview, viewDataDictionary)
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            @{
+                var acceptedObservables = Model.Observables.Where(d => d.IsAccepted & !d.IsWhitelisted);
+            }
+            @if (acceptedObservables.Any())
+            {
+                viewDataDictionary = new ViewDataDictionary(ViewData);
+                viewDataDictionary.Add("StartIndex", observablesToReview.Count());
+                <div class="panel">
+                    <div class="panel-hdr">
+                        <h2>
+                            @acceptedObservables.Count() @Html.Pluralize("observable", acceptedObservables.Count()) automatically accepted
+                        </h2>
+                    </div>
+                    <div class="panel-container show">
+                        <div class="panel-content p-0">
+                            @await Html.PartialAsync("_ObservablesEditor", acceptedObservables, viewDataDictionary)
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            @{
+                var whitelistedObservables = Model.Observables.Where(d => d.IsWhitelisted);
+            }
+            @if (whitelistedObservables.Any())
+            {
+                viewDataDictionary = new ViewDataDictionary(ViewData);
+                viewDataDictionary.Add("StartIndex", observablesToReview.Count() + acceptedObservables.Count());
+                <div class="panel panel-collapsed">
+                    <div class="panel-hdr">
+                        <h2>
+                            @whitelistedObservables.Count() @Html.Pluralize("observable", whitelistedObservables.Count()) whitelisted
+                        </h2>
+                        <div class="panel-toolbar">
+                            <button class="btn btn-panel waves-effect waves-themed" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+                        </div>
+                    </div>
+                    <div class="panel-container collapse">
+                        <div class="panel-content p-0">
+                            @await Html.PartialAsync("_ObservablesEditor", whitelistedObservables, viewDataDictionary)
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            <input asp-for="DocumentId" name="DocumentId" class="form-control" type="hidden"/>
+
+            <div class="row">
+                <div class="col-md-12">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" formaction=@Url.Action("Save") formmethod="post" formenctype="multipart/form-data"
+                            id="save-btn"
+                            class="btn btn-primary waves-effect waves-themed btn-iconified mr-4">
+                        <i class="fal fa-save"></i> Save as pending
+                    </button>
+
+                    <button type="submit" formaction=@Url.Action("Observables") formmethod="post" formenctype="multipart/form-data"
+                            id="register-btn"
+                            class="btn btn-success waves-effect waves-themed btn-iconified">
+                        <i class="fal fa-pencil-alt"></i> Register
+                    </button>
+
+                </div>
+            </div>
+
+        </div>
+        <div class="col-6">
+            <div id="panel-file" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Document
+                        <span class="fw-300">
+                            <i>Preview</i>
+                        </span>
+                    </h2>
+                    <div class="panel-toolbar pr-3 align-self-end">
+                        <ul class="nav nav-tabs border-bottom-0">
+                            @{ var first = true; }
+                            @foreach (var f in Model.Files)
+                            {
+                                if ((f.MimeType == "application/pdf") | f.MimeType.StartsWith("text/"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link @(first ? "active" : "")" data-toggle="tab" href="#tab-@f.FileId">@f.Title</a>
+                                    </li>
+                                }
+                                first = false;
+                            }
+                        </ul>
+                    </div>
+                    <div class="panel-toolbar">
+                        <button class="btn btn-panel waves-effect waves-themed" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+                    </div>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content p-0">
+                        <div class="tab-content">
+                            <!-- PDF Pane  -->
+                            @{ first = true; }
+                            @foreach (var f in Model.Files)
+                            {
+                                if ((f.MimeType == "application/pdf") | f.MimeType.StartsWith("text/"))
+                                {
+                                    <div class="tab-pane fade @(first ? "show active" : "")" id="tab-@f.FileId">
+                                        <iframe src="@Url.Action("Download", "File", new {id = f.FileId})"
+                                                style="width: 100%;">
+                                        </iframe>
+                                    </div>
+                                }
+                                first = false;
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $(".toggleCheckbox").click(function() {
+                if ($(".toggleCheckbox").checked) {
+                    $(".check_accepted").not(":disabled").prop("checked", true);
+                } else {
+                    $(".check_accepted").not(":disabled").prop("checked", false);
+                }
+                return true;
+            });
+            $(".toggleAll").click(function() {
+                $("#" + $(this).data("table-target") + " .check_accepted").not(":disabled").prop("checked", true);
+                return false;
+            });
+            $(".toggleNone").click(function() {
+                $("#" + $(this).data("table-target") + " .check_accepted").not(":disabled").prop("checked", false);
+                return false;
+            });    
+        });
+    </script>
+}

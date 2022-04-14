@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>default</LangVersion>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocIntel.Core\DocIntel.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="HumanDateParser" Version="1.1.0" />
+    <!-- <PackageReference Include="MassTransit.AspNetCore" Version="7.0.4-develop.2912" />
+    <PackageReference Include="NLog" Version="4.7.2" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.6.4" /> -->
+    <!-- <PackageReference Include="RabbitMQ.Client" Version="6.1.0" /> -->
+    <PackageReference Include="Sharprompt" Version="2.4.0" />
+    <!-- <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" /> -->
+    
+    <!-- <PackageReference Include="AutoMapper" Version="10.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.0.1" /> -->
+
+    <PackageReference Include="SolrNet" Version="1.0.19" />  
+    <PackageReference Include="SolrNet.Microsoft.DependencyInjection" Version="1.0.19" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="debian\docintel-cli\**" />
+    <Compile Remove="debian\docintel-core\**" />
+    <Compile Remove="debian\source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="debian\docintel-cli\**" />
+    <EmbeddedResource Remove="debian\docintel-core\**" />
+    <EmbeddedResource Remove="debian\source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="debian\docintel-cli\**" />
+    <None Remove="debian\docintel-core\**" />
+    <None Remove="debian\source\**" />
+    <None Remove="debian\changelog" />
+    <None Remove="debian\debhelper-build-stamp" />
+    <None Remove="debian\docintel-cli.substvars" />
+    <None Remove="debian\docintel-cli.debhelper.log" />
+    <None Remove="debian\docintel-core.substvars" />
+    <None Remove="debian\files" />
+    <None Remove="debian\docintel-core.lintian-overrides" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="debian\docintel-cli\**" />
+    <Content Remove="debian\docintel-core\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="debian\docintel-cli\usr\lib\docintel\cli\debian\docintel-core\usr\lib\docintel\DocIntel.Core.deps.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-cli\usr\lib\docintel\cli\debian\docintel-core\usr\lib\docintel\DocIntel.Core.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-cli\usr\lib\docintel\cli\DocIntel.AdminConsole.deps.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-cli\usr\lib\docintel\cli\DocIntel.AdminConsole.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-cli\usr\lib\docintel\cli\temp.app.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-core\usr\lib\docintel\DocIntel.Core.deps.json" />
+    <_ContentIncludedByDefault Remove="debian\docintel-core\usr\lib\docintel\DocIntel.Core.runtimeconfig.json" />
+  </ItemGroup>
+
+  <Target Name="BuildCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="nlog.config" DestinationFolder="$(OutDir)" Condition="Exists('nlog.config')" />
+  </Target>
+
+</Project>

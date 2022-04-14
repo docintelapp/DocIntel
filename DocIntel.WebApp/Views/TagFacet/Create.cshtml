@@ -1,0 +1,51 @@
+@model TagFacet
+
+@{
+    ViewData["Title"] = "Create a new facet";
+}
+
+<form asp-action="Create">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-tags subheader-icon"></i> @ViewData["Title"]
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            @{
+                var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+            }
+            @if (errors.Any())
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                    <ul class="mb-0 mt-1">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div id="panel-basic" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success waves-effect waves-themed btn-iconified mr-4">
+                        <i class="fal fa-plus"></i> Add
+                    </button>
+                    <a asp-action="Index" asp-controller="Tag" class="text-secondary">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

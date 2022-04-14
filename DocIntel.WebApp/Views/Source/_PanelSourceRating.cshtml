@@ -1,0 +1,14 @@
+@model DocIntel.WebApp.ViewModels.SourceViewModel.DetailViewModel
+
+<div class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Source Rating
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+            @await Html.PartialAsync("_PartialSourceScoreCard", Model.Source, new ViewDataDictionary(ViewData))
+        </div>
+    </div>
+</div>

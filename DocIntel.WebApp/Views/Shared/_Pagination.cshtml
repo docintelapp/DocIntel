@@ -1,0 +1,50 @@
+@model DocIntel.WebApp.ViewModels.Shared.PaginationViewModel
+
+<ul class="pagination pagination-sm mb-0">
+    @if (Model.Page > 1)
+    {
+        <li class="page-item">
+            <a href="@Url.Page(1, Model.Parameter)" class="page-link">First</a>
+        </li>
+    }
+    <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+        <a href="@Url.Page(Model.Page - 1, Model.Parameter)" class="page-link">&laquo;</a>
+    </li>
+    @if (Model.PageCount > 10)
+    {
+        var low = Math.Max(1, Model.Page - 4);
+        var high = Math.Min(Model.Page + 4, Model.PageCount);
+        if (low > 1)
+        {
+            <li class="page-item text-muted">...</li>
+        }
+        for (var i = low; i <= high; i++)
+        {
+            <li class="page-item @(i == Model.Page ? "active" : "")">
+                <a href="@Url.Page(i, Model.Parameter)" class="page-link">@i</a>
+            </li>
+        }
+        if (high < Model.PageCount)
+        {
+            <li class="page-item text-muted">...</li>
+        }
+    }
+    else
+    {
+        for (var i = 1; i <= Model.PageCount; i++)
+        {
+            <li class="page-item @(i == Model.Page ? "active" : "")">
+                <a href="@Url.Page(i, Model.Parameter)" class="page-link">@i</a>
+            </li>
+        }
+    }
+    <li class="page-item  @(Model.Page == Model.PageCount ? "disabled" : "")">
+        <a href="@Url.Page(Model.Page + 1, Model.Parameter)" class="page-link">&raquo;</a>
+    </li>
+    @if (Model.Page < Model.PageCount)
+    {
+        <li class="page-item">
+            <a href="@Url.Page(Model.PageCount, Model.Parameter)" class="page-link">Last</a>
+        </li>
+    }
+</ul>

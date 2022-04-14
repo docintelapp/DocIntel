@@ -1,0 +1,66 @@
+//jqvmap
+.jqvmap-zoomin,
+.jqvmap-zoomout {
+	background-image: linear-gradient(to top, #2f323b, #2a2d35);
+	color: #c3c3c3;
+}
+.jqvmap-bg-ocean {
+	background-color: #374344 !important;
+}
+//ion range slider 
+.irs-line {
+	background: #3c3e44;
+	border-color: #28292d;
+}
+//calendar & dropzone
+.fc a {
+	color: #ffffff !important;
+}
+.dropzone,
+.fc td.fc-other-month {
+	background-color: rgba($rgba-primary, 0.15);
+	background-color: rgba(var(--theme-rgb-primary), 0.15);
+}
+//date range picker
+.daterangepicker,
+.daterangepicker .calendar-table {
+	background: #383b40;
+}
+.daterangepicker td.off, 
+.daterangepicker td.off.in-range, 
+.daterangepicker td.off.start-date,
+.daterangepicker td.off.end-date {
+	background: transparent;
+}
+.daterangepicker .calendar-table {
+	border-color: #383b40;
+}
+
+//datepicker
+.datepicker-dropdown.datepicker-orient-top:after {
+	border-top-color: #383b40;
+}
+.datepicker-dropdown:after {
+	border-bottom-color: #383b40;
+}
+//summernote 
+.note-toolbar .note-btn {
+	background: #25272b;
+
+	&:hover,
+	&:focus,
+	&:active {
+		background: lighten(#25272b, 10%);
+		color: #ffffff;
+	}
+}
+.note-editor.note-frame .note-editing-area .note-editable, 
+.note-editor.note-airframe .note-editing-area .note-editable {
+	background-color: rgba(0, 0, 0, 0.15);
+	color: #fff;
+}
+.note-editor.note-frame .note-statusbar, 
+.note-editor.note-airframe .note-statusbar {
+	border-top: 1px solid #25272b;
+	background-color: #434548;
+}

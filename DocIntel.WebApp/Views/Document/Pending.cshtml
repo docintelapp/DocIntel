@@ -1,0 +1,139 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@using System.Collections
+@using DocIntel.Core.Exceptions
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.InboxViewModel
+
+@{
+    ViewData["Title"] = "Documents pending registration";
+
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Delete)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-inbox-in subheader-icon"></i> Documents pending registration
+        <small>Documents ready to feed the analysts.</small>
+    </h1>
+    <div>
+        <div class="btn-group">
+            <a asp-action="Upload" class="btn btn-success btn-iconified waves-effect waves-themed">
+                <i class="fal fa-upload"></i> Upload
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        @{
+            var errors = ViewBag.ValidationErrors as IEnumerable<ValidationError>;
+        }
+        @if (errors?.Any() ?? false)
+        {
+            <div class="alert alert-danger" role="alert">
+                <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                <ul class="mb-0 mt-1">
+                    @foreach (var error in errors)
+                    {
+                        if (!string.IsNullOrEmpty(error.HtmlMessage))
+                        {
+                            <li>@Html.Raw(error.HtmlMessage)</li>
+                        }
+                        else
+                        {
+                            <li>@error.Message</li>
+                        }
+                    }
+                </ul>
+            </div>
+        }
+
+
+        @if (Model.Documents.Any())
+        {
+            <div id="panel-source-info" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Pending Registration
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-0">
+                        @foreach (var item in Model.Documents.OrderByDescending(_ => _.RegistrationDate))
+                        {
+                            @await Html.PartialAsync("PendingListItem", item, new ViewDataDictionary(ViewData))
+                        }
+
+                    </div>
+                    @if (Model.PageCount > 1)
+                    {
+                        <div class="panel-content py-2 rounded-bottom border-faded border-left-0 border-right-0 border-bottom-0 text-muted">
+                            <pagination page="@Model.Page" page-count="@Model.PageCount"></pagination>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (!Model.Documents.Any())
+        {
+            <div id="panel-source-info" class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content p-0">
+                        <div class="text-center fs-xl m-3 py-5">
+                            <i class="fal fa-inbox fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            No documents are pending registration.<br/>
+                            <small>Relax, and enjoy. It won't last long.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.SubmittedDocuments.Any())
+        {
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Pending Ingestion
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-0">
+                        @foreach (var item in Model.SubmittedDocuments.OrderBy(_ => _.SubmissionDate))
+                        {
+                            @await Html.PartialAsync("_SubmittedDocumentRowSummary", item, new ViewDataDictionary(ViewData))
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <!--
+    <div class="col-3">
+        <div class="card mb-g">
+            <div class="card-body">
+                <div class="d-flex flex-row">
+                    <div class="icon-stack display-3 flex-shrink-0">
+                        <i class="fal fa-circle icon-stack-3x opacity-100 color-info-400"></i>
+                        <i class="fas fa-thumbs-up icon-stack-1x opacity-100 color-info-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p>
+                            <strong>
+                                Tips &amp; tricks for well-registered documents
+                            </strong>
+                        </p>
+                        <p>When uploaded and analyzed, documents reach the pending list.</p>
+                        <p class="mb-0">
+                            Everyone that can register documents will see the pending list, a great way to share 
+                            the task of registering documents.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    -->
+</div>

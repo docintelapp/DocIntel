@@ -1,0 +1,13 @@
+$baseURL: "../smartadmin/";
+
+@import "../smartadmin/scss/app.core.scss";
+@import "../smartadmin/content/pages/page_login/page-login.scss";
+@import "~bootstrap/scss/bootstrap";
+
+.pattern-1-background {
+    background: url('#{$baseURL}img/svg/pattern-1.svg') no-repeat center bottom fixed; 
+    background-size: cover;
+}
+
+// $fa-font-path: "~font-awesome/fonts";
+// @import "~font-awesome/scss/font-awesome";
