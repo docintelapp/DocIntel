@@ -1,0 +1,124 @@
+version: "3.9"
+services:
+  
+  postgresql:
+    image: postgres
+    container_name: docintel-dev-postgres
+    ports:
+      - 8888:5432
+    environment:
+      - POSTGRES_PASSWORD=_POSTGRES_PW_
+      - PGUSER=_POSTGRES_USER_
+    volumes:
+      - _DOCINTEL_DATA_/postgres/:/var/lib/postgresql/data 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: docintel-dev-rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+        - _DOCINTEL_DATA_/rabbitmq/:/var/lib/rabbitmq/mnesia/
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+        
+  solr:
+    image: solr
+    container_name: docintel-dev-solr
+    ports:
+      - 8983:8983
+    volumes:
+      - _DOCINTEL_DATA_/solr/:/var/solr
+  
+  synapse:
+    image: vertexproject/synapse-cortex:v2.x.x
+    container_name: docintel-dev-synapse
+    ports:
+      - 8902:4443
+    volumes:
+      - _DOCINTEL_DATA_/vertex/:/vertex/storage
+    environment:
+      - SYN_CORTEX_AUTH_PASSWD=_SYNAPSE_PW_
+      
+  document_analyzer:
+    image: "docintelapp/document-analyzer"
+    container_name: docintel-dev-document-analyzer
+    volumes:
+      - _DOCINTEL_CONFIG_:/config
+      - _DOCINTEL_DATA_/files/:/files
+      - _DOCINTEL_DATA_/lock/:/lock
+      
+  document_indexer:
+    image: "docintelapp/document-indexer"
+    container_name: docintel-dev-document-indexer
+    volumes:
+      - _DOCINTEL_CONFIG_:/config
+      - _DOCINTEL_DATA_/files/:/files
+      - _DOCINTEL_DATA_/lock/:/lock
+      
+  importer:
+    image: "docintelapp/importer"
+    container_name: docintel-dev-importer
+    volumes:
+      - _DOCINTEL_CONFIG_:/config
+      - _DOCINTEL_DATA_/files/:/files
+      - _DOCINTEL_DATA_/lock/:/lock
+      
+  newsletter:
+    image: "docintelapp/newsletter"
+    container_name: docintel-dev-newsletter
+    volumes:
+      - _DOCINTEL_CONFIG_:/config
+      - _DOCINTEL_DATA_/files/:/files
+      - _DOCINTEL_DATA_/lock/:/lock
+      
+  scraper:
+    image: "docintelapp/scraper"
+    container_name: docintel-dev-scraper
+    volumes:
+      - _DOCINTEL_CONFIG_:/config
+      - _DOCINTEL_DATA_/files/:/files
+      - _DOCINTEL_DATA_/lock/:/lock
+      
+  source_indexer:
+    image: "docintelapp/source-indexer"
+    container_name: docintel-dev-source-indexer
+    volumes:
+      - _DOCINTEL_CONFIG_:/config
+      - _DOCINTEL_DATA_/files/:/files
+      - _DOCINTEL_DATA_/lock/:/lock
+      
+  tag_indexer:
+    image: "docintelapp/tag-indexer"
+    container_name: docintel-dev-tag-indexer
+    volumes:
+      - _DOCINTEL_CONFIG_:/config
+      - _DOCINTEL_DATA_/files/:/files
+      - _DOCINTEL_DATA_/lock/:/lock
+      
+  thumbnailer:
+    image: "docintelapp/thumbnailer"
+    container_name: docintel-dev-thumbnailer
+    volumes:
+      - _DOCINTEL_CONFIG_:/config
+      - _DOCINTEL_DATA_/files/:/files
+      - _DOCINTEL_DATA_/lock/:/lock
+      
+  webapp:
+    image: "docintelapp/webapp"
+    container_name: docintel-dev-webapp
+    ports:
+      - 5005:80
+    volumes:
+      - _DOCINTEL_CONFIG_:/config
+      - _DOCINTEL_DATA_/files/:/files
+      - _DOCINTEL_DATA_/lock/:/lock

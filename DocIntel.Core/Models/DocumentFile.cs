@@ -62,6 +62,8 @@ namespace DocIntel.Core.Models
         public AppUser LastModifiedBy { get; set; }
         public string LastModifiedById { get; set; }
 
+        [Url]
+        [Display(Name = "Source URL")] 
         public string SourceUrl { get; set; }
 
         [Display(Name = "Override Classification?")]

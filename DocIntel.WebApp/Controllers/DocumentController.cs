@@ -34,7 +34,6 @@ using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Observables;
 using DocIntel.Core.Utils.Search.Documents;
-using DocIntel.WebApp.Helpers;
 using DocIntel.WebApp.ViewModels.DocumentViewModel;
 
 using MassTransit;
@@ -47,6 +46,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
+using Synsharp;
+using Synsharp.Forms;
 
 namespace DocIntel.WebApp.Controllers
 {
@@ -62,14 +63,15 @@ namespace DocIntel.WebApp.Controllers
         private readonly IGroupRepository _groupRepository;
         private readonly ILogger<DocumentController> _logger;
         private readonly IMapper _mapper;
-        private readonly IObservableRepository _observableRepository;
-        private readonly IObservablesUtility _observablesUtility;
-        private readonly IObservableWhitelistUtility _observableWhitelistUtility;
+        private readonly ISynapseRepository _synapseRepository;
+        // private readonly IObservablesUtility _observablesUtility;
         private readonly ISourceRepository _sourceRepository;
         private readonly ITagRepository _tagRepository;
         public readonly IClassificationRepository _classificationRepository;
+        private readonly IUserRepository _userRepository;
 
-        public DocumentController(DocIntelContext context,
+        public DocumentController(
+            DocIntelContext context,
             ILogger<DocumentController> logger,
             ApplicationSettings configuration,
             IAppAuthorizationService appAuthorizationService,
@@ -77,14 +79,15 @@ namespace DocIntel.WebApp.Controllers
             IAuthorizationService authorizationService,
             ICommentRepository commentRepository,
             IDocumentRepository documentRepository,
-            IObservableRepository observableRepository,
             ISourceRepository sourceRepository,
             ITagRepository tagRepository,
             ITagFacetRepository facetRepository,
             IMapper mapper, IPublishEndpoint busClient,
             IGroupRepository groupRepository,
-            IObservablesUtility observablesUtility,
-            IObservableWhitelistUtility observableWhitelistUtility, ApplicationSettings appSettings, IClassificationRepository classificationRepository)
+            ApplicationSettings appSettings,
+            IClassificationRepository classificationRepository,
+            IUserRepository userRepository,
+            ISynapseRepository synapseRepository)
             : base(context,
                 userManager,
                 configuration,
@@ -100,11 +103,10 @@ namespace DocIntel.WebApp.Controllers
             _mapper = mapper;
             _busClient = busClient;
             _groupRepository = groupRepository;
-            _observableRepository = observableRepository;
-            _observablesUtility = observablesUtility;
-            _observableWhitelistUtility = observableWhitelistUtility;
             _appSettings = appSettings;
             _classificationRepository = classificationRepository;
+            _userRepository = userRepository;
+            _synapseRepository = synapseRepository;
         }
 
         [HttpGet("Document")]
@@ -114,33 +116,47 @@ namespace DocIntel.WebApp.Controllers
         }
 
         [HttpGet("Document/Pending/{page?}")]
-        public async Task<IActionResult> Pending(int page = 1, int opage = 1)
+        public async Task<IActionResult> Pending(int page = 1, string username = "")
         {
             var currentUser = await GetCurrentUser();
+
+            AppUser user = null;
+            if (!string.IsNullOrEmpty(username))
+            {
+                try
+                {
+                    user = await _userRepository.GetByUserName(AmbientContext, username);
+                } 
+                catch (UnauthorizedOperationException)
+                {
+                    // TODO: Log silently
+                }
+                catch (NotFoundEntityException)
+                {
+                    // TODO: Log silently
+                }
+            }
 
             var count = await _documentRepository.CountAsync(AmbientContext, new DocumentQuery
             {
                 Statuses = new[] {DocumentStatus.Submitted, DocumentStatus.Analyzed}.ToHashSet()
             });
 
-            var ownCount = await _documentRepository.CountAsync(AmbientContext, new DocumentQuery
+            var documentQuery = new DocumentQuery
             {
-                RegisteredBy = currentUser.Id,
                 Statuses = new[] {DocumentStatus.Submitted, DocumentStatus.Analyzed}.ToHashSet(),
-                Page = opage,
+                Page = page,
                 Limit = 20,
                 OrderBy = SortCriteria.RegistrationDate
-            });
+            };
 
-            var pendingDocuments = _documentRepository.GetAllAsync(AmbientContext, new DocumentQuery
-                    {
-                        Statuses = new[] {DocumentStatus.Submitted, DocumentStatus.Analyzed}.ToHashSet(),
-                        Page = page,
-                        Limit = 20,
-                        OrderBy = SortCriteria.RegistrationDate
-                    },
+            if (user != null)
+                documentQuery.RegisteredBy = user.Id;
+            
+            var pendingDocuments = _documentRepository.GetAllAsync(AmbientContext, documentQuery,
                     new[]
                     {
+                        nameof(Document.Source),
                         nameof(Document.RegisteredBy),
                         nameof(Document.LastModifiedBy),
                         nameof(Document.DocumentTags),
@@ -153,12 +169,11 @@ namespace DocIntel.WebApp.Controllers
 
             var viewModel = new InboxViewModel
             {
+                RegisteredBy = user,
                 Documents = pendingDocuments,
                 DocumentCount = count,
                 Page = page,
                 PageCount = pendingCount == 0 ? 1 : (int) Math.Ceiling(pendingCount / 20.0),
-                OwnPage = opage,
-                OwnPageCount = ownCount == 0 ? 1 : (int) Math.Ceiling(ownCount / 20.0),
                 SubmittedDocuments = _documentRepository.GetSubmittedDocuments(AmbientContext,
                         _ => _.Where(__ => __.Status == SubmissionStatus.Submitted))
                     .ToEnumerable()
@@ -211,28 +226,28 @@ namespace DocIntel.WebApp.Controllers
         [HttpGet("Document/Details/{url}")]
         public async Task<IActionResult> Details(string url)
         {
-            var query = new DocumentQuery {URL = url};
-            if (Guid.TryParse(url, out var guid))
-            {
-                query = new DocumentQuery {DocumentId = guid};
-                var document = await _documentRepository.GetAsync(
-                    AmbientContext,
-                    query);
-                return RedirectToAction("Details", new {document.URL});
-            }
-
-            if (url.StartsWith(_configuration.DocumentPrefix))
-            {
-                query = new DocumentQuery {Reference = url};
-                var document = await _documentRepository.GetAsync(
-                    AmbientContext,
-                    query);
-                return RedirectToAction("Details", new {document.URL});
-            }
-
             var currentUser = await GetCurrentUser();
             try
             {
+                var query = new DocumentQuery {URL = url};
+                if (Guid.TryParse(url, out var guid))
+                {
+                    query = new DocumentQuery {DocumentId = guid};
+                    var tempDocument = await _documentRepository.GetAsync(
+                        AmbientContext,
+                        query);
+                    return RedirectToAction("Details", new {tempDocument.URL});
+                }
+
+                if (url.StartsWith(_configuration.DocumentPrefix))
+                {
+                    query = new DocumentQuery {Reference = url};
+                    var tempDocument = await _documentRepository.GetAsync(
+                        AmbientContext,
+                        query);
+                    return RedirectToAction("Details", new {tempDocument.URL});
+                }
+                
                 var document = await _documentRepository.GetAsync(
                     AmbientContext,
                     query,
@@ -253,12 +268,10 @@ namespace DocIntel.WebApp.Controllers
                     .GetAllAsync(AmbientContext, new CommentQuery {DocumentId = document.DocumentId}, new[] {"Author"})
                     .ToListAsync();
 
-                _logger.LogDebug(string.Join(",", comments.Select(_ => _.Author.FriendlyName)));
-
                 var viewModel = new DocumentDetailsViewModel
                 {
                     Document = document,
-                    Observables = await _observableRepository.GetObservables(document.DocumentId),
+                    Observables = await _synapseRepository.GetObservables(document, false, false).ToListAsync(),
                     Subscribed = await _documentRepository.IsSubscribedAsync(AmbientContext, document.DocumentId),
                     Comments = comments,
                     Contributors = new[] {document.RegisteredBy, document.LastModifiedBy}
@@ -347,7 +360,7 @@ namespace DocIntel.WebApp.Controllers
                         nameof(Document.Comments)
                     }
                 );
-                await SetupViewBag(currentUser);
+                await SetupViewBag(currentUser, document);
 
                 return View(document);
             }
@@ -361,8 +374,10 @@ namespace DocIntel.WebApp.Controllers
             }
         }
 
-        private async Task SetupViewBag(AppUser currentUser)
+        private async Task SetupViewBag(AppUser currentUser, Document document)
         {
+            ViewBag.ReviewObservables = await _synapseRepository.GetObservables(document, true).Any();
+            
             ViewBag.AllClassifications = AmbientContext.DatabaseContext.Classifications.ToList();
             var allGroups = await _groupRepository.GetAllAsync(AmbientContext).ToListAsync();
             ViewBag.AllGroups = allGroups;
@@ -378,7 +393,7 @@ namespace DocIntel.WebApp.Controllers
                 "ClassificationId", "ThumbnailId")]
             Document submittedDocument,
             [Bind(Prefix = "Source.SourceId")] string sourceId,
-            [Bind(Prefix = "tags")] string[] labels,
+            [Bind(Prefix = "tags")] string[] tags,
             [Bind(Prefix = "releasableTo")] Guid[] releasableTo,
             [Bind(Prefix = "eyesOnly")] Guid[] eyesOnly,
             [Bind(Prefix = "file")] IFormFile file)
@@ -402,7 +417,7 @@ namespace DocIntel.WebApp.Controllers
                     var updatedDocument = await SaveDocument(document,
                         submittedDocument,
                         sourceId,
-                        labels, releasableTo, eyesOnly,
+                        tags, releasableTo, eyesOnly,
                         file,
                         DocumentStatus.Registered);
                     await _context.SaveChangesAsync();
@@ -422,7 +437,8 @@ namespace DocIntel.WebApp.Controllers
                     document.ShortDescription = submittedDocument.ShortDescription;
                     document.Note = submittedDocument.Note;
                     document.ClassificationId = submittedDocument.ClassificationId;
-                    await SetupViewBag(currentUser);
+                    await SetupViewBag(currentUser, document);
+                    AddFakeTags(tags, document);
                     return View(document);
                 }
                 catch (TitleAlreadyExistsException e)
@@ -436,7 +452,8 @@ namespace DocIntel.WebApp.Controllers
                     document.ShortDescription = submittedDocument.ShortDescription;
                     document.Note = submittedDocument.Note;
                     document.ClassificationId = submittedDocument.ClassificationId;
-                    await SetupViewBag(currentUser);
+                    await SetupViewBag(currentUser, document);
+                    AddFakeTags(tags, document);
                     return View(document);
                 }
                 catch (InvalidArgumentException e)
@@ -452,7 +469,8 @@ namespace DocIntel.WebApp.Controllers
                     document.ShortDescription = submittedDocument.ShortDescription;
                     document.Note = submittedDocument.Note;
                     document.ClassificationId = submittedDocument.ClassificationId;
-                    await SetupViewBag(currentUser);
+                    await SetupViewBag(currentUser, document);
+                    AddFakeTags(tags, document);
                     return View(document);
                 }
             }
@@ -466,7 +484,7 @@ namespace DocIntel.WebApp.Controllers
             }
         }
 
-        public async Task<IActionResult> PreviewURL(string url, string title = "", string description = "")
+        public IActionResult PreviewURL(string url, string title = "", string description = "")
         {
             return View(new SubmittedDocument
             {
@@ -477,10 +495,10 @@ namespace DocIntel.WebApp.Controllers
         }
 
         [HttpPost("Document/PreviewURL")]
-        public async Task<IActionResult> PreviewURL(SubmittedDocument document)
+        public async Task<IActionResult> PreviewURL(SubmittedDocument submittedDocument)
         {
             var currentUser = await GetCurrentUser();
-            if (Uri.TryCreate(document.URL, UriKind.Absolute, out var uriResult)
+            if (Uri.TryCreate(submittedDocument.URL, UriKind.Absolute, out var uriResult)
                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
                 var submission = await _documentRepository.SubmitDocument(AmbientContext, new SubmittedDocument
@@ -496,7 +514,7 @@ namespace DocIntel.WebApp.Controllers
                 });
             }
 
-            return Redirect(document.URL);
+            return Redirect(submittedDocument.URL);
         }
 
         [HttpPost("Document/SubmitURL")]
@@ -590,11 +608,11 @@ namespace DocIntel.WebApp.Controllers
             Tag tag;
             try
             {
-                tag = await _tagRepository.GetAsync(AmbientContext, facet.Id, tagName);
+                tag = await _tagRepository.GetAsync(AmbientContext, facet.FacetId, tagName);
             }
             catch (NotFoundEntityException)
             {
-                tag = await _tagRepository.CreateAsync(AmbientContext, new Tag {FacetId = facet.Id, Label = tagName});
+                tag = await _tagRepository.CreateAsync(AmbientContext, new Tag {FacetId = facet.FacetId, Facet = facet, Label = tagName});
             }
 
             return tag;
@@ -627,6 +645,7 @@ namespace DocIntel.WebApp.Controllers
 
             foreach (var file in files)
             {
+                bool error = false;
                 var title = file.FileName;
                 if (title.EndsWith(".pdf")) title = title.Remove(title.Length - 4);
 
@@ -656,6 +675,7 @@ namespace DocIntel.WebApp.Controllers
                 }
                 catch (FileAlreadyKnownException e)
                 {
+                    error = true;
                     var htmlMessage = "The file '" + file.FileName + "' is already uploaded. Register from the list below.";
 
                     if (e.Document.Status == DocumentStatus.Analyzed)
@@ -674,6 +694,7 @@ namespace DocIntel.WebApp.Controllers
                 }
                 catch (TitleAlreadyExistsException e)
                 {
+                    error = true;
                     AddModelError("file",
                         "A document already exists with the same title. See document " + e.ExistingReference + ".",
                         "A document already exists with the same title. See document " + e.ExistingReference + "."
@@ -681,17 +702,19 @@ namespace DocIntel.WebApp.Controllers
                 }
                 catch (InvalidArgumentException e)
                 {
+                    error = true;
                     foreach (var kv in e.Errors)
                     foreach (var errorMessage in kv.Value)
                         AddModelError(kv.Key, errorMessage);
                 }
                 catch (UnauthorizedOperationException)
                 {
+                    error = true;
                 }
                 finally
                 {
                     // If adding the file failed, remove the empty document we just added.
-                    if ((ViewBag.ValidationErrors as List<ValidationError>)?.Any() ?? false && document != null)
+                    if (error && document != null)
                     {
                         // TODO Update to use repository (but Remove won't work since the entity was not added yet to the backend DB)
                         AmbientContext.DatabaseContext.Documents.Attach(document).State = EntityState.Unchanged;
@@ -733,7 +756,7 @@ namespace DocIntel.WebApp.Controllers
                 if (document.Status != DocumentStatus.Analyzed)
                     return NotFound();
 
-                await SetupViewBag(currentUser);
+                await SetupViewBag(currentUser, document);
                 return View(document);
             }
             catch (UnauthorizedOperationException)
@@ -791,21 +814,16 @@ namespace DocIntel.WebApp.Controllers
                 if (document.Status != DocumentStatus.Analyzed)
                     return NotFound();
 
-                var observables = await _observableRepository.GetObservables(id);
-                var acceptedObservables = false;
-                foreach (var i in observables)
-                    if (_observablesUtility.RecommendAccepted(i.Type, i.Status, i.History))
-                    {
-                        acceptedObservables = true;
-                        break;
-                    }
+                var observables = await _synapseRepository.GetObservables(document, true).ToListAsync();
 
+                document.RegisteredBy = currentUser;
+                
                 document = await SaveDocument(document, submittedDocument, sourceId, tags, releasableTo, eyesOnly, file,
-                    acceptedObservables ? DocumentStatus.Analyzed : DocumentStatus.Registered);
+                    observables.Any() ? DocumentStatus.Analyzed : DocumentStatus.Registered);
                 await _documentRepository.SubscribeAsync(AmbientContext, document.DocumentId);
                 await AmbientContext.DatabaseContext.SaveChangesAsync();
                 
-                if (acceptedObservables)
+                if (observables.Any())
                     return RedirectToAction("Observables", new {id = document.DocumentId});
 
                 return RedirectToAction("Details", new {document.URL});
@@ -828,7 +846,8 @@ namespace DocIntel.WebApp.Controllers
                     htmlMessage
                 );
                 
-                await SetupViewBag(currentUser);
+                await SetupViewBag(currentUser, document);
+                AddFakeTags(tags, document);
                 return View((document));
             }
             catch (TitleAlreadyExistsException e)
@@ -837,7 +856,8 @@ namespace DocIntel.WebApp.Controllers
                     "A document already exists with the same title. See document " + e.ExistingReference + ".",
                     "A document already exists with the same title. See document " + e.ExistingReference + "."
                 );
-                await SetupViewBag(currentUser);
+                await SetupViewBag(currentUser, document);
+                AddFakeTags(tags, document);
                 return View((document));
             }
 
@@ -848,8 +868,45 @@ namespace DocIntel.WebApp.Controllers
                 foreach (var errorMessage in kv.Value)
                     ModelState.AddModelError(kv.Key, errorMessage);
 
-                await SetupViewBag(currentUser);
+                await SetupViewBag(currentUser, document);
+                AddFakeTags(tags, document);
                 return View((document));
+            }
+        }
+
+        private void AddFakeTags(string[] tags, Document document)
+        {
+            foreach (var submittedTag in tags)
+            {
+                if (document.DocumentTags.All(_ => _.Tag.FriendlyName != submittedTag))
+                {
+                    var prefix = "";
+                    var label = submittedTag;
+                    if (submittedTag.Contains(':'))
+                    {
+                        prefix = submittedTag.Split(':', 2)[0];
+                        label = submittedTag.Split(':', 2)[1];
+                    }
+
+                    var tag = new DocumentTag()
+                    {
+                        DocumentId = document.DocumentId,
+                        Tag = _tagRepository.GetAllAsync(AmbientContext, new TagQuery()
+                        {
+                            FacetPrefix = prefix,
+                            Label = label
+                        }).FirstOrDefault()?.Result ?? new Tag()
+                        {
+                            Label = label,
+                            Facet = new TagFacet()
+                            {
+                                Prefix = prefix
+                            }
+                        }
+                    };
+
+                    document.DocumentTags.Add(tag);
+                }
             }
         }
 
@@ -898,35 +955,12 @@ namespace DocIntel.WebApp.Controllers
                 if (document.Status != DocumentStatus.Registered)
                     return NotFound();
 
-                var res = await _observableRepository.GetObservables(id);
-                var rel = await _observablesUtility.DetectRelations(res, document);
-
-                var divm = new DocumentObservablesViewModel();
-                var dfov = new List<ObservableViewModel>();
-
-                //var fileids = res.Select(u => u.FileId).Distinct();
-                //foreach (var fileid in fileids)
+                await SetupViewBag(currentUser, document);
+                return View(new DocumentObservablesViewModel
                 {
-                    var o = res; // .Where(u => u.FileId == fileid);
-                    var x = _mapper.Map<HashSet<ObservableViewModel>>(o);
-                    foreach (var i in x)
-                    {
-                        i.IsAccepted = i.Status == ObservableStatus.Accepted;
-                        i.IsWhitelisted = i.Status == ObservableStatus.Whitelisted;
-                        var rsl = rel.Where(u => u.SourceRef == i.Id).Select(u => u.TagId);
-                        i.Tags = document.DocumentTags.Where(j => rsl.Contains(j.TagId)).Select(u => u.Tag).ToList();
-                        dfov.Add(i);
-                    }
-                }
-
-                divm.Observables = dfov.ToArray();
-                divm.Files = document.Files;
-
-                divm.DocumentId = document.DocumentId;
-                divm.Title = document.Title;
-
-                await SetupViewBag(currentUser);
-                return View(divm);
+                    Observables = await _synapseRepository.GetObservables(document).ToListAsync(),
+                    Document = document
+                });
             }
             catch (UnauthorizedOperationException)
             {
@@ -942,8 +976,9 @@ namespace DocIntel.WebApp.Controllers
         [RequestFormSizeLimit(20000, Order = 1)]
         [ValidateAntiForgeryToken(Order = 2)]
         public async Task<IActionResult> EditObservables(
-            Guid id,
-            [Bind("DocumentId", "Observables")] DocumentObservablesViewModel viewModel
+            Guid id, 
+            [Bind(Prefix = "observables")] string[] observableIden,
+            [Bind(Prefix = "status")] string[] observableStatus
         )
         {
             var currentUser = await GetCurrentUser();
@@ -961,23 +996,100 @@ namespace DocIntel.WebApp.Controllers
             if (document.Status != DocumentStatus.Registered)
                 return NotFound();
 
-            if (ModelState.IsValid)
+            for (var index = 0; index < observableIden.Length; index++)
             {
-                await UpdateObservable(id, viewModel);
-                return RedirectToAction("Details", new {id = document.DocumentId});
+                var iden = observableIden[index];
+                var status = observableStatus[index];
+                if (status == "remove")
+                {
+                    _logger.LogDebug($"Remove {iden}");
+                    await _synapseRepository.Remove(document, iden, false, true);
+                } else if (status == "remove-ignore")
+                {
+                    _logger.LogDebug($"Add _di.workflow.ignore to {iden}");
+                    await _synapseRepository.AddTag(document, iden, "_di.workflow.ignore", false);
+                    await _synapseRepository.Remove(document, iden, false, true);
+                }
             }
 
-            viewModel.Files = document.Files;
-            viewModel.DocumentId = document.DocumentId;
-            viewModel.Title = document.Title;
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction("Details", new {document.URL});
+            }
 
-            await SetupViewBag(currentUser);
-            return View(viewModel);
+            await SetupViewBag(currentUser, document);
+            return View(new DocumentObservablesViewModel
+            {
+                Observables = await _synapseRepository.GetObservables(document, true).ToListAsync(),
+                Document = document
+            });
         }
 
-        public class Test
+        [HttpPost("AddObservable")]
+        public async Task<IActionResult> AddObservable(Guid documentId, string obsType, string obsValue)
         {
-            public string Id { get; set; }
+            var currentUser = await GetCurrentUser();
+            if (!await _appAuthorizationService.CanEditDocument(User, null))
+                return Unauthorized();
+
+            var document = await _documentRepository.GetAsync(AmbientContext, documentId,
+                new[]
+                {
+                    nameof(Document.Files),
+                    nameof(Document.DocumentTags),
+                    nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag),
+                    nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag) + "." + nameof(Tag.Facet)
+                });
+            if (document.Status != DocumentStatus.Registered)
+                return NotFound();
+            
+            if (string.IsNullOrWhiteSpace(obsType))
+                return RedirectToAction(nameof(EditObservables), new {id = document.DocumentId});
+            
+            if (!new[] { "inet:url", "inet:fqdn", "inet:ipv4", "inet:ipv6", "hash:md5", "hash:sha1", "hash:sha256" }
+                    .Contains(obsType))
+                return NotFound();
+
+            try
+            {
+                SynapseObject ob = null;
+                if (obsType == "inet:url")
+                {
+                    ob = new InetUrl(obsValue);
+                } else if (obsType == "inet:fqdn")
+                {
+                    ob = new InetFqdn(obsValue);
+                } else if (obsType == "inet:ipv4")
+                {
+                    ob = new InetIPv4(obsValue);
+                } else if (obsType == "inet:ipv6")
+                {
+                    ob = new InetIPv6(obsValue);
+                } else if (obsType == "hash:md5")
+                {
+                    ob = HashMD5.Parse(obsValue);
+                } else if (obsType == "hash:sha1")
+                {
+                    ob = HashSHA1.Parse(obsValue);
+                } else if (obsType == "hash:sha256")
+                {
+                    ob = HashSHA256.Parse(obsValue);
+                }
+                
+                if (ob != null)
+                    await _synapseRepository.Add(new[]{ob}, document, null, null);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+            }
+
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(EditObservables), new {id = document.DocumentId});
+            }
+
+            return RedirectToAction(nameof(EditObservables), new {id = document.DocumentId});
         }
         
         [HttpPost("Document/Observables/{id}")]
@@ -985,7 +1097,8 @@ namespace DocIntel.WebApp.Controllers
         [ValidateAntiForgeryToken(Order = 2)]
         public async Task<IActionResult> Observables(
             Guid id, 
-            [Bind("DocumentId", "Observables")] DocumentObservablesViewModel viewModel
+            [Bind(Prefix = "observables")] string[] observableIden,
+            [Bind(Prefix = "status")] string[] observableStatus
         )
         {
             var currentUser = await GetCurrentUser();
@@ -1006,60 +1119,68 @@ namespace DocIntel.WebApp.Controllers
             if (document.Status != DocumentStatus.Analyzed)
                 return NotFound();
             
+            document.RegisteredBy = currentUser;
+            for (var index = 0; index < observableIden.Length; index++)
+            {
+                try
+                {
+                    var iden = observableIden[index];
+                    var status = observableStatus[index];
+                    if (status == "ignore-once")
+                    {
+                        _logger.LogDebug($"Remove {iden}");
+                        await _synapseRepository.Remove(document, iden, true);
+                    } else if (status == "ignore-always")
+                    {
+                        _logger.LogDebug($"Add _di.workflow.ignore to {iden}");
+                        await _synapseRepository.AddTag(document, iden, "_di.workflow.ignore", false);
+                    } else if (status == "ignore-domain")
+                    {
+                        _logger.LogDebug($"Ignore-domain {iden}");
+                        var url = await _synapseRepository.GetObservableByIden<InetUrl>(document, iden, true);
+                        if (url != null)
+                        {
+                            // Add the FQDN with the proper tag globally
+                            var fqdn = new InetFqdn(url.FQDN);
+                            fqdn.Tags.Add("_di.workflow.ignore");
+                            await _synapseRepository.Add(fqdn);
+
+                            var urls = await _synapseRepository.GetBySecondary<InetUrl>(document, "fqdn", url.FQDN, true).ToListAsync();
+                            foreach (var u in urls)
+                            {
+                                await _synapseRepository.Remove(document, iden, true);
+                            }
+                        }
+                    }
+
+                    await _synapseRepository.RemoveTag(document, iden, "_di.workflow.review", false);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.Message);
+                    _logger.LogError(e.StackTrace);
+                }
+            }
+
             if (ModelState.IsValid)
             {
-                await UpdateObservable(id, viewModel);
-                await _documentRepository.UpdateStatusAsync(AmbientContext, viewModel.DocumentId, DocumentStatus.Registered);
+                await _documentRepository.UpdateStatusAsync(AmbientContext, document.DocumentId, DocumentStatus.Registered);
+                await _synapseRepository.Merge(document);
+                await AmbientContext.DatabaseContext.SaveChangesAsync();
                 return RedirectToAction("Details", new {document.URL});
             }
 
-            viewModel.Files = document.Files;
-            viewModel.DocumentId = document.DocumentId;
-            viewModel.Title = document.Title;
-
-            await SetupViewBag(currentUser);
-            return View(viewModel);
+            await SetupViewBag(currentUser, document);
+            return View(new DocumentObservablesViewModel
+            {
+                Observables = await _synapseRepository.GetObservables(document, true).ToListAsync(),
+                Document = document
+            });
         }
 
-        private async Task UpdateObservable(Guid id, DocumentObservablesViewModel viewModel)
+        private Task UpdateObservable(Guid id, DocumentObservablesViewModel viewModel)
         {
-            // set accepted - rejected properties
-            var storedObservables = (await _observableRepository.GetObservables(id)).ToList();
-
-            foreach (var observableViewModel in viewModel.Observables)
-            {
-                if (string.IsNullOrEmpty(observableViewModel.Value))
-                {
-                    storedObservables.RemoveAll(o => o.Id == observableViewModel.Id);
-                    await _observableRepository.DeleteObservable(observableViewModel.Id);
-                }
-                else
-                {
-                    var storedObservable = storedObservables.First(o => o.Id == observableViewModel.Id);
-
-                    if (storedObservable.History != ObservableStatus.Whitelisted && observableViewModel.IsWhitelisted)
-                    {
-                        var res = await _observableWhitelistUtility.AddWhitelistedObservable(storedObservable);
-                        storedObservable.Status = ObservableStatus.Whitelisted;
-                    }
-                    else
-                    {
-                        storedObservable.Status = storedObservable.History == ObservableStatus.Whitelisted
-                            ? ObservableStatus.Whitelisted
-                            : observableViewModel.IsAccepted
-                                ? ObservableStatus.Accepted
-                                : ObservableStatus.Rejected;
-
-                        // update value
-                        if (observableViewModel.Type == ObservableType.Artefact ||
-                            observableViewModel.Type == ObservableType.File)
-                            storedObservable.Hashes[0].Value = observableViewModel.Value;
-                        else storedObservable.Value = observableViewModel.Value;
-                    }
-                }
-            }
-
-            await _observableRepository.UpdateObservables(storedObservables);
+            throw new NotImplementedException();
         }
 
         [HttpGet("Document/Observables/{id}")]
@@ -1082,39 +1203,13 @@ namespace DocIntel.WebApp.Controllers
             if (document.Status != DocumentStatus.Analyzed)
                 return NotFound();
 
-            var res = await _observablesUtility.GetDocumentObservables(id);
-            var rel = await _observablesUtility.DetectRelations(res, document);
-
-            var divm = new DocumentObservablesViewModel();
-            var dfov = new List<ObservableViewModel>();
-
-            //var fileids = res.Select(u => u.FileId).Distinct();
-            // foreach (var fileid in fileids)
+            await SetupViewBag(currentUser, document);
+            return View(new DocumentObservablesViewModel
             {
-                var o = res; // Where(u => u.FileId == fileid);
-                var x = _mapper.Map<HashSet<ObservableViewModel>>(o);
-                foreach (var i in x)
-                {
-                    i.IsAccepted = _observablesUtility.RecommendAccepted(i.Type, i.Status, i.History);
-                    i.IsWhitelisted = i.Status == ObservableStatus.Whitelisted;
-                    var rsl = rel.Where(u => u.SourceRef == i.Id).Select(u => u.TagId);
-                    i.Tags = document.DocumentTags.Where(j => rsl.Contains(j.TagId)).Select(u => u.Tag).ToList();
-                    dfov.Add(i);
-                }
-            }
-
-            divm.Observables = dfov.ToArray();
-            divm.Files = document.Files;
-
-            divm.DocumentId = document.DocumentId;
-            divm.Title = document.Title;
-
-            await SetupViewBag(currentUser);
-            return View(divm);
+                Observables = await _synapseRepository.GetObservables(document, true).ToListAsync(),
+                Document = document
+            });
         }
-
-        
-
 
         [HttpPost("Document/Save")]
         [ValidateAntiForgeryToken]
@@ -1129,12 +1224,36 @@ namespace DocIntel.WebApp.Controllers
             [Bind(Prefix = "file")] IFormFile file)
         {
             var currentUser = await GetCurrentUser();
+
+            Document document;
             try
             {
-                var document = await _documentRepository.GetAsync(AmbientContext, submittedDocument.DocumentId);
+                document = await _documentRepository.GetAsync(AmbientContext, submittedDocument.DocumentId,
+                    new[]
+                    {
+                        nameof(Document.Files),
+                        nameof(Document.DocumentTags),
+                        nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag),
+                        nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag) + "." + nameof(Tag.Facet),
+                        nameof(Document.Source),
+                        nameof(Document.Comments)
+                    });
                 if (document.Status != DocumentStatus.Analyzed)
                     return NotFound();
+            }
+            catch (UnauthorizedOperationException)
+            {
+                // TODO Log error
+                return Unauthorized();
+            }
+            catch (NotFoundEntityException)
+            {
+                // TODO Log error
+                return NotFound();
+            }
 
+            try
+            {
                 var updatedDocument = await SaveDocument(document, submittedDocument, sourceId, tags, releasableTo,
                     eyesOnly, file, DocumentStatus.Registered);
                 return RedirectToAction("Create", new {id = document.DocumentId});
@@ -1147,6 +1266,17 @@ namespace DocIntel.WebApp.Controllers
             {
                 return NotFound();
             }
+            catch (TitleAlreadyExistsException e)
+            {
+                AddModelError("file",
+                    "A document already exists with the same title. See document " + e.ExistingReference + ".",
+                    "A document already exists with the same title. See document " + e.ExistingReference + "."
+                );
+                await SetupViewBag(currentUser, document);
+                AddFakeTags(tags, document);
+                return View((document));
+            }
+
             catch (InvalidArgumentException e)
             {
                 ModelState.Clear();
@@ -1154,8 +1284,9 @@ namespace DocIntel.WebApp.Controllers
                 foreach (var errorMessage in kv.Value)
                     ModelState.AddModelError(kv.Key, errorMessage);
 
-                ViewBag.AvailableClassifications = AmbientContext.DatabaseContext.Classifications.ToList();
-                return View("Create", submittedDocument);
+                await SetupViewBag(currentUser, document);
+                AddFakeTags(tags, document);
+                return View((document));
             }
         }
 
@@ -1171,8 +1302,8 @@ namespace DocIntel.WebApp.Controllers
 
                 await _documentRepository.RemoveAsync(AmbientContext, document.DocumentId);
                 await AmbientContext.DatabaseContext.SaveChangesAsync();
-                await _observableRepository.DeleteAllObservables(document.DocumentId);
-
+                await _synapseRepository.RemoveView(document);
+                
                 return RedirectToAction(nameof(Pending));
             }
             catch (UnauthorizedOperationException)
@@ -1216,7 +1347,7 @@ namespace DocIntel.WebApp.Controllers
                 var currentUser = await GetCurrentUser();
                 await _documentRepository.RemoveAsync(AmbientContext, submittedDocument.DocumentId);
                 await _context.SaveChangesAsync();
-                await _observableRepository.DeleteAllObservables(submittedDocument.DocumentId);
+                await _synapseRepository.RemoveRefs(submittedDocument.DocumentId);
                 return RedirectToAction(nameof(Index));
             }
             catch (UnauthorizedOperationException)
@@ -1339,11 +1470,6 @@ namespace DocIntel.WebApp.Controllers
             if (ModelState.IsValid)
             {
                 if (file != null)
-                    // TODO
-                    // using (var stream = file.OpenReadStream())
-                    // {
-                    //     return await _documentRepository.UpdateAsync(AmbientContext, document, filteredTags, stream);
-                    // }
                     throw new NotImplementedException();
                 return await _documentRepository.UpdateAsync(AmbientContext, document, filteredTags, filteredRelTo,
                     filteredEyes);
@@ -1378,12 +1504,12 @@ namespace DocIntel.WebApp.Controllers
             {
                 Mandatory = true
             }).ToEnumerable();
-            var mandatoryIds = mandatoryFacets.Select(_ => _.Id).ToHashSet();
+            var mandatoryIds = mandatoryFacets.Select(_ => _.FacetId).ToHashSet();
             var facetsPresents = filteredTags.Select(_ => _.FacetId).ToHashSet();
 
             if (mandatoryIds.Except(facetsPresents).Any())
             {
-                var values = mandatoryFacets.Where(_ => !facetsPresents.Contains(_.Id))
+                var values = mandatoryFacets.Where(_ => !facetsPresents.Contains(_.FacetId))
                     .Select(_ => _.Title);
                 var str = (values.Count() > 1 ? "Facets " : "The facet ") + string.Join(", ", values) +
                           (values.Count() > 1 ? " are " : " is ") + " mandatory.";

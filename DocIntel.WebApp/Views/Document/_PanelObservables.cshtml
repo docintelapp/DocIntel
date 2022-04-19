@@ -1,0 +1,45 @@
+@model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentDetailsViewModel
+
+@if (Model.Observables != null && Model.Observables.Any())
+{
+    <div id="panel-content" class="panel">
+        <div class="panel-hdr border-faded border-top-0 border-right-0 border-left-0 shadow-0">
+            <h2>
+                Observables
+            </h2>
+            <div class="panel-toolbar">
+                <button class= "btn btn-pills btn-panel waves-effect waves-themed" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+            </div>
+        </div>
+
+        <div class="panel-container show">
+            <div class="panel-content">
+                <div class="row no-gutters">
+                    <div class="col-12">
+                        <table id="dt-observable" class="table table-bordered table-striped w-100">
+                            <thead class="bg-fusion-50">
+                            <tr>
+                                <th>Type</th>
+                                <th>Value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var item in Model.Observables.OrderBy(_ => _.GetType().ToString()))
+                            {
+                                <tr>
+                                    <td>@item.GetType().ToDisplaySynsharp()</td>
+                                    <td>
+                                        <a asp-area="Synapse" asp-controller="Node" asp-action="Details" asp-route-id="@item.Iden">
+                                            @item.GetCoreValue()
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

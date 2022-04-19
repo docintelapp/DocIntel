@@ -28,6 +28,8 @@ namespace DocIntel.Core.Utils.Indexation.SolR
 
         [SolrField("label")] public string Label { get; set; }
 
+        [SolrField("full_label")] public string FullLabel { get; set; }
+
         [SolrField("description")] public string Description { get; set; }
 
         [SolrField("keywords")] public IEnumerable<string> Keywords { get; set; }

@@ -16,27 +16,6 @@
    </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="debian\docintel-email-notifier\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="debian\docintel-email-notifier\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="debian\docintel-email-notifier\**" />
-    <None Update="nlog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Remove="debian\changelog" />
-    <None Remove="debian\debhelper-build-stamp" />
-    <None Remove="debian\docintel-email-notifier.debhelper.log" />
-    <None Remove="debian\docintel-email-notifier.substvars" />
-    <None Remove="debian\docintel-scraper.substvars" />
-    <None Remove="debian\files" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Pluralize.NET.Core" Version="1.0.0" />
   </ItemGroup>
 

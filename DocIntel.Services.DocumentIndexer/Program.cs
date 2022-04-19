@@ -40,9 +40,10 @@ namespace DocIntel.Services.DocumentIndexer
                 .ConfigureLogging(ConfigureLogging)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<IndexerConsumer>();
-                    services.AddHostedService<DocumentAnalyzerHostedService>();
-                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly });
+                    services.AddSingleton<DocumentIndexerMessageConsumer>();
+                    services.AddHostedService<DocumentIndexerHostedService>();
+                    services.AddHostedService<DocumentIndexerTimedConsumer>();
+                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, runHostedServices: true);
                 })
                 .UseNLog();
     }

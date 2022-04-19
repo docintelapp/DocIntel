@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-
 using DocIntel.AdminConsole.Commands.Classifications;
 using DocIntel.AdminConsole.Commands.Index;
 using DocIntel.AdminConsole.Commands.Roles;
 using DocIntel.AdminConsole.Commands.Users;
+using DocIntel.Core.Helpers;
 using DocIntel.Core.Services;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
 using NLog.Web;
+using RunMethodsSequentially.LockAndRunCode;
 
-using Spectre.Cli.Extensions.DependencyInjection;
-using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace DocIntel.AdminConsole
@@ -24,6 +21,10 @@ namespace DocIntel.AdminConsole
         public static async Task Main(string[] args)
         {
             using var host = CreateHostBuilder(args).Build();
+
+            // Ensure that pre-flight scripts are run
+            var lockAndRun = host.Services.GetRequiredService<IGetLockAndThenRunServices>();
+            await lockAndRun.LockAndLoadAsync();
             
             // If we start the host as it should be, the application crashes with a System.NullReferenceException
             // Spectre.Console.Cli.CommandRuntimeException: Could not resolve type 'DocIntel.AdminConsole.Commands.XXX'.
@@ -90,6 +91,7 @@ namespace DocIntel.AdminConsole
                 add.AddCommand<IndexDocsCommand>("docs");
                 add.AddCommand<IndexTagsCommand>("tags");
                 add.AddCommand<IndexSourcesCommand>("sources");
+                add.AddCommand<IndexFacetsCommand>("facets");
             });
         }
     }

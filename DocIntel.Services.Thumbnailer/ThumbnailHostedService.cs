@@ -35,7 +35,7 @@ namespace DocIntel.Services.Thumbnailer
 
         protected override Task Run(CancellationToken cancellationToken)
         {
-            var runner = _serviceProvider.GetService<Thumbnailer>();
+            var runner = _serviceProvider.GetService<ThumbnailerMessageConsumer>();
             if (runner == null)
                 throw new InvalidOperationException("Could not create instance of 'Thumbnailer'");
             return Task.Delay(Timeout.Infinite, cancellationToken);

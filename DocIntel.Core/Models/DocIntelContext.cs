@@ -115,9 +115,6 @@ namespace DocIntel.Core.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            // Legacy. If Postgres >= 10, we should get rid of this...
-            // modelBuilder.UseSerialColumns();
-
             modelBuilder.Entity<DocumentTag>()
                 .HasKey(t => new {t.DocumentId, t.TagId});
 

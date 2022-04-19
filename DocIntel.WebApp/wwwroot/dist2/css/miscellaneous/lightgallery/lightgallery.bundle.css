@@ -1,7 +1,7 @@
 /*!
- * justifiedGallery - v3.7.0
+ * justifiedGallery - v3.8.1
  * http://miromannino.github.io/Justified-Gallery/
- * Copyright (c) 2018 Miro Mannino
+ * Copyright (c) 2020 Miro Mannino
  * Licensed under the MIT license.
  */
 .justified-gallery {
@@ -26,7 +26,13 @@
 .justified-gallery > figure > img,
 .justified-gallery > a > a > img,
 .justified-gallery > div > a > img,
-.justified-gallery > figure > a > img {
+.justified-gallery > figure > a > img,
+.justified-gallery > a > svg,
+.justified-gallery > div > svg,
+.justified-gallery > figure > svg,
+.justified-gallery > a > a > svg,
+.justified-gallery > div > a > svg,
+.justified-gallery > figure > a > svg {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -36,9 +42,9 @@
   filter: "alpha(opacity=0)";
   opacity: 0; }
 
-.justified-gallery > a > .caption,
-.justified-gallery > div > .caption,
-.justified-gallery > figure > .caption {
+.justified-gallery > a > .jg-caption,
+.justified-gallery > div > .jg-caption,
+.justified-gallery > figure > .jg-caption {
   display: none;
   position: absolute;
   bottom: 0;
@@ -52,22 +58,24 @@
   font-weight: 300;
   font-family: sans-serif; }
 
-.justified-gallery > a > .caption.caption-visible,
-.justified-gallery > div > .caption.caption-visible,
-.justified-gallery > figure > .caption.caption-visible {
+.justified-gallery > a > .jg-caption.jg-caption-visible,
+.justified-gallery > div > .jg-caption.jg-caption-visible,
+.justified-gallery > figure > .jg-caption.jg-caption-visible {
   display: initial;
   filter: "alpha(opacity=70)";
   opacity: 0.7;
   -webkit-transition: opacity 500ms ease-in;
   transition: opacity 500ms ease-in; }
 
-.justified-gallery > .entry-visible {
+.justified-gallery > .jg-entry-visible {
   filter: "alpha(opacity=100)";
   opacity: 1;
   background: none; }
 
-.justified-gallery > .entry-visible > img,
-.justified-gallery > .entry-visible > a > img {
+.justified-gallery > .jg-entry-visible > img,
+.justified-gallery > .jg-entry-visible > a > img,
+.justified-gallery > .jg-entry-visible > svg,
+.justified-gallery > .jg-entry-visible > a > svg {
   filter: "alpha(opacity=100)";
   opacity: 1;
   -webkit-transition: opacity 500ms ease-in;
@@ -76,7 +84,7 @@
 .justified-gallery > .jg-filtered {
   display: none; }
 
-.justified-gallery > .spinner {
+.justified-gallery > .jg-spinner {
   position: absolute;
   bottom: 0;
   margin-left: -24px;
@@ -86,7 +94,7 @@
   opacity: 1;
   overflow: initial; }
 
-.justified-gallery > .spinner > span {
+.justified-gallery > .jg-spinner > span {
   display: inline-block;
   filter: "alpha(opacity=0)";
   opacity: 0;
@@ -112,6 +120,7 @@ $color-fusion:						darken(desaturate(adjust-hue($color-primary, 5), 80%), 25%);
 /*  PAINTBUCKET MIXER
 ========================================================================== */
 /* the grays */
+/* the sapphires */
 /* the sapphires */
 /* the emeralds */
 /* the amethyths */
@@ -301,14 +310,15 @@ aside.page-sidebar ($nav-width, $nav-background)
 /* GULP WARNINGS */
 @font-face {
   font-family: 'lg';
-  src: url("./fonts/lg.eot?n1z373");
-  src: url("./fonts/lg.eot?#iefixn1z373") format("embedded-opentype"), url("./fonts/lg.woff?n1z373") format("woff"), url("./fonts/lg.ttf?n1z373") format("truetype"), url("./fonts/lg.svg?n1z373#lg") format("svg");
+  src: url("./fonts/lg.ttf?22t19m") format("truetype"), url("./fonts/lg.woff?22t19m") format("woff"), url("./fonts/lg.svg?22t19m#lg") format("svg");
   font-weight: normal;
-  font-style: normal; }
+  font-style: normal;
+  font-display: block; }
 
 .lg-icon {
-  font-family: 'lg';
-  speak: none;
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'lg' !important;
+  speak: never;
   font-style: normal;
   font-weight: normal;
   font-variant: normal;
@@ -908,22 +918,49 @@ body:not(.lg-from-hash) .lg-outer.lg-start-zoom .lg-item.lg-complete .lg-object 
 .lg-outer #lg-share-facebook .lg-icon {
   color: #3b5998; }
   .lg-outer #lg-share-facebook .lg-icon:after {
-    content: "\e901"; }
+    content: "\e904"; }
 
 .lg-outer #lg-share-twitter .lg-icon {
   color: #00aced; }
   .lg-outer #lg-share-twitter .lg-icon:after {
-    content: "\e904"; }
+    content: "\e907"; }
 
 .lg-outer #lg-share-googleplus .lg-icon {
   color: #dd4b39; }
   .lg-outer #lg-share-googleplus .lg-icon:after {
-    content: "\e902"; }
+    content: "\e905"; }
 
 .lg-outer #lg-share-pinterest .lg-icon {
   color: #cb2027; }
   .lg-outer #lg-share-pinterest .lg-icon:after {
-    content: "\e903"; }
+    content: "\e906"; }
+
+.lg-outer .lg-img-rotate {
+  position: absolute;
+  padding: 0 5px;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  -webkit-transition: -webkit-transform 0.3s cubic-bezier(0.32, 0, 0.67, 0) 0s;
+  transition: -webkit-transform 0.3s cubic-bezier(0.32, 0, 0.67, 0) 0s;
+  transition: transform 0.3s cubic-bezier(0.32, 0, 0.67, 0) 0s;
+  transition: transform 0.3s cubic-bezier(0.32, 0, 0.67, 0) 0s, -webkit-transform 0.3s cubic-bezier(0.32, 0, 0.67, 0) 0s; }
+
+.lg-rotate-left:after {
+  content: "\e900"; }
+
+.lg-rotate-right:after {
+  content: "\e901"; }
+
+.lg-icon.lg-flip-hor, .lg-icon.lg-flip-ver {
+  font-size: 26px; }
+
+.lg-flip-ver:after {
+  content: "\e903"; }
+
+.lg-flip-hor:after {
+  content: "\e902"; }
 
 .lg-group:after {
   content: "";
@@ -939,6 +976,7 @@ body:not(.lg-from-hash) .lg-outer.lg-start-zoom .lg-item.lg-complete .lg-object 
   z-index: 2150;
   text-align: left;
   opacity: 0;
+  outline: none;
   -webkit-transition: opacity 0.15s ease 0s;
   transition: opacity 0.15s ease 0s; }
   .lg-outer * {
@@ -1173,7 +1211,7 @@ body:not(.lg-from-hash) .lg-outer.lg-start-zoom .lg-item.lg-complete .lg-object 
   transition: all 0.2s ease; }
   .lg-actions .lg-next:hover,
   .lg-actions .lg-prev:hover {
-    background-color: #2196F3; }
+    background-color: #5158e7; }
   .lg-actions .lg-next:active,
   .lg-actions .lg-prev:active {
     -webkit-transform: scale(0.95);
@@ -1181,7 +1219,7 @@ body:not(.lg-from-hash) .lg-outer.lg-start-zoom .lg-item.lg-complete .lg-object 
 
 .lg-outer .lg-thumb-item.active,
 .lg-outer .lg-thumb-item:hover {
-  border-color: #fd3995; }
+  border-color: #ec645e; }
 
 .lg-toolbar .lg-icon {
   font-size: 1.3rem; }

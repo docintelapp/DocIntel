@@ -8,7 +8,7 @@ using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 
 using Microsoft.AspNetCore.Identity;
-
+using Microsoft.EntityFrameworkCore;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -16,7 +16,7 @@ namespace DocIntel.AdminConsole.Commands
 {
     public abstract class DocIntelCommand<T> : AsyncCommand<T> where T : DocIntelCommandSettings
     {
-        private readonly ApplicationSettings _applicationSettings;
+        protected readonly ApplicationSettings _applicationSettings;
         protected readonly DocIntelContext _context;
         private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory;
 
@@ -52,7 +52,7 @@ namespace DocIntel.AdminConsole.Commands
         private AppUser GetAutomationUser()
         {
             var automationUser =
-                _context.Users.FirstOrDefault(_ => _.UserName == _applicationSettings.AutomationAccount);
+                _context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _applicationSettings.AutomationAccount);
             if (automationUser == null)
                 AnsiConsole.Render(
                     new Markup($"[red]The user '{_applicationSettings.AutomationAccount}' was not found.[/]"));
@@ -70,8 +70,8 @@ namespace DocIntel.AdminConsole.Commands
         {   
             if (!settings.JSON)
                 AnsiConsole.Write(new Markup($"[bold yellow]DocIntel Administrative Console[/]\n" +
-                                             "*** For more information on DocIntel see <https://gitlab01.low.cert.mil.be/cailliaua/DocIntel> ***\n" +
-                                             "*** Please report bugs to <https://gitlab01.low.cert.mil.be/cailliaua/DocIntel/issues> ***\n"));
+                                             "*** For more information on DocIntel see https://docintel.org/ ***\n" +
+                                             "*** Please report bugs to https://github.com/docintelapp/DocIntel ***\n"));
             return Task.FromResult(0);
         }
     }

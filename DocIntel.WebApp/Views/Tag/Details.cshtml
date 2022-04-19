@@ -24,20 +24,20 @@
         <div class="btn-group">
             @if (canEdit)
             {
-                <a asp-action="Edit" asp-route-id="@Model.Tag.TagId" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                <a asp-action="Edit" asp-route-id="@Model.Tag.TagId" class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed">
                     <i class="fal fa-edit"></i> Edit
                 </a>
             }
             @if (canMerge)
             {
                 <a asp-action="Merge" asp-route-primaryTagName="@Model.Tag.TagId"
-                   class="btn btn-primary waves-effect waves-themed btn-iconified">
+                   class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                     <i class="fal fa-code-merge"></i> Merge
                 </a>
             }
             @if (canDelete)
             {
-                <a asp-action="Delete" asp-route-id="@Model.Tag.TagId" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                <a asp-action="Delete" asp-route-id="@Model.Tag.TagId" class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed">
                     <i class="fal fa-trash-alt"></i> Delete
                 </a>
             }
@@ -46,11 +46,13 @@
 </div>
 
 <div class="row">
-    <div class="col-9">
+    <div class="col-12">
         @await Html.PartialAsync("_PanelTagSummary", Model.Tag, new ViewDataDictionary(ViewData))
         @await Html.PartialAsync("_PanelDocumentList", Model, new ViewDataDictionary(ViewData))
     </div>
+@*
     <div class="col-3">
         @await Html.PartialAsync("_PanelTagMetaData", Model.Tag, new ViewDataDictionary(ViewData))
     </div>
+    *@
 </div>

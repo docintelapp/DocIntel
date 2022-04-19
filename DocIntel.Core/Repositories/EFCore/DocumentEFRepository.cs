@@ -152,6 +152,18 @@ namespace DocIntel.Core.Repositories.EFCore
             retrievedDocument.Status = status;
             
             await context.DatabaseContext.SingleUpdateAsync(retrievedDocument);
+            context.DatabaseContext.OnSaveCompleteTasks.Add(
+                () =>
+                {
+                    _logger.LogDebug("Sending DocumentUpdatedMessage message");
+                    return _busClient.Publish(new DocumentUpdatedMessage
+                    {
+                        DocumentId = retrievedDocument.DocumentId,
+                        UserId = context.CurrentUser.Id,
+                        TagsAdded = Enumerable.Empty<Guid>(),
+                        TagsRemoved = Enumerable.Empty<Guid>()
+                    });
+                });
         }
 
         public async Task<Document> UpdateAsync(AmbientContext context,
@@ -258,8 +270,12 @@ namespace DocIntel.Core.Repositories.EFCore
             if (document == null)
                 throw new NotFoundEntityException();
 
-            if (!await _appAuthorizationService.CanDeleteDocument(context.Claims, document))
-                throw new UnauthorizedOperationException();
+            if (document.Status == DocumentStatus.Registered)
+                if (!await _appAuthorizationService.CanDeleteDocument(context.Claims, document))
+                    throw new UnauthorizedOperationException();
+            else 
+                if (!await _appAuthorizationService.CanDiscardDocument(context.Claims, document))
+                    throw new UnauthorizedOperationException();
 
             foreach (var file in document.Files)
                 if (File.Exists(Path.Combine(_configuration.DocFolder, file.Filepath)))
@@ -596,6 +612,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 {
                     await stream.CopyToAsync(destFile);
                 }
+                _logger.LogDebug($"Copied to {Path.Combine(GetDocumentsFolder(), newFilePath)}");
 
                 file.Filepath = newFilePath;
                 new FileExtensionContentTypeProvider().TryGetContentType(file.Filepath, out var contentType);
@@ -745,6 +762,12 @@ namespace DocIntel.Core.Repositories.EFCore
             if (!string.IsNullOrEmpty(query.ReferencePrefix))
                 documents = documents.Where(_ => _.Reference.StartsWith(query.ReferencePrefix)).AsQueryable();
 
+            if (query.DocumentIds != null)
+            {
+                var array = query.DocumentIds.ToHashSet().ToArray();
+                documents = documents.Where(_ => array.Contains(_.DocumentId)).AsQueryable();
+            }
+            
             if (query.TagIds != null)
             {
                 var array = query.TagIds.ToHashSet().ToArray();
@@ -939,8 +962,6 @@ namespace DocIntel.Core.Repositories.EFCore
         {
             if (IsBinary(stream))
             {
-                (int offset, List<byte[]> data) signatures;
-
                 stream.Position = 0;
                 using var reader = new BinaryReader(stream, Encoding.Default, true);
                 foreach (var signature in _fileSignature2)

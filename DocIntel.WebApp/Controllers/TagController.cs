@@ -93,11 +93,9 @@ namespace DocIntel.WebApp.Controllers
             {
                 var query = new TagSearchQuery
                 {
-                    SearchTerms = searchTerm,
-                    Page = page,
-                    PageSize = 3000
+                    SearchTerms = searchTerm
                 };
-                var results = _tagSearchEngine.Search(query);
+                var results = _tagSearchEngine.Suggest(query);
 
                 var model = new IndexViewModel
                 {
@@ -141,12 +139,12 @@ namespace DocIntel.WebApp.Controllers
                 {
                     _logger.LogDebug($"Multiple labels are provided, get the facet '{label}' and the tag '{label2}'.");
                     facet = await _facetRepository.GetAsync(AmbientContext, label);
-                    _logger.LogTrace($"Tag '{label}' is retrieved and is '{facet?.Id.ToString() ?? "(null)"}'.");
+                    _logger.LogTrace($"Tag '{label}' is retrieved and is '{facet?.FacetId.ToString() ?? "(null)"}'.");
                     if (facet != null)
                     {
                         tag = await _tagRepository.GetAsync(AmbientContext, new TagQuery
                         {
-                            FacetId = facet.Id,
+                            FacetId = facet.FacetId,
                             URL = label2
                         }, new[] {"Facet"});
                         _logger.LogTrace($"Tag '{label}' is retrieved and is '{tag?.TagId.ToString() ?? "(null)"}'.");
@@ -158,12 +156,12 @@ namespace DocIntel.WebApp.Controllers
                         $"Single label is provided, get the tag '{label}' from the facet with an empty prefix.");
                     facet = await _facetRepository.GetAsync(AmbientContext, "");
                     _logger.LogTrace(
-                        $"Facet with empty prefix is retrieved and is '{facet?.Id.ToString() ?? "(null)"}'.");
+                        $"Facet with empty prefix is retrieved and is '{facet?.FacetId.ToString() ?? "(null)"}'.");
                     if (facet != null)
                     {
                         tag = await _tagRepository.GetAsync(AmbientContext, new TagQuery
                         {
-                            FacetId = facet.Id,
+                            FacetId = facet.FacetId,
                             URL = label
                         }, new[] {"Facet"});
                         _logger.LogTrace($"Tag '{label}' is retrieved and is '{tag?.TagId.ToString() ?? "(null)"}'.");
@@ -267,7 +265,7 @@ namespace DocIntel.WebApp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Label", "FacetId", "Description", "Keywords", "BackgroundColor")]
+            [Bind("Label", "FacetId", "Description", "Keywords", "BackgroundColor", "ExtractionKeywords")]
             Tag submittedViewModel)
         {
             var currentUser = await GetCurrentUser();
@@ -283,14 +281,21 @@ namespace DocIntel.WebApp.Controllers
 
                 if (ModelState.IsValid)
                 {
+                    var facet = await _facetRepository.GetAsync(AmbientContext, submittedViewModel.FacetId);
+                    
                     var tag = new Tag
                     {
                         Label = submittedViewModel.Label,
                         Description = submittedViewModel.Description,
                         Keywords = submittedViewModel.Keywords,
                         BackgroundColor = submittedViewModel.BackgroundColor,
+                        Facet = facet,
                         FacetId = submittedViewModel.FacetId
                     };
+
+                    if (!string.IsNullOrEmpty(submittedViewModel.ExtractionKeywords))
+                        tag.ExtractionKeywords = string.Join(", ",
+                            submittedViewModel.ExtractionKeywords.Split(',').Select(x => x.Trim()));
 
                     if (!string.IsNullOrEmpty(submittedViewModel.Keywords))
                         tag.Keywords = string.Join(", ", submittedViewModel.Keywords.Split(',').Select(x => x.Trim()));
@@ -411,7 +416,7 @@ namespace DocIntel.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             Guid id,
-            [Bind("TagId", "Label", "Description", "Keywords", "BackgroundColor", "FacetId")]
+            [Bind("TagId", "Label", "Description", "Keywords", "BackgroundColor", "FacetId", "ExtractionKeywords")]
             Tag submittedTag)
         {
             var currentUser = await GetCurrentUser();
@@ -420,28 +425,27 @@ namespace DocIntel.WebApp.Controllers
             {
                 var tag = await _tagRepository.GetAsync(AmbientContext, id);
 
-                if (submittedTag.FacetId == null ||
-                    !await _facetRepository.ExistsAsync(AmbientContext, submittedTag.FacetId))
+                if (!await _facetRepository.ExistsAsync(AmbientContext, submittedTag.FacetId))
                     ModelState.AddModelError("FacetId", "Facet is not known");
 
                 if (ModelState.IsValid)
                 {
+                    var facet = await _facetRepository.GetAsync(AmbientContext, submittedTag.FacetId);
+                    
                     tag.Label = submittedTag.Label;
                     tag.Description = submittedTag.Description;
                     tag.Keywords = submittedTag.Keywords;
                     tag.BackgroundColor = submittedTag.BackgroundColor;
+                    tag.Facet = facet;
                     tag.FacetId = submittedTag.FacetId;
+                    if (!string.IsNullOrEmpty(submittedTag.ExtractionKeywords))
+                        tag.ExtractionKeywords = string.Join(", ", submittedTag.ExtractionKeywords.Split(',').Select(x => x.Trim()));
                     if (!string.IsNullOrEmpty(submittedTag.Keywords))
                         tag.Keywords = string.Join(", ", submittedTag.Keywords.Split(',').Select(x => x.Trim()));
 
                     if (tag.MetaData == null)
                         tag.MetaData = new JObject();
-
-                    if (tag.MetaData.ContainsKey("mitre-id"))
-                        tag.MetaData["mitre-id"] = Guid.NewGuid();
-                    else
-                        tag.MetaData.Add("mitre-id", Guid.NewGuid());
-
+                    
                     await _tagRepository.UpdateAsync(AmbientContext, tag);
                     await _context.SaveChangesAsync();
 
@@ -1072,7 +1076,7 @@ namespace DocIntel.WebApp.Controllers
         {
             var currentUser = await GetCurrentUser();
             return _facetRepository.GetAllAsync(AmbientContext)
-                .Select(c => new SelectListItem {Text = c.Title, Value = c.Id.ToString()})
+                .Select(c => new SelectListItem {Text = c.Title, Value = c.FacetId.ToString()})
                 .ToEnumerable();
         }
     }

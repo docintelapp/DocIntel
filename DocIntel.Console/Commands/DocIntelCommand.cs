@@ -7,7 +7,7 @@ using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 
 using Microsoft.AspNetCore.Identity;
-
+using Microsoft.EntityFrameworkCore;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -51,7 +51,7 @@ namespace DocIntel.Console.Commands
         private AppUser GetAutomationUser()
         {
             var automationUser =
-                _context.Users.FirstOrDefault(_ => _.UserName == _applicationSettings.AutomationAccount);
+                _context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _applicationSettings.AutomationAccount);
             if (automationUser == null)
                 AnsiConsole.Render(
                     new Markup($"[red]The user '{_applicationSettings.AutomationAccount}' was not found.[/]"));

@@ -10,7 +10,7 @@
     {
         if (Model.Subscribed.Subscribed)
         {
-            <span class="btn btn-primary waves-effect waves-themed btn-iconified">
+            <span class= "btn btn-pills btn-pills btn-primary waves-effect waves-themed btn-iconified">
                 @if (Model.Subscribed.Notification)
                 {
                     <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-id="@Model.Document.DocumentId">
@@ -30,7 +30,7 @@
         {
             <a asp-action="Subscribe"
                asp-route-id="@Model.Document.DocumentId"
-               class="btn btn-primary waves-effect waves-themed btn-iconified">
+               class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                 <i class="fal fa-bell-slash"></i> Subscribe
             </a>
         }

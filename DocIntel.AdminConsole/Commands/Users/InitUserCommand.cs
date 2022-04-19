@@ -35,7 +35,11 @@ namespace DocIntel.AdminConsole.Commands.Users
             
             var userName = GetUserName(settings);
             var password = GetPassword(settings);
-
+            if (string.IsNullOrEmpty(userName))
+            {
+                userName = _applicationSettings.AutomationAccount;
+            }
+            
             if (_context.Users.Any(_ => _.NormalizedUserName == userName.ToUpper()))
             {
                 AnsiConsole.Render(new Markup($"[red]User '{userName}' already exists.[/]\n"));

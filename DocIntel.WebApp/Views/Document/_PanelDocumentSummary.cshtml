@@ -7,7 +7,7 @@
             <div class="panel-content">
                 @if (!string.IsNullOrEmpty(Model.Document.ShortDescription))
                 {
-                    <div class="mb-3">
+                    <div class="document-summary @(Model.Document.DocumentTags.Any() ? "mb-3" : "mb-0")">
                     @Html.SanitizeAndMap(Model.Document.ShortDescription)
                     </div>
                 }
@@ -16,7 +16,8 @@
                     <ul class="list-style-none m-0 p-0">
                         @foreach (var g in Model.Document.DocumentTags.Select(dt => dt.Tag).GroupBy(t => t.Facet).OrderBy(t => t.Key.Title))
                         {
-                            <li class="m-0 mb-1"><strong class="mr-2">@g.Key.Title</strong>
+                            <li class="m-0 mb-1 pl-4">
+                                <strong class="mr-2 fw-500 fs-xs" style="margin-left: -1.5rem !important">@g.Key.Title</strong>
                                 @foreach (var tag in g)
                                 {
                                     <a class="badge badge-pill @tag.BackgroundColor"
@@ -27,7 +28,7 @@
                                 }
                             </li>
                         }
-                    </ul>
+                        </ul>
                 }
             </div>
         </div>

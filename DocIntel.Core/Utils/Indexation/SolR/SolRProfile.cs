@@ -31,7 +31,7 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             CreateMap<Document, IndexedDocument>()
                 .ForMember(_ => _.Tags, _ => _.MapFrom(_ => _.DocumentTags.Select(__ => __.Tag.FriendlyName)))
                 .ForMember(_ => _.TagsId,
-                    _ => _.MapFrom(_ => _.DocumentTags.Select(__ => __.Tag.Facet.Id + "/" + __.Tag.TagId)))
+                    _ => _.MapFrom(_ => _.DocumentTags.Select(__ => __.Tag.Facet.FacetId + "/" + __.Tag.TagId)))
                 .ForMember(_ => _.Reliability, _ => _.MapFrom(_ => _.Source.Reliability))
                 .ForMember(_ => _.Comments, _ => _.MapFrom(_ => _.Comments.Select(__ => __.Body)))
                 .ForMember(_ => _.Classification, _ => _.MapFrom(_ => _.Classification != null ? _.Classification.ClassificationId : default(Guid)))
@@ -39,20 +39,27 @@ namespace DocIntel.Core.Utils.Indexation.SolR
                 .ForMember(_ => _.EyesOnly, _ => _.MapFrom(__ => __.EyesOnly != null ? __.EyesOnly.Select(___ => ___.GroupId).ToArray() : new Guid[]{}));
 
             CreateMap<Tag, IndexedTag>()
-                .ForMember(_ => _.FacetPrefix, _ => _.MapFrom(_ => _.Facet.Prefix))
-                .ForMember(_ => _.FacetTitle, _ => _.MapFrom(_ => _.Facet.Title))
-                .ForMember(_ => _.FacetDescription, _ => _.MapFrom(_ => _.Facet.Description))
+                .ForMember(_ => _.FullLabel, _ => _.MapFrom(tag => 
+                    tag.Facet.Prefix + ":" + tag.Label + " " + tag.Facet.Title + " " + tag.Facet.Prefix + " " + tag.Label + " " + tag.Keywords))
+                .ForMember(_ => _.FacetId, _ => _.MapFrom(tag => tag.Facet.FacetId))
+                .ForMember(_ => _.FacetPrefix, _ => _.MapFrom(tag => tag.Facet.Prefix))
+                .ForMember(_ => _.FacetTitle, _ => _.MapFrom(tag => tag.Facet.Title))
+                .ForMember(_ => _.FacetDescription, _ => _.MapFrom(tag => tag.Facet.Description))
+                .ForMember(_ => _.NumDocs, _ => _.MapFrom(tag => tag.Documents.Count))
+                .ForMember(_ => _.LastDocumentDate, _ => _.MapFrom(tag => tag.Documents.Select(document => document.Document.RegistrationDate).Union(new DateTime[] { DateTime.MinValue }).Max()))
                 .ForMember(_ => _.Keywords,
-                    _ => _.MapFrom(_ =>
-                        _.Keywords.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(__ => __.Trim())));
+                    _ => _.MapFrom(tag =>
+                        tag.Keywords.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(__ => __.Trim())));
 
             CreateMap<TagFacet, IndexedTagFacet>()
-                .ForMember(_ => _.FacetId, _ => _.MapFrom(_ => _.Id));
+                .ForMember(_ => _.FacetId, _ => _.MapFrom(_ => _.FacetId));
             
             CreateMap<Source, IndexedSource>()
                 .ForMember(_ => _.NumDocs, _ => _.MapFrom(_ => _.Documents.Count))
                 .ForMember(_ => _.Reliability, _ => _.Ignore())
                 .ForMember(_ => _.ReliabilityScore, _ => _.MapFrom(_ => (int) _.Reliability))
+                .ForMember(_ => _.SuggestLabel, _ => _.MapFrom(_ => _.Title + " " + _.Keywords))
+                .ForMember(_ => _.NumDocs, _ => _.MapFrom(_ => _.Documents.Count))
                 .ForMember(_ => _.LastDocumentDate, _ => _.MapFrom(_ => _.Documents.Select(document => document.RegistrationDate).Union(new DateTime[] { DateTime.MinValue }).Max()))
                 .ForMember(_ => _.Keywords,
                     _ => _.MapFrom(_ => _.Keywords.Split(',',

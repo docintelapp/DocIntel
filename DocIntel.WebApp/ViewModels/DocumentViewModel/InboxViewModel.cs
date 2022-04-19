@@ -28,8 +28,7 @@ namespace DocIntel.WebApp.ViewModels.DocumentViewModel
         public int Page { get; set; }
         public int PageCount { get; set; }
         public IEnumerable<Document> OwnDocuments { get; internal set; }
-        public int OwnPage { get; internal set; }
-        public int OwnPageCount { get; internal set; }
         public IEnumerable<SubmittedDocument> SubmittedDocuments { get; set; }
+        public AppUser RegisteredBy { get; set; }
     }
 }

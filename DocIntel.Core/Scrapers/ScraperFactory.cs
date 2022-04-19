@@ -86,19 +86,18 @@ namespace DocIntel.Core.Scrapers
             return await CreateScraper(scraper, type, serviceProvider, context);
         }
 
-        public static async Task<IScraper> CreateScraper(Scraper scraper, Type type, IServiceProvider serviceProvider,
+        public static Task<IScraper> CreateScraper(Scraper scraper, Type type, IServiceProvider serviceProvider,
             AmbientContext context)
         {
-            var logger = serviceProvider.GetService(typeof(ILogger<>).MakeGenericType(type));
-
-            var instance = (IScraper) Activator.CreateInstance(type, new object?[] {scraper, serviceProvider});
+            // TODO Use CreateInstance with dependency injection
+            var instance = (IScraper) Activator.CreateInstance(type, scraper, serviceProvider);
 
             FillProperties(_ => _?.ToString(), type, scraper, instance);
             FillProperties(bool.Parse, type, scraper, instance);
             FillProperties(int.Parse, type, scraper, instance);
             FillProperties(double.Parse, type, scraper, instance);
 
-            return instance;
+            return Task.FromResult(instance);
         }
 
         private static void FillProperties<T>(Func<string, T> convert, Type importerType, Scraper importer,

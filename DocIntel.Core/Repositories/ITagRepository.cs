@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories.Query;
@@ -38,6 +39,8 @@ namespace DocIntel.Core.Repositories
         IAsyncEnumerable<Tag> GetAllAsync(AmbientContext ambientContext, TagQuery query,
             string[] includeRelatedData = null);
 
+        IAsyncEnumerable<Tag> GetAllAsync(AmbientContext context, Func<IQueryable<Tag>, IQueryable<Tag>> query);
+        
         Task<Tag> GetAsync(AmbientContext ambientContext, Guid id, string[] includeRelatedData = null);
         Task<Tag> GetAsync(AmbientContext ambientContext, string label, string[] includeRelatedData = null);
 

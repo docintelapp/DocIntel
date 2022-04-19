@@ -79,7 +79,7 @@ namespace DocIntel.Services.Importer
             if (documentRepository == null) throw new ArgumentNullException(nameof(documentRepository));
             var context = new DocIntelContext(options, _contextLogger);
 
-            var automationUser = context.Users.FirstOrDefault(_ => _.UserName == _appSettings.AutomationAccount);
+            var automationUser = context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _appSettings.AutomationAccount);
             if (automationUser == null)
                 return;
 

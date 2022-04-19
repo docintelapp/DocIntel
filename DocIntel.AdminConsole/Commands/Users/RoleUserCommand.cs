@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 using DocIntel.Core.Models;
@@ -38,12 +39,19 @@ namespace DocIntel.AdminConsole.Commands.Users
             var user = await _userRepository.GetByUserName(ambientContext, userName);
 
             var roleName = settings.Role;
-            var role = await _roleRepository.GetByNameAsync(ambientContext, roleName);
+            var role = await _roleRepository.GetByNameAsync(ambientContext, roleName, new string[] { "UserRoles" });
 
             if (user != null && role != null)
             {
-                await _roleRepository.AddUserRoleAsync(ambientContext, user.Id, role.Id);
-                await ambientContext.DatabaseContext.SaveChangesAsync();
+                if (role.UserRoles == null || role.UserRoles.All(_ => _.UserId != user.Id))
+                {
+                    await _roleRepository.AddUserRoleAsync(ambientContext, user.Id, role.Id);
+                    await ambientContext.DatabaseContext.SaveChangesAsync();
+                }
+                else
+                {
+                    AnsiConsole.Render(new Markup($"[darkorange]User '{userName}' already belong to role '{roleName}'.[/]\n"));
+                }
             }
 
             return 0;

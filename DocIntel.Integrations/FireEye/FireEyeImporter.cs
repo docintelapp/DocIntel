@@ -73,7 +73,7 @@
 //             var options = (DbContextOptions<DocIntelContext>) _serviceProvider.GetService(typeof(DbContextOptions<DocIntelContext>));
 //             var context = new DocIntelContext(options, _contextLogger);
                 
-//             var automationUser = context.Users.FirstOrDefault(_ => _.UserName == "automation");
+//             var automationUser = Context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == "automation");
 //             if (automationUser == null)
 //                 return false;
 
@@ -124,7 +124,7 @@
 //             var options = (DbContextOptions<DocIntelContext>) _serviceProvider.GetService(typeof(DbContextOptions<DocIntelContext>));
 //             var context = new DocIntelContext(options, _contextLogger);
                 
-//             var automationUser = context.Users.FirstOrDefault(_ => _.UserName == "automation");
+//             var automationUser = Context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == "automation");
 //             if (automationUser == null)
 //                 return null;
 

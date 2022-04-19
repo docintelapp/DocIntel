@@ -2,9 +2,17 @@
 
 <div>
     <div class="row">
-        <a class="col-12 text-truncate fw-500" asp-action="Details" asp-controller="Document" asp-route-url="@Model.Reference">
+        <div class="col-12 text-truncate">
+        @if (!string.IsNullOrEmpty(Model.Classification.Abbreviation))
+        {
+            <span class="badge @Model.Classification.Color mr-1">
+                @Model.Classification.Abbreviation
+            </span>
+        }
+        <a class="fw-500" asp-action="Details" asp-controller="Document" asp-route-url="@Model.DocumentId">
             @Html.DisplayFor(modelItem => Model.Title)
         </a>
+        </div>
     </div>
     <div class="row">
         <div class="col-12 mt-1">
@@ -16,10 +24,15 @@
                     </span>
                     <span class="mr-1">-</span>
                 }
+                <span class="mr-1">
+                    @Model.Reference
+                </span>
+                <span class="mr-1">-</span>
                 @Html.Timeago(Model.DocumentDate)
             </p>
         </div>
     </div>
+@*
     <div class="row">
         <div class="col-12">
             @if (Model.DocumentTags.Any())
@@ -30,7 +43,7 @@
                         <a class="badge badge-pill @tag.Tag.BackgroundColor"
                            asp-controller="Tag"
                            asp-action="Details"
-                           asp-route-label="@tag.Tag.FriendlyName">
+                           asp-route-label="@tag.Tag.TagId">
                             @tag.Tag.FriendlyName
                         </a>
                     }
@@ -38,4 +51,5 @@
             }
         </div>
     </div>
+    *@
 </div>

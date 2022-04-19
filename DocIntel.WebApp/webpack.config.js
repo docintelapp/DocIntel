@@ -1,62 +1,30 @@
 const path = require('path');
 const webpack = require('webpack');
-const globImporter = require('node-sass-glob-importer');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const extractCSS = new ExtractTextPlugin('[name].css');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   mode: 'development',
   entry: { 
-      'main': './wwwroot/src/js/dist2.js'
+    'main': './wwwroot/src/js/common.js'
   },  
   output: {
     path: path.resolve(__dirname, 'wwwroot/dist'),
-    filename: '[name].js',
-    libraryTarget: 'var',
-    library: 'DocIntel'
-  },
-  optimization: {
-    splitChunks: { chunks: "all" }
+    filename: '[name].js'
   },
   plugins: [
-    extractCSS,
+    new MiniCssExtractPlugin(),
     require('autoprefixer'),
     new webpack.ProvidePlugin({
-      'window.jQuery': 'jquery',
-      'window.$': 'jquery',
-      'jQuery': 'jquery',
-      '$': 'jquery',
-      CodeMirror: 'codemirror'
+      $: 'jquery',
+      jQuery: 'jquery',
+      CodeMirror: 'codemirror',
     })
-  ],/*
-  externals: [
-      '../../dist2/js/vendors.bundle.js',
-      '../../dist2/js/app.bundle.js',
-      '../../dist2/js/formplugins/select2/select2.bundle.js',
-      '../../dist2/js/formplugins/summernote/summernote.js',
-      '../../dist2/js/formplugins/ion-rangeslider/ion-rangeslider.js',
-      '../../dist2/js/formplugins/dropzone/dropzone.js'
-  ],*/
+  ],
   module: {
     rules: [
       {
-        test : /\/dist2\/js\/[a-z\.]+\.js$/,
-        use  : [
-          {
-            loader : 'imports-loader?this=>window,define=>false'
-          }
-        ]
-      },
-      {
-        test: /\.js/,
-    	exclude: /(dist2|node_modules|bower_components)/,
-        use: [{
-            loader: 'babel-loader'
-        }]
-      },
-      { 
-        test: /\.css$/, 
-        use: extractCSS.extract(['css-loader? minimize'])
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
       {
         test: /\.(jpe?g|png|gif|svg)$/i,
@@ -74,22 +42,14 @@ module.exports = {
               bypassOnDebug: true, // webpack@1.x
               disable: true, // webpack@2.x and newer
             },
-	        },
-	      ],
+          },
+        ],
       },
       {
         test: /\.(scss)$/,
-        use: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: ['css-loader', 'postcss-loader', 
-          {
-            loader: 'sass-loader',
-            options: {
-              sourceMap: true,
-              importer: globImporter()
-            }
-          }]
-        })
+        use: [
+          MiniCssExtractPlugin.loader, "css-loader", "sass-loader"
+        ]
       },
       {
         test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
@@ -105,6 +65,7 @@ module.exports = {
       }
     ]
   },
-  resolve : {
+  externals : {
+    "jquery": "jQuery"
   },
 };

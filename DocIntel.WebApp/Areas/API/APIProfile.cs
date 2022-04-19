@@ -39,6 +39,9 @@ namespace DocIntel.WebApp.Areas.API
                 .ForMember(_ => _.Keywords,
                     _ => _.MapFrom(_ =>
                         _.Keywords.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(__ => __.Trim())))
+                .ForMember(_ => _.ExtractionKeywords,
+                    _ => _.MapFrom(_ =>
+                        _.ExtractionKeywords.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(__ => __.Trim())))
                 .ForMember(_ => _.FriendlyName, _ => _.Ignore());
             CreateMap<TagFacet, APITagFacet>();
             CreateMap<Comment, APIComment>();
@@ -57,8 +60,6 @@ namespace DocIntel.WebApp.Areas.API
                 .ForMember(_ => _.Adversaries,
                     _ => _.MapFrom(_ => _.DocumentTags.Where(u => u.Tag.Facet.Title == "group").Select(__ => __.Tag)));
             CreateMap<Tag, APIPropertyExport>();
-            CreateMap<APIObservable, Observable>();
-            CreateMap<Observable, APIObservable>();
         }
     }
 }

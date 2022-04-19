@@ -1,29 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
-    </PropertyGroup>
+  <PropertyGroup>
+      <OutputType>Exe</OutputType>
+      <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\DocIntel.Core\DocIntel.Core.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DocIntel.Core\DocIntel.Core.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <Compile Remove="debian\docintel-continuous-indexing\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Remove="debian\docintel-continuous-indexing\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="debian\docintel-continuous-indexing\**" />
-      <None Remove="debian\changelog" />
-      <None Remove="debian\debhelper-build-stamp" />
-      <None Remove="debian\docintel-continuous-indexing.substvars" />
-      <None Remove="debian\docintel-continuous-indexing.debhelper.log" />
-      <None Remove="debian\files" />
-    </ItemGroup>
+  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="nlog.config" DestinationFolder="$(OutDir)" Condition="Exists('nlog.config')" />
+  </Target>
 
 </Project>

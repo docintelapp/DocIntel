@@ -47,7 +47,8 @@ namespace DocIntel.AdminConsole.Commands.Index
             // TODO Use tag repository
             var tags = _context.Tags.Include(_ => _.Facet)
                 .Include(_ => _.LastModifiedBy)
-                .Include(_ => _.CreatedBy);
+                .Include(_ => _.CreatedBy)
+                .Include(_ => _.Documents).ThenInclude(_ => _.Document);
 
             AnsiConsole.Render(new Markup("[grey]Will index all tags...[/]"));
             foreach (var tag in tags)

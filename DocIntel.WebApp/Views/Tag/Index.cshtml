@@ -25,13 +25,13 @@
             <div class="btn-group">
                 @if (canMerge)
                 {
-                    <a asp-action="Merge" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                    <a asp-action="Merge" class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed">
                         <i class="fal fa-code-merge"></i> Merge Tags
                     </a>
                 }
                 @if (canMergeFacets)
                 {
-                    <a asp-action="Merge" asp-controller="TagFacet" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                    <a asp-action="Merge" asp-controller="TagFacet" class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed">
                         <i class="fal fa-code-merge"></i> Merge Facets
                     </a>
                 }
@@ -42,11 +42,11 @@
             <div class="btn-group ml-4">
                     @if (canCreate)
                     {
-                        <a class="btn btn-primary btn-iconified waves-effect waves-themed" asp-action="Create"><i class="fal fa-plus"></i> Create Tag</a>
+                        <a class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed" asp-action="Create"><i class="fal fa-plus"></i> Create Tag</a>
                     }
                     @if (canCreateFacet)
                     {
-                        <a class="btn btn-primary btn-iconified waves-effect waves-themed" asp-action="Create" asp-controller="TagFacet"><i class="fal fa-plus"></i> Create Facet</a>
+                        <a class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed" asp-action="Create" asp-controller="TagFacet"><i class="fal fa-plus"></i> Create Facet</a>
                     }
             </div>
                 }
@@ -55,11 +55,11 @@
 
     <div class="row">
         <div class="col-12">
-            <div class="input-group input-group-lg mb-2 shadow-1 rounded mb-4">
-                <input type="text" class="form-control shadow-inset-2" id="filter-icon"
+            <div class="input-group input-group-lg mb-2 mb-4">
+                <input type="text" class="form-control" id="filter-icon"
                        aria-label="type 2 or more letters" placeholder="Search for anything..." value="@Model.Query.SearchTerms" name="SearchTerm"/>
                 <div class="input-group-append">
-                    <button class="btn btn-primary hidden-sm-down waves-effect waves-themed" type="submit">
+                    <button class= "btn btn-pills btn-primary hidden-sm-down waves-effect waves-themed" type="submit">
                         <i class="fal fa-search mr-lg-2"></i><span class="hidden-md-down">Search tags</span>
                     </button>
                 </div>

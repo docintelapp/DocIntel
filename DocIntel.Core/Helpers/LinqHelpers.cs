@@ -19,37 +19,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using DocIntel.Core.Models;
 
 namespace DocIntel.Core.Helpers
 {
     public static class LinqHelpers
     {
+        
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> enumerable)
         {
             return enumerable == null || !enumerable.Any();
-        }
-
-        public static string ObservableValue(this Observable o)
-        {
-            if (new[] {ObservableType.Artefact, ObservableType.File}.Contains(o.Type))
-            {
-                var h = o.Hashes.FirstOrDefault();
-                return h?.Value;
-            }
-
-            return o.Value;
-        }
-
-        public static string FirstCharToUpper(this string input)
-        {
-            return input switch
-            {
-                null => throw new ArgumentNullException(nameof(input)),
-                "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
-                _ => input.First().ToString().ToUpper() + input.Substring(1).ToLower()
-            };
         }
         
         public static IEnumerable<T> Except<T, TKey>(this IEnumerable<T> items, IEnumerable<T> other,

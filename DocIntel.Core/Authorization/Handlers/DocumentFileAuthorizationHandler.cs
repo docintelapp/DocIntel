@@ -16,7 +16,6 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,7 +36,6 @@ namespace DocIntel.Core.Authorization.Handlers
     {
         private readonly ApplicationSettings _settings;
         private readonly IServiceProvider _serviceProvider;
-        private readonly Guid[] _defaultGroups;
 
         public DocumentFileAuthorizationHandler(
             SignInManager<AppUser> signInManager,
@@ -65,8 +63,8 @@ namespace DocIntel.Core.Authorization.Handlers
                 (ILogger<DocIntelContext>) _serviceProvider.GetService(typeof(ILogger<DocIntelContext>)));
 
             var automationUser = !string.IsNullOrEmpty(registeredBy)
-                ? context.Users.FirstOrDefault(_ => _.Id == registeredBy)
-                : context.Users.FirstOrDefault(_ => _.UserName == _settings.AutomationAccount);
+                ? context.Users.AsNoTracking().FirstOrDefault(_ => _.Id == registeredBy)
+                : context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _settings.AutomationAccount);
             if (automationUser == null)
                 return null;
 

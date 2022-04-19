@@ -82,7 +82,7 @@ namespace DocIntel.WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,Prefix,Mandatory,Hidden")]
+        public async Task<IActionResult> Create([Bind("Id,Title,Description,Prefix,Mandatory,Hidden,AutoExtract,ExtractionRegex,TagNormalization")]
             TagFacet submittedViewModel)
         {
             var currentUser = await GetCurrentUser();
@@ -185,7 +185,7 @@ namespace DocIntel.WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Title,Description,Prefix,Mandatory,Hidden")]
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Title,Description,Prefix,Mandatory,Hidden,AutoExtract,ExtractionRegex,TagNormalization")]
             TagFacet submittedViewModel)
         {
             var currentUser = await GetCurrentUser();
@@ -200,6 +200,9 @@ namespace DocIntel.WebApp.Controllers
                     facet.Description = submittedViewModel.Description;
                     facet.Mandatory = submittedViewModel.Mandatory;
                     facet.Hidden = submittedViewModel.Hidden;
+                    facet.AutoExtract = submittedViewModel.AutoExtract;
+                    facet.ExtractionRegex = submittedViewModel.ExtractionRegex;
+                    facet.TagNormalization = submittedViewModel.TagNormalization;
 
                     var tagFacet = await _facetRepository.UpdateAsync(AmbientContext, facet);
                     await _context.SaveChangesAsync();
@@ -421,11 +424,11 @@ namespace DocIntel.WebApp.Controllers
                     ModelState.AddModelError("secondaryFacetName", "Please specify a valid facet");
                 }
 
-                if (primaryFacet.Id == secondaryFacet.Id) return RedirectToAction("Index", "Tag");
+                if (primaryFacet.FacetId == secondaryFacet.FacetId) return RedirectToAction("Index", "Tag");
 
                 if (ModelState.IsValid)
                 {
-                    await _facetRepository.MergeAsync(AmbientContext, primaryFacet.Id, secondaryFacet.Id);
+                    await _facetRepository.MergeAsync(AmbientContext, primaryFacet.FacetId, secondaryFacet.FacetId);
                     await AmbientContext.DatabaseContext.SaveChangesAsync();
 
                     _logger.Log(LogLevel.Information, EventIDs.MergeSuccessful,

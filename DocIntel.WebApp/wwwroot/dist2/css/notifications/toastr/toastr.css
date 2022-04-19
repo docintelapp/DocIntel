@@ -203,6 +203,7 @@ $color-fusion:						darken(desaturate(adjust-hue($color-primary, 5), 80%), 25%);
 ========================================================================== */
 /* the grays */
 /* the sapphires */
+/* the sapphires */
 /* the emeralds */
 /* the amethyths */
 /* the topaz */
@@ -390,7 +391,7 @@ aside.page-sidebar ($nav-width, $nav-background)
 /* SHORTCUT BUTTON (appears on bottom right of the page) */
 /* GULP WARNINGS */
 .toast {
-  background-color: #4679cc;
+  background-color: #d95a37;
   background-image: none !important; }
   .toast:before {
     content: "\f05a";
@@ -408,22 +409,22 @@ aside.page-sidebar ($nav-width, $nav-background)
             align-items: center; }
 
 .toast-success {
-  background-color: #1ab3a3; }
+  background-color: #55a74d; }
   .toast-success:before {
     content: "\f2f7"; }
 
 .toast-error {
-  background-color: #fd3995; }
+  background-color: #ec645e; }
   .toast-error:before {
     content: "\f2f0"; }
 
 .toast-info {
-  background-color: #2196F3; }
+  background-color: #5158e7; }
   .toast-info:before {
     content: "\f05a"; }
 
 .toast-warning {
-  background-color: #ffb20e; }
+  background-color: #f6d419; }
   .toast-warning > div,
   .toast-warning .toast-close-button {
     color: #000; }
@@ -433,7 +434,7 @@ aside.page-sidebar ($nav-width, $nav-background)
 
 #toast-container > .toast {
   padding: 1rem 1rem 1rem 3.5rem;
-  border-radius: 4px;
+  border-radius: 2px;
   background-image: none !important;
   width: 22rem;
   opacity: 0.9;

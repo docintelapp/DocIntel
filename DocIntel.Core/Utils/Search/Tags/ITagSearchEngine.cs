@@ -20,7 +20,6 @@ namespace DocIntel.Core.Utils.Search.Tags
     public interface ITagSearchService
     {
         TagSearchResults Search(TagSearchQuery query);
-        
-        TagFacetSearchResults SearchFacet(TagFacetSearchQuery tagFacetSearchQuery);
+        TagSearchResults Suggest(TagSearchQuery tagSearchQuery);
     }
 }

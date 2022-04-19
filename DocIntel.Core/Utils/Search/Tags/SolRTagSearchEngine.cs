@@ -34,16 +34,13 @@ namespace DocIntel.Core.Utils.Search.Tags
     public class SolRTagSearchEngine : ITagSearchService
     {
         private readonly ILogger<SolRTagSearchEngine> _logger;
-        private readonly ISolrOperations<IndexedTag> solr;
-        private readonly ISolrOperations<IndexedTagFacet> _solrFacet;
+        private readonly ISolrOperations<IndexedTag> _solr;
 
         public SolRTagSearchEngine(
             ISolrOperations<IndexedTag> solr,
-            ISolrOperations<IndexedTagFacet> solrFacet,
             ILogger<SolRTagSearchEngine> logger)
         {
-            this.solr = solr;
-            _solrFacet = solrFacet;
+            _solr = solr;
             _logger = logger;
         }
 
@@ -74,7 +71,7 @@ namespace DocIntel.Core.Utils.Search.Tags
                 _logger.LogDebug("Page: " + query.Page);
                 _logger.LogDebug("Page: " + query.PageSize);
 
-                var results = solr.Query(q, new QueryOptions
+                var results = _solr.Query(q, new QueryOptions
                 {
                     StartOrCursor = new StartOrCursor.Start((query.Page - 1) * query.PageSize),
                     Rows = query.PageSize,
@@ -136,8 +133,8 @@ namespace DocIntel.Core.Utils.Search.Tags
                 throw e;
             }
         }
-        
-        public TagFacetSearchResults SearchFacet(TagFacetSearchQuery query)
+
+        public TagSearchResults Suggest(TagSearchQuery query)
         {
             try
             {
@@ -153,57 +150,18 @@ namespace DocIntel.Core.Utils.Search.Tags
                     _logger.LogDebug("Query all");
                 }
 
-                var weights = string.Join(' ', $"{SolRHelper<IndexedTagFacet>.GetSolRName(_ => _.Title)}^20",
-                    $"{SolRHelper<IndexedTagFacet>.GetSolRName(_ => _.Prefix)}^15",
-                    $"{SolRHelper<IndexedTagFacet>.GetSolRName(_ => _.Description)}^10");
+                var queryOptions = new QueryOptions();
+                queryOptions.RequestHandler = new RequestHandlerParameters("/suggest");
+                
+                var results = _solr.Query(q, queryOptions);
 
-                _logger.LogDebug("Weights: " + weights);
-                _logger.LogDebug("Page: " + query.Page);
-                _logger.LogDebug("Page: " + query.PageSize);
-
-                var results = _solrFacet.Query(q, new QueryOptions
-                {
-                    StartOrCursor = new StartOrCursor.Start((query.Page - 1) * query.PageSize),
-                    Rows = query.PageSize,
-                    Highlight = new HighlightingParameters
-                    {
-                        Fields = new[]
-                        {
-                            SolRHelper<IndexedTagFacet>.GetSolRName(_ => _.Title),
-                            SolRHelper<IndexedTagFacet>.GetSolRName(_ => _.Description)
-                        }
-                    },
-                    ExtraParams = new Dictionary<string, string>
-                    {
-                        {"qf", weights},
-                        {"defType", "edismax"},
-                        {"hl.fragsize", "250"},
-                        {"hl.simple.pre", "<span class='bg-warning-50'>"},
-                        {"hl.simple.post", "</span>"}
-                    }
-                });
-
-                _logger.LogDebug($"Found {results.NumFound} facet(s) vs {results.Count}.");
-
-                var sr = new TagFacetSearchResults();
-                sr.TotalHits = results.NumFound;
+                var sr = new TagSearchResults {TotalHits = results.NumFound};
                 foreach (var r in results)
                 {
-                    var highlightedSnippets = results.Highlights[r.FacetId.ToString()];
-                    var item = new TagFacetSearchHit
+                    sr.Hits.Add(new TagSearchHit
                     {
-                        FacetId = r.FacetId
-                    };
-
-                    if (highlightedSnippets.ContainsKey(SolRHelper<IndexedTagFacet>.GetSolRName(_ => _.Title)))
-                        item.TitleExcerpt = highlightedSnippets[SolRHelper<IndexedTagFacet>.GetSolRName(_ => _.Title)]
-                            .FirstOrDefault();
-
-                    if (highlightedSnippets.ContainsKey(SolRHelper<IndexedTagFacet>.GetSolRName(_ => _.Description)))
-                        item.Excerpt = string.Join(" ",
-                            highlightedSnippets[SolRHelper<IndexedTagFacet>.GetSolRName(_ => _.Description)].Take(3));
-
-                    sr.Hits.Add(item);
+                        Tag = r
+                    });
                 }
 
                 return sr;
@@ -223,6 +181,5 @@ namespace DocIntel.Core.Utils.Search.Tags
                 throw e;
             }
         }
-        
     }
 }

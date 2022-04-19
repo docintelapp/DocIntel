@@ -61,6 +61,15 @@ namespace DocIntel.Core.Repositories.EFCore
                 group.ModificationDate = group.CreationDate;
 
                 var trackingEntity = await ambientContext.DatabaseContext.AddAsync(group);
+                
+                var association = new Member
+                {
+                    GroupId = trackingEntity.Entity.GroupId,
+                    UserId = currentUser.Id
+                };
+                
+                var trackingEntityMembership = await ambientContext.DatabaseContext.AddAsync(association);
+                
                 ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
                     () => _busClient.Publish(new GroupCreatedMessage
                     {

@@ -17,11 +17,12 @@
 
 using System;
 using System.IO;
-
+using DocIntel.Core.Services;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 
 using NLog;
 using NLog.Web;
@@ -44,23 +45,8 @@ namespace DocIntel.WebApp
 
             try
             {
-                var host = CreateWebHostBuilder(args).Build();
-
-                // using (var scope = host.Services.CreateScope())
-                // {
-                //     var services = scope.ServiceProvider;
-                //     try
-                //     {
-                //         var context = services.GetRequiredService<DocIntelContext>();
-                //         var logger = services.GetRequiredService<ILogger<DbInitializer>>();
-                //         DbInitializer.Initialize(context, logger);
-                //     }
-                //     catch (Exception ex)
-                //     {
-                //         var logger = services.GetRequiredService<ILogger<Program>>();
-                //         logger.LogError(ex, "An error occurred while seeding the database.");
-                //     }
-                // }
+                var builder = CreateWebHostBuilder(args);
+                var host = builder.Build();
 
                 host.Run();
             }
@@ -77,24 +63,17 @@ namespace DocIntel.WebApp
             }
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        public static IHostBuilder CreateWebHostBuilder(string[] args)
         {
-            return WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .ConfigureAppConfiguration((hostingContext, config) =>
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration(DocIntelServiceProgram.ConfigureAppConfiguration)
+                .ConfigureLogging(DocIntelServiceProgram.ConfigureLogging)
+                .UseSystemd()
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    var env = hostingContext.HostingEnvironment;
-
-                    config.AddJsonFile("/etc/docintel/appsettings.json", true);
-                    config.AddJsonFile("appsettings.json", true);
-                    config.AddJsonFile($"appsettings.{env.EnvironmentName}.json", true);
-
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    logging.SetMinimumLevel(LogLevel.Trace);
+                    webBuilder.UseStartup<Startup>()
+                        .UseSetting(WebHostDefaults.ApplicationKey,
+                            typeof(Program).Assembly.FullName);
                 })
                 .UseNLog();
         }

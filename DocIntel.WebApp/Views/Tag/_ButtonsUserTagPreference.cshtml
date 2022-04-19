@@ -12,7 +12,7 @@
     {
         if (Model.Subscribed.Subscribed)
         {
-            <span class="btn btn-primary waves-effect waves-themed btn-iconified">
+            <span class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                 @if (Model.Subscribed.Notification)
                 {
                     <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-id="@Model.Tag.TagId"
@@ -36,7 +36,7 @@
         {
             <a asp-action="Subscribe"
                asp-route-id="@Model.Tag.TagId"
-               class="btn btn-primary waves-effect waves-themed btn-iconified"
+               class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified"
                data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
                title="Documents tagged with a subscribed tag will appear in your newsletters and home page feed. Use the feature to track the topics that interests you. The bell will cause you to received a notification when a related documents is added or modified.">
                 <i class="fal fa-bell-slash"></i> Subscribe
@@ -46,7 +46,7 @@
         {
             <a asp-action="Unmute"
                asp-route-id="@Model.Tag.TagId"
-               class="btn btn-primary waves-effect waves-themed btn-iconified"
+               class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified"
                data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
                title="Documents tagged with a muted tag will not appear in your subscriptions (e.g. newsletters and home page). Use the feature to tune down noisy tags.">
                 <i class="fal fa-volume-slash"></i> Muted
@@ -56,7 +56,7 @@
         {
             <a asp-action="Mute"
                asp-route-id="@Model.Tag.TagId"
-               class="btn btn-primary waves-effect waves-themed btn-iconified"
+               class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified"
                data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
                title="Documents tagged with a muted tag will not appear in your subscriptions (e.g. newsletters and home page). Use the feature to tune down noisy tags.">
                 <i class="fal fa-volume"></i> Mute

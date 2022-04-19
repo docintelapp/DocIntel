@@ -42,7 +42,7 @@ namespace DocIntel.Services.Importer
                 {
                     services.AddSingleton<Runner>();
                     services.AddHostedService<ImporterHostedService>();
-                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly });
+                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, runHostedServices: true);
                 })
                 .UseNLog();
     }

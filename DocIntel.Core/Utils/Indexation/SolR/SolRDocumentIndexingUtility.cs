@@ -25,7 +25,7 @@ using AutoMapper;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
-
+using DocIntel.Core.Utils.Observables;
 using Microsoft.Extensions.Logging;
 
 using SolrNet;
@@ -38,10 +38,10 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         private readonly ILogger<SolRDocumentIndexingUtility> _logger;
         private readonly IMapper _mapper;
         private readonly ISolrOperations<IndexedDocument> _solr;
-        private readonly IObservableRepository _observableRepository;
+        private readonly ISynapseRepository _observableRepository;
 
         public SolRDocumentIndexingUtility(ISolrOperations<IndexedDocument> solr,
-            ILogger<SolRDocumentIndexingUtility> logger, IMapper mapper, ApplicationSettings appSettings, IObservableRepository observableRepository)
+            ILogger<SolRDocumentIndexingUtility> logger, IMapper mapper, ApplicationSettings appSettings, ISynapseRepository observableRepository)
         {
             _solr = solr;
             _logger = logger;
@@ -55,7 +55,7 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             _logger.LogDebug("Add " + document.DocumentId);
             var indexedDocument = _mapper.Map<IndexedDocument>(document);
             indexedDocument.FileContents = ExtractFileContent(document);
-            indexedDocument.Observables = _observableRepository.GetObservables(document.DocumentId).Result.Select(_ => _.Value);
+            indexedDocument.Observables = (_observableRepository.GetObservables(document).ToListAsync().Result).Select(_ => _.GetCoreValue());
             _solr.Add(indexedDocument);
             _solr.Commit();
         }
@@ -78,7 +78,7 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             _logger.LogDebug("Update " + document.DocumentId);
             var indexedDocument = _mapper.Map<IndexedDocument>(document);
             indexedDocument.FileContents = ExtractFileContent(document);
-            indexedDocument.Observables = _observableRepository.GetObservables(document.DocumentId).Result.Select(_ => _.Value);
+            indexedDocument.Observables = _observableRepository.GetObservables(document).ToListAsync().Result.Select(_ => _.GetCoreValue());
             _solr.Add(indexedDocument);
             _solr.Commit();
         }

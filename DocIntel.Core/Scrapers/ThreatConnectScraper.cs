@@ -76,7 +76,6 @@ namespace DocIntel.Core.Scrapers
                 new WebProxy("http://" + _settings.Proxy + "/", true, new[] {_settings.NoProxy}));
             var groupParameter = new GroupParameter {Owner = Owner};
 
-            SingleResponse response;
             if (endpoint == "report")
             {
                 await ImportReport(message, client, articleGUID, groupParameter, context);

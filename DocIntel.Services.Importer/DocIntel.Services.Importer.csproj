@@ -13,39 +13,10 @@
   <ItemGroup>
     <PackageReference Include="BlushingPenguin.JsonPath" Version="1.0.6" />
     <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.2" />
-    <PackageReference Include="PuppeteerSharp" Version="6.2.0" />
-    <!-- <PackageReference Include="HtmlSanitizer" Version="5.0.331" /> -->
-    <!-- <PackageReference Include="MassTransit.AspNetCore" Version="7.0.4-develop.2912" /> -->
-
-    <!-- <PackageReference Include="NLog" Version="4.7.2" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.6.4" />
-
-    <PackageReference Include="RabbitMQ.Client" Version="6.1.0" /> -->
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="debian\docintel-importer\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="debian\docintel-importer\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="debian\docintel-importer\**" />
-    <None Remove="debian\changelog" />
-    <None Remove="debian\debhelper-build-stamp" />
-    <None Remove="debian\docintel-importer.substvars" />
-    <None Remove="debian\docintel-importer.debhelper.log" />
-    <None Remove="debian\docintel-importer.postinst.debhelper" />
-    <None Remove="debian\docintel-importer.postrm.debhelper" />
-    <None Remove="debian\docintel-importer.prerm.debhelper" />
-    <None Remove="debian\docintel-scraper.substvars" />
-    <None Remove="debian\files" />
+    <PackageReference Include="PuppeteerSharp" Version="7.0.0" />
   </ItemGroup>
 
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
-    <Copy SourceFiles="nlog.config" DestinationFolder="$(OutDir)" Condition="Exists('nlog.config')" />
     <Copy SourceFiles="Readability.js" DestinationFolder="$(OutDir)" />
   </Target>
 

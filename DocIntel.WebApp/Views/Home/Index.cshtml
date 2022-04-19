@@ -13,7 +13,7 @@
     <div class="subheader-block d-lg-flex align-items-center">
         @if (canUpload)
         {
-            <a asp-action="Upload" asp-controller="Document" class="btn btn-success btn-iconified waves-effect waves-themed">
+            <a asp-action="Upload" asp-controller="Document" class= "btn btn-pills btn-primary btn-pills btn-iconified waves-effect waves-themed">
                 <i class="fal fa-upload"></i> Upload
             </a>
         }
@@ -30,7 +30,7 @@
             </div>
             <div class="panel-container show">
                 <div class="panel-content p-0">
-                    @if (Model.DocumentCount != null && Model.NewsFeed.Any())
+                    @if (Model.NewsFeed.Any())
                     {
                         <ul class="list-group list-group-flush">
                             @foreach (var document in Model.NewsFeed.OrderByDescending(_ => _.DocumentDate))

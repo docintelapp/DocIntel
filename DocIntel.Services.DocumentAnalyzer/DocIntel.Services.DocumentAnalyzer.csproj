@@ -5,54 +5,23 @@
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>default</LangVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="itext7" Version="7.2.1" />
-  </ItemGroup>
   
-
   <ItemGroup>
     <ProjectReference Include="..\DocIntel.Core\DocIntel.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="itext7" Version="7.2.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="SolrNet">
       <HintPath>..\Library\SolrNet.dll</HintPath>
     </Reference>
-    <Reference Include="SolrNet.Microsoft.DependencyInjection">
-      <HintPath>..\Library\Microsoft.DependencyInjection.SolrNet.dll</HintPath>
-    </Reference>
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="debian\docintel-document-analyzer\**" />
-    <Compile Remove="debian\source\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="debian\docintel-document-analyzer\**" />
-    <EmbeddedResource Remove="debian\source\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="debian\docintel-document-analyzer\**" />
-    <None Remove="debian\source\**" />
-    <None Remove="debian\changelog" />
-    <None Remove="debian\debhelper-build-stamp" />
-    <None Remove="debian\docintel-document-analyzer.substvars" />
-    <None Remove="debian\docintel-document-analyzer.debhelper.log" />
-    <None Remove="debian\docintel-document-analyzer.postinst.debhelper" />
-    <None Remove="debian\docintel-document-analyzer.postrm.debhelper" />
-    <None Remove="debian\docintel-document-analyzer.prerm.debhelper" />
-    <None Remove="debian\files" />
-  </ItemGroup>
-
+  
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
     <Copy SourceFiles="nlog.config" DestinationFolder="$(OutDir)" Condition="Exists('nlog.config')" />
   </Target>
 
-  <Target Name="PublishCustomContent" AfterTargets="Publish">
-    <Copy SourceFiles="nlog.config" DestinationFolder="$(PublishDir)" Condition="Exists('nlog.config')" />
-  </Target>
-  
 </Project>

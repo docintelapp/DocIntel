@@ -37,35 +37,51 @@ namespace DocIntel.Core.Utils
             _facetRepository = facetRepository;
         }
 
-        public async Task<Tag> GetOrCreateTag(AmbientContext ambientContext, Guid facetId, string label, HashSet<Tag> cache)
+        public async Task<Tag> GetOrCreateTag(AmbientContext ambientContext, TagFacet facet, string label, HashSet<Tag> cache)
         {
             Tag cached;
-            if ((cached = cache.FirstOrDefault(_ => _.FacetId == facetId & _.Label == label)) != null)
+            if ((cached = cache.FirstOrDefault(_ => _.FacetId == facet.FacetId & _.Label.ToUpper() == label.ToUpper())) != null)
             {
                 return cached;
             }
 
             var retrievedTag = _tagRepository.GetAllAsync(ambientContext, new TagQuery()
             {
-                FacetId = facetId,
+                FacetId = facet.FacetId,
                 Label = label
-            }).ToEnumerable().SingleOrDefault() ?? await _tagRepository.CreateAsync(ambientContext, new Tag
+            }).ToEnumerable().SingleOrDefault();
+            
+            if (retrievedTag == null)
             {
-                Label = label,
-                FacetId = facetId
-            });
+                retrievedTag = await _tagRepository.CreateAsync(ambientContext, new Tag
+                {
+                    Label = label,
+                    Facet = facet,
+                    FacetId = facet.FacetId
+                });
+            }
+            else
+            {
+                await _tagRepository.UpdateAsync(ambientContext, retrievedTag);
+            }
 
             cache.Add(retrievedTag);
-
             return retrievedTag;
         }
 
         public async Task<TagFacet> GetOrCreateFacet(AmbientContext ambientContext, string prefix, string name = "")
         {
-            return _facetRepository.GetAllAsync(ambientContext, new FacetQuery
+            var facet = await _facetRepository.GetAllAsync(ambientContext, new FacetQuery
             {
                 Prefix = prefix
-            }).ToEnumerable().SingleOrDefault() ?? await _facetRepository.AddAsync(ambientContext, new TagFacet
+            }).SingleOrDefaultAsync();
+            if (facet != null)
+            {
+                await _facetRepository.UpdateAsync(ambientContext, facet);
+                return facet;
+            }
+
+            return await _facetRepository.AddAsync(ambientContext, new TagFacet
             {
                 Title = string.IsNullOrEmpty(name) ? prefix : name,
                 Prefix = prefix

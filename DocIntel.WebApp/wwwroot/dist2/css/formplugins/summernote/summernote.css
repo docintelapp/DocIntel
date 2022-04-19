@@ -1,28 +1,26 @@
 /*!
  * 
- * Super simple wysiwyg editor v0.8.16
+ * Super simple WYSIWYG editor v0.8.20
  * https://summernote.org
- * 
- * 
- * Copyright 2013- Alan Hong. and other contributors
- * summernote may be freely distributed under the MIT license.
- * 
- * Date: 2020-02-19T09:12Z
- * 
+ *
+ *
+ * Copyright 2013- Alan Hong and contributors
+ * Summernote may be freely distributed under the MIT license.
+ *
+ * Date: 2021-10-14T21:15Z
+ *
  */
-@import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900");
 @font-face {
   font-family: "summernote";
   font-style: normal;
   font-weight: 400;
   font-display: auto;
-  src: url("webfonts/summernote.eot");
   src: url("webfonts/summernote.eot?#iefix") format("embedded-opentype"), url("webfonts/summernote.woff2") format("woff2"), url("webfonts/summernote.woff") format("woff"), url("webfonts/summernote.ttf") format("truetype"); }
 
-[class^="note-icon"]:before,
+[class^=note-icon]:before,
 [class*=" note-icon"]:before {
   display: inline-block;
-  font-family: summernote;
+  font-family: "summernote";
   font-style: normal;
   font-size: inherit;
   text-decoration: inherit;
@@ -222,6 +220,10 @@
 .note-icon-video::before {
   content: "\ea38"; }
 
+/* Theme Variables
+ ------------------------------------------ */
+/* Layout
+ ------------------------------------------ */
 .note-editor {
   position: relative; }
 
@@ -229,9 +231,9 @@
   position: absolute;
   display: none;
   z-index: 100;
-  color: #87cefa;
+  color: lightskyblue;
   background-color: #fff;
-  opacity: .95; }
+  opacity: 0.95; }
 
 .note-editor .note-dropzone .note-dropzone-message {
   display: table-cell;
@@ -264,36 +266,43 @@
 .note-editor .note-editing-area .note-editable img.note-float-right {
   margin-left: 10px; }
 
-.note-editor.note-frame, .note-editor.note-airframe {
-  border: 1px solid #a9a9a9; }
+/* Frame mode layout
+ ------------------------------------------ */
+.note-editor.note-frame,
+.note-editor.note-airframe {
+  border: 1px solid #00000032; }
 
-.note-editor.note-frame.codeview .note-editing-area .note-editable, .note-editor.note-airframe.codeview .note-editing-area .note-editable {
+.note-editor.note-frame.codeview .note-editing-area .note-editable,
+.note-editor.note-airframe.codeview .note-editing-area .note-editable {
   display: none; }
 
-.note-editor.note-frame.codeview .note-editing-area .note-codable, .note-editor.note-airframe.codeview .note-editing-area .note-codable {
+.note-editor.note-frame.codeview .note-editing-area .note-codable,
+.note-editor.note-airframe.codeview .note-editing-area .note-codable {
   display: block; }
 
-.note-editor.note-frame .note-editing-area, .note-editor.note-airframe .note-editing-area {
+.note-editor.note-frame .note-editing-area,
+.note-editor.note-airframe .note-editing-area {
   overflow: hidden; }
 
-.note-editor.note-frame .note-editing-area .note-editable, .note-editor.note-airframe .note-editing-area .note-editable {
-  background-color: #fff;
-  color: #000;
+.note-editor.note-frame .note-editing-area .note-editable,
+.note-editor.note-airframe .note-editing-area .note-editable {
   padding: 10px;
   overflow: auto;
   word-wrap: break-word; }
 
-.note-editor.note-frame .note-editing-area .note-editable[contenteditable=false], .note-editor.note-airframe .note-editing-area .note-editable[contenteditable=false] {
-  background-color: #e5e5e5; }
+.note-editor.note-frame .note-editing-area .note-editable[contenteditable=false],
+.note-editor.note-airframe .note-editing-area .note-editable[contenteditable=false] {
+  background-color: #8080801d; }
 
-.note-editor.note-frame .note-editing-area .note-codable, .note-editor.note-airframe .note-editing-area .note-codable {
+.note-editor.note-frame .note-editing-area .note-codable,
+.note-editor.note-airframe .note-editing-area .note-codable {
   display: none;
   width: 100%;
   padding: 10px;
   border: none;
   -webkit-box-shadow: none;
           box-shadow: none;
-  font-family: Menlo,Monaco,monospace,sans-serif;
+  font-family: Menlo, Monaco, monospace, sans-serif;
   font-size: 14px;
   color: #ccc;
   background-color: #222;
@@ -305,20 +314,20 @@
   border-radius: 0;
   margin-bottom: 0; }
 
-.note-editor.note-frame.fullscreen, .note-editor.note-airframe.fullscreen {
+.note-editor.note-frame.fullscreen,
+.note-editor.note-airframe.fullscreen {
   position: fixed;
   top: 0;
   left: 0;
   width: 100% !important;
   z-index: 1050; }
 
-.note-editor.note-frame.fullscreen .note-editable, .note-editor.note-airframe.fullscreen .note-editable {
-  background-color: #fff; }
-
-.note-editor.note-frame.fullscreen .note-resizebar, .note-editor.note-airframe.fullscreen .note-resizebar {
+.note-editor.note-frame.fullscreen .note-resizebar,
+.note-editor.note-airframe.fullscreen .note-resizebar {
   display: none; }
 
-.note-editor.note-frame .note-status-output, .note-editor.note-airframe .note-status-output {
+.note-editor.note-frame .note-status-output,
+.note-editor.note-airframe .note-status-output {
   display: block;
   width: 100%;
   font-size: 14px;
@@ -329,81 +338,101 @@
   border: 0;
   border-top: 1px solid #e2e2e2; }
 
-.note-editor.note-frame .note-status-output:empty, .note-editor.note-airframe .note-status-output:empty {
+.note-editor.note-frame .note-status-output:empty,
+.note-editor.note-airframe .note-status-output:empty {
   height: 0;
   border-top: 0 solid transparent; }
 
-.note-editor.note-frame .note-status-output .pull-right, .note-editor.note-airframe .note-status-output .pull-right {
+.note-editor.note-frame .note-status-output .pull-right,
+.note-editor.note-airframe .note-status-output .pull-right {
   float: right !important; }
 
-.note-editor.note-frame .note-status-output .text-muted, .note-editor.note-airframe .note-status-output .text-muted {
+.note-editor.note-frame .note-status-output .text-muted,
+.note-editor.note-airframe .note-status-output .text-muted {
   color: #777; }
 
-.note-editor.note-frame .note-status-output .text-primary, .note-editor.note-airframe .note-status-output .text-primary {
+.note-editor.note-frame .note-status-output .text-primary,
+.note-editor.note-airframe .note-status-output .text-primary {
   color: #286090; }
 
-.note-editor.note-frame .note-status-output .text-success, .note-editor.note-airframe .note-status-output .text-success {
+.note-editor.note-frame .note-status-output .text-success,
+.note-editor.note-airframe .note-status-output .text-success {
   color: #3c763d; }
 
-.note-editor.note-frame .note-status-output .text-info, .note-editor.note-airframe .note-status-output .text-info {
+.note-editor.note-frame .note-status-output .text-info,
+.note-editor.note-airframe .note-status-output .text-info {
   color: #31708f; }
 
-.note-editor.note-frame .note-status-output .text-warning, .note-editor.note-airframe .note-status-output .text-warning {
+.note-editor.note-frame .note-status-output .text-warning,
+.note-editor.note-airframe .note-status-output .text-warning {
   color: #8a6d3b; }
 
-.note-editor.note-frame .note-status-output .text-danger, .note-editor.note-airframe .note-status-output .text-danger {
+.note-editor.note-frame .note-status-output .text-danger,
+.note-editor.note-airframe .note-status-output .text-danger {
   color: #a94442; }
 
-.note-editor.note-frame .note-status-output .alert, .note-editor.note-airframe .note-status-output .alert {
+.note-editor.note-frame .note-status-output .alert,
+.note-editor.note-airframe .note-status-output .alert {
   margin: -7px 0 0 0;
   padding: 7px 10px 2px 10px;
   border-radius: 0;
   color: #000;
   background-color: #f5f5f5; }
 
-.note-editor.note-frame .note-status-output .alert .note-icon, .note-editor.note-airframe .note-status-output .alert .note-icon {
+.note-editor.note-frame .note-status-output .alert .note-icon,
+.note-editor.note-airframe .note-status-output .alert .note-icon {
   margin-right: 5px; }
 
-.note-editor.note-frame .note-status-output .alert-success, .note-editor.note-airframe .note-status-output .alert-success {
+.note-editor.note-frame .note-status-output .alert-success,
+.note-editor.note-airframe .note-status-output .alert-success {
   color: #3c763d !important;
   background-color: #dff0d8 !important; }
 
-.note-editor.note-frame .note-status-output .alert-info, .note-editor.note-airframe .note-status-output .alert-info {
+.note-editor.note-frame .note-status-output .alert-info,
+.note-editor.note-airframe .note-status-output .alert-info {
   color: #31708f !important;
   background-color: #d9edf7 !important; }
 
-.note-editor.note-frame .note-status-output .alert-warning, .note-editor.note-airframe .note-status-output .alert-warning {
+.note-editor.note-frame .note-status-output .alert-warning,
+.note-editor.note-airframe .note-status-output .alert-warning {
   color: #8a6d3b !important;
   background-color: #fcf8e3 !important; }
 
-.note-editor.note-frame .note-status-output .alert-danger, .note-editor.note-airframe .note-status-output .alert-danger {
+.note-editor.note-frame .note-status-output .alert-danger,
+.note-editor.note-airframe .note-status-output .alert-danger {
   color: #a94442 !important;
   background-color: #f2dede !important; }
 
-.note-editor.note-frame .note-statusbar, .note-editor.note-airframe .note-statusbar {
-  background-color: #f5f5f5;
+.note-editor.note-frame .note-statusbar,
+.note-editor.note-airframe .note-statusbar {
+  background-color: #8080801d;
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
-  border-top: 1px solid #ddd; }
+  border-top: 1px solid #00000032; }
 
-.note-editor.note-frame .note-statusbar .note-resizebar, .note-editor.note-airframe .note-statusbar .note-resizebar {
+.note-editor.note-frame .note-statusbar .note-resizebar,
+.note-editor.note-airframe .note-statusbar .note-resizebar {
   padding-top: 1px;
   height: 9px;
   width: 100%;
   cursor: ns-resize; }
 
-.note-editor.note-frame .note-statusbar .note-resizebar .note-icon-bar, .note-editor.note-airframe .note-statusbar .note-resizebar .note-icon-bar {
+.note-editor.note-frame .note-statusbar .note-resizebar .note-icon-bar,
+.note-editor.note-airframe .note-statusbar .note-resizebar .note-icon-bar {
   width: 20px;
   margin: 1px auto;
-  border-top: 1px solid #a9a9a9; }
+  border-top: 1px solid #00000032; }
 
-.note-editor.note-frame .note-statusbar.locked .note-resizebar, .note-editor.note-airframe .note-statusbar.locked .note-resizebar {
+.note-editor.note-frame .note-statusbar.locked .note-resizebar,
+.note-editor.note-airframe .note-statusbar.locked .note-resizebar {
   cursor: default; }
 
-.note-editor.note-frame .note-statusbar.locked .note-resizebar .note-icon-bar, .note-editor.note-airframe .note-statusbar.locked .note-resizebar .note-icon-bar {
+.note-editor.note-frame .note-statusbar.locked .note-resizebar .note-icon-bar,
+.note-editor.note-airframe .note-statusbar.locked .note-resizebar .note-icon-bar {
   display: none; }
 
-.note-editor.note-frame .note-placeholder, .note-editor.note-airframe .note-placeholder {
+.note-editor.note-frame .note-placeholder,
+.note-editor.note-airframe .note-placeholder {
   padding: 10px; }
 
 .note-editor.note-airframe {
@@ -412,6 +441,8 @@
 .note-editor.note-airframe .note-editing-area .note-editable {
   padding: 0; }
 
+/* Popover
+ ------------------------------------------ */
 .note-popover.popover {
   display: none;
   max-width: none; }
@@ -427,76 +458,80 @@
 .note-popover.popover .arrow {
   left: 20px !important; }
 
+/* Popover and Toolbar (Button container)
+ ------------------------------------------ */
 .note-toolbar {
   position: relative; }
 
-.note-popover .popover-content, .note-toolbar {
+.note-popover .popover-content, .note-editor .note-toolbar {
   margin: 0;
   padding: 0 0 5px 5px; }
 
-.note-popover .popover-content > .note-btn-group, .note-toolbar > .note-btn-group {
+.note-popover .popover-content > .note-btn-group, .note-editor .note-toolbar > .note-btn-group {
   margin-top: 5px;
   margin-left: 0;
   margin-right: 5px; }
 
-.note-popover .popover-content .note-btn-group .note-table, .note-toolbar .note-btn-group .note-table {
+.note-popover .popover-content .note-btn-group .note-table, .note-editor .note-toolbar .note-btn-group .note-table {
   min-width: 0;
   padding: 5px; }
 
-.note-popover .popover-content .note-btn-group .note-table .note-dimension-picker, .note-toolbar .note-btn-group .note-table .note-dimension-picker {
+.note-popover .popover-content .note-btn-group .note-table .note-dimension-picker, .note-editor .note-toolbar .note-btn-group .note-table .note-dimension-picker {
   font-size: 18px; }
 
-.note-popover .popover-content .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-mousecatcher, .note-toolbar .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-mousecatcher {
+.note-popover .popover-content .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-mousecatcher, .note-editor .note-toolbar .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-mousecatcher {
   position: absolute !important;
   z-index: 3;
   width: 10em;
   height: 10em;
   cursor: pointer; }
 
-.note-popover .popover-content .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-unhighlighted, .note-toolbar .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-unhighlighted {
+.note-popover .popover-content .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-unhighlighted, .note-editor .note-toolbar .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-unhighlighted {
   position: relative !important;
   z-index: 1;
   width: 5em;
   height: 5em;
   background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASAgMAAAAroGbEAAAACVBMVEUAAIj4+Pjp6ekKlAqjAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfYAR0BKhmnaJzPAAAAG0lEQVQI12NgAAOtVatWMTCohoaGUY+EmIkEAEruEzK2J7tvAAAAAElFTkSuQmCC") repeat; }
 
-.note-popover .popover-content .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-highlighted, .note-toolbar .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-highlighted {
+.note-popover .popover-content .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-highlighted, .note-editor .note-toolbar .note-btn-group .note-table .note-dimension-picker .note-dimension-picker-highlighted {
   position: absolute !important;
   z-index: 2;
   width: 1em;
   height: 1em;
   background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASAgMAAAAroGbEAAAACVBMVEUAAIjd6vvD2f9LKLW+AAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfYAR0BKwNDEVT0AAAAG0lEQVQI12NgAAOtVatWMTCohoaGUY+EmIkEAEruEzK2J7tvAAAAAElFTkSuQmCC") repeat; }
 
-.note-popover .popover-content .note-style .dropdown-style blockquote, .note-popover .popover-content .note-style .dropdown-style pre, .note-toolbar .note-style .dropdown-style blockquote, .note-toolbar .note-style .dropdown-style pre {
+.note-popover .popover-content .note-style .dropdown-style blockquote, .note-popover .popover-content .note-style .dropdown-style pre, .note-editor .note-toolbar .note-style .dropdown-style blockquote, .note-editor .note-toolbar .note-style .dropdown-style pre {
   margin: 0;
   padding: 5px 10px; }
 
-.note-popover .popover-content .note-style .dropdown-style h1, .note-popover .popover-content .note-style .dropdown-style h2, .note-popover .popover-content .note-style .dropdown-style h3, .note-popover .popover-content .note-style .dropdown-style h4, .note-popover .popover-content .note-style .dropdown-style h5, .note-popover .popover-content .note-style .dropdown-style h6, .note-popover .popover-content .note-style .dropdown-style p, .note-toolbar .note-style .dropdown-style h1, .note-toolbar .note-style .dropdown-style h2, .note-toolbar .note-style .dropdown-style h3, .note-toolbar .note-style .dropdown-style h4, .note-toolbar .note-style .dropdown-style h5, .note-toolbar .note-style .dropdown-style h6, .note-toolbar .note-style .dropdown-style p {
+.note-popover .popover-content .note-style .dropdown-style h1, .note-popover .popover-content .note-style .dropdown-style h2, .note-popover .popover-content .note-style .dropdown-style h3, .note-popover .popover-content .note-style .dropdown-style h4, .note-popover .popover-content .note-style .dropdown-style h5, .note-popover .popover-content .note-style .dropdown-style h6, .note-popover .popover-content .note-style .dropdown-style p, .note-editor .note-toolbar .note-style .dropdown-style h1, .note-editor .note-toolbar .note-style .dropdown-style h2, .note-editor .note-toolbar .note-style .dropdown-style h3, .note-editor .note-toolbar .note-style .dropdown-style h4, .note-editor .note-toolbar .note-style .dropdown-style h5, .note-editor .note-toolbar .note-style .dropdown-style h6, .note-editor .note-toolbar .note-style .dropdown-style p {
   margin: 0;
   padding: 0; }
 
-.note-popover .popover-content .note-color-all .note-dropdown-menu, .note-toolbar .note-color-all .note-dropdown-menu {
+.note-popover .popover-content .note-color-all .note-dropdown-menu, .note-editor .note-toolbar .note-color-all .note-dropdown-menu {
   min-width: 337px; }
 
-.note-popover .popover-content .note-color .dropdown-toggle, .note-toolbar .note-color .dropdown-toggle {
+.note-popover .popover-content .note-color .dropdown-toggle, .note-editor .note-toolbar .note-color .dropdown-toggle {
   width: 20px;
   padding-left: 5px; }
 
-.note-popover .popover-content .note-color .note-dropdown-menu .note-palette, .note-toolbar .note-color .note-dropdown-menu .note-palette {
+.note-popover .popover-content .note-color .note-dropdown-menu .note-palette, .note-editor .note-toolbar .note-color .note-dropdown-menu .note-palette {
   display: inline-block;
   margin: 0;
   width: 160px; }
 
-.note-popover .popover-content .note-color .note-dropdown-menu .note-palette:first-child, .note-toolbar .note-color .note-dropdown-menu .note-palette:first-child {
+.note-popover .popover-content .note-color .note-dropdown-menu .note-palette:first-child, .note-editor .note-toolbar .note-color .note-dropdown-menu .note-palette:first-child {
   margin: 0 5px; }
 
-.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-palette-title, .note-toolbar .note-color .note-dropdown-menu .note-palette .note-palette-title {
+.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-palette-title, .note-editor .note-toolbar .note-color .note-dropdown-menu .note-palette .note-palette-title {
   font-size: 12px;
   margin: 2px 7px;
   text-align: center;
   border-bottom: 1px solid #eee; }
 
-.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-reset, .note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-select, .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-reset, .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-select {
+.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-reset,
+.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-select, .note-editor .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-reset,
+.note-editor .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-select {
   font-size: 11px;
   margin: 3px;
   padding: 0 3px;
@@ -504,63 +539,71 @@
   width: 100%;
   border-radius: 5px; }
 
-.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-reset:hover, .note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-select:hover, .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-reset:hover, .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-select:hover {
+.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-reset:hover,
+.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-select:hover, .note-editor .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-reset:hover,
+.note-editor .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-select:hover {
   background: #eee; }
 
-.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-row, .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-row {
+.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-row, .note-editor .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-row {
   height: 20px; }
 
-.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-select-btn, .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-select-btn {
+.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-color-select-btn, .note-editor .note-toolbar .note-color .note-dropdown-menu .note-palette .note-color-select-btn {
   display: none; }
 
-.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-holder-custom .note-color-btn, .note-toolbar .note-color .note-dropdown-menu .note-palette .note-holder-custom .note-color-btn {
+.note-popover .popover-content .note-color .note-dropdown-menu .note-palette .note-holder-custom .note-color-btn, .note-editor .note-toolbar .note-color .note-dropdown-menu .note-palette .note-holder-custom .note-color-btn {
   border: 1px solid #eee; }
 
-.note-popover .popover-content .note-para .note-dropdown-menu, .note-toolbar .note-para .note-dropdown-menu {
-  min-width: 216px;
+.note-popover .popover-content .note-para .note-dropdown-menu, .note-editor .note-toolbar .note-para .note-dropdown-menu {
+  min-width: 228px;
   padding: 5px; }
 
-.note-popover .popover-content .note-para .note-dropdown-menu > div:first-child, .note-toolbar .note-para .note-dropdown-menu > div:first-child {
-  margin-right: 5px; }
+.note-popover .popover-content .note-para .note-dropdown-menu > div + div, .note-editor .note-toolbar .note-para .note-dropdown-menu > div + div {
+  margin-left: 5px; }
 
-.note-popover .popover-content .note-dropdown-menu, .note-toolbar .note-dropdown-menu {
+.note-popover .popover-content .note-dropdown-menu, .note-editor .note-toolbar .note-dropdown-menu {
   min-width: 160px; }
 
-.note-popover .popover-content .note-dropdown-menu.right, .note-toolbar .note-dropdown-menu.right {
+.note-popover .popover-content .note-dropdown-menu.right, .note-editor .note-toolbar .note-dropdown-menu.right {
   right: 0;
   left: auto; }
 
-.note-popover .popover-content .note-dropdown-menu.right::before, .note-toolbar .note-dropdown-menu.right::before {
+.note-popover .popover-content .note-dropdown-menu.right::before, .note-editor .note-toolbar .note-dropdown-menu.right::before {
   right: 9px;
   left: auto !important; }
 
-.note-popover .popover-content .note-dropdown-menu.right::after, .note-toolbar .note-dropdown-menu.right::after {
+.note-popover .popover-content .note-dropdown-menu.right::after, .note-editor .note-toolbar .note-dropdown-menu.right::after {
   right: 10px;
   left: auto !important; }
 
-.note-popover .popover-content .note-dropdown-menu.note-check a i, .note-toolbar .note-dropdown-menu.note-check a i {
-  color: #00bfff;
+.note-popover .popover-content .note-dropdown-menu.note-check a i, .note-editor .note-toolbar .note-dropdown-menu.note-check a i {
+  color: deepskyblue;
   visibility: hidden; }
 
-.note-popover .popover-content .note-dropdown-menu.note-check a.checked i, .note-toolbar .note-dropdown-menu.note-check a.checked i {
+.note-popover .popover-content .note-dropdown-menu.note-check a.checked i, .note-editor .note-toolbar .note-dropdown-menu.note-check a.checked i {
   visibility: visible; }
 
-.note-popover .popover-content .note-fontsize-10, .note-toolbar .note-fontsize-10 {
+.note-popover .popover-content .note-fontsize-10, .note-editor .note-toolbar .note-fontsize-10 {
   font-size: 10px; }
 
-.note-popover .popover-content .note-color-palette, .note-toolbar .note-color-palette {
+.note-popover .popover-content .note-color-palette, .note-editor .note-toolbar .note-color-palette {
   line-height: 1; }
 
-.note-popover .popover-content .note-color-palette div .note-color-btn, .note-toolbar .note-color-palette div .note-color-btn {
+.note-popover .popover-content .note-color-palette div .note-color-btn, .note-editor .note-toolbar .note-color-palette div .note-color-btn {
   width: 20px;
   height: 20px;
   padding: 0;
   margin: 0;
-  border: 1px solid #fff; }
+  border: 0;
+  border-radius: 0; }
 
-.note-popover .popover-content .note-color-palette div .note-color-btn:hover, .note-toolbar .note-color-palette div .note-color-btn:hover {
-  border: 1px solid #000; }
+.note-popover .popover-content .note-color-palette div .note-color-btn:hover, .note-editor .note-toolbar .note-color-palette div .note-color-btn:hover {
+  -webkit-transform: scale(1.2);
+          transform: scale(1.2);
+  -webkit-transition: all 0.2s;
+  transition: all 0.2s; }
 
+/* Dialog
+ ------------------------------------------ */
 .note-modal .modal-dialog {
   outline: 0;
   border-radius: 5px;
@@ -578,20 +621,24 @@
   min-height: 100px;
   font-size: 30px;
   line-height: 4;
-  color: #d3d3d3;
+  color: lightgray;
   text-align: center;
-  border: 4px dashed #d3d3d3;
+  border: 4px dashed lightgray;
   margin-bottom: 10px; }
 
 @-moz-document url-prefix() {
   .note-modal .note-image-input {
     height: auto; } }
 
+/* Placeholder
+ ------------------------------------------ */
 .note-placeholder {
   position: absolute;
   display: none;
   color: gray; }
 
+/* Handle
+ ------------------------------------------ */
 .note-handle .note-control-selection {
   position: absolute;
   display: none;
@@ -604,10 +651,10 @@
   width: 100%;
   height: 100%;
   background-color: #000;
-  -webkit-opacity: .3;
-  -khtml-opacity: .3;
-  -moz-opacity: .3;
-  opacity: .3;
+  -webkit-opacity: 0.3;
+  -khtml-opacity: 0.3;
+  -moz-opacity: 0.3;
+  opacity: 0.3;
   -ms-filter: progid:DXImageTransform.Microsoft.Alpha(opacity=30);
   filter: alpha(opacity=30); }
 
@@ -656,10 +703,10 @@
   background-color: #000;
   font-size: 12px;
   border-radius: 5px;
-  -webkit-opacity: .7;
-  -khtml-opacity: .7;
-  -moz-opacity: .7;
-  opacity: .7;
+  -webkit-opacity: 0.7;
+  -khtml-opacity: 0.7;
+  -moz-opacity: 0.7;
+  opacity: 0.7;
   -ms-filter: progid:DXImageTransform.Microsoft.Alpha(opacity=70);
   filter: alpha(opacity=70); }
 
@@ -681,19 +728,27 @@
   clear: both;
   font-weight: 400;
   line-height: 1.4;
-  color: #fff;
+  color: white;
   white-space: nowrap;
   text-decoration: none;
   background-color: #428bca;
   outline: 0;
   cursor: pointer; }
 
-.note-toolbar .note-btn {
-  background: #fff;
-  border-color: #dae0e5;
-  padding: .28rem .65rem;
+/* Handle
+ ------------------------------------------ */
+html .note-fullscreen-body, body .note-fullscreen-body {
+  overflow: hidden !important; }
+
+.note-toolbar {
+  background: #8080801d; }
+
+.note-btn-group .note-btn {
+  border-color: #00000032;
+  padding: 0.28rem 0.65rem;
   font-size: 13px; }
 
+/*# sourceMappingURL=summernote-bs4.css.map*/
 /* #BOOTSTRAP AND MIXINS - Base Unmodified Bootstrap file with theme mixins
 ========================================================================== */
 /*---------------------------------------------------
@@ -767,6 +822,7 @@ $color-fusion:						darken(desaturate(adjust-hue($color-primary, 5), 80%), 25%);
 /*  PAINTBUCKET MIXER
 ========================================================================== */
 /* the grays */
+/* the sapphires */
 /* the sapphires */
 /* the emeralds */
 /* the amethyths */
@@ -954,9 +1010,129 @@ aside.page-sidebar ($nav-width, $nav-background)
 /* ACCESSIBILITIES */
 /* SHORTCUT BUTTON (appears on bottom right of the page) */
 /* GULP WARNINGS */
+/* source-sans-pro-200 - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 200;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-300 - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 300;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-200italic - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: italic;
+  font-weight: 200;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200italic.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200italic.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200italic.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200italic.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200italic.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-200italic.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-300italic - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: italic;
+  font-weight: 300;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300italic.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300italic.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300italic.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300italic.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300italic.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-300italic.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-regular - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 400;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-regular.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-regular.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-regular.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-regular.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-regular.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-regular.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-italic - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: italic;
+  font-weight: 400;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-italic.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-italic.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-italic.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-italic.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-italic.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-italic.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-600 - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 600;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-600italic - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: italic;
+  font-weight: 600;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600italic.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600italic.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600italic.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600italic.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600italic.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-600italic.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-700 - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 700;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-900 - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 900;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-700italic - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: italic;
+  font-weight: 700;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700italic.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700italic.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700italic.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700italic.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700italic.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-700italic.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
+/* source-sans-pro-900italic - latin-ext_latin */
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: italic;
+  font-weight: 900;
+  src: url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900italic.eot");
+  /* IE9 Compat Modes */
+  src: local(""), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900italic.eot?#iefix") format("embedded-opentype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900italic.woff2") format("woff2"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900italic.woff") format("woff"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900italic.ttf") format("truetype"), url("../../../webfonts/source-sans-pro/source-sans-pro-v21-latin-ext_latin-900italic.svg#SourceSansPro") format("svg");
+  /* Legacy iOS */ }
+
 body {
-  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial;
-  font-size: 0.875rem;
+  font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial;
+  font-size: 0.9375rem;
   letter-spacing: 0.1px; }
 
 .page-content {
@@ -983,7 +1159,7 @@ h6 small,
 .h6 small {
   font-weight: 300;
   display: block;
-  font-size: 1rem;
+  font-size: 1.0625rem;
   line-height: 1.5;
   margin: 2px 0 1.5rem; }
 
@@ -991,17 +1167,17 @@ h2 small,
 h3 small,
 .h2 small,
 .h3 small {
-  font-size: 1rem; }
+  font-size: 1.0625rem; }
 
 h4 small,
 .h4 small {
-  font-size: 0.9375rem; }
+  font-size: 1rem; }
 
 h5 small,
 h6 small,
 .h5 small,
 .h6 small {
-  font-size: 0.875rem; }
+  font-size: 0.9375rem; }
 
 /* contrast text */
 .text-contrast {
@@ -1009,9 +1185,9 @@ h6 small,
 
 /* text-gradient */
 .text-gradient {
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(25%, #3060af), color-stop(50%, #2b559b), color-stop(75%, #0c7cd5), to(#0960a5));
-  background: linear-gradient(180deg, #3060af 25%, #2b559b 50%, #0c7cd5 75%, #0960a5 100%);
-  color: #4679cc;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(25%, #ba4423), color-stop(50%, #a43c1f), color-stop(75%, #242de1), to(#1921b9));
+  background: linear-gradient(180deg, #ba4423 25%, #a43c1f 50%, #242de1 75%, #1921b9 100%);
+  color: #d95a37;
   background-clip: text;
   text-fill-color: transparent;
   -webkit-background-clip: text;
@@ -1115,7 +1291,7 @@ RESULT:
   border-radius: 5px; }
 
 .note-hint-popover .popover-content .note-hint-group .note-hint-item.active, .note-hint-popover .popover-content .note-hint-group .note-hint-item:hover {
-  background-color: #2196F3; }
+  background-color: #5158e7; }
 
 .note-hint-popover .popover-content .note-hint-group .note-hint-item {
   display: block !important;

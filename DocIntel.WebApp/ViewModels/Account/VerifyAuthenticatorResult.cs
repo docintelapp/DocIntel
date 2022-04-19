@@ -15,17 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// 
-
 using System.Collections.Generic;
-
-using Nest;
 
 namespace DocIntel.WebApp.ViewModels.Account
 {
     public class VerifyAuthenticatorResult 
     {
-        public Status Status { get; set; }
+        public bool Success { get; set; }
         public string Message { get; set; }
         public IEnumerable<string> Data { get; set; }
     }

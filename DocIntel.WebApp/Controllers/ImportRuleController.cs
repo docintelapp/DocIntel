@@ -82,7 +82,7 @@ namespace DocIntel.WebApp.Controllers
         /// </returns>
         [HttpGet("ImportRuleSet")]
         [HttpGet("ImportRuleSet/Index")]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             // REFACTOR to avoid view model
             var importRules = _importRuleRepository.GetAllSets(AmbientContext);

@@ -3,35 +3,41 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.ContentExtraction;
 using DocIntel.Core.Utils.Observables;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-
 using Spectre.Console.Cli;
+using Synsharp;
 
 namespace DocIntel.Console.Commands.Observables
 {
     public class ExtractObservableCommand : DocIntelCommand<ExtractObservableCommand.Settings>
     {
         private readonly IContentExtractionUtility _contentExtractionUtility;
-        private readonly IObservablesExtractionUtility _observablesExtractionUtility;
+        private readonly IObservablesUtility _observablesUtility;
         private readonly IDocumentRepository _documentRepository;
         private readonly ILogger<ExtractObservableCommand> _logger;
+        private readonly ISynapseRepository _observablesRepository;
 
         public ExtractObservableCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory, ApplicationSettings applicationSettings, IObservablesExtractionUtility observablesExtractionUtility, IContentExtractionUtility contentExtractionUtility, IDocumentRepository documentRepository, ILogger<ExtractObservableCommand> logger) : base(context,
+            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory, 
+            ApplicationSettings applicationSettings, 
+            IObservablesUtility observablesUtility, 
+            IContentExtractionUtility contentExtractionUtility, 
+            IDocumentRepository documentRepository, 
+            ILogger<ExtractObservableCommand> logger, 
+            ISynapseRepository observablesRepository) : base(context,
             userClaimsPrincipalFactory, applicationSettings)
         {
-            _observablesExtractionUtility = observablesExtractionUtility;
+            _observablesUtility = observablesUtility;
             _contentExtractionUtility = contentExtractionUtility;
             _documentRepository = documentRepository;
             _logger = logger;
+            _observablesRepository = observablesRepository;
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -41,28 +47,36 @@ namespace DocIntel.Console.Commands.Observables
 
             var document = await _documentRepository.GetAsync(ambientContext, settings.DocumentId, new [] { "Files" });
 
-            var observables = new HashSet<Observable>();
-            foreach (var file in document.Files)
+            SynapseView view = null;
+            if (settings.Save)
             {
-                var text = _contentExtractionUtility.ExtractText(document, file);
-                observables.UnionWith(await _observablesExtractionUtility.ExtractObservable(text, file));
+                view = await _observablesRepository.CreateView(document);
             }
             
-            foreach (var observable in observables.Where(_ => _.Status != ObservableStatus.Whitelisted & _.Status != ObservableStatus.Rejected))
+            var observables = new HashSet<SynapseObject>();
+            foreach (var file in document.Files)
             {
-                if (observable.Type == ObservableType.File)
+                // Extract the content
+                var text = _contentExtractionUtility.ExtractText(document, file);
+                
+                // Extract the observables
+                var fileObservables = await _observablesUtility.ExtractDataAsync(document, file, text).ToListAsync();
+                
+                // Annotate the observables
+                await _observablesUtility.AnnotateAsync(document, file, fileObservables);
+
+                if (settings.Save)
                 {
-                    foreach (var hash in observable.Hashes)
-                    {
-                        System.Console.WriteLine($"[{observable.Status}] {hash.HashType}:{hash.Value}");
-                    }
+                    await _observablesRepository.Add(fileObservables, document, file, view);
                 }
-                else
+                
+                foreach (var o in fileObservables) 
                 {
-                    System.Console.WriteLine($"[{observable.Status}] {observable.Type}: {observable.Value}");   
+                    if (o.Tags.Contains("_di.workflow.ignore")) continue;
+                    System.Console.WriteLine(o);
                 }
             }
-
+            
             return 0;
         }
 
@@ -71,6 +85,9 @@ namespace DocIntel.Console.Commands.Observables
             [CommandArgument(0, "<DocumentId>")]
             [Description("Identifier of the document")]
             public Guid DocumentId { get; set; }
+            
+            [CommandOption("--save")]
+            public bool Save { get; set; }
         }
     }
 }

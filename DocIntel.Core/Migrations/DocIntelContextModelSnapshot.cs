@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Newtonsoft.Json.Linq;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
+#nullable disable
+
 namespace DocIntel.Core.Migrations
 {
     [DbContext(typeof(DocIntelContext))]
@@ -16,9 +18,10 @@ namespace DocIntel.Core.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.4")
-                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
+                .HasAnnotation("ProductVersion", "6.0.6")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseSerialColumns(modelBuilder);
 
             modelBuilder.Entity("DocIntel.Core.Models.APIKey", b =>
                 {
@@ -105,7 +108,7 @@ namespace DocIntel.Core.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("AspNetRoles");
+                    b.ToTable("AspNetRoles", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.AppUser", b =>
@@ -199,7 +202,7 @@ namespace DocIntel.Core.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("AspNetUsers");
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.AppUserRole", b =>
@@ -214,7 +217,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles");
+                    b.ToTable("AspNetUserRoles", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Classification", b =>
@@ -301,6 +304,9 @@ namespace DocIntel.Core.Migrations
 
                     b.Property<string>("ExternalReference")
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("LastIndexDate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("LastModifiedById")
                         .HasColumnType("text");
@@ -498,55 +504,6 @@ namespace DocIntel.Core.Migrations
                     b.ToTable("Groups");
                 });
 
-            modelBuilder.Entity("DocIntel.Core.Models.ImportRule", b =>
-                {
-                    b.Property<Guid>("ImportRuleId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ImportRuleSetId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Replacement")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SearchPattern")
-                        .HasColumnType("text");
-
-                    b.HasKey("ImportRuleId");
-
-                    b.HasIndex("ImportRuleSetId");
-
-                    b.ToTable("ImportRules");
-                });
-
-            modelBuilder.Entity("DocIntel.Core.Models.ImportRuleSet", b =>
-                {
-                    b.Property<Guid>("ImportRuleSetId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("ImportRuleSetId");
-
-                    b.ToTable("ImportRuleSets");
-                });
-
             modelBuilder.Entity("DocIntel.Core.Models.Importer", b =>
                 {
                     b.Property<Guid>("ImporterId")
@@ -602,6 +559,55 @@ namespace DocIntel.Core.Migrations
                     b.HasIndex("FetchingUserId");
 
                     b.ToTable("IncomingFeeds");
+                });
+
+            modelBuilder.Entity("DocIntel.Core.Models.ImportRule", b =>
+                {
+                    b.Property<Guid>("ImportRuleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ImportRuleSetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Replacement")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SearchPattern")
+                        .HasColumnType("text");
+
+                    b.HasKey("ImportRuleId");
+
+                    b.HasIndex("ImportRuleSetId");
+
+                    b.ToTable("ImportRules");
+                });
+
+            modelBuilder.Entity("DocIntel.Core.Models.ImportRuleSet", b =>
+                {
+                    b.Property<Guid>("ImportRuleSetId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ImportRuleSetId");
+
+                    b.ToTable("ImportRuleSets");
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Member", b =>
@@ -721,6 +727,9 @@ namespace DocIntel.Core.Migrations
 
                     b.Property<string>("Keywords")
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("LastIndexDate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("LastModifiedById")
                         .HasColumnType("text");
@@ -854,6 +863,9 @@ namespace DocIntel.Core.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<string>("ExtractionKeywords")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("FacetId")
                         .HasColumnType("uuid");
 
@@ -863,6 +875,9 @@ namespace DocIntel.Core.Migrations
                     b.Property<string>("Label")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("LastIndexDate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("LastModifiedById")
                         .HasColumnType("text");
@@ -895,9 +910,12 @@ namespace DocIntel.Core.Migrations
 
             modelBuilder.Entity("DocIntel.Core.Models.TagFacet", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("FacetId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("AutoExtract")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("CreatedById")
                         .HasColumnType("text");
@@ -908,8 +926,14 @@ namespace DocIntel.Core.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<string>("ExtractionRegex")
+                        .HasColumnType("text");
+
                     b.Property<bool>("Hidden")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastIndexDate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("LastModifiedById")
                         .HasColumnType("text");
@@ -926,10 +950,13 @@ namespace DocIntel.Core.Migrations
                     b.Property<string>("Prefix")
                         .HasColumnType("text");
 
+                    b.Property<string>("TagNormalization")
+                        .HasColumnType("text");
+
                     b.Property<string>("Title")
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("FacetId");
 
                     b.HasIndex("CreatedById");
 
@@ -1037,7 +1064,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("ReleasableToGroupId");
 
-                    b.ToTable("FileRelToGroup");
+                    b.ToTable("FileRelToGroup", (string)null);
                 });
 
             modelBuilder.Entity("DocumentFileGroup1", b =>
@@ -1052,7 +1079,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("FilesEyesOnlyFileId");
 
-                    b.ToTable("FileGroupEyesOnly");
+                    b.ToTable("FileGroupEyesOnly", (string)null);
                 });
 
             modelBuilder.Entity("DocumentGroup", b =>
@@ -1067,7 +1094,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("ReleasableToGroupId");
 
-                    b.ToTable("DocumentRelToGroup");
+                    b.ToTable("DocumentRelToGroup", (string)null);
                 });
 
             modelBuilder.Entity("DocumentGroup1", b =>
@@ -1082,7 +1109,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("EyesOnlyGroupId");
 
-                    b.ToTable("DocumentGroupEyesOnly");
+                    b.ToTable("DocumentGroupEyesOnly", (string)null);
                 });
 
             modelBuilder.Entity("GroupImporter", b =>
@@ -1097,7 +1124,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("ReleasableToGroupId");
 
-                    b.ToTable("ImporterRelToGroup");
+                    b.ToTable("ImporterRelToGroup", (string)null);
                 });
 
             modelBuilder.Entity("GroupImporter1", b =>
@@ -1112,7 +1139,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("ImporterEyesOnlyImporterId");
 
-                    b.ToTable("ImporterGroupEyesOnly");
+                    b.ToTable("ImporterGroupEyesOnly", (string)null);
                 });
 
             modelBuilder.Entity("GroupScraper", b =>
@@ -1127,7 +1154,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("ScraperReleasableToScraperId");
 
-                    b.ToTable("ScraperRelToGroup");
+                    b.ToTable("ScraperRelToGroup", (string)null);
                 });
 
             modelBuilder.Entity("GroupScraper1", b =>
@@ -1142,7 +1169,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("ScraperEyesOnlyScraperId");
 
-                    b.ToTable("ScraperGroupEyesOnly");
+                    b.ToTable("ScraperGroupEyesOnly", (string)null);
                 });
 
             modelBuilder.Entity("GroupSubmittedDocument", b =>
@@ -1157,7 +1184,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("SubmittedDocumentReleasableToSubmittedDocumentId");
 
-                    b.ToTable("SubmissionRelToGroup");
+                    b.ToTable("SubmissionRelToGroup", (string)null);
                 });
 
             modelBuilder.Entity("GroupSubmittedDocument1", b =>
@@ -1172,15 +1199,16 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("SubmittedDocumentEyesOnlySubmittedDocumentId");
 
-                    b.ToTable("SubmissionGroupEyesOnly");
+                    b.ToTable("SubmissionGroupEyesOnly", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("text");
@@ -1196,15 +1224,16 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims");
+                    b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("text");
@@ -1220,7 +1249,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims");
+                    b.ToTable("AspNetUserClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -1242,7 +1271,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins");
+                    b.ToTable("AspNetUserLogins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -1261,7 +1290,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens");
+                    b.ToTable("AspNetUserTokens", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.APIKey", b =>
@@ -1432,17 +1461,6 @@ namespace DocIntel.Core.Migrations
                     b.Navigation("ParentGroup");
                 });
 
-            modelBuilder.Entity("DocIntel.Core.Models.ImportRule", b =>
-                {
-                    b.HasOne("DocIntel.Core.Models.ImportRuleSet", "ImportRuleSet")
-                        .WithMany("ImportRules")
-                        .HasForeignKey("ImportRuleSetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ImportRuleSet");
-                });
-
             modelBuilder.Entity("DocIntel.Core.Models.Importer", b =>
                 {
                     b.HasOne("DocIntel.Core.Models.Classification", "Classification")
@@ -1456,6 +1474,17 @@ namespace DocIntel.Core.Migrations
                     b.Navigation("Classification");
 
                     b.Navigation("FetchingUser");
+                });
+
+            modelBuilder.Entity("DocIntel.Core.Models.ImportRule", b =>
+                {
+                    b.HasOne("DocIntel.Core.Models.ImportRuleSet", "ImportRuleSet")
+                        .WithMany("ImportRules")
+                        .HasForeignKey("ImportRuleSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ImportRuleSet");
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Member", b =>

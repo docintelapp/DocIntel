@@ -96,8 +96,11 @@ namespace DocIntel.Core.Models
         [ForeignKey("ThumbnailId")]
         public DocumentFile Thumbnail { get; set; }
 
+        [Url]
+        [Display(Name = "Source URL")] 
         public string SourceUrl { get; set; }
-        
+
+        public DateTime LastIndexDate { get; set; }
     }
 
     public enum DocumentStatus

@@ -24,7 +24,7 @@
             <div class="btn-group">
                 @if (canDelete)
                 {
-                    <a asp-action="Delete" asp-route-name="@Model.FriendlyName" class="btn btn-secondary waves-effect waves-themed">
+                    <a asp-action="Delete" asp-route-name="@Model.FriendlyName" class= "btn btn-pills btn-secondary waves-effect waves-themed">
                         <i class="fal fa-trash-alt"></i> Delete
                     </a>
                 }
@@ -86,6 +86,14 @@
                             </small>
                         </div>
                         <div class="form-group">
+                            <label asp-for="ExtractionKeywords" class="control-label"></label>
+                            <input asp-for="ExtractionKeywords" class="form-control"/>
+                            <span asp-validation-for="ExtractionKeywords" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                Extraction keywords are used when extracting tags while pre-processing documents.
+                            </small>
+                        </div>
+                        <div class="form-group">
                             <label asp-for="BackgroundColor" class="control-label"></label>
                             <select asp-for="BackgroundColor" class="form-control autocomplete-color">
                                 @{
@@ -115,7 +123,7 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                    <button type="submit" class= "btn btn-pills btn-success btn-iconified waves-effect waves-themed">
                         <i class="fal fa-save"></i> Save
                     </button>
                     <a asp-action="Details" asp-route-id="@Model.TagId" class="ml-3 text-danger">Cancel</a>

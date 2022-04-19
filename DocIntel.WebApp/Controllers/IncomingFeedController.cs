@@ -189,9 +189,6 @@ namespace DocIntel.WebApp.Controllers
         /// <summary>
         ///     Provides a view to create a new incoming feed.
         /// </summary>
-        /// <param name="id">
-        ///     The identifier of the feed to create.
-        /// </param>
         /// <returns>
         ///     A view for creating details of the incoming feed. A "Not Found"
         ///     response if the feed does not exists. A "Unauthorized" response
@@ -257,9 +254,6 @@ namespace DocIntel.WebApp.Controllers
         /// </summary>
         /// <param name="submittedImporter">
         ///     The feed identifier and <i>enabled</i> flag for the feed to update.
-        /// </param>
-        /// <param name="settings">
-        ///     A string representing the JSON for the settings of the plugin.
         /// </param>
         /// <returns>
         ///     A redirection to the incoming feed detail page if the edit was
@@ -466,9 +460,6 @@ namespace DocIntel.WebApp.Controllers
         /// </param>
         /// <param name="submittedImporter">
         ///     The feed identifier and <i>enabled</i> flag for the feed to update.
-        /// </param>
-        /// <param name="settings">
-        ///     A string representing the JSON for the settings of the plugin.
         /// </param>
         /// <returns>
         ///     A redirection to the incoming feed detail page if the edit was

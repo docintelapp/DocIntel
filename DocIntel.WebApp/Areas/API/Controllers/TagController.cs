@@ -29,12 +29,13 @@ using DocIntel.Core.Repositories;
 using DocIntel.Core.Utils.Search.Tags;
 using DocIntel.WebApp.Areas.API.Models;
 using DocIntel.WebApp.Helpers;
-
+using DotLiquid;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
+using Tag = DocIntel.Core.Models.Tag;
 
 namespace DocIntel.WebApp.Areas.API.Controllers
 {
@@ -93,7 +94,52 @@ namespace DocIntel.WebApp.Areas.API.Controllers
                         var tag = await _tagRepository.GetAsync(AmbientContext, h.Tag.TagId, new[] {"Facet"});
                         tags.Add(tag);
                     }
-                    catch (NotFoundEntityException ex)
+                    catch (NotFoundEntityException)
+                    {
+                        // TODO Fail silently and log the error.
+                    }
+
+                return Ok(_mapper.Map<IEnumerable<APITag>>(tags));
+            }
+            catch (UnauthorizedOperationException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.APIListTagFailed,
+                    new LogEvent($"User '{currentUser.UserName}' attempted to list tag without legitimate rights.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext),
+                    null,
+                    LogEvent.Formatter);
+
+                return Unauthorized();
+            }
+        }
+        
+        
+        [HttpGet("Suggest")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<APITag>))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Produces("application/json", "application/xml")]
+        public async Task<IActionResult> Suggest(
+            string searchTerm = "")
+        {
+            var currentUser = await GetCurrentUser();
+
+            try
+            {
+                var results = _tagSearchEngine.Suggest(new TagSearchQuery
+                {
+                    SearchTerms = searchTerm
+                });
+
+                var tags = new List<object>();
+                foreach (var h in results.Hits)
+                    try
+                    {
+                        var tag = await _tagRepository.GetAsync(AmbientContext, h.Tag.TagId, new[] {"Facet"});
+                        tags.Add(tag);
+                    }
+                    catch (NotFoundEntityException)
                     {
                         // TODO Fail silently and log the error.
                     }
@@ -169,6 +215,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
 
             try
             {
+                TagFacet facet = null;
                 if (submittedViewModel.Facet == null)
                 {
                     ModelState.AddModelError("FacetId", "Select a valid facet");
@@ -179,11 +226,11 @@ namespace DocIntel.WebApp.Areas.API.Controllers
                         !string.IsNullOrWhiteSpace(submittedViewModel.Facet.Prefix))
                         try
                         {
-                            var facet = await _facetRepository.GetAsync(AmbientContext,
+                            facet = await _facetRepository.GetAsync(AmbientContext,
                                 submittedViewModel.Facet.Prefix);
-                            submittedViewModel.Facet.Id = facet.Id;
+                            submittedViewModel.Facet.Id = facet.FacetId;
                         }
-                        catch (NotFoundEntityException ex)
+                        catch (NotFoundEntityException)
                         {
                             if (createFacetIfNotExist)
                             {
@@ -195,10 +242,9 @@ namespace DocIntel.WebApp.Areas.API.Controllers
                                     ModificationDate = DateTime.Now,
                                     Title = submittedViewModel.Facet.Prefix
                                 };
-                                var facet = await _facetRepository.AddAsync(AmbientContext,
+                                facet = await _facetRepository.AddAsync(AmbientContext,
                                     tagFacet);
-                                _logger.LogError(facet.Id.ToString());
-                                submittedViewModel.Facet.Id = facet.Id;
+                                submittedViewModel.Facet.Id = facet.FacetId;
                             }
                             else
 
@@ -220,7 +266,9 @@ namespace DocIntel.WebApp.Areas.API.Controllers
                         Description = submittedViewModel.Description,
                         Keywords = string.Join(",", submittedViewModel.Keywords.Select(_ => _.Trim())),
                         BackgroundColor = submittedViewModel.BackgroundColor,
-                        FacetId = submittedViewModel.Facet.Id
+                        Facet = facet,
+                        FacetId = submittedViewModel.Facet.Id,
+                        ExtractionKeywords = string.Join(",", submittedViewModel.ExtractionKeywords.Select(_ => _.Trim()))
                     };
 
                     await _tagRepository.CreateAsync(AmbientContext, tag);
@@ -294,12 +342,16 @@ namespace DocIntel.WebApp.Areas.API.Controllers
 
                 if (ModelState.IsValid)
                 {
+                    TagFacet facet = await _facetRepository.GetAsync(AmbientContext, submittedTag.Facet.Id);
+                    
                     tag.Label = submittedTag.Label;
                     tag.Description = submittedTag.Description;
                     tag.Keywords = string.Join(",", submittedTag.Keywords.Select(_ => _.Trim()));
                     tag.BackgroundColor = submittedTag.BackgroundColor;
+                    tag.Facet = facet;
                     tag.FacetId = submittedTag.Facet.Id;
-
+                    tag.ExtractionKeywords = string.Join(",", submittedTag.ExtractionKeywords.Select(_ => _.Trim()));
+                    
                     await _tagRepository.UpdateAsync(AmbientContext, tag);
                     await _context.SaveChangesAsync();
 

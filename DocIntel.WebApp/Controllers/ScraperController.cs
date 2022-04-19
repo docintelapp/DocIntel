@@ -203,9 +203,6 @@ namespace DocIntel.WebApp.Controllers
         /// <summary>
         ///     Provides a view to create a new scraper.
         /// </summary>
-        /// <param name="id">
-        ///     The identifier of the feed to create.
-        /// </param>
         /// <returns>
         ///     A view for creating details of the scraper. A "Not Found"
         ///     response if the feed does not exists. A "Unauthorized" response
@@ -274,9 +271,6 @@ namespace DocIntel.WebApp.Controllers
         /// </summary>
         /// <param name="submittedScraper">
         ///     The feed identifier and <i>enabled</i> flag for the feed to update.
-        /// </param>
-        /// <param name="settings">
-        ///     A string representing the JSON for the settings of the plugin.
         /// </param>
         /// <returns>
         ///     A redirection to the scraper detail page if the edit was
@@ -491,9 +485,6 @@ namespace DocIntel.WebApp.Controllers
         /// </param>
         /// <param name="submittedScraper">
         ///     The feed identifier and <i>enabled</i> flag for the feed to update.
-        /// </param>
-        /// <param name="settings">
-        ///     A string representing the JSON for the settings of the plugin.
         /// </param>
         /// <returns>
         ///     A redirection to the scraper detail page if the edit was

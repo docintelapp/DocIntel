@@ -32,7 +32,6 @@ using MailKit.Net.Imap;
 using MailKit.Security;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using MimeKit;
@@ -167,7 +166,7 @@ namespace DocIntel.Core.Scrapers
                                 documentFile = await AddAsync(_scraper, context, documentFile, stream);
                                 allFilesKnown = false;
                             }
-                            catch (FileAlreadyKnownException e)
+                            catch (FileAlreadyKnownException)
                             {
                                 _logger.LogDebug("File is already known.");
                             }

@@ -16,28 +16,14 @@
 */
 
 using System;
+using DocIntel.Core.Utils.Indexation.SolR;
 
 namespace DocIntel.Core.Utils.Search.Tags
 {
     public class TagFacetSearchHit
     {
-        public Guid FacetId { get; set; }
-
-        public float Score { get; internal set; }
-
+        public IndexedTagFacet Facet { get; set; }
         public string Excerpt { get; internal set; }
         public string TitleExcerpt { get; internal set; }
-        public override bool Equals(object obj)
-        {
-            if (obj is TagFacetSearchHit sh)
-                return sh.FacetId == FacetId;
-
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return FacetId.GetHashCode();
-        }
     }
 }

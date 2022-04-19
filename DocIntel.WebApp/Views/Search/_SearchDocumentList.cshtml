@@ -57,10 +57,14 @@
                 @if (Model.SearchResultDocuments != null && Model.SearchResultDocuments.Any())
                 {
                     <ul class="list-group list-group-flush">
+                        @{
+                            var viewDataDictionary = new ViewDataDictionary(ViewData);
+                            viewDataDictionary.Add("SortBy", Model.SortBy);
+                        }
                         @foreach (var document in Model.SearchResultDocuments)
                         {
                             <li class="list-group-item py-3 px-3">
-                                @await Html.PartialAsync("_DocumentSearchResult", document, new ViewDataDictionary(ViewData))
+                                @await Html.PartialAsync("_DocumentSearchResult", document, viewDataDictionary)
                             </li>
                         }
                     </ul>

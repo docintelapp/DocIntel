@@ -27,12 +27,13 @@ using DocIntel.Core.Exceptions;
 using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories.Query;
-
+using DotLiquid;
 using Ganss.XSS;
 
 using MassTransit;
 
 using Microsoft.EntityFrameworkCore;
+using Tag = DocIntel.Core.Models.Tag;
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
 namespace DocIntel.Core.Repositories.EFCore
@@ -70,6 +71,12 @@ namespace DocIntel.Core.Repositories.EFCore
                 tag.URL = Regex.Replace(Regex.Replace(tag.Label, @"[^A-Za-z0-9_\.~]+", "-"), "-{2,}", "-")
                     .ToLowerInvariant().Trim('-');
 
+                if (!string.IsNullOrEmpty(tag.Facet.TagNormalization))
+                {
+                    var labelTemplate = Template.Parse("{{label | " + tag.Facet.TagNormalization + "}}");
+                    tag.Label = labelTemplate.Render(Hash.FromAnonymousObject(new { label = tag.Label }));
+                }
+                
                 var trackingEntity = await ambientContext.DatabaseContext.AddAsync(tag);
                 ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
                     () => _busClient.Publish(new TagCreatedMessage
@@ -106,6 +113,12 @@ namespace DocIntel.Core.Repositories.EFCore
                 tag.URL = Regex.Replace(Regex.Replace(tag.Label, @"[^A-Za-z0-9_\.~]+", "-"), "-{2,}", "-")
                     .ToLowerInvariant().Trim('-');
 
+                if (!string.IsNullOrEmpty(tag.Facet.TagNormalization))
+                {
+                    var labelTemplate = Template.Parse("{{label | " + tag.Facet.TagNormalization + "}}");
+                    tag.Label = labelTemplate.Render(Hash.FromAnonymousObject(new { label = tag.Label }));
+                }
+                
                 var trackingEntity = ambientContext.DatabaseContext.Update(tag);
                 ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
                     () => _busClient.Publish(new TagUpdatedMessage
@@ -245,7 +258,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 foreach (var relatedData in includeRelatedData)
                     enumerable = enumerable.Include(relatedData);
 
-            var tag = await enumerable.SingleOrDefaultAsync(_ => (_.FacetId == facetId) & (_.Label == label));
+            var tag = await enumerable.FirstOrDefaultAsync(_ => (_.FacetId == facetId) & (_.Label.ToUpper() == label.ToUpper()));
 
             if (tag == null) throw new NotFoundEntityException();
 
@@ -274,6 +287,18 @@ namespace DocIntel.Core.Repositories.EFCore
             throw new UnauthorizedOperationException();
         }
 
+        public async IAsyncEnumerable<Tag> GetAllAsync(AmbientContext ambientContext, Func<IQueryable<Tag>, IQueryable<Tag>> query)
+        {
+            IQueryable<Tag> enumerable = ambientContext.DatabaseContext.Tags;
+
+            enumerable = query(enumerable);
+
+            foreach (var tag in enumerable)
+                if (await _appAuthorizationService.CanViewTag(ambientContext.Claims, tag))
+                    yield return tag;
+        }
+        
+        
         public async IAsyncEnumerable<Tag> GetAllAsync(
             AmbientContext ambientContext,
             TagQuery query,
@@ -538,7 +563,7 @@ namespace DocIntel.Core.Repositories.EFCore
             TagQuery query)
         {
             if (query.Label != null)
-                tags = tags.Where(_ => _.Label == query.Label).AsQueryable();
+                tags = tags.Where(_ => _.Label.ToUpper() == query.Label.ToUpper()).AsQueryable();
 
             if (query.FullLabel != null)
                 tags = tags.Where(_ => _.Facet.Prefix + ":" + _.Label == query.FullLabel).AsQueryable();

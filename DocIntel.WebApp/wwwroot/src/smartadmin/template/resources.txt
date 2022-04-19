@@ -1,3 +1,0 @@
-Great tutorial for HBS template
-
-https://cloudfour.com/thinks/the-hidden-power-of-handlebars-partials/

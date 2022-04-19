@@ -9,25 +9,6 @@
     var canResetPassword = (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.ResetPassword)).Succeeded;
 }
 
-
-<div class="subheader d-flex justify-content-end">
-        <div class="btn-group">
-            @if (canEdit)
-            {
-                <a asp-action="Edit" asp-route-username="@Model.User.UserName" class="btn btn-primary btn-iconified waves-effect waves-themed">
-                    <i class="fal fa-edit"></i> Edit
-                </a>
-            }
-            @if (canResetPassword)
-            {
-                <a asp-action="ResetPassword" asp-route-username="@Model.User.UserName"
-                   class="btn btn-primary waves-effect waves-themed btn-iconified">
-                    <i class="fal fa-key"></i> Change password
-                </a>
-            }
-        </div>
-</div>
-
 <div class="row">
 
     <div class="col-3">

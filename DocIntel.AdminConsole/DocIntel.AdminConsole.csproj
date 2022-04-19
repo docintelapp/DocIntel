@@ -12,22 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="HumanDateParser" Version="1.1.0" />
-    <!-- <PackageReference Include="MassTransit.AspNetCore" Version="7.0.4-develop.2912" />
-    <PackageReference Include="NLog" Version="4.7.2" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.6.4" /> -->
-    <!-- <PackageReference Include="RabbitMQ.Client" Version="6.1.0" /> -->
-    <PackageReference Include="Sharprompt" Version="2.4.0" />
-    <!-- <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" /> -->
-    
-    <!-- <PackageReference Include="AutoMapper" Version="10.0.0" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.0.1" /> -->
-
-    <PackageReference Include="SolrNet" Version="1.0.19" />  
-    <PackageReference Include="SolrNet.Microsoft.DependencyInjection" Version="1.0.19" />
+    <PackageReference Include="Sharprompt" Version="2.4.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-
   </ItemGroup>
 
   <ItemGroup>

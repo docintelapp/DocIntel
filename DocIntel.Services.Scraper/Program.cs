@@ -42,7 +42,7 @@ namespace DocIntel.Services.Scraper
                 {
                     services.AddSingleton<ScraperConsumer>();
                     services.AddHostedService<ScraperHostedService>();
-                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly });
+                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, true);
                 })
                 .UseNLog();
     }

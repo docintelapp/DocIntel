@@ -40,7 +40,7 @@ namespace DocIntel.Services.ContinuousIndexing
                 {
                     services.AddSingleton<ContinuousIndexer>();
                     services.AddHostedService<ContinuousIndexingHostedService>();
-                    ConfigureService(hostContext, services);
+                    ConfigureService(hostContext, services, runHostedServices: true);
                 })
                 .UseNLog();
     }

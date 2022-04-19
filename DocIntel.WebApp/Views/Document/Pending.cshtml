@@ -6,7 +6,7 @@
 @{
     ViewData["Title"] = "Documents pending registration";
 
-    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Delete)).Succeeded;
+    var canDiscard = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Discard)).Succeeded;
 }
 
 <div class="subheader">
@@ -16,7 +16,7 @@
     </h1>
     <div>
         <div class="btn-group">
-            <a asp-action="Upload" class="btn btn-success btn-iconified waves-effect waves-themed">
+            <a asp-action="Upload" class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed">
                 <i class="fal fa-upload"></i> Upload
             </a>
         </div>
@@ -55,15 +55,34 @@
             <div id="panel-source-info" class="panel">
                 <div class="panel-hdr">
                     <h2>
-                        Pending Registration
+                        @if (Model.RegisteredBy != null)
+                        {
+                            <text>@(Model.RegisteredBy.FriendlyName)'s Pending Documents</text>   
+                        } else {
+                            <text>Pending Documents</text>
+                        }
                     </h2>
+                    <div class="panel-toolbar">
+                        @if (Model.RegisteredBy != null)
+                        {
+                            <a class= "btn btn-pills btn-sm btn-default" asp-action="Pending">
+                                View all pending documents
+                            </a>
+                        } else {
+                            <a class="" asp-action="Pending" asp-route-username="@ViewBag.CurrentUser.UserName">
+                                View my pending documents only
+                            </a>
+                        }
+                    </div>
                 </div>
                 <div class="panel-container show">
                     <div class="panel-content pb-0">
+                        <table class="table table-sm table-borderless mb-2" >
                         @foreach (var item in Model.Documents.OrderByDescending(_ => _.RegistrationDate))
                         {
                             @await Html.PartialAsync("PendingListItem", item, new ViewDataDictionary(ViewData))
                         }
+                        </table>
 
                     </div>
                     @if (Model.PageCount > 1)

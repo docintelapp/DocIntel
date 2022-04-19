@@ -53,7 +53,9 @@ namespace DocIntel.Core.Importers
         // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
         public string SecretKey { get; set; }
 
+#pragma warning disable CS1998
         public override async IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit)
+#pragma warning restore CS1998
         {
             _logger.LogDebug(
                 $"Pulling {GetType().FullName} from {lastPull?.ToString() ?? "(not date)"} but max {limit} documents.");

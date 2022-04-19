@@ -88,7 +88,7 @@ namespace DocIntel.Services.ContinuousIndexing
             var dbContextLogger = _serviceProvider.GetRequiredService<ILogger<DocIntelContext>>();
             var _dbContext = new DocIntelContext(dbContextOptions, dbContextLogger);
             var automationUser =
-                _dbContext.Users.FirstOrDefault(_ => _.UserName == _applicationSettings.AutomationAccount);
+                _dbContext.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _applicationSettings.AutomationAccount);
             if (automationUser == null)
                 throw new ArgumentNullException($"User '{_applicationSettings.AutomationAccount}' does not exists.");
 

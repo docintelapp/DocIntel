@@ -16,7 +16,6 @@
 */
 
 using System.ComponentModel;
-
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace DocIntel.Core.Authorization.Operations
@@ -37,6 +36,9 @@ namespace DocIntel.Core.Authorization.Operations
         
         public static readonly OperationAuthorizationRequirement Delete =
             new() {Name = DocumentOperationsConstants.DeleteOperationName};
+        
+        public static readonly OperationAuthorizationRequirement Discard =
+            new() {Name = DocumentOperationsConstants.DiscardOperationName};
 
         public static readonly OperationAuthorizationRequirement Download =
             new() {Name = DocumentOperationsConstants.DownloadOperationName};
@@ -79,6 +81,7 @@ namespace DocIntel.Core.Authorization.Operations
         
         public static readonly OperationAuthorizationRequirement EditFile =
             new() {Name = DocumentOperationsConstants.EditFileOperationName};
+
     }
 
     [DisplayName("Document")]
@@ -89,6 +92,7 @@ namespace DocIntel.Core.Authorization.Operations
         [DisplayName("Register documents")] public static string RegisterOperationName => "RegisterDocument";
         [DisplayName("Edit documents")] public static string EditOperationName => "EditDocument";
         [DisplayName("Delete documents")] public static string DeleteOperationName => "DeleteDocument";
+        [DisplayName("Discard documents")] public static string DiscardOperationName => "DiscardDocument";
         [DisplayName("Download documents")] public static string DownloadOperationName => "DownloadDocument";
         [DisplayName("Subscribe to documents")] public static string SubscribeOperationName => "SubscribeToDoc";
         [DisplayName("Add tags to documents")] public static string AddTagOperationName => "AddTagsToDoc";

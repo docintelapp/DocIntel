@@ -21,7 +21,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Logging;
 
 namespace DocIntel.WebApp.Helpers
 {
@@ -56,7 +55,6 @@ namespace DocIntel.WebApp.Helpers
     public class DelimitedArrayModelBinder : IModelBinder
     {
         private readonly char[] _delimiters;
-        private readonly Logger<DelimitedArrayModelBinder> _logger;
 
         public DelimitedArrayModelBinder(char[] delimiters)
         {

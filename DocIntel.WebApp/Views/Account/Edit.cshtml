@@ -11,7 +11,7 @@
         </h1>
         <div>
             <div class="btn-group">
-                <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                <button type="submit" class= "btn btn-pills btn-success btn-iconified waves-effect waves-themed">
                     <i class="fal fa-save"></i> Save
                 </button>
             </div>
@@ -162,7 +162,7 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                    <button type="submit" class= "btn btn-pills btn-success btn-iconified waves-effect waves-themed">
                         <i class="fal fa-save"></i> Save
                     </button>
                     <a asp-action="Profile" asp-controller="User" asp-route-username="@Model.UserName" class="ml-3 text-danger">Cancel</a>
@@ -186,7 +186,7 @@
                             <div class="media p-0 mb-2 mt-1">
                                 @if (string.IsNullOrEmpty(Model.ProfilePicture))
                                 {
-                                    <img alt="" class="rounded-circle" src="~/images/icons/color/icons8-male-user-48.png"/>
+                                    <img alt="" class="rounded-circle" src="~/images/avatar-m.png"/>
                                 }
                                 else
                                 {
@@ -194,10 +194,10 @@
                                 }
                                 <div class="media-body ml-4">
 
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#subscribedTagsModalCenter">
+                                    <button type="button" class= "btn btn-pills btn-sm btn-outline-primary" data-toggle="modal" data-target="#subscribedTagsModalCenter">
                                         Upload new photo
                                     </button> &nbsp;
-                                    <button class="btn btn-outline-secondary btn-sm" type="button">Reset</button>
+                                    <button class= "btn btn-pills btn-outline-secondary btn-sm" type="button">Reset</button>
                                     <div class="text-muted small mt-1">Allowed JPG or PNG. Max size of 800K.</div>
                                 </div>
                             </div>
@@ -226,7 +226,7 @@
                     <div class="form-group">
                         <input type="file" name="profilePicture" class="form-control"/>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                    <button type="submit" class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed">
                         <i class="fal fa-upload"></i> Upload Picture
                     </button>
                 </div>

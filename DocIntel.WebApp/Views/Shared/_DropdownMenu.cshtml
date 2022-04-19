@@ -2,23 +2,25 @@
 @{
     var canEditProfile = (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.EditOwn)).Succeeded;
     var canView = (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.View)).Succeeded;
+    var canResetPassword = (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.ResetPassword)).Succeeded;
 }
 
-
-<div class="dropdown-header bg-trans-gradient d-flex flex-row py-4 rounded-top">
-    <div class="d-flex flex-row align-items-center mt-1 mb-1 color-white">
+<div class="dropdown-header d-flex flex-row py-3 rounded-top background-dropdown-menu">
+    <div class="d-flex flex-row align-items-center mt-1 mb-1 ">
         <span class="mr-2">
             @if (string.IsNullOrEmpty(ViewBag.CurrentUser.ProfilePicture))
             {
-                <img alt="" class="profile-image rounded-circle" src="~/images/icons/color/icons8-male-user-48.png"/>
+                <img alt="" class="profile-image rounded-circle" src="~/images/avatar-m.png"/>
             }
             else
             {
-                <img alt="" class="profile-image rounded-circle" src="@Url.Action("ProfilePicture", "Account", new {userName = ViewBag.CurrentUser.UserName})"/>
+                <img alt="" class="profile-image rounded-circle" src="@Url.Action("ProfilePicture", "Account", new { Area = "", userName = ViewBag.CurrentUser.UserName})"/>
             }
         </span>
         <div class="info-card-text">
-            <div class="fs-lg text-truncate text-truncate-lg">@ViewBag.CurrentUser.FriendlyName</div>
+            <a asp-controller="User" asp-action="Profile" asp-area="" asp-route-username="@ViewBag.CurrentUser.UserName" title="@ViewBag.CurrentUser.FriendlyName" class="d-flex align-items-center mb-1">
+                <div class="fs-lg text-truncate text-truncate-lg">@ViewBag.CurrentUser.FriendlyName</div>
+            </a>
             <span class="text-truncate text-truncate-md opacity-80">&commat;@ViewBag.CurrentUser.UserName</span>
         </div>
     </div>
@@ -28,19 +30,27 @@
 
 @if (canEditProfile)
 {
-    <a class="dropdown-item fw-500 pt-3 pb-3" asp-controller="Account" asp-action="Edit">
+    <a class="dropdown-item fw-500 pt-3 pb-3" asp-controller="Account" asp-action="Edit" asp-area="">
         Edit profile
+    </a>
+}
+
+
+@if (canResetPassword)
+{
+    <a class="dropdown-item fw-500 pt-3 pb-3" asp-action="ResetPassword" asp-route-username="@ViewBag.CurrentUser.UserName" asp-area="">
+        Change password
     </a>
 }
 
 @if (canView)
 {
-    <a class="dropdown-item fw-500 pt-3 pb-3" asp-controller="Account" asp-action="APIKeys">
+    <a class="dropdown-item fw-500 pt-3 pb-3" asp-controller="Account" asp-action="APIKeys" asp-area="">
         Manage API Keys
     </a>
 }
 
-<a class="dropdown-item fw-500 pt-3 pb-3" asp-controller="Account" asp-action="Subscriptions">
+<a class="dropdown-item fw-500 pt-3 pb-3" asp-controller="Account" asp-action="Subscriptions" asp-area="">
     Manage subscriptions
 </a>
 
@@ -53,7 +63,7 @@
 
 <div class="dropdown-divider m-0"></div>
 
-<a class="dropdown-item fw-500 pt-3 pb-3" asp-controller="Account" asp-action="Logout" id="dropdown-logout">
+<a class="dropdown-item fw-500 pt-3 pb-3" asp-controller="Account" asp-action="Logout" id="dropdown-logout" asp-area="">
     <span data-i18n="drpdwn.page-logout">Logout</span>
     <span class="float-right fw-n">&commat;@ViewBag.CurrentUser.UserName</span>
 </a>

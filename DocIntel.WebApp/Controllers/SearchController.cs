@@ -140,7 +140,6 @@ namespace DocIntel.WebApp.Controllers
                 {
                     var document = await _documentRepository.GetAsync(AmbientContext, hit.DocumentId,
                         new[] {"DocumentTags", "DocumentTags.Tag", "DocumentTags.Tag.Facet"});
-                    _logger.LogWarning(document.URL);
                     resultsDocuments.Add(new DocumentSearchResult
                     {
                         Document = document,
@@ -167,15 +166,17 @@ namespace DocIntel.WebApp.Controllers
                 new List<TagGroupViewModel>(); // results.FacetTags.ToAsyncEnumerable().SelectAwait(async x => {
             foreach (var x in results.FacetTags)
             {
-                _logger.LogDebug("Facet Tag:" + x.Value);
+                // _logger.LogDebug("Facet Tag:" + x.Value);
                 var tagsInFacet = new List<VerticalResult<Tag>>();
                 foreach (var y in x.Elements)
                 {
-                    _logger.LogDebug("Tag:" + y.Value);
+                    // _logger.LogDebug("Tag:" + y.Value);
                     try
                     {
+                        var async = await _tagRepository.GetAsync(AmbientContext, y.Value, new []{"Facet"});
+                        _logger.LogDebug("Got: " + async.Facet.Title + "/" + async.Label);
                         tagsInFacet.Add(new VerticalResult<Tag>(
-                            await _tagRepository.GetAsync(AmbientContext, y.Value),
+                            async,
                             y.Count
                         ));
                     }

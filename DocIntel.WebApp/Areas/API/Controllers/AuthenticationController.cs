@@ -72,11 +72,6 @@ namespace DocIntel.WebApp.Areas.API.Controllers
         [Produces("application/json", "application/xml")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginInformation login)
         {
-            string req_txt;
-            _logger.LogInformation(HttpContext.Request.ContentLength.ToString());
-            _logger.LogInformation(HttpContext.Request.ContentType);
-            _logger.LogInformation(HttpContext.Request.Headers.ToString());
-            
             _logger.Log(LogLevel.Information,
                 EventIDs.APILoginAttempt,
                 new LogEvent($"Login attempt for user '{login.Username}'.")

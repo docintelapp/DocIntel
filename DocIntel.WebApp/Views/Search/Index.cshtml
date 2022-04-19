@@ -18,11 +18,11 @@
 <form asp-action="Index" asp-controller="Search" id="search-documents" method="GET">
     <div class="row">
         <div class="col-xl-9">
-            <div class="input-group input-group-lg mb-2 shadow-1 rounded">
-                <input type="text" class="form-control shadow-inset-2" id="filter-icon"
+            <div class="input-group input-group-lg mb-2">
+                <input type="text" class="form-control" id="filter-icon"
                        aria-label="type 2 or more letters" placeholder="Search for anything..." value="@Model.SearchTerm" name="SearchTerm"/>
                 <div class="input-group-append">
-                    <button class="btn btn-primary hidden-sm-down waves-effect waves-themed" type="submit">
+                    <button class= "btn btn-pills btn-primary hidden-sm-down waves-effect waves-themed" type="submit">
                         <i class="fal fa-search mr-lg-2"></i><span class="hidden-md-down">Search documents</span>
                     </button>
                 </div>

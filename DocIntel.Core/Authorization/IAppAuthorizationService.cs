@@ -33,6 +33,7 @@ namespace DocIntel.Core.Authorization
         Task<bool> CanSubscribeDocument(ClaimsPrincipal claimsPrincipal, Document document);
         Task<bool> CanAddTagToDocument(ClaimsPrincipal claimsPrincipal, Document document, Tag tag);
         Task<bool> CanRemoveTagFromDocument(ClaimsPrincipal claimsPrincipal, Document document, Tag tag);
+        Task<bool> CanDiscardDocument(ClaimsPrincipal contextClaims, Document document);
         
         Task<bool> CanAddDocumentFile(ClaimsPrincipal claimsPrincipal, Document document);
         Task<bool> CanViewDocumentFile(ClaimsPrincipal claimsPrincipal, DocumentFile document);

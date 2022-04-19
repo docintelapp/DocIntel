@@ -184,6 +184,29 @@ namespace DocIntel.WebApp.Controllers
                     ModelState.AddModelError("file", "You must specify a file.");
                     throw new InvalidArgumentException(ModelState);
                 }
+                catch (FileAlreadyKnownException e)
+                {
+                    ModelState.AddModelError("file",
+                        "The file '" + file.FileName + "' is already known. See document " + e.Document.Title + ".");
+
+                    _logger.Log(LogLevel.Warning, EventIDs.UpdateFileFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' attempted to add an already existing file.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+                    
+                    var allGroups = await _groupRepository.GetAllAsync(AmbientContext).ToListAsync();
+                    ViewBag.OwnGroups = allGroups.Where(_ => currentUser.Memberships.Any(__ => __.GroupId == _.GroupId));
+                    ViewBag.DefaultGroups = _groupRepository.GetDefaultGroups(AmbientContext);
+                    ViewBag.AllGroups = Enumerable.Except(allGroups, ViewBag.DefaultGroups);
+
+                    submittedFile.DocumentId = document.DocumentId;
+                    submittedFile.Document = document;
+
+                    return View(submittedFile);
+                }
                 catch (InvalidArgumentException e)
                 {
                     ModelState.Clear();
@@ -601,7 +624,7 @@ namespace DocIntel.WebApp.Controllers
                 }
                 else
                 {
-                    _logger.LogDebug("File not found at 'filepath'.");
+                    _logger.LogDebug($"File not found at '{filepath}'.");
                     return NotFound();
                 }
 

@@ -15,6 +15,7 @@ $color-fusion:						darken(desaturate(adjust-hue($color-primary, 5), 80%), 25%);
 ========================================================================== */
 /* the grays */
 /* the sapphires */
+/* the sapphires */
 /* the emeralds */
 /* the amethyths */
 /* the topaz */
@@ -254,7 +255,7 @@ aside.page-sidebar ($nav-width, $nav-background)
     background: #eee; }
     #app-eventlog:empty:before {
       content: "Event Logs";
-      font-size: 29px;
+      font-size: 30px;
       font-weight: 300;
       color: #c7c7c7;
       display: -webkit-box;

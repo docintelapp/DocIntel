@@ -19,7 +19,7 @@
             {
                 if (Model.Subscribed.Subscribed)
                 {
-                    <span class="btn btn-primary waves-effect waves-themed btn-iconified">
+                    <span class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                         @if (Model.Subscribed.Notification)
                         {
                             <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-id="@Model.Source.SourceId">
@@ -39,7 +39,7 @@
                 {
                     <a asp-action="Subscribe"
                        asp-route-id="@Model.Source.SourceId"
-                       class="btn btn-primary waves-effect waves-themed btn-iconified">
+                       class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                         <i class="fal fa-bell-slash"></i> Subscribe
                     </a>
                 }
@@ -48,7 +48,7 @@
             {
                 <a asp-action="Unmute"
                    asp-route-id="@Model.Source.SourceId"
-                   class="btn btn-primary waves-effect waves-themed btn-iconified"
+                   class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified"
                    data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
                    title="Documents from a muted source will not appear in your subscriptions (e.g. newsletters and home page). Use the feature to tune down noisy sources.">
                     <i class="fal fa-volume-slash"></i> Muted
@@ -58,7 +58,7 @@
             {
                 <a asp-action="Mute"
                    asp-route-id="@Model.Source.SourceId"
-                   class="btn btn-primary waves-effect waves-themed btn-iconified"
+                   class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified"
                    data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
                    title="Documents from a muted source will not appear in your subscriptions (e.g. newsletters and home page). Use the feature to tune down noisy sources.">
                     <i class="fal fa-volume"></i> Mute
@@ -68,20 +68,20 @@
         <div class="btn-group">
             @if (canEdit)
             {
-                <a asp-action="Edit" asp-route-id="@Model.Source.SourceId" class="btn btn-primary btn-iconified">
+                <a asp-action="Edit" asp-route-id="@Model.Source.SourceId" class= "btn btn-pills btn-primary btn-iconified">
                     <i class="fal fa-edit"></i> Edit
                 </a>
             }
             @if (canMerge)
             {
                 <a asp-action="Merge" asp-route-primarySourceId="@Model.Source.SourceId"
-                   class="btn btn-primary waves-effect waves-themed btn-iconified">
+                   class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                     <i class="fal fa-code-merge"></i> Merge
                 </a>
             }
             @if (canDelete)
             {
-                <a asp-action="Delete" asp-route-id="@Model.Source.SourceId" class="btn btn-primary btn-iconified">
+                <a asp-action="Delete" asp-route-id="@Model.Source.SourceId" class= "btn btn-pills btn-primary btn-iconified">
                     <i class="fal fa-trash-alt"></i> Delete
                 </a>
             }

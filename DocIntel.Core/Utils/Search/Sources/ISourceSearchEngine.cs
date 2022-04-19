@@ -20,5 +20,6 @@ namespace DocIntel.Core.Utils.Search.Sources
     public interface ISourceSearchService
     {
         SourceSearchResults Search(SourceSearchQuery query);
+        SourceSearchResults Suggest(SourceSearchQuery query);
     }
 }

@@ -18,7 +18,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using DocIntel.Core.Authentication;
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
 

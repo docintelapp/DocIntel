@@ -19,7 +19,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -30,29 +30,30 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 
 using DocIntel.Core.Scrapers;
+using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 
 namespace DocIntel.Services.Scraper
 {
     public class ScraperConsumer :
+        DynamicContextConsumer,
         IConsumer<URLSubmittedMessage>
     {
         private readonly IDocumentRepository _documentRepository;
         private readonly IScraperRepository _scraperRepository;
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger _logger;
-        private readonly ApplicationSettings _appSetting;
 
         public ScraperConsumer(IDocumentRepository documentRepository,
             IServiceProvider serviceProvider,
-            ILogger<ScraperConsumer> logger, 
-            IScraperRepository scraperRepository, ApplicationSettings appSetting)
+            ILogger<ScraperConsumer> logger,
+            IScraperRepository scraperRepository, 
+            ApplicationSettings appSettings,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory)
+            : base(appSettings, serviceProvider, userClaimsPrincipalFactory)
         {
             _documentRepository = documentRepository;
-            _serviceProvider = serviceProvider;
             _logger = logger;
             _scraperRepository = scraperRepository;
-            _appSetting = appSetting;
         }
 
         public async Task ConsumeBacklogAsync()
@@ -81,7 +82,7 @@ namespace DocIntel.Services.Scraper
 
             var automationUser = !string.IsNullOrEmpty(registeredBy)
                 ? context.Users.AsNoTracking().FirstOrDefault(_ => _.Id == registeredBy)
-                : context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _appSetting.AutomationAccount);
+                : context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _appSettings.AutomationAccount);
             
             if (automationUser == null)
                 throw new InvalidOperationException("Could not find user to run consumer");

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json.Linq;
@@ -42,6 +43,8 @@ namespace DocIntel.Core.Models
         [DataType(DataType.MultilineText)] public string Description { get; set; }
 
         public string Keywords { get; set; }
+        
+        [DisplayName("Extraction Keywords")] public string ExtractionKeywords { get; set; }
 
         public string BackgroundColor { get; set; }
 
@@ -56,6 +59,7 @@ namespace DocIntel.Core.Models
         [DataType(DataType.DateTime)] public DateTime CreationDate { get; set; }
 
         [DataType(DataType.DateTime)] public DateTime ModificationDate { get; set; }
+        public DateTime LastIndexDate { get; set; }
 
         public ICollection<DocumentTag> Documents { get; } = new List<DocumentTag>();
         public ICollection<UserTagSubscription> SubscribedUser { get; set; }

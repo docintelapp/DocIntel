@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json.Linq;
@@ -27,14 +28,14 @@ namespace DocIntel.Core.Models
     {
         public TagFacet()
         {
-            Id = Guid.NewGuid();
+            FacetId = Guid.NewGuid();
         }
 
-        [Key] public Guid Id { get; set; }
+        [Key] public Guid FacetId { get; set; }
 
         public string Title { get; set; }
 
-        [RegularExpression("([a-zA-Z0-9-]*)", ErrorMessage = "Enter only letters, numbers or dashes.")]
+        [RegularExpression(@"([a-zA-Z0-9-\.]*)", ErrorMessage = "Enter only letters, numbers, dashes or dots.")]
         public string Prefix { get; set; }
 
         [DataType(DataType.MultilineText)] public string Description { get; set; }
@@ -46,6 +47,7 @@ namespace DocIntel.Core.Models
         [DataType(DataType.DateTime)] public DateTime CreationDate { get; set; }
 
         [DataType(DataType.DateTime)] public DateTime ModificationDate { get; set; }
+        public DateTime LastIndexDate { get; set; }
 
         public string CreatedById { get; set; }
 
@@ -60,5 +62,9 @@ namespace DocIntel.Core.Models
         public ICollection<UserFacetSubscription> SubscribedUsers { get; set; }
 
         public ICollection<Tag> Tags { get; set; }
+        
+        [DisplayName("Automated Extraction")] public bool AutoExtract { get; set; }
+        [DisplayName("Extraction Regex")] public string ExtractionRegex { get; set; }
+        public string TagNormalization { get; set; }
     }
 }

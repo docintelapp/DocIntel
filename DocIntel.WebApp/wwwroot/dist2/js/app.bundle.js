@@ -84,7 +84,7 @@ var myapp_config = {
 	/*
 	Color profile reference hook (needed for getting CSS value for theme colors in charts and various graphs)
 	*/
-	mythemeColorProfileID: 'indigo',
+	mythemeColorProfileID: $('#js-color-profile'),
 	/*
 	Nav close and open signs
 	This uses the fontawesome css class

@@ -65,7 +65,7 @@ namespace DocIntel.Core.Services
                     {
                         await Run(cancellationToken);
                     }
-                    catch (TaskCanceledException e)
+                    catch (TaskCanceledException)
                     {
                         _logger.LogInformation("Task was cancelled, exiting.");
                     }
@@ -96,8 +96,9 @@ namespace DocIntel.Core.Services
             }
         }
 
-        protected virtual async Task Init()
+        protected virtual Task Init()
         {
+            return Task.CompletedTask;
         }
 
         protected abstract Task Run(CancellationToken cancellationToken);

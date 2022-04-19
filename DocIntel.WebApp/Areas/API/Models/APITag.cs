@@ -29,6 +29,7 @@ namespace DocIntel.WebApp.Areas.API.Models
         public string Description { get; set; }
 
         public IEnumerable<string> Keywords { get; set; }
+        public IEnumerable<string> ExtractionKeywords { get; set; }
 
         public string BackgroundColor { get; set; }
 

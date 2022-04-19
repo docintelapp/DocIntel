@@ -40,9 +40,10 @@ namespace DocIntel.Services.DocumentAnalyzer
                 .ConfigureLogging(ConfigureLogging)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<AnalyzerConsumer>();
+                    services.AddSingleton<DocumentAnalyzerMessageConsumer>();
                     services.AddHostedService<DocumentAnalyserHostedService>();
-                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly });
+                    services.AddHostedService<DocumentAnalyzerTimedConsumer>();
+                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, runHostedServices: true);
                 })
                 .UseNLog();
         

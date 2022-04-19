@@ -41,6 +41,12 @@ namespace DocIntel.AdminConsole.Commands.Users
             var lastName = GetField(settings, "Last name", settings.LastName);
             var email = GetField(settings, "Email", settings.Email);
 
+            if (string.IsNullOrEmpty(userName))
+            {
+                AnsiConsole.WriteLine("Please specify a non-empty username.");
+                return 1;
+            }
+            
             var user = new AppUser
             {
                 UserName = userName,
@@ -49,6 +55,12 @@ namespace DocIntel.AdminConsole.Commands.Users
                 Email = email,
                 RegistrationDate = DateTime.UtcNow
             };
+
+            if (await _userRepository.Exists(ambientContext, user.UserName))
+            {
+                AnsiConsole.Render(new Markup($"[darkorange]User '{userName}' already exists.[/]\n"));
+                return 0;
+            }
 
             user = await _userRepository.CreateAsync(ambientContext, user, password);
             if (user != null)

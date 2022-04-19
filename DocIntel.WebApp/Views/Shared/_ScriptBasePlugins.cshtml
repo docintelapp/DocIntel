@@ -2,10 +2,12 @@
 <script src="~/dist2/js/app.bundle.js"></script>
 
 <script src="~/dist2/js/formplugins/select2/select2.bundle.js"></script>
-<script src="~/dist2/js/formplugins/summernote/summernote.js"></script>
+<!-- <script src="~/dist2/js/formplugins/summernote/summernote.js"></script> -->
 <script src="~/dist2/js/formplugins/ion-rangeslider/ion-rangeslider.js"></script>
 <script src="~/dist2/js/formplugins/dropzone/dropzone.js"></script>
 <script src="~/dist2/js/formplugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+<script src="~/dist2/js/datagrid/datatables/datatables.bundle.js"></script>
+<script src="~/dist2/js/datagrid/datatables/datatables.export.js"></script>
 
 <script src="~/dist/vendors~main.js"></script>
 <script src="~/dist/main.js"></script>
@@ -52,33 +54,5 @@
             <text>layouts.highContrast('on')</text>
         }
     }
-
-    $(document).ready(function()
-    {
-        DocIntel.initApp();
-        
-        $('.summernote').each(function () {
-            $(this).summernote({
-                height: 200,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture']],
-                    ['view', ['fullscreen', 'codeview', 'help']],
-                ],
-                styleTags: [
-                    'p',
-                    { title: 'Heading 1', tag: 'h2', value: 'h2' },
-                    { title: 'Heading 2', tag: 'h3', value: 'h3' },
-                    { title: 'Heading 3', tag: 'h4', value: 'h4' },
-                    'pre'
-                ],
-            });
-        });
-        
-    });
 
 </script>

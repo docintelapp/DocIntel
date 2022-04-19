@@ -21,28 +21,13 @@ using System.Collections.Generic;
 using DocIntel.Core.Models;
 
 using Microsoft.AspNetCore.Mvc;
+using Synsharp;
 
 namespace DocIntel.WebApp.ViewModels.DocumentViewModel
 {
     public class DocumentObservablesViewModel
     {
-        public Guid DocumentId { get; set; }
-        public string Title { get; set; }
-        public ICollection<DocumentFile> Files { get; set; }
-        public ObservableViewModel[] Observables { get; set; }
-    }
-    
-    public class OTest
-    {
-        public bool IsAccepted { get; set; }
-        public bool IsWhitelisted { get; set; }
-        public ObservableStatus History { get; set; }
-        public Guid Id { get; set; }
-        public ObservableType Type { get; set; }
-        public string Value { get; set; }
-        public ObservableStatus Status { get; set; }
-        public IList<ObservableHash> Hashes { get; set; }
-        public IList<Tag> Tags { get; set; }
-        public ObservableHashType HashType { get; set; }
+        public IList<SynapseObject> Observables { get; set; }
+        public Document Document { get; set; }
     }
 }

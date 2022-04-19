@@ -36,9 +36,9 @@ namespace DocIntel.Services.DocumentAnalyzer
 
         protected override async Task Run(CancellationToken cancellationToken)
         {
-            var runner = _serviceProvider.GetService<AnalyzerConsumer>();
-            if (runner != null) await runner.ConsumeBacklogAsync();
-            else throw new InvalidOperationException("Could not create instance of 'AnalyzerConsumer'");
+            var runner = _serviceProvider.GetService<DocumentAnalyzerMessageConsumer>();
+            if (runner == null)
+                throw new InvalidOperationException("Could not create instance of 'AnalyzerConsumer'");
             await Task.Delay(Timeout.Infinite, cancellationToken);
         }
     }

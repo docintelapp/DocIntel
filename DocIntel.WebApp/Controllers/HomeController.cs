@@ -58,7 +58,7 @@ namespace DocIntel.WebApp.Controllers
             _sourceRepository = sourceRepository;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             var documents = GetFromSubscribedTags(AmbientContext, AmbientContext.CurrentUser, DateTime.Now)
                 .Union(GetFromSubscribedSources(AmbientContext, AmbientContext.CurrentUser, DateTime.Now))

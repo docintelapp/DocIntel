@@ -24,7 +24,7 @@
                     <div class="d-flex flex-row px-3 pt-3 pb-2 show-child-on-hover position-relative">
                         @if (string.IsNullOrEmpty(comment.Author.ProfilePicture))
                         {
-                            <span class="profile-image rounded-circle d-block" style="background-image:url('/images/icons/color/icons8-male-user-48.png'); background-size: cover;"></span>
+                            <span class="profile-image rounded-circle d-block" style="background-image:url('/images/avatar-m.png'); background-size: cover;"></span>
                         }
                         else
                         {
@@ -48,7 +48,7 @@
                                     @if (((comment.Author.Id == ViewBag.CurrentUser.Id) & canDeleteOwnComment) | canDeleteComment)
                                     {
                                         <a asp-action="Delete" asp-controller="Comment" asp-route-id="@comment.CommentId"
-                                           class="btn btn-xs btn-default  waves-effect waves-themed" title="delete">
+                                           class= "btn btn-pills btn-xs btn-default  waves-effect waves-themed" title="delete">
                                             Delete
                                         </a>
                                     }
@@ -56,7 +56,7 @@
                                     @if (((comment.Author.Id == ViewBag.CurrentUser.Id) & canEditOwnComment) | canEditComment)
                                     {
                                         <a asp-action="Update" asp-controller="Comment" asp-route-id="@comment.CommentId"
-                                           class="btn btn-xs btn-default  waves-effect waves-themed" title="delete">
+                                           class= "btn btn-pills btn-xs btn-default  waves-effect waves-themed" title="delete">
                                             Edit
                                         </a>
                                     }
@@ -76,7 +76,7 @@
                     <textarea rows="3" class="form-control rounded-top border-bottom-left-radius-0 border-bottom-right-radius-0 border summernote" 
                         placeholder="write a reply..." name="Body" id="textcomplete"></textarea>
                     <div class="d-flex align-items-center py-2 px-2 bg-white border border-top-0 rounded-bottom bg-primary">
-                        <button type="submit" class="btn btn-success btn-sm waves-effect waves-themed">
+                        <button type="submit" class= "btn btn-pills btn-success btn-sm waves-effect waves-themed">
                             Reply
                         </button>
                     </div>

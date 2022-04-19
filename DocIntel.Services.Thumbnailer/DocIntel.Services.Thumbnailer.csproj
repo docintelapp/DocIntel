@@ -10,35 +10,8 @@
     <ProjectReference Include="..\DocIntel.Core\DocIntel.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="debian\docintel-thumbnailer\**" />
-    <Compile Remove="debian\source\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="debian\docintel-thumbnailer\**" />
-    <EmbeddedResource Remove="debian\source\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="debian\docintel-thumbnailer\**" />
-    <None Remove="debian\source\**" />
-    <None Remove="debian\changelog" />
-    <None Remove="debian\debhelper-build-stamp" />
-    <None Remove="debian\docintel-thumbnailer.substvars" />
-    <None Remove="debian\docintel-thumbnailer.debhelper.log" />
-    <None Remove="debian\docintel-thumbnailer.postrm.debhelper" />
-    <None Remove="debian\docintel-thumbnailer.postinst.debhelper" />
-    <None Remove="debian\docintel-thumbnailer.prerm.debhelper" />
-    <None Remove="debian\files" />
-  </ItemGroup>
-
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
     <Copy SourceFiles="nlog.config" DestinationFolder="$(OutDir)" Condition="Exists('nlog.config')" />
-  </Target>
-
-  <Target Name="PublishCustomContent" AfterTargets="Publish">
-    <Copy SourceFiles="nlog.config" DestinationFolder="$(PublishDir)" Condition="Exists('nlog.config')" />
   </Target>
 
 </Project>

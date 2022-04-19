@@ -1,3 +1,4 @@
+@using DocIntel.Core.Utils.Search.Documents
 @model DocIntel.WebApp.ViewModels.SearchViewModel.DocumentSearchResult
 
 <div class="d-flex flex-row">
@@ -42,7 +43,21 @@
                     @Model.Document.Reference
                 </span>
                 <span class="mr-1">-</span>
-                @Html.Timeago(Model.Document.DocumentDate)
+
+                @{
+                    var sortCriteria = ViewData["SortBy"] as SortCriteria?;
+                }
+                @if(sortCriteria == SortCriteria.Relevance | sortCriteria == SortCriteria.DocumentDate)
+                {
+                    @Html.Timeago(Model.Document.DocumentDate)
+                } else if (sortCriteria == SortCriteria.ModificationDate)
+                {
+                    <text>Modified @Html.Timeago(Model.Document.ModificationDate)</text>
+                }
+                else if (sortCriteria == SortCriteria.RegistrationDate)
+                {
+                    <text>Registered @Html.Timeago(Model.Document.RegistrationDate)</text>
+                }
             </p>
             @if (!string.IsNullOrEmpty(Model.Excerpt))
             {
@@ -52,7 +67,7 @@
             {
                 if (!string.IsNullOrEmpty(Model.Document.ShortDescription))
                 {
-                    <div class="m-0 mt-1 mb-2 color-fusion-50 short-summary">
+                    <div class="m-0 mt-2 mb-2 color-fusion-50 short-summary">
                         @Html.SanitizeAndMap(Model.Document.ShortDescription)
                     </div>
                 }
@@ -63,7 +78,8 @@
             <ul class="list-style-none m-0 p-0">
                 @foreach (var g in Model.Document.DocumentTags.Select(dt => dt.Tag).GroupBy(t => t.Facet).OrderBy(t => t.Key.Title))
                 {
-                    <li class="m-0 mb-1"><strong class="mr-2">@g.Key.Title</strong>
+                    <li class="m-0 mb-1 pl-4">
+                        <strong class="mr-2 fw-500 fs-xs" style="margin-left: -1.5rem !important">@g.Key.Title</strong>
                         @foreach (var tag in g)
                         {
                             <a class="badge badge-pill @tag.BackgroundColor"

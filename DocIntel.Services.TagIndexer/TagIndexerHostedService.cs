@@ -34,19 +34,11 @@ namespace DocIntel.Services.TagIndexer
 
         protected override string WorkerName => "Tag Indexer";
 
-        protected override Task Init()
-        {
-            return Task.CompletedTask;
-        }
-
         protected override Task Run(CancellationToken cancellationToken)
         {
-            var runner = _serviceProvider.GetService<TagIndexer>();
+            var runner = _serviceProvider.GetService<TagIndexerMessageConsumer>();
             if (runner == null)
-            {
-                _logger.LogError("Oups");
                 throw new InvalidOperationException("Could not create instance of 'TagIndexer'");
-            }
             return Task.Delay(Timeout.Infinite, cancellationToken);
         }
     }

@@ -8,7 +8,7 @@
         </li>
     }
     <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
-        <a href="@Url.Page(Model.Page - 1, Model.Parameter)" class="page-link">&laquo;</a>
+        <a href="@Url.Page((int)(Model.Page - 1), Model.Parameter)" class="page-link">&laquo;</a>
     </li>
     @if (Model.PageCount > 10)
     {
@@ -21,7 +21,7 @@
         for (var i = low; i <= high; i++)
         {
             <li class="page-item @(i == Model.Page ? "active" : "")">
-                <a href="@Url.Page(i, Model.Parameter)" class="page-link">@i</a>
+                <a href="@Url.Page((int)i, Model.Parameter)" class="page-link">@i</a>
             </li>
         }
         if (high < Model.PageCount)
@@ -39,12 +39,12 @@
         }
     }
     <li class="page-item  @(Model.Page == Model.PageCount ? "disabled" : "")">
-        <a href="@Url.Page(Model.Page + 1, Model.Parameter)" class="page-link">&raquo;</a>
+        <a href="@Url.Page((int)(Model.Page + 1), Model.Parameter)" class="page-link">&raquo;</a>
     </li>
     @if (Model.Page < Model.PageCount)
     {
         <li class="page-item">
-            <a href="@Url.Page(Model.PageCount, Model.Parameter)" class="page-link">Last</a>
+            <a href="@Url.Page((int)Model.PageCount, Model.Parameter)" class="page-link">Last</a>
         </li>
     }
 </ul>

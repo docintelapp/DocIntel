@@ -1,0 +1,3 @@
+[submodule "synsharp"]
+	path = synsharp
+	url = https://github.com/ancailliau/SynSharp.git

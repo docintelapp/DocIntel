@@ -19,8 +19,8 @@ namespace DocIntel.WebApp.ViewModels.Shared
 {
     public class PaginationViewModel
     {
-        public int Page { get; set; }
-        public int PageCount { get; set; }
+        public long Page { get; set; }
+        public long PageCount { get; set; }
         public string Parameter { get; set; }
     }
 }

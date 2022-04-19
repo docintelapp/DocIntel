@@ -261,7 +261,7 @@ namespace DocIntel.WebApp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Title", "Description", "HomePage", "RSSFeed", "Facebook", "Twitter", "LinkedIn", "Reddit", "Country")]
+            [Bind("Title", "Description", "HomePage", "RSSFeed", "Facebook", "Twitter", "LinkedIn", "Reddit", "Country", "Reliability")]
             Source submittedSource,
             [Bind(Prefix = "MetaData")] Dictionary<string, string> metadata,
             [Bind(Prefix = "logo")] IFormFile logo)
@@ -274,7 +274,7 @@ namespace DocIntel.WebApp.Controllers
 
                 source.Title = submittedSource.Title;
                 source.Description = _sanitizer.Sanitize(submittedSource.Description);
-
+                source.Reliability = submittedSource.Reliability;
                 source.HomePage = submittedSource.HomePage;
                 source.RSSFeed = submittedSource.RSSFeed;
                 source.Facebook = submittedSource.Facebook;

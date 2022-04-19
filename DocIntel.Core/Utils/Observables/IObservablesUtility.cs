@@ -15,59 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Models;
-using DocIntel.Core.Models.STIX;
-using DocIntel.Core.Models.ThreatQuotient;
-using DocIntel.Core.Repositories;
-
-using Relationship = DocIntel.Core.Models.Relationship;
+using Synsharp;
 
 namespace DocIntel.Core.Utils.Observables
 {
     public interface IObservablesUtility
     {
-        Task ExtractObservables(AmbientContext ambientContext, Guid documentId, bool autoApprove = false);
+        /// <summary>
+        /// Extract synapse objects from the content.
+        /// </summary>
+        /// <param name="document">The source document</param>
+        /// <param name="file">The source file</param>
+        /// <param name="content">The text content of the file</param>
+        /// <returns>The objects contained in the text</returns>
+        IAsyncEnumerable<SynapseObject> ExtractDataAsync(Document document, DocumentFile file, string content);
 
-        // TODO Return IAsyncEnumerable
-        Task<IEnumerable<DocumentFileObservables>> ExportObservables(ObservableType ot);
-
-        // TODO Return IAsyncEnumerable
-        Task<IEnumerable<DocumentFileObservables>> DetectObservables(string response,
-            Document document,
-            DocumentFile file,
-            bool autoApprove = false);
-
-        bool RecommendAccepted(ObservableType type, ObservableStatus status, ObservableStatus history);
-
-        // TODO Return IAsyncEnumerable
-        Task<IEnumerable<Relationship>>
-            DetectRelations(IEnumerable<DocumentFileObservables> dfoList, Document document);
-
-        // TODO Return IAsyncEnumerable
-        Task<IEnumerable<DocumentFileObservables>> GetDocumentObservables(Guid documentId,
-            ObservableStatus? status = null);
-
-        // TODO Return IAsyncEnumerable
-        Task<IEnumerable<DocumentFileObservables>> GetDocumentObservables(string value, ObservableType observableType);
-
-        Task<bool> DeleteObservable(Guid observableId);
-        
-        // TODO Move to another package, only for STIX-related code.
-        Task<Bundle> CreateStixBundle(AmbientContext ambientContext, Guid documentId);
-
-        // TODO Move to another package, only for ThreatQuotient-related code.
-        Task<ArrayList> CreateTqExportDocument(AmbientContext ambientContext, Guid documentId);
-
-        // TODO Move to another package, only for ThreatQuotient-related code.
-        Task<ExportObject> CreateTqExport(AmbientContext ambientContext,
-            int pageSize,
-            int page,
-            DateTime dateFrom,
-            DateTime dateTo);
+        /// <summary>
+        /// Annotate the synapse objects with tags.
+        /// 
+        /// For example, <c>_di.workflow.malicious</c>, <c>_di.workflow.legit</c>, <c>_di.workflow.review</c>
+        /// </summary>
+        /// <param name="document">The source document</param>
+        /// <param name="file">The source file</param>
+        /// <param name="objects">The objects</param>
+        Task AnnotateAsync(Document document, DocumentFile file, IEnumerable<SynapseObject> objects);
     }
 }

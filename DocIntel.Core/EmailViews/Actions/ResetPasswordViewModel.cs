@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using DocIntel.Core.Models;
 
 namespace DocIntel.Core.EmailViews.Actions

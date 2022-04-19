@@ -28,7 +28,6 @@ namespace DocIntel.Services.TagIndexer
 {
     internal class Program : DocIntelServiceProgram
     {
-        
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
@@ -41,9 +40,12 @@ namespace DocIntel.Services.TagIndexer
                 .ConfigureLogging(ConfigureLogging)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<TagIndexer>();
+                    services.AddSingleton<TagIndexerMessageConsumer>();
                     services.AddHostedService<TagIndexerHostedService>();
-                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly });
+                    services.AddHostedService<TagIndexerTimedConsumer>();
+                    services.AddHostedService<FacetIndexerHostedService>();
+                    services.AddHostedService<TagFacetIndexerTimedConsumer>();
+                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, runHostedServices: true);
                 })
                 .UseNLog();
     }

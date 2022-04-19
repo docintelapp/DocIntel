@@ -22,12 +22,13 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
-
+using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
+using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
 using DocIntel.Core.Utils.Indexation.SolR;
@@ -62,20 +63,22 @@ using Newtonsoft.Json;
 
 using Npgsql;
 
+using RunMethodsSequentially;
+
 namespace DocIntel.WebApp
 {
     public class Startup
     {
-        private readonly ILoggerFactory _loggerFactory;
+        private readonly IWebHostEnvironment _environment;
         protected ApplicationSettings appSettings = new();
         protected LdapSettings ldapSettings = new();
 
-        public Startup(IConfiguration configuration, ILoggerFactory loggerFactory)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
             Configuration.GetSection("LDAP").Bind(ldapSettings);
             Configuration.Bind(appSettings);
-            _loggerFactory = loggerFactory;
+            _environment = environment;
         }
 
         public IConfiguration Configuration { get; }
@@ -91,13 +94,7 @@ namespace DocIntel.WebApp
                 NullValueHandling = NullValueHandling.Ignore
             };
             
-            services.AddMvc(options =>
-            {
-                // options.ModelBinderProviders.Insert(0, new DelimitedArrayModelBinderProvider());
-                // options.Filters.Add(new AuthorizeFilter(policy));
-
-                // options.Conventions.Add(new ApiExplorerGetsOnlyConvention());
-            });
+            services.AddMvc();
 
             NpgsqlConnection.GlobalTypeMapper.UseJsonNet();
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -122,19 +119,6 @@ namespace DocIntel.WebApp
                 })
                 .AddRazorRuntimeCompilation();
 
-            // services.Configure<RazorViewEngineOptions>(options =>
-            // {
-            //     options.AreaViewLocationFormats.Clear();
-            //     options.AreaViewLocationFormats.Add("/Areas/{2}/Views/{1}/{0}.cshtml");
-            //     options.AreaViewLocationFormats.Add("/Areas/{2}/Views/Shared/{0}.cshtml");
-            //     options.AreaViewLocationFormats.Add("/Views/Shared/{0}.cshtml");
-            // });
-
-            //var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-
-            // services.AddMemoryCache();
-            // services.AddSession();
-            
             services.AddSingleton(Configuration);
             services.AddSingleton(appSettings);
             
@@ -157,10 +141,12 @@ namespace DocIntel.WebApp
             else
             {
                 Console.WriteLine("Uses native authentication");
-                services.AddScoped<SignInManager<AppUser>, AppSignInManager>();
+                services.AddTransient<SignInManager<AppUser>, AppSignInManager>();
+                services.AddTransient<UserManager<AppUser>, AppUserManager>();
 
                 services.AddIdentity<AppUser, AppRole>()
                     .AddSignInManager<AppSignInManager>()
+                    .AddUserManager<AppUserManager>()
                     .AddEntityFrameworkStores<DocIntelContext>()
                     .AddDefaultTokenProviders();
             }
@@ -199,7 +185,6 @@ namespace DocIntel.WebApp
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DocIntelContext>(options =>
             {
-                options.UseLoggerFactory(_loggerFactory);
                 options.EnableSensitiveDataLogging();
                 options.UseNpgsql(connectionString,
                     x =>
@@ -209,16 +194,27 @@ namespace DocIntel.WebApp
                         x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     });
             });
+            
+            var lockFolder = appSettings.LockFolder;
+            if (string.IsNullOrEmpty(lockFolder))
+                lockFolder = "./wwwroot";
+            
+            services.RegisterRunMethodsSequentially(options =>
+            {
+                options.AddPostgreSqlLockAndRunMethods(connectionString);
+                options.AddFileSystemLockAndRunMethods(lockFolder);
+            })
+                .RegisterServiceToRunInJob<MigrateDbContextService>()
+                .RegisterServiceToRunInJob<BaseDataDbService>()
+                .RegisterServiceToRunInJob<InstallSynapseCustomObjects>();
 
             StartupHelpers.RegisterServices(services);
-            StartupHelpers.RegisterSolR(services);
-            StartupHelpers.RegisterElastic(services);
+            StartupHelpers.RegisterSolR(services, appSettings);
+            StartupHelpers.RegisterSynapse(services, appSettings);
 
             services.AddAutoMapper(cfg =>
             {
                 cfg.AddProfile<SolRProfile>();
-                cfg.AddProfile<ElasticProfile>();
-                cfg.AddProfile<ViewModelProfile>();
                 cfg.AddProfile<APIProfile>();
             });
 
@@ -278,8 +274,18 @@ namespace DocIntel.WebApp
             services.AddMassTransit(x =>
             {
                 x.SetKebabCaseEndpointNameFormatter();
-                x.UsingRabbitMq((context, cfg) => { cfg.ConfigureEndpoints(context); });
+                x.UsingRabbitMq((context, cfg) => { 
+                    cfg.Host(appSettings.RabbitMQ.Host, appSettings.RabbitMQ.VirtualHost, h =>
+                    {
+                        h.Username(appSettings.RabbitMQ.Username);
+                        h.Password(appSettings.RabbitMQ.Password);
+                    });
+                    cfg.ConfigureEndpoints(context);
+                    
+                });
             });
+            
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -321,7 +327,7 @@ namespace DocIntel.WebApp
             });
 
             // Must be before UseAuthentication
-            app.UseStatusCodePages(async context =>
+            app.UseStatusCodePages(context =>
             {
                 var request = context.HttpContext.Request;
                 var response = context.HttpContext.Response;
@@ -335,6 +341,7 @@ namespace DocIntel.WebApp
                             new KeyValuePair<string, StringValues>("X-Requested-With", "XMLHttpRequest"))
                     ))
                     response.Redirect("/Account/Login");
+                return Task.CompletedTask;
             });
 
             // Must be after UseRouting but before UseEndpoints
@@ -378,6 +385,11 @@ namespace DocIntel.WebApp
                     "APIArea",
                     "API",
                     "API/{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapAreaControllerRoute(
+                    "SynapseArea",
+                    "Synapse",
+                    "Synapse/{controller=Home}/{action=Index}/{id?}");
 
                 endpoints.MapControllerRoute(
                     "default",

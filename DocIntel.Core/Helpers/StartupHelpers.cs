@@ -15,11 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Authorization.Handlers;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.EFCore;
-using DocIntel.Core.Repositories.ElasticSearch;
+using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
 using DocIntel.Core.Utils.ContentExtraction;
 using DocIntel.Core.Utils.Indexation;
@@ -32,10 +37,9 @@ using DocIntel.Core.Utils.Thumbnail;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
-
-using Nest;
-
 using SolrNet;
+using SolrNet.Impl;
+using Synsharp;
 
 namespace DocIntel.Core.Helpers
 {
@@ -65,25 +69,39 @@ namespace DocIntel.Core.Helpers
         public static void RegisterSearchServices(IServiceCollection services)
         {
             services.AddScoped<ITagSearchService, SolRTagSearchEngine>();
+            services.AddScoped<IFacetSearchService, SolrFacetSearchEngine>();
             services.AddScoped<ISourceSearchService, SolRSourceSearchEngine>();
             services.AddScoped<IDocumentSearchEngine, SolRDocumentSearchEngine>();
         }
-
-        public static void RegisterSolR(IServiceCollection serviceCollection)
+        
+        public static void RegisterSolR(IServiceCollection serviceCollection, ApplicationSettings applicationSettings)
         {
+            var settings = applicationSettings.Solr;
+            var handler = new HttpClientHandler()
+            {
+                AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate),
+                ClientCertificateOptions = ClientCertificateOption.Manual,
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            };
+            
+            if (!string.IsNullOrEmpty(applicationSettings.Proxy))
+                handler.Proxy = new WebProxy()
+                {
+                    Address = new Uri(applicationSettings.Proxy ?? ""),
+                    BypassList = new[] { applicationSettings.NoProxy ?? ""}
+                };
+            
+            var client = new HttpClient(handler);
+            
             // TODO Move strings to configuration
-            serviceCollection.AddSolrNet("http://localhost:8983/solr");
-            serviceCollection.AddSolrNet<IndexedDocument>("http://localhost:8983/solr/document");
-            serviceCollection.AddSolrNet<IndexedTag>("http://localhost:8983/solr/tag");
-            serviceCollection.AddSolrNet<IndexedTagFacet>("http://localhost:8983/solr/facet");
-            serviceCollection.AddSolrNet<IndexedSource>("http://localhost:8983/solr/source");
-        }
-
-        public static void RegisterElastic(IServiceCollection serviceCollection)
-        {
-            var settings = new ConnectionSettings();
-            var elasticClient = new ElasticClient(settings);
-            serviceCollection.AddSingleton(elasticClient);
+            serviceCollection.AddSolrNet($"{settings.Uri}/solr", 
+                null, 
+                (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
+            
+            serviceCollection.AddSolrNet<IndexedDocument>($"{settings.Uri}/solr/document", null, (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
+            serviceCollection.AddSolrNet<IndexedTag>($"{settings.Uri}/solr/tag", null, (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
+            serviceCollection.AddSolrNet<IndexedTagFacet>($"{settings.Uri}/solr/facet", null, (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
+            serviceCollection.AddSolrNet<IndexedSource>($"{settings.Uri}/solr/source", null, (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
         }
 
         /// <summary>
@@ -92,6 +110,17 @@ namespace DocIntel.Core.Helpers
         /// <param name="services">The service collection</param>
         public static void RegisterIndexingServices(IServiceCollection services)
         {
+            // Adds all text transforms, extractors and postprocessors for the observable extraction pipeline.
+            // I'm lazy and I don't want to add them by hand.
+            foreach (Type t in AppDomain.CurrentDomain.GetAssemblies().SelectMany(_ => _.GetTypes())
+                         .Where(p => p.IsClass & !p.IsAbstract & (typeof(ITextTransform).IsAssignableFrom(p) |
+                                     typeof(IExtractor).IsAssignableFrom(p) |
+                                     typeof(IPostProcessor).IsAssignableFrom(p))))
+            {
+                services.AddSingleton(t);
+            }
+            services.AddSingleton<IObservablesUtility, DefaultObservableUtility>();
+            services.AddScoped<DocumentAnalyzerUtility,DocumentAnalyzerUtility>();
             services.AddScoped<IContentExtractionUtility, SolrContentExtractionUtility>();
             services.AddScoped<ISourceIndexingUtility, SolRSourceIndexingUtility>();
             services.AddScoped<IDocumentIndexingUtility, SolRDocumentIndexingUtility>();
@@ -143,11 +172,17 @@ namespace DocIntel.Core.Helpers
             services.AddScoped<IClassificationRepository, ClassificationEFRepository>();
             services.AddScoped<IScraperRepository, ScraperEFRepository>();
             services.AddScoped<IImportRuleRepository, ImportRuleEFRepository>();
-            services.AddScoped<IObservableRepository, ObservableESRepository>();
-            
-            services.AddScoped<IObservablesUtility, ObservablesUtility>();
-            services.AddScoped<IObservablesExtractionUtility, RegexObservablesExtractionUtility>();
-            services.AddScoped<IObservableWhitelistUtility, ObservableWhitelistUtility>();
+        }
+        
+        public static void RegisterSynapse(IServiceCollection services, ApplicationSettings applicationSettings)
+        {
+            services.AddSingleton(applicationSettings.Synapse);
+            services.AddScoped<SynapseClient>(provider =>
+            {
+                var settings = provider.GetRequiredService<SynapseSettings>();
+                return new SynapseClient(settings, provider);
+            });
+            services.AddScoped<ISynapseRepository, SynapseRepository>();
         }
     }
 }

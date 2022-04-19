@@ -164,6 +164,54 @@ namespace DocIntel.Core.Utils.Search.Sources
             }
         }
 
+        public SourceSearchResults Suggest(SourceSearchQuery query)
+        {
+            try
+            {
+                ISolrQuery q;
+                if (!string.IsNullOrEmpty(query.SearchTerms))
+                {
+                    q = new SolrQuery(query.SearchTerms);
+                    _logger.LogDebug("Query search terms: " + ((SolrQuery) q).Query);
+                }
+                else
+                {
+                    q = SolrQuery.All;
+                    _logger.LogDebug("Query all");
+                }
+
+                var queryOptions = new QueryOptions();
+                queryOptions.RequestHandler = new RequestHandlerParameters("/suggest");
+                
+                var results = solr.Query(q, queryOptions);
+
+                var sr = new SourceSearchResults() {TotalHits = results.NumFound};
+                foreach (var r in results)
+                {
+                    sr.Hits.Add(new SourceSearchHit()
+                    {
+                        Source = r
+                    });
+                }
+
+                return sr;
+            }
+            catch (SolrConnectionException e)
+            {
+                _logger.LogError(e.Message);
+                _logger.LogError(e.Url);
+                _logger.LogWarning(e.StackTrace);
+
+                if (e.InnerException is WebException ee)
+                {
+                    var resp = new StreamReader(ee.Response.GetResponseStream()).ReadToEnd();
+                    _logger.LogWarning(resp);
+                }
+
+                throw e;
+            }
+        }
+
         private string BuildFacetQuery(SourceSearchQuery query)
         {
             var queryString = new List<string>();

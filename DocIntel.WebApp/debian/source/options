@@ -1,6 +1,0 @@
-tar-ignore=.git/*
-tar-ignore=bin/*
-tar-ignore=obj/*
-tar-ignore=node_modules/*
-tar-ignore=wwwroot/dist/*
-tar-ignore=wwwroot/lib/*

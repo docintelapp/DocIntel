@@ -161,6 +161,13 @@ namespace DocIntel.Core.Authorization
             return isAuthorized.Succeeded;
         }
 
+        public async Task<bool> CanDiscardDocument(ClaimsPrincipal claimsPrincipal, Document document)
+        {
+            var isAuthorized =
+                await _authorizationService.AuthorizeAsync(claimsPrincipal, document, DocumentOperations.Discard);
+            return isAuthorized.Succeeded;
+        }
+
         public async Task<bool> CanDownloadDocument(ClaimsPrincipal claimsPrincipal, Document document)
         {
             var isAuthorized =

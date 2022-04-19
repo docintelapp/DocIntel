@@ -15,7 +15,7 @@
         <div class="btn-group">
             @if (canEdit)
             {
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary btn-iconified waves-effect waves-themed">
+                <a asp-action="Edit" asp-route-id="@Model.FacetId" class= "btn btn-pills btn-secondary btn-iconified waves-effect waves-themed">
                     <i class="fal fa-edit"></i> Edit
                 </a>
             }
@@ -77,11 +77,11 @@
         </div>
     </div>
 
-    <input type="hidden" asp-for="Id"/>
+    <input type="hidden" asp-for="FacetId"/>
 
     <div class="row">
         <div class="col-md-12">
-            <button type="submit" class="btn btn-danger btn-iconified waves-effect waves-themed">
+            <button type="submit" class= "btn btn-pills btn-danger btn-iconified waves-effect waves-themed">
                 <i class="fal fa-trash-alt"></i> Yes, delete!
             </button>
             <a asp-action="Index" asp-controller="Tag" class="ml-3 text-secondary">No, don't delete!</a>

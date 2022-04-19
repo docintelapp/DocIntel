@@ -50,7 +50,7 @@ namespace DocIntel.WebApp.ViewModels
 
                 var route = Path.GetFileNameWithoutExtension(item.Href ?? string.Empty)?.Split(Underscore);
 
-                item.Route = url.Action(item.Action, item.Controller);
+                item.Route = url.Action(item.Action, item.Controller, new { area = item.Area });
 
                 item.I18n = parent == null
                     ? $"nav.{item.Title.ToLower().Replace(Space, Underscore)}"

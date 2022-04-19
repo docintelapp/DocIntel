@@ -61,7 +61,7 @@ namespace DocIntel.Core.Utils.Search.Documents
             Reliabilities = new List<VerticalResult<SourceReliability>>();
         }
 
-        public int TotalHits { get; internal set; }
+        public long TotalHits { get; internal set; }
         public List<SearchHit> Hits { get; internal set; }
 
         public List<HierarchicalVerticalResult<Guid, Guid>> FacetTags { get; internal set; }

@@ -42,8 +42,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 
-using Nest;
-
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
@@ -306,7 +304,7 @@ namespace DocIntel.WebApp.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ForgotPassword(string username)
+        public IActionResult ForgotPassword(string username)
         {
             _logger.Log(LogLevel.Information,
                 EventIDs.ForgotPasswordRequest,
@@ -571,16 +569,17 @@ namespace DocIntel.WebApp.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
-            var currentUser = await GetCurrentUser();
             await _signInManager.SignOutAsync();
 
-            _logger.Log(LogLevel.Information,
-                EventIDs.LogoutSuccessful,
-                new LogEvent($"User '{currentUser.UserName}' successfully logged out.")
-                    .AddUser(currentUser)
-                    .AddHttpContext(_accessor.HttpContext),
-                null,
-                LogEvent.Formatter);
+            var currentUser = await GetCurrentUser();
+            if (currentUser != null)
+                _logger.Log(LogLevel.Information,
+                    EventIDs.LogoutSuccessful,
+                    new LogEvent($"User '{currentUser.UserName}' successfully logged out.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext),
+                    null,
+                    LogEvent.Formatter);
 
             return RedirectToAction(nameof(Login), "Account");
         }
@@ -719,7 +718,7 @@ namespace DocIntel.WebApp.Controllers
         ///     The view for user's subscriptions.
         /// </returns>
         [HttpGet("Account/Subscriptions")]
-        public async Task<IActionResult> Subscriptions()
+        public IActionResult Subscriptions()
         {
             return View(new SubscriptionViewModel
             {
@@ -900,7 +899,7 @@ namespace DocIntel.WebApp.Controllers
         }
 
         [HttpGet("Account/APIKeys/Create")]
-        public async Task<IActionResult> CreateAPIKey()
+        public IActionResult CreateAPIKey()
         {
             return View();
         }
@@ -1166,7 +1165,7 @@ namespace DocIntel.WebApp.Controllers
 
                 var result = new VerifyAuthenticatorResult
                 {
-                    Status = Status.Success,
+                    Success = true,
                     Message = "Your authenticator app has been verified",
                 };
             

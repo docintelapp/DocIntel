@@ -1,22 +1,18 @@
 ﻿<div class="info-card">
     @if (string.IsNullOrEmpty(ViewBag.CurrentUser.ProfilePicture))
     {
-        <img alt="" class="profile-image rounded-circle" src="~/images/icons/color/icons8-male-user-48.png"/>
+        <img alt="" class="profile-image rounded-circle" src="~/images/avatar-m.png"/>
     }
     else
     {
-        <img alt="" class="profile-image rounded-circle" src="@Url.Action("ProfilePicture", "Account", new {userName = ViewBag.CurrentUser.UserName})"/>
+        <img alt="" class="profile-image rounded-circle" src="@Url.Action("ProfilePicture", "Account", new { area = "", userName = ViewBag.CurrentUser.UserName})"/>
     }
     <div class="info-card-text">
-        <a asp-controller="User" asp-action="Profile" asp-route-username="@ViewBag.CurrentUser.UserName" title="@ViewBag.CurrentUser.FriendlyName" class="d-flex align-items-center text-white">
+        <a asp-controller="User" asp-action="Profile" asp-area="" asp-route-username="@ViewBag.CurrentUser.UserName" title="@ViewBag.CurrentUser.FriendlyName" class="d-flex align-items-center mb-1">
             <span class="text-truncate text-truncate-sm d-inline-block">
                 @ViewBag.CurrentUser.FriendlyName
             </span>
         </a>
         <span class="d-inline-block text-truncate text-truncate-sm">@ViewBag.CurrentUser.Function</span>
     </div>
-    <img src="~/dist2/img/card-backgrounds/cover-covid-lg.png" class="cover" alt="cover">
-    <a href="#" onclick="return false;" class="pull-trigger-btn" data-action="toggle" data-class="list-filter-active" data-target=".page-sidebar" data-focus="nav_filter_input">
-        <i class="fal fa-angle-down"></i>
-    </a>
 </div>

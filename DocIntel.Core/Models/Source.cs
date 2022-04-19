@@ -53,6 +53,7 @@ namespace DocIntel.Core.Models
         [DataType(DataType.Date)] public DateTime CreationDate { get; set; }
 
         [DataType(DataType.Date)] public DateTime ModificationDate { get; set; }
+        public DateTime LastIndexDate { get; set; }
 
         public AppUser RegisteredBy { get; set; }
         public string RegisteredById { get; set; }

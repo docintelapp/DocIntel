@@ -20,7 +20,7 @@
                             <a asp-controller="User" asp-action="Profile" asp-route-username="@user.UserName" class="text-center p-3 d-flex flex-column hover-highlight">
                                 @if (string.IsNullOrEmpty(user.ProfilePicture))
                                 {
-                                    <span class="profile-image rounded-circle d-block m-auto" style="background-image:url('/images/icons/color/icons8-male-user-48.png'); background-size: cover;"></span>
+                                    <span class="profile-image rounded-circle d-block m-auto" style="background-image:url('/images/avatar-m.png'); background-size: cover;"></span>
                                 }
                                 else
                                 {

@@ -119,8 +119,8 @@ namespace DocIntel.Core.Scrapers
 
             // TODO Move automation username to configuration
             var automationUser = !string.IsNullOrEmpty(registeredBy)
-                ? context.Users.FirstOrDefault(_ => _.Id == registeredBy)
-                : context.Users.FirstOrDefault(_ => _.UserName == "automation");
+                ? context.Users.AsNoTracking().FirstOrDefault(_ => _.Id == registeredBy)
+                : context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == "automation");
             if (automationUser == null)
                 return null;
 
@@ -259,12 +259,12 @@ namespace DocIntel.Core.Scrapers
             Tag tag;
             try
             {
-                tag = await _tagRepository.GetAsync(context, facet.Id, tagName);
+                tag = await _tagRepository.GetAsync(context, facet.FacetId, tagName);
             }
             catch (NotFoundEntityException)
             {
                 _logger.LogWarning("Creating new tag " + tagName + " for facet " + facet.Prefix);
-                tag = await _tagRepository.CreateAsync(context, new Tag {FacetId = facet.Id, Label = tagName});
+                tag = await _tagRepository.CreateAsync(context, new Tag {FacetId = facet.FacetId, Label = tagName});
             }
 
             tagCache.Add(label, tag);

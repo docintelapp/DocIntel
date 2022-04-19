@@ -26,14 +26,14 @@
             @if (canEdit)
             {
                 <a asp-action="Edit" asp-route-id="@Model.GroupId"
-                   class="btn btn-primary waves-effect waves-themed">
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
                     <i class="fal fa-edit mr-1"></i> Edit
                 </a>
             }
             @if (canDelete)
             {
                 <a asp-action="Delete" asp-route-id="@Model.GroupId"
-                   class="btn btn-primary waves-effect waves-themed">
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
                     <i class="fal fa-trash mr-1"></i> Delete
                 </a>
             }
@@ -95,7 +95,7 @@
                                 <td>@t.User.UserName</td>
                                 <td>@t.User.Email</td>
                                 <td>
-                                    <a class="btn btn-xs btn-default waves-effect waves-themed" asp-action="RemoveMember" asp-route-userId="@t.UserId" asp-route-groupId="@Model.GroupId">Remove</a>
+                                    <a class= "btn btn-pills btn-xs btn-default waves-effect waves-themed" asp-action="RemoveMember" asp-route-userId="@t.UserId" asp-route-groupId="@Model.GroupId">Remove</a>
                                 </td>
                             </tr>
                         }
@@ -119,7 +119,7 @@
                                 </div>
                                 <div class="col">
                                     <div class="form-group">
-                                        <button type="submit" id="save-btn" class="btn btn-success waves-effect waves-themed btn-iconified">
+                                        <button type="submit" id="save-btn" class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified">
                                             <i class="fal fa-plus"></i> Add User
                                         </button>
                                     </div>

@@ -30,7 +30,7 @@ namespace DocIntel.Core.Utils.Search.Sources
             Hits = new List<SourceSearchHit>();
         }
 
-        public int TotalHits { get; internal set; }
+        public long TotalHits { get; internal set; }
 
         public List<SourceSearchHit> Hits { get; internal set; }
         public List<VerticalResult<SourceReliability>> Reliabilities { get; set; }

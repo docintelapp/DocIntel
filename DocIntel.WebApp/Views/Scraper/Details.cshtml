@@ -16,18 +16,18 @@
             @if (canEdit)
             {
                 <a asp-action="Configure" asp-route-id="@Model.ScraperId"
-                   class="btn btn-primary waves-effect waves-themed">
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
                     <i class="fal fa-sliders-h-square mr-1"></i> Configure
                 </a>
                 <a asp-action="Edit" asp-route-id="@Model.ScraperId"
-                   class="btn btn-primary waves-effect waves-themed">
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
                     <i class="fal fa-edit mr-1"></i> Edit
                 </a>
             }
             @if (canEdit)
             {
                 <a asp-action="Delete" asp-route-id="@Model.ScraperId"
-                   class="btn btn-primary waves-effect waves-themed">
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
                     <i class="fal fa-trash mr-1"></i> Delete
                 </a>
             }

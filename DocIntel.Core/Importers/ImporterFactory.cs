@@ -84,18 +84,18 @@ namespace DocIntel.Core.Importers
             return await CreateImporter(importer, type, serviceProvider, context);
         }
         
-        public static async Task<IImporter> CreateImporter(Importer importer, Type type, IServiceProvider serviceProvider, AmbientContext context)
+        public static Task<IImporter> CreateImporter(Importer importer, Type type, IServiceProvider serviceProvider, AmbientContext context)
         {
             var logger = (ILogger) serviceProvider.GetService(typeof(ILogger<>).MakeGenericType(type));
             
-            var instance = (IImporter) Activator.CreateInstance(type, args: new object?[] { serviceProvider, importer });
+            var instance = (IImporter) Activator.CreateInstance(type, serviceProvider, importer);
 
             FillProperties<string>(_ => _?.ToString(), type, importer, instance, logger);
             FillProperties<bool>(bool.Parse, type, importer, instance, logger);
             FillProperties<int>(int.Parse, type, importer, instance, logger);
             FillProperties<double>(double.Parse, type, importer, instance, logger);
 
-            return instance;
+            return Task.FromResult(instance);
         }
 
         private static void FillProperties<T>(Func<string, T> convert, Type importerType, Importer importer,

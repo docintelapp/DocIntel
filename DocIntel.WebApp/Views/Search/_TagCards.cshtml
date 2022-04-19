@@ -11,7 +11,7 @@
             var selected = t.Tags.Any(x => Model.SelectedTags.Any(_ => _.Label == x.Value.Label));
             <div class="card">
                 <div class="card-header">
-                    <a href="javascript:void(0);" class="card-title @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#@("collapse" + catId)" aria-expanded="false">
+                    <a href="javascript:void(0);" class="card-title fs-md @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#@("collapse" + catId)" aria-expanded="false">
                         @t.Title
                         @if(selected)
                         {
@@ -23,7 +23,7 @@
                 </div>
                 <div id="@("collapse" + catId)" class="@(!selected ? "collapse" : "")" aria-labelledby="@("heading" + catId)" data-parent="#accordion_tags">
                     <div class="card-body">
-                        @foreach (var item in t.Tags.Where(_ => _.Value != null))
+                        @foreach (var item in t.Tags.Where(_ => _.Value != null).OrderByDescending(_ => _.Count))
                         {
                             var label = item.Value.Label;
                             <div class="custom-control custom-checkbox mb-1">
@@ -31,7 +31,7 @@
                                        checked="@Model.SelectedTags.Any(_ => _.Label == item.Value.Label)"
                                        name="tags" value="@item.Value.TagId">
                                 <label class="custom-control-label" for="tag-@item.Value.TagId" style="max-width: 80%">
-                                    <span class="badge badge-pill text-truncate @item.Value.BackgroundColor" style="max-width: 100%">
+                                    <span title="@item.Count @Html.Pluralize("document", item.Count)" class="badge badge-pill text-truncate @item.Value.BackgroundColor" style="max-width: 100%">
                                         @label
                                     </span>
                                 </label>

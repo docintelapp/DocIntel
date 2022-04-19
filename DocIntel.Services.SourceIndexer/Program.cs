@@ -16,15 +16,12 @@
 */
 
 using System.Reflection;
-
 using DocIntel.Core.Services;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
 using NLog.Web;
 
-namespace DocIntel.RabbitMQSourceIndexer
+namespace DocIntel.Services.SourceIndexer
 {
     internal class Program : DocIntelServiceProgram
     {
@@ -40,9 +37,10 @@ namespace DocIntel.RabbitMQSourceIndexer
                 .ConfigureLogging(ConfigureLogging)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<SourceIndexer>();
+                    services.AddSingleton<SourceIndexerMessageConsumer>();
                     services.AddHostedService<SourceIndexerHostedService>();
-                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly });
+                    services.AddHostedService<SourceIndexerTimedConsumer>();
+                    ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, true);
                 })
                 .UseNLog();
     }

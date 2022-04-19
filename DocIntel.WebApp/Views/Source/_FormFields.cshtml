@@ -39,7 +39,14 @@
                     <div class="form-group">
                         <label class="control-label">Logo</label>
                         <div class="border thumbnail mt-2 mb-4">
-                            <img src="@Url.Action("Logo", "Source", new {id = Model.SourceId})?v=@(((DateTimeOffset)Model.ModificationDate).ToUnixTimeSeconds())" width="100%"/>
+                            @if (Model.ModificationDate == DateTime.MinValue)
+                            {
+                                <img src="@Url.Action("Logo", "Source", new { id = Model.SourceId })" width="100%"/>    
+                            }
+                            else
+                            {
+                            <img src="@Url.Action("Logo", "Source", new { id = Model.SourceId })?v=@(((DateTimeOffset)Model.ModificationDate).ToUnixTimeSeconds())" width="100%"/>   
+                            }
                         </div>
                         <input type="file" name="logo" class="form-control-file"/>
                     </div>

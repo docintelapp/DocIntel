@@ -34,3 +34,41 @@
     <small class="form-text text-muted">Tags from hidden facets are not displayed in document search results.</small>
     <span asp-validation-for="Hidden" class="text-danger"></span>
 </div>
+
+<div class="form-group">
+    <div class="custom-control custom-switch">
+        @Html.CheckBoxFor(_ => _.AutoExtract, new {@class = "custom-control-input"})
+        <label class="custom-control-label" asp-for="AutoExtract"></label>
+    </div>
+    <small class="form-text text-muted">Automatically extract tags matching a tag label or a tag extraction keyword.
+        If the facet contains many tags, performance of document pre-processing is impacted.</small>
+    <span asp-validation-for="Hidden" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="ExtractionRegex" class="control-label"></label>
+    <input asp-for="ExtractionRegex" class="form-control"/>
+    <span asp-validation-for="ExtractionRegex" class="text-danger"></span>
+    <small class="form-text text-muted">
+        Extraction regex allows the pre-processing step to create new tag in the facet if it matches the regex. 
+        For example <code>(T[0-9]{4}(\.[0-9]{3})?)</code> extracts MITRE ATT&amp;CK techniques.
+        Leave empty to avoid creating automatically new tags.
+    </small>
+</div>
+
+<div class="form-group">
+    <label asp-for="TagNormalization" class="control-label">Label Normalization</label>
+    <select name="TagNormalization" class="form-control">
+        <option value="" selected="@((Model?.TagNormalization ?? "") == "" ? "selected": null)">None</option>
+        <option value="camelize" selected="@((Model?.TagNormalization ?? "") == "camelize" ? "selected": null)">Camelize</option>
+        <option value="capitalize" selected="@((Model?.TagNormalization ?? "") == "capitalize" ? "selected": null)">Capitalize</option>
+        <option value="downcase" selected="@((Model?.TagNormalization ?? "") == "downcase" ? "selected": null)">Downcase</option>
+        <option value="handleize" selected="@((Model?.TagNormalization ?? "") == "handleize" ? "selected": null)">Handleize</option>
+        <option value="upcase" selected="@((Model?.TagNormalization ?? "") == "upcase" ? "selected": null)">Upcase</option>
+    </select>
+    <span asp-validation-for="TagNormalization" class="text-danger"></span>
+    <small class="form-text text-muted">
+        You can apply a transformation to the tag labels. This is helpful to void duplicates like <code>apt28</code>
+        and <code>APT28</code>. The transform are described in details <a href="https://shopify.dev/api/liquid/filters#string-filters">here</a>.
+    </small>
+</div>

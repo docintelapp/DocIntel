@@ -24,20 +24,12 @@ namespace DocIntel.Core.Utils.Indexation.SolR
     public class IndexedTagFacet
     {
         [SolrUniqueKey("id")] public Guid FacetId { get; set; }
-
-        [SolrField("facet_title_txt_en")] public string Title { get; set; }
-
-        [SolrField("facet_description_txt_en")]
-        public string Description { get; set; }
-
-        [SolrField("facet_prefix_txt_en")] public string Prefix { get; set; }
-
-        [SolrField("creation_dt")] public DateTime CreationDate { get; set; }
-
-        [SolrField("modification_dt")] public DateTime ModificationDate { get; set; }
-
-        [SolrField("created_by_id_s")] public string CreatedById { get; set; }
-
-        [SolrField("modified_by_id_s")] public string LastModifiedById { get; set; }
+        [SolrField("title")] public string Title { get; set; }
+        [SolrField("description")] public string Description { get; set; }
+        [SolrField("prefix")] public string Prefix { get; set; }
+        [SolrField("creation_date")] public DateTime CreationDate { get; set; }
+        [SolrField("modification_date")] public DateTime ModificationDate { get; set; }
+        [SolrField("created_by_id")] public string CreatedById { get; set; }
+        [SolrField("modified_by_id")] public string LastModifiedById { get; set; }
     }
 }

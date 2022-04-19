@@ -39,6 +39,7 @@ namespace DocIntel.Core.Repositories.Query
         public DateTime RegisteredAfter { get; set; }
 
         public Guid? DocumentId { get; set; }
+        public Guid[] DocumentIds { get; set; }
         public int Page { get; set; } = 0;
         public int Limit { get; set; } = 10;
         public string Reference { get; set; }

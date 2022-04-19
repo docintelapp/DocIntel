@@ -1,13 +1,12 @@
 @using DocIntel.Core.Settings
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Options
-@using Nest
 @model DocIntel.WebApp.ViewModels.Account.VerifyAuthenticatorResult
 @inject ApplicationSettings _settings
 @inject IOptions<PasswordOptions> _passwordOptions
 
 @{
-    if (Model.Status == Status.Success)
+    if (Model.Success)
     {
         ViewData["Title"] = "Multi-factor authentication enabled";   
     }
@@ -20,7 +19,7 @@
 <div class="row justify-content-center">
     <div class="col-4">
                     
-    @if (Model.Status == Status.Success)
+    @if (Model.Success)
     {
         <div id="panel-basic" class="panel mt-4">
             <div class="panel-container">
@@ -32,7 +31,7 @@
                     @if (Model.Data != null && Model.Data.Any())
                     {
                         <p class="mt-3">Copy and save your recovery codes:</p>
-                        <ul>
+                        <ul class="list-unstyled">
                             @foreach (var rc in Model.Data)
                             {
                                 <li>@rc</li>

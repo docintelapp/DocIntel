@@ -1,0 +1,25 @@
+@using DocIntel.WebApp.Helpers
+@model Synsharp.SynapseObject
+
+<div id="panel-registration-info" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Metadata
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content pb-2">
+            <dl class="row mb-0">
+                <dt class="col-sm-6">
+                    Created
+                </dt>
+                <dd class="col-sm-6">
+                    @Html.Timeago(Model.Created)
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>

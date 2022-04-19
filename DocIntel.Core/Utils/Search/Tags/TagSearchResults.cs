@@ -27,18 +27,7 @@ namespace DocIntel.Core.Utils.Search.Tags
             Hits = new List<TagSearchHit>();
         }
 
-        public int TotalHits { get; internal set; }
+        public long TotalHits { get; internal set; }
         public List<TagSearchHit> Hits { get; internal set; }
-    }
-    public class TagFacetSearchResults
-    {
-        public TagFacetSearchResults()
-        {
-            TotalHits = 0;
-            Hits = new List<TagFacetSearchHit>();
-        }
-
-        public int TotalHits { get; internal set; }
-        public List<TagFacetSearchHit> Hits { get; internal set; }
     }
 }

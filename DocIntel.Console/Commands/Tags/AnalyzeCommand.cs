@@ -1,0 +1,97 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+
+using DocIntel.Console.Commands.Observables;
+using DocIntel.Core.Models;
+using DocIntel.Core.Repositories;
+using DocIntel.Core.Repositories.Query;
+using DocIntel.Core.Settings;
+using DocIntel.Core.Utils;
+using DocIntel.Core.Utils.ContentExtraction;
+using DocIntel.Core.Utils.Features;
+using DocIntel.Core.Utils.Observables;
+using DotLiquid;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using Spectre.Console;
+using Spectre.Console.Cli;
+
+namespace DocIntel.Console.Commands.Tags
+{
+    public class  AnalyzeTagsCommand : DocIntelCommand<AnalyzeTagsCommand.Settings>
+    {
+        private readonly ILogger<AnalyzeTagsCommand> _logger;
+        private readonly ITagRepository _tagRepository;
+        private readonly ITagFacetRepository _facetRepository;
+        private readonly IDocumentRepository _documentRepository;
+        private readonly IContentExtractionUtility _contentExtractionUtility;
+
+        public AnalyzeTagsCommand(DocIntelContext context,
+            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            ApplicationSettings applicationSettings,
+            ILogger<AnalyzeTagsCommand> logger,
+            ITagRepository tagRepository,
+            ITagFacetRepository facetRepository,
+            IDocumentRepository documentRepository,
+            IContentExtractionUtility contentExtractionUtility) : base(context,
+            userClaimsPrincipalFactory, applicationSettings)
+        {
+            _logger = logger;
+            _tagRepository = tagRepository;
+            _facetRepository = facetRepository;
+            _documentRepository = documentRepository;
+            _contentExtractionUtility = contentExtractionUtility;
+        }
+
+        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+        {
+            if (!TryGetAmbientContext(out var ambientContext))
+                return 1;
+
+            var doc = await _documentRepository.GetAsync(ambientContext, (Guid)settings.DocumentId, new [] {"DocumentTags", "Files"});
+
+            foreach (var f in doc.Files)
+            {
+                var text = _contentExtractionUtility.ExtractText(doc, f);
+                _logger.LogDebug($"Checking '{f.Filename}' from '{doc.Title}' (length: {text.Length})");
+                AnsiConsole.Write(new Markup($"[b yellow]Analyzing '{f.Filename}' from '{doc.Title}'[/]\n"));
+
+                var facets = await _facetRepository.GetAllAsync(ambientContext, new FacetQuery(), new string[] { "Tags" }).ToListAsync();
+
+                foreach (var facet in facets)
+                {
+                    var extractor = new TagFacetFeatureExtractor(facet);
+                    var patternMatches = extractor.Extract(text);
+
+                    if (!string.IsNullOrEmpty(facet.TagNormalization))
+                    {
+                        var labelTemplate = Template.Parse("{{label | " + facet.TagNormalization + "}}");
+                        patternMatches = patternMatches.Select(_ => labelTemplate.Render(Hash.FromAnonymousObject(new { label = _ }))).Distinct();
+                    }
+                    
+                    if (patternMatches.Count() > 0)
+                        AnsiConsole.Write(new Markup($"[b]{facet.Title}:[/] " + string.Join(",", patternMatches) + "\n"));    
+                }
+            }
+            
+            return 0;
+        }
+
+        public class Settings : DocIntelCommandSettings
+        {
+            [CommandArgument(0, "<DocumentId>")]
+            [Description("DocumentId")]
+            public Guid DocumentId { get; set; }
+        }
+    }
+}

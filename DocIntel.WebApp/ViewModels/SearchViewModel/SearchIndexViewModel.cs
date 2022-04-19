@@ -54,13 +54,13 @@ namespace DocIntel.WebApp.ViewModels.SearchViewModel
         public IEnumerable<VerticalResult<AppUser>> Registrants { get; set; }
         public IEnumerable<AppUser> SelectedRegistrants { get; set; }
 
-        public int DocumentCount { get; set; }
+        public long DocumentCount { get; set; }
 
         public TimeSpan Elapsed { get; set; }
 
         public int Page { get; set; }
 
-        public int PageCount { get; set; }
+        public long PageCount { get; set; }
 
         public int PageSize { get; set; }
 

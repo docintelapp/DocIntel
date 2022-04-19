@@ -35,5 +35,8 @@ namespace DocIntel.WebApp.Areas.API.Models
 
         public APIAppUser CreatedBy { get; set; }
         public APIAppUser LastModifiedBy { get; set; }
+        public string ExtractionRegex { get; set; }
+        public bool AutoExtract { get; set; }
+        public string TagNormalization { get; set; }
     }
 }

@@ -52,7 +52,7 @@ namespace DocIntel.Core.Importers
                 (ILogger<DocIntelContext>) _serviceProvider.GetService(typeof(ILogger<DocIntelContext>)));
 
             // TODO Moves the name of the default automation user to the application configuration.
-            var automationUser = context.Users.FirstOrDefault(_ => _.UserName == "automation");
+            var automationUser = context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == "automation");
             if (automationUser == null)
                 return null;
 

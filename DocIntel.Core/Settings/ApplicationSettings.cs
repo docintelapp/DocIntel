@@ -16,6 +16,7 @@
 */
 
 using System;
+using Synsharp;
 
 namespace DocIntel.Core.Settings
 {
@@ -35,11 +36,14 @@ namespace DocIntel.Core.Settings
         public string NoProxy { get; set; }
         
         public string AutomationAccount { get; set; } = "automation";
-        public ElasticSettings ElasticSearch { get; set; } = new ElasticSettings();
-        public LdapSettings LDAP { get; set; }
-        public EmailSettings Email { get; set; }
+        public SolrSettings Solr { get; set; } = new ();
+        public LdapSettings LDAP { get; set; } = new();
+        public SynapseSettings Synapse { get; set; } = new();
+        public EmailSettings Email { get; set; } = new();
+        public RabbitMQSettings RabbitMQ { get; set; } = new();
 
         public string AuthenticationMethod { get; set; }
+        public string LockFolder { get; set; }
     }
 
     public class MFASettings
@@ -47,8 +51,16 @@ namespace DocIntel.Core.Settings
         public string TwoFactorSecretCode { get; set; }
     }
 
-    public class ElasticSettings
+    public class RabbitMQSettings
     {
-        public string Uri { get; set; } = "localhost:9200";
+        public string Host { get; set; } = "localhost";
+        public string VirtualHost { get; set; } = "/";
+        public string Username { get; set; } = "guest";
+        public string Password { get; set; } = "guest";
+    }
+
+    public class SolrSettings
+    {
+        public string Uri { get; set; } = "http://localhost:8983";
     }
 }

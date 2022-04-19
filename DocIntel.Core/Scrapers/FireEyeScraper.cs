@@ -75,7 +75,6 @@ namespace DocIntel.Core.Scrapers
                 if (match.Success)
                 {
                     var reportId = match.Groups[1].ToString();
-                    Document document;
                     var exists = await _documentRepository.ExistsAsync(context, new DocumentQuery
                     {
                         ExternalReference = reportId
@@ -99,7 +98,6 @@ namespace DocIntel.Core.Scrapers
                 if (match.Success)
                 {
                     var reportId = match.Groups[1].ToString();
-                    Document document;
                     var exists = await _documentRepository.ExistsAsync(context, new DocumentQuery
                     {
                         ExternalReference = reportId

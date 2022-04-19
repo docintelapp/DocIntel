@@ -52,7 +52,9 @@ namespace DocIntel.Core.Importers
             _settings = (ApplicationSettings) serviceProvider.GetService(typeof(ApplicationSettings));
             _importer = importer;
         }
+#pragma warning disable CS1998
         public override async IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit)
+#pragma warning restore CS1998
         {
             _logger.LogDebug(
                 $"Pulling {this.GetType().FullName} from {(lastPull?.ToString() ?? "(not date)")} but max {limit} documents.");
@@ -61,7 +63,7 @@ namespace DocIntel.Core.Importers
             {
                 WebProxy webProxy = null;
                 if (!string.IsNullOrEmpty(_settings.Proxy))
-                    webProxy = new WebProxy("http://" + _settings.Proxy + "/", true, new string[] {_settings.NoProxy});
+                    webProxy = new WebProxy(_settings.Proxy, true, new[] {_settings.NoProxy});
                 var client = webProxy != null ? new APIClient(Username, APIKey, webProxy) : new APIClient(Username, APIKey);
                 var reports = client.Reports.GetReports(lastPull != null
                     ? new ReportFilter()

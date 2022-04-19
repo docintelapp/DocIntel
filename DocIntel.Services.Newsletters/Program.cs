@@ -40,7 +40,7 @@ namespace DocIntel.Services.Newsletters
                 {
                     services.AddSingleton<NewsletterSender>();
                     services.AddHostedService<EmailNotificationHostedService>();
-                    ConfigureService(hostContext, services);
+                    ConfigureService(hostContext, services, runHostedServices: true);
                 })
                 .UseNLog();
     }

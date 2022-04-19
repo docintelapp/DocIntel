@@ -21,5 +21,6 @@ namespace DocIntel.Core.Repositories.Query
     {
         public string Prefix { get; set; }
         public bool? Mandatory { get; set; }
+        public bool? AutoExtract { get; set; }
     }
 }

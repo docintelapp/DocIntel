@@ -60,8 +60,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
         private readonly ITagFacetRepository _facetRepository;
         private readonly ILogger<DocumentController> _logger;
         private readonly IMapper _mapper;
-        private readonly IObservableRepository _observableRepository;
-        private readonly IObservablesUtility _observablesUtility;
+        private readonly ISynapseRepository _synapseRepository;
         private readonly ISourceRepository _sourceRepository;
         private readonly ITagRepository _tagRepository;
 
@@ -73,11 +72,10 @@ namespace DocIntel.WebApp.Areas.API.Controllers
             ILogger<DocumentController> logger,
             IMapper mapper,
             IHttpContextAccessor accessor,
-            IObservableRepository observableRepository,
             ITagRepository tagRepository,
             ISourceRepository sourceRepository,
             ITagFacetRepository facetRepository,
-            IObservablesUtility observablesUtility,
+            ISynapseRepository synapseRepository,
             IClassificationRepository classificationRepository,
             ICommentRepository commentRepository, IHttpContextAccessor httpContextAccessor)
             : base(userManager, context)
@@ -90,8 +88,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
             _tagRepository = tagRepository;
             _facetRepository = facetRepository;
             _commentRepository = commentRepository;
-            _observablesUtility = observablesUtility;
-            _observableRepository = observableRepository;
+            _synapseRepository = synapseRepository;
             _sourceRepository = sourceRepository;
             _classificationRepository = classificationRepository;
         }
@@ -930,7 +927,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
             try
             {
                 var trackingEntity = await _documentRepository.RemoveAsync(AmbientContext, documentId);
-                await _observableRepository.DeleteAllObservables(documentId);
+                await _synapseRepository.RemoveRefs(documentId);
                 await _context.SaveChangesAsync();
 
                 _logger.Log(LogLevel.Information,
@@ -1038,12 +1035,12 @@ namespace DocIntel.WebApp.Areas.API.Controllers
             {
                 Mandatory = true
             }).ToEnumerable();
-            var mandatoryIds = mandatoryFacets.Select(_ => _.Id).ToHashSet();
+            var mandatoryIds = mandatoryFacets.Select(_ => _.FacetId).ToHashSet();
             var facetsPresents = filteredTags.Select(_ => _.FacetId).ToHashSet();
 
             if (mandatoryIds.Except(facetsPresents).Any())
             {
-                var values = mandatoryFacets.Where(_ => !facetsPresents.Contains(_.Id)).Select(_ => _.Title);
+                var values = mandatoryFacets.Where(_ => !facetsPresents.Contains(_.FacetId)).Select(_ => _.Title);
                 var str = (values.Count() > 1 ? "Facets " : "The facet ") + string.Join(", ", values) +
                           (values.Count() > 1 ? " are " : " is ") + " mandatory.";
                 ModelState.AddModelError("Tags", str);
@@ -1081,11 +1078,11 @@ namespace DocIntel.WebApp.Areas.API.Controllers
             Tag tag;
             try
             {
-                tag = await _tagRepository.GetAsync(AmbientContext, facet.Id, tagName);
+                tag = await _tagRepository.GetAsync(AmbientContext, facet.FacetId, tagName);
             }
             catch (NotFoundEntityException)
             {
-                tag = await _tagRepository.CreateAsync(AmbientContext, new Tag {FacetId = facet.Id, Label = tagName});
+                tag = await _tagRepository.CreateAsync(AmbientContext, new Tag {FacetId = facet.FacetId, Label = tagName});
             }
 
             return tag;

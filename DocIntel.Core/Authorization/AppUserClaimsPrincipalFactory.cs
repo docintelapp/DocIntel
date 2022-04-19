@@ -15,76 +15,133 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using DocIntel.Core.Models;
+using DocIntel.Core.Repositories;
+using DocIntel.Core.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace DocIntel.Core.Authorization
 {
     public class AppUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<AppUser, AppRole>
     {
-        private readonly DocIntelContext _context;
-
+        private readonly IServiceProvider _serviceProvider;
+        
+        
         public AppUserClaimsPrincipalFactory(
             UserManager<AppUser> userManager,
             RoleManager<AppRole> roleManager,
-            IOptions<IdentityOptions> options, DocIntelContext context)
+            IOptions<IdentityOptions> options, IServiceProvider serviceProvider)
             : base(userManager, roleManager, options)
         {
-            _context = context;
+            _serviceProvider = serviceProvider;
+        }
+        
+        // TODO Refactor, code duplication
+        private DocIntelContext GetContext()
+        {
+            var dbContextOptions = _serviceProvider.GetRequiredService<DbContextOptions<DocIntelContext>>();
+            var dbContextLogger = _serviceProvider.GetRequiredService<ILogger<DocIntelContext>>();
+            var dbContext = new DocIntelContext(dbContextOptions, dbContextLogger);
+            return dbContext;
         }
         
         public override async Task<ClaimsPrincipal> CreateAsync(AppUser user)
         {
             var principal = await base.CreateAsync(user);
-
             var claimsIdentity = (ClaimsIdentity) principal.Identity;
+            try
+            {   
+                var context = GetContext();
+                PopulateClaims(context, claimsIdentity, user);
+                await context.DisposeAsync();
 
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error in AppUserClaimsPrincipalFactory");
+            }
+            return principal;
+        }
+
+        private void AddParentGroup(DocIntelContext context, ClaimsIdentity claimsIdentity, Group group)
+        {
+            if (group.ParentGroupId != default)
+            {
+                var parentGroup = context.Groups.SingleOrDefault(_ => _.GroupId == group.ParentGroupId);
+                if (parentGroup != null)
+                {
+                    claimsIdentity.AddClaim(new Claim("Group", parentGroup.GroupId.ToString()));
+                    AddParentGroup(context, claimsIdentity, parentGroup);
+                }
+            }
+        }
+
+
+        private void PopulateClaims(DocIntelContext context, ClaimsIdentity claimsIdentity, AppUser user)
+        {
             if (claimsIdentity != null)
             {
                 claimsIdentity.AddClaim(new Claim("UserId", user.Id));
                 if (user.Bot)
                     claimsIdentity.AddClaim(new Claim("Bot", user.Bot.ToString()));
 
-                var permissions = _context.UserRoles.AsQueryable()
+                var permissions = context.UserRoles.AsNoTracking()
                     .Where(x => x.UserId == user.Id)
-                    .Select(_ => _.Role)
-                    .AsEnumerable()
-                    .SelectMany(x => x.Permissions);
-
+                    .Select(_ => _.Role).ToList()
+                    .SelectMany(x => x.Permissions).ToList();
                 foreach (var permission in permissions) 
                     claimsIdentity.AddClaim(new Claim("Permission", permission));
 
-                var groups = _context.Members.Include(_ => _.Group).AsQueryable()
+                var groups = context.Members.AsNoTracking().Include(_ => _.Group)
                     .Where(x => x.UserId == user.Id)
-                    .Select(_ => _.Group)
-                    .ToList();
-
+                    .Select(_ => _.Group).ToList();
                 foreach (var group in groups)
                 {
                     claimsIdentity.AddClaim(new Claim("Group", @group.GroupId.ToString()));
-                    AddParentGroup(claimsIdentity, @group);
+                    AddParentGroup(context, claimsIdentity, @group);
                 }
             }
-
-            return principal;
         }
-
-        private void AddParentGroup(ClaimsIdentity claimsIdentity, Group group)
+        
+        public async Task<ClaimsPrincipal> CreateAsync(DocIntelContext context, AppUser user)
         {
-            if (group.ParentGroupId != default)
+            ClaimsPrincipal principal = null;
+            try
             {
-                var parentGroup = _context.Groups.SingleOrDefault(_ => _.GroupId == group.ParentGroupId);
-                if (parentGroup != null)
-                {
-                    claimsIdentity.AddClaim(new Claim("Group", parentGroup.GroupId.ToString()));
-                    AddParentGroup(claimsIdentity, parentGroup);
-                }
+                var id = new ClaimsIdentity("Identity.Application",
+                    Options.ClaimsIdentity.UserNameClaimType,
+                    Options.ClaimsIdentity.RoleClaimType);
+                id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, user.Id));
+                id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, user.UserName));
+                if (!string.IsNullOrEmpty(user.Email))
+                    id.AddClaim(new Claim(Options.ClaimsIdentity.EmailClaimType, user.Email));
+                
+                principal = new ClaimsPrincipal(id);
             }
+            catch
+            {
+                Console.WriteLine("Error in AppUserClaimsPrincipalFactory.1");
+                return null;
+            }
+
+            var claimsIdentity = (ClaimsIdentity) principal.Identity;
+            try
+            {
+                PopulateClaims(context, claimsIdentity, user);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error in AppUserClaimsPrincipalFactory.2");
+            }
+            return principal;
         }
     }
 }

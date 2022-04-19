@@ -15,7 +15,7 @@
             <div class="btn-group">
                 @if (canDelete)
                 {
-                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-primary btn-iconified waves-effect waves-themed">
+                    <a asp-action="Delete" asp-route-id="@Model.FacetId" class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed">
                         <i class="fal fa-trash-alt"></i> Delete
                     </a>
                 }
@@ -45,7 +45,7 @@
             <div id="panel-basic" class="panel">
                 <div class="panel-container show">
                     <div class="panel-content">
-                        <input asp-for="Id" type="hidden"/>
+                        <input asp-for="FacetId" type="hidden"/>
 
                         @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
                     </div>
@@ -54,7 +54,7 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                    <button type="submit" class= "btn btn-pills btn-success btn-iconified waves-effect waves-themed">
                         <i class="fal fa-save"></i> Save
                     </button>
                     <a asp-action="Index" asp-controller="Tag" class="ml-3 text-secondary">Cancel</a>

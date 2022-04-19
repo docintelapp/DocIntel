@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 
 using DocIntel.Core.Models;
+using Synsharp;
 
 namespace DocIntel.WebApp.ViewModels.DocumentViewModel
 {
@@ -27,6 +28,6 @@ namespace DocIntel.WebApp.ViewModels.DocumentViewModel
         public IEnumerable<AppUser> Contributors;
         public Document Document;
         public SubscriptionStatus Subscribed;
-        public IEnumerable<Observable> Observables { get; set; }
+        public IList<SynapseObject> Observables { get; set; }
     }
 }

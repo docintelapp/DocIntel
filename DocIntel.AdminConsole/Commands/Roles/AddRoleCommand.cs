@@ -47,6 +47,12 @@ namespace DocIntel.AdminConsole.Commands.Roles
                 Description = description
             };
 
+            if (await _roleRepository.Exists(ambientContext, roleName))
+            {
+                AnsiConsole.Render(new Markup($"[darkorange]Role '{roleName}' already exists.[/]\n"));
+                return 0;
+            }
+            
             var result = await _roleRepository.AddAsync(ambientContext, role);
             if (result != null)
             {

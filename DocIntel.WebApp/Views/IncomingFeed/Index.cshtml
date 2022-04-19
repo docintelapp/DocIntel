@@ -18,7 +18,7 @@
             @if (canCreate)
             {
                 <a asp-action="Create"
-                   class="btn btn-primary waves-effect waves-themed">
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
                     <i class="fal fa-plus mr-1"></i> Install
                 </a>
             }
@@ -80,8 +80,8 @@
                                 </div>
                                 <div class="col-2 text-right">
                                     <div class="btn-group btn-group-sm">
-                                        <a asp-action="Edit" asp-route-id="@t.ImporterId" class="btn btn-default waves-effect waves-themed">Edit</a>
-                                        <a asp-action="Uninstall" asp-route-id="@t.ImporterId" class="btn btn-default waves-effect waves-themed">Uninstall</a>
+                                        <a asp-action="Edit" asp-route-id="@t.ImporterId" class= "btn btn-pills btn-default waves-effect waves-themed">Edit</a>
+                                        <a asp-action="Uninstall" asp-route-id="@t.ImporterId" class= "btn btn-pills btn-default waves-effect waves-themed">Uninstall</a>
                                     </div>
                                 </div>
                             </div>

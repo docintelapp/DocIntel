@@ -46,21 +46,21 @@ namespace DocIntel.WebApp.Areas.API.Controllers
         private readonly ITagFacetRepository _facetRepository;
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
-        private readonly ITagSearchService _tagSearchEngine;
+        private readonly IFacetSearchService _facetSearchEngine;
 
         public FacetController(UserManager<AppUser> userManager,
             DocIntelContext context,
             ILogger<FacetController> logger,
             IHttpContextAccessor accessor,
             ITagFacetRepository facetRepository,
-            ITagSearchService tagSearchEngine,
+            IFacetSearchService facetSearchEngine,
             IMapper mapper)
             : base(userManager, context)
         {
             _logger = logger;
             _accessor = accessor;
             _facetRepository = facetRepository;
-            _tagSearchEngine = tagSearchEngine;
+            _facetSearchEngine = facetSearchEngine;
             _mapper = mapper;
         }
 
@@ -76,16 +76,61 @@ namespace DocIntel.WebApp.Areas.API.Controllers
 
             try
             {
-                var results = _tagSearchEngine.SearchFacet(new TagFacetSearchQuery
+                var results = _facetSearchEngine.Search(new TagFacetSearchQuery
                 {
                     SearchTerms = searchTerm,
                     Page = page
                 });
 
                 var tags = new List<object>();
-                foreach (var h in results.Hits) tags.Add(await _facetRepository.GetAsync(AmbientContext, h.FacetId));
+                foreach (var h in results.Hits) tags.Add(await _facetRepository.GetAsync(AmbientContext, h.Facet.FacetId));
 
                 return Ok(_mapper.Map<IEnumerable<APITagFacet>>(tags));
+            }
+            catch (UnauthorizedOperationException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.APIListTagFailed,
+                    new LogEvent($"User '{currentUser.UserName}' attempted to list tag without legitimate rights.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext),
+                    null,
+                    LogEvent.Formatter);
+
+                return Unauthorized();
+            }
+        }
+        
+        
+        [HttpGet("Suggest")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<APITagFacet>))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Produces("application/json", "application/xml")]
+        public async Task<IActionResult> Suggest(
+            string searchTerm = "")
+        {
+            var currentUser = await GetCurrentUser();
+
+            try
+            {
+                var results = _facetSearchEngine.Suggest(new TagFacetSearchQuery
+                {
+                    SearchTerms = searchTerm
+                });
+
+                var facets = new List<TagFacet>();
+                foreach (var h in results.Hits)
+                    try
+                    {
+                        var facet = await _facetRepository.GetAsync(AmbientContext, h.Facet.FacetId, new[] {"Tags"});
+                        facets.Add(facet);
+                    }
+                    catch (NotFoundEntityException)
+                    {
+                        // TODO Fail silently and log the error.
+                    }
+
+                return Ok(_mapper.Map<IEnumerable<APITagFacet>>(facets));
             }
             catch (UnauthorizedOperationException)
             {
@@ -119,7 +164,10 @@ namespace DocIntel.WebApp.Areas.API.Controllers
                         Prefix = tagFacet.Prefix,
                         Description = tagFacet.Description,
                         Mandatory = tagFacet.Mandatory,
-                        Hidden = tagFacet.Hidden
+                        Hidden = tagFacet.Hidden,
+                        AutoExtract = tagFacet.AutoExtract,
+                        ExtractionRegex = tagFacet.ExtractionRegex,
+                        TagNormalization = tagFacet.TagNormalization
                     };
                     await _facetRepository.AddAsync(AmbientContext, facet);
                     await _context.SaveChangesAsync();
@@ -192,6 +240,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
                     facet.Description = tagFacet.Description;
                     facet.Mandatory = tagFacet.Mandatory;
                     facet.Hidden = tagFacet.Hidden;
+                    facet.TagNormalization = tagFacet.TagNormalization;
 
                     var updatedFacet = await _facetRepository.UpdateAsync(AmbientContext, facet);
                     await _context.SaveChangesAsync();
@@ -349,12 +398,12 @@ namespace DocIntel.WebApp.Areas.API.Controllers
                     return NotFound();
                 }
 
-                if (primaryFacet.Id == secondaryFacet.Id)
+                if (primaryFacet.FacetId == secondaryFacet.FacetId)
                 {
                     _logger.Log(LogLevel.Information,
                         EventIDs.APIMergeFacetSuccessful,
                         new LogEvent(
-                                $"User '{currentUser.UserName}' successfully merged facet '{primaryFacet.Id}' with '{secondaryFacet.Id}'.")
+                                $"User '{currentUser.UserName}' successfully merged facet '{primaryFacet.FacetId}' with '{secondaryFacet.FacetId}'.")
                             .AddUser(currentUser)
                             .AddHttpContext(_accessor.HttpContext)
                             .AddFacet(primaryFacet, "facet_primary")
@@ -365,12 +414,12 @@ namespace DocIntel.WebApp.Areas.API.Controllers
                 }
 
                 if (!ModelState.IsValid) throw new InvalidArgumentException();
-                await _facetRepository.MergeAsync(AmbientContext, primaryFacet.Id, secondaryFacet.Id);
+                await _facetRepository.MergeAsync(AmbientContext, primaryFacet.FacetId, secondaryFacet.FacetId);
 
                 _logger.Log(LogLevel.Information,
                     EventIDs.APIMergeFacetSuccessful,
                     new LogEvent(
-                            $"User '{currentUser.UserName}' successfully merged facet '{primaryFacet.Id}' with '{secondaryFacet.Id}'.")
+                            $"User '{currentUser.UserName}' successfully merged facet '{primaryFacet.FacetId}' with '{secondaryFacet.FacetId}'.")
                         .AddUser(currentUser)
                         .AddHttpContext(_accessor.HttpContext)
                         .AddFacet(primaryFacet, "facet_primary")

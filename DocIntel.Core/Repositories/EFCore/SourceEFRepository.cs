@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -95,7 +94,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 if (ambientContext.CurrentUser != null) source.LastModifiedById = ambientContext.CurrentUser.Id;
 
                 source.Description = _sanitizer.Sanitize(source.Description);
-                source.URL = UpdateSourceURL(ambientContext, source, _ => _.Title, url => data => data.URL == url);
+                source.URL = UpdateSourceURL(ambientContext, source, _ => _.Title, url => data => data.SourceId != source.SourceId && data.URL == url);
 
                 var trackingEntity = ambientContext.DatabaseContext.Update(source);
                 PublishMessage(ambientContext, new SourceUpdatedMessage

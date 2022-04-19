@@ -58,5 +58,7 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         [SolrField("num_docs")] public int NumDocs { get; set; }
         
         [SolrField("last_doc_update")] public DateTime LastDocumentDate { get; set; }
+        
+        [SolrField("suggest_label")] public string SuggestLabel { get; set; }
     }
 }

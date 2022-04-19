@@ -60,7 +60,7 @@ namespace DocIntel.Core.Repositories.EFCore
             
             if (IsValid(tagFacet, out var modelErrors))
             {
-                if (ambientContext.DatabaseContext.Facets.Any(_ => _.Prefix == tagFacet.Prefix && _.Id != tagFacet.Id))
+                if (ambientContext.DatabaseContext.Facets.Any(_ => _.Prefix == tagFacet.Prefix && _.FacetId != tagFacet.FacetId))
                 {
                     modelErrors.Add(new ValidationResult("Prefix already exists", new []{ nameof(TagFacet.Prefix) }));
                     throw new InvalidArgumentException(modelErrors);
@@ -71,13 +71,19 @@ namespace DocIntel.Core.Repositories.EFCore
                 tagFacet.CreatedById = ambientContext.CurrentUser.Id;
                 tagFacet.ModificationDate = tagFacet.CreationDate;
                 tagFacet.LastModifiedById = tagFacet.CreatedById;
+
+                if (!new[] { "", "camelize", "capitalize", "downcase", "handleize", "upcase" }.Contains(
+                        tagFacet.TagNormalization))
+                {
+                    tagFacet.TagNormalization = "";
+                }
                 
                 var trackingEntity = await ambientContext.DatabaseContext.AddAsync(tagFacet);
 
                 ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
-                    () => _busClient.Publish(new FacetTagCreatedMessage
+                    () => _busClient.Publish(new FacetCreatedMessage
                     {
-                        FacetTagId = trackingEntity.Entity.Id,
+                        FacetTagId = trackingEntity.Entity.FacetId,
                         UserId = ambientContext.CurrentUser.Id
                     })
                 );
@@ -91,7 +97,7 @@ namespace DocIntel.Core.Repositories.EFCore
         public async Task<TagFacet> UpdateAsync(AmbientContext ambientContext,
             TagFacet tagFacet)
         {
-            var retrievedTag = await ambientContext.DatabaseContext.Facets.FindAsync(tagFacet.Id);
+            var retrievedTag = await ambientContext.DatabaseContext.Facets.FindAsync(tagFacet.FacetId);
             if (retrievedTag == null)
                 throw new NotFoundEntityException();
 
@@ -100,7 +106,7 @@ namespace DocIntel.Core.Repositories.EFCore
 
             if (IsValid(tagFacet, out var modelErrors))
             {
-                if (ambientContext.DatabaseContext.Facets.Any(_ => _.Prefix == tagFacet.Prefix && _.Id != tagFacet.Id))
+                if (ambientContext.DatabaseContext.Facets.Any(_ => _.Prefix == tagFacet.Prefix && _.FacetId != tagFacet.FacetId))
                 {
                     modelErrors.Add(new ValidationResult("Prefix already exists", new []{ nameof(TagFacet.Prefix) }));
                     throw new InvalidArgumentException(modelErrors);
@@ -110,12 +116,18 @@ namespace DocIntel.Core.Repositories.EFCore
                 tagFacet.ModificationDate = DateTime.UtcNow;
                 tagFacet.LastModifiedById = ambientContext.CurrentUser.Id;
 
+                if (!new[] { "", "camelize", "capitalize", "downcase", "handleize", "upcase" }.Contains(
+                        tagFacet.TagNormalization))
+                {
+                    tagFacet.TagNormalization = "";
+                }
+
                 var trackingEntity = ambientContext.DatabaseContext.Update(tagFacet);
 
                 ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
-                    () => _busClient.Publish(new FacetTagUpdatedMessage
+                    () => _busClient.Publish(new FacetUpdatedMessage
                     {
-                        FacetTagId = trackingEntity.Entity.Id,
+                        FacetTagId = trackingEntity.Entity.FacetId,
                         UserId = ambientContext.CurrentUser.Id
                     })
                 );
@@ -129,7 +141,7 @@ namespace DocIntel.Core.Repositories.EFCore
         public async Task<TagFacet> RemoveAsync(AmbientContext ambientContext,
             Guid tagFacetId)
         {
-            var facet = ambientContext.DatabaseContext.Facets.Include(_ => _.Tags).SingleOrDefault(_ => _.Id == tagFacetId);
+            var facet = ambientContext.DatabaseContext.Facets.Include(_ => _.Tags).SingleOrDefault(_ => _.FacetId == tagFacetId);
             if (facet == null)
                 throw new NotFoundEntityException();
 
@@ -141,9 +153,9 @@ namespace DocIntel.Core.Repositories.EFCore
             var trackingEntity = ambientContext.DatabaseContext.Remove(facet);
             if (trackingEntity.Entity != null)
                 ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
-                    () => _busClient.Publish(new FacetTagRemovedMessage
+                    () => _busClient.Publish(new FacetRemovedMessage
                     {
-                        FacetTagId = trackingEntity.Entity.Id,
+                        FacetTagId = trackingEntity.Entity.FacetId,
                         UserId = ambientContext.CurrentUser.Id,
                         Tags = tags
                     }));
@@ -177,6 +189,18 @@ namespace DocIntel.Core.Repositories.EFCore
                     yield return facet;
         }
 
+        public async IAsyncEnumerable<TagFacet> GetAllAsync(AmbientContext ambientContext,
+            Func<IQueryable<TagFacet>, IQueryable<TagFacet>> query)
+        {
+            IQueryable<TagFacet> enumerable = ambientContext.DatabaseContext.Facets;
+
+            var filteredTags = query(enumerable);
+
+            foreach (var facet in filteredTags)
+                if (await _appAuthorizationService.CanViewFacetTag(ambientContext.Claims, facet))
+                    yield return facet;
+        }
+
         public async Task<TagFacet> GetAsync(AmbientContext ambientContext,
             Guid id,
             string[] includeRelatedData = null)
@@ -187,7 +211,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 foreach (var relatedData in includeRelatedData)
                     enumerable = enumerable.Include(relatedData);
 
-            var facet = enumerable.SingleOrDefault(_ => _.Id == id);
+            var facet = enumerable.SingleOrDefault(_ => _.FacetId == id);
 
             if (facet == null)
                 throw new NotFoundEntityException();
@@ -312,8 +336,8 @@ namespace DocIntel.Core.Repositories.EFCore
             ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
                 () => _busClient.Publish(new FacetMergedMessage
                 {
-                    RetainedFacetId = facetPrimary.Id,
-                    RemovedFacetId = facetSecondary.Id,
+                    RetainedFacetId = facetPrimary.FacetId,
+                    RemovedFacetId = facetSecondary.FacetId,
                     Tags = tags.Select(_ => _.TagId),
                     UserId = ambientContext.CurrentUser.Id
                 })
@@ -327,6 +351,9 @@ namespace DocIntel.Core.Repositories.EFCore
 
             if (query.Mandatory != null)
                 tags = tags.Where(_ => _.Mandatory == query.Mandatory).AsQueryable();
+
+            if (query.AutoExtract != null)
+                tags = tags.Where(_ => _.AutoExtract == query.AutoExtract).AsQueryable();
 
             if (!string.IsNullOrEmpty(query.Prefix))
                 tags = tags.Where(_ => _.Prefix == query.Prefix).AsQueryable();

@@ -18,16 +18,10 @@
                         </li>
                         first = false;
                     }
-                    @* <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#tab-cti" role="tab" aria-selected="false">Threat Intelligence</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#tab-notes" role="tab" aria-selected="false">Notes</a>
-                </li> *@
                 </ul>
             </div>
             <div class="panel-toolbar">
-                <button class="btn btn-panel waves-effect waves-themed" id="fs-btn" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+                <button class= "btn btn-pills btn-panel waves-effect waves-themed" id="fs-btn" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
             </div>
         </div>
 
@@ -46,26 +40,6 @@
                     }
 
                 </div>
-            </div>
-        </div>
-    </div>
-}
-
-@if (Model.Observables != null && Model.Observables.Any())
-{
-    <div id="panel-content" class="panel">
-        <div class="panel-hdr border-faded border-top-0 border-right-0 border-left-0 shadow-0">
-            <h2>
-                Observables
-            </h2>
-            <div class="panel-toolbar">
-                <button class="btn btn-panel waves-effect waves-themed" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
-            </div>
-        </div>
-
-        <div class="panel-container show">
-            <div class="panel-content">
-                @await Html.PartialAsync("_ObservableList", Model.Observables, new ViewDataDictionary(ViewData))
             </div>
         </div>
     </div>

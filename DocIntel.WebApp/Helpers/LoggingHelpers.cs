@@ -174,7 +174,7 @@ namespace DocIntel.WebApp.Helpers
             if (string.IsNullOrEmpty(prefix))
                 throw new ArgumentException("Prefix cannot be null or empty.", nameof(prefix));
 
-            logEvent.AddProperty(prefix + ".id", facet.Id);
+            logEvent.AddProperty(prefix + ".id", facet.FacetId);
             logEvent.AddProperty(prefix + ".name", facet.Title);
             logEvent.AddProperty(prefix + ".description", facet.Description);
             logEvent.AddProperty(prefix + ".prefix", facet.Prefix);

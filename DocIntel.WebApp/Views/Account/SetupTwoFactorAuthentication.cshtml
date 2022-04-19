@@ -59,7 +59,7 @@
                         <p class="panel-tag mb-2">@(FormatKey(Model.AuthenticatorKey))</p>
 
                         <div class="text-center">
-                            <canvas id="canvas"></canvas>
+                            <canvas id="canvas" class="qr-code-canvas" data-authenticator-uri="@Model.AuthenticatorUri"></canvas>
                         </div>
                         
                         <p>Once you have scanned the QR code or input the key above, your two-factor authenticator app 
@@ -76,7 +76,7 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <button type="submit" class="btn btn-success btn-iconified waves-effect waves-themed">
+                    <button type="submit" class= "btn btn-pills btn-success btn-iconified waves-effect waves-themed">
                         <i class="fal fa-lock-alt"></i> Verify
                     </button>
                 </div>
@@ -87,11 +87,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial"/>
-
-<script>
-$(document).ready(function()
-{
-    DocIntel.displayQRCode('canvas', '@Model.AuthenticatorUri');
-});
-</script>
 }

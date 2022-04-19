@@ -1,7 +1,8 @@
 @using DocIntel.Core.Authorization.Operations
+@using Synsharp.Forms
 @model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentObservablesViewModel
 @{
-    ViewData["Title"] = $"Edit {Model.Title}";
+    ViewData["Title"] = $"Review observbles for '{Model.Document.Title}'";
     var canDownload = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Download)).Succeeded;
     var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, DocumentOperations.Delete)).Succeeded;
     var canCreateTags = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.Create)).Succeeded;
@@ -11,17 +12,27 @@
 <form asp-action="Edit" method="post" enctype="multipart/form-data">
     <div class="subheader">
         <h1 class="subheader-title">
-            <i class="fal fa-file-edit subheader-icon"></i> @Model.Title
+            <i class="fal fa-file-edit subheader-icon"></i> @Model.Document.Title
         </h1>
         <div>
             <div class="btn-group">
-                <a asp-action="Edit" asp-route-id="@Model.DocumentId" class="btn btn-primary waves-effect waves-themed btn-iconified" id="edit-btn"><i class="fal fa-edit mr-1"></i> Edit</a>
+                <a asp-action="Edit" asp-route-id="@Model.Document.DocumentId"
+                   class="btn btn-pills btn-primary waves-effect waves-themed btn-iconified" id="edit-btn">
+                    <i class="fal fa-edit mr-1"></i> Edit
+                </a>
 
-                <a asp-action="Discard" asp-route-id="@Model.DocumentId"
-                   class="btn btn-primary waves-effect waves-themed btn-iconified">
+                <a asp-action="Discard" asp-route-id="@Model.Document.DocumentId"
+                   class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                     <i class="fal fa-trash-alt"></i> Discard
                 </a>
             </div>
+
+                    <button type="submit" formaction=@Url.Action("Observables") formmethod="post" formenctype="multipart/form-data"
+                            id="register-btn"
+                            class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified ml-4">
+                        <i class="fal fa-pencil-alt"></i> Register
+                    </button>
+                    
         </div>
     </div>
     <div class="row">
@@ -33,84 +44,113 @@
             }
             
             @{
-                var observablesToReview = Model.Observables.Where(d => !d.IsAccepted & !d.IsWhitelisted);
+                var groupedObservables = Model.Observables.GroupBy(_ => _.GetType())
+                    .OrderBy(_ => _.Key.FullName);
             }
-            @if (observablesToReview.Any())
+            
+            <div class="alert alert-secondary" role="alert">
+                <p class="mb-1">We identified @Model.Observables.Count() observables:</p>
+                <ul class="m-0 pl-3">
+                    @foreach (var group in groupedObservables)
+                    {
+                        <li class="mb-1">
+                            @group.Count() @Html.Pluralize("observable", group.Count()) 
+                            <span class="ml-2"><code>@group.Key.ToDisplaySynsharp()</code></span>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            @{
+                int i = 0;
+            }
+            @foreach (var group in groupedObservables)
             {
+                var uuid = Guid.NewGuid().ToString();
                 <div class="panel">
                     <div class="panel-hdr">
                         <h2>
-                            @observablesToReview.Count() @Html.Pluralize("observable", observablesToReview.Count()) to review
+                            @group.Count() @Html.Pluralize("observable", group.Count()) 
+                            <span class="ml-2"><code>@group.Key.ToDisplaySynsharp()</code></span>
                         </h2>
-                    </div>
-                    <div class="panel-container show">
-                        <div class="panel-content p-0">
-                            @await Html.PartialAsync("_ObservablesEditor", observablesToReview, viewDataDictionary)
-                        </div>
-                    </div>
-                </div>
-            }
-            
-            @{
-                var acceptedObservables = Model.Observables.Where(d => d.IsAccepted & !d.IsWhitelisted);
-            }
-            @if (acceptedObservables.Any())
-            {
-                viewDataDictionary = new ViewDataDictionary(ViewData);
-                viewDataDictionary.Add("StartIndex", observablesToReview.Count());
-                <div class="panel">
-                    <div class="panel-hdr">
-                        <h2>
-                            @acceptedObservables.Count() @Html.Pluralize("observable", acceptedObservables.Count()) automatically accepted
-                        </h2>
-                    </div>
-                    <div class="panel-container show">
-                        <div class="panel-content p-0">
-                            @await Html.PartialAsync("_ObservablesEditor", acceptedObservables, viewDataDictionary)
-                        </div>
-                    </div>
-                </div>
-            }
-            
-            @{
-                var whitelistedObservables = Model.Observables.Where(d => d.IsWhitelisted);
-            }
-            @if (whitelistedObservables.Any())
-            {
-                viewDataDictionary = new ViewDataDictionary(ViewData);
-                viewDataDictionary.Add("StartIndex", observablesToReview.Count() + acceptedObservables.Count());
-                <div class="panel panel-collapsed">
-                    <div class="panel-hdr">
-                        <h2>
-                            @whitelistedObservables.Count() @Html.Pluralize("observable", whitelistedObservables.Count()) whitelisted
-                        </h2>
+                        
                         <div class="panel-toolbar">
+                            <div class="btn-group btn-group-xs">
+                                <a class= "btn btn-outline-secondary waves-effect waves-themed toggleAll" data-table-target="observable-editor-@uuid" href="#">
+                                    Add all
+                                </a>
+                                <a class= "btn  btn-outline-secondary waves-effect waves-themed toggleNone" data-table-target="observable-editor-@uuid" href="#">
+                                    Ignore all
+                                </a>
+                            </div>
+                        </div>
+                        <div class="panel-toolbar ml-2">
                             <button class="btn btn-panel waves-effect waves-themed" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
                         </div>
                     </div>
-                    <div class="panel-container collapse">
+                    <div class="panel-container show">
                         <div class="panel-content p-0">
-                            @await Html.PartialAsync("_ObservablesEditor", whitelistedObservables, viewDataDictionary)
+                            <table class="table table-striped table-hover" id="observable-editor-@uuid" style="table-layout: fixed">
+                                <thead class="thead-light">
+                                <tr>
+                                    <th scope="col" style="width: 25%">Status</th>
+                                    <th scope="col" style="width: 75%">Observable</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var item in group.OrderBy(_ => _.GetCoreValue()))
+                                {
+                                    <tr>
+                                        <td style="width: 25%">
+                                            <input type="hidden" value="@item.Iden" name="observables[]" />
+                                            <select class="status" style="width: 100%" name="status[]">
+                                                <option value="add" selected="@(item.Tags.Contains("_di.workflow.ignore") ? null : "selected")">Add</option>
+                                                <option value="ignore-once" selected="@(item.Tags.Contains("_di.workflow.ignore") ? "selected" : null)">Ignore once</option>
+                                                <option value="ignore-always">Ignore always</option>
+                                                @if (item is InetUrl)
+                                                {
+                                                    <option value="ignore-domain">Ignore domain</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td style="width: 75%">
+                                            <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">@item.GetCoreValue()</p>
+                                            @if (item.Tags.Any())
+                                            {
+                                                <p class="m-0">
+                                                    @foreach (var t in item.Tags)
+                                                    {
+                                                        <span class="@(t.StartsWith("_di")?"badge-primary":"badge-secondary") badge">@t</span>
+                                                    }
+                                                </p>
+                                            }
+                                        </td>
+                                    </tr>
+                                    i++;
+                                }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             }
             
-            <input asp-for="DocumentId" name="DocumentId" class="form-control" type="hidden"/>
+            <input asp-for="Document.DocumentId" name="DocumentId" class="form-control" type="hidden"/>
 
             <div class="row">
                 <div class="col-md-12">
                     @Html.AntiForgeryToken()
-                    <button type="submit" formaction=@Url.Action("Save") formmethod="post" formenctype="multipart/form-data"
-                            id="save-btn"
-                            class="btn btn-primary waves-effect waves-themed btn-iconified mr-4">
-                        <i class="fal fa-save"></i> Save as pending
-                    </button>
 
                     <button type="submit" formaction=@Url.Action("Observables") formmethod="post" formenctype="multipart/form-data"
                             id="register-btn"
-                            class="btn btn-success waves-effect waves-themed btn-iconified">
+                            class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified mr-4">
                         <i class="fal fa-pencil-alt"></i> Register
+                    </button>
+                    
+                    <button type="submit" formaction=@Url.Action("Save") formmethod="post" formenctype="multipart/form-data"
+                            id="save-btn"
+                            class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
+                        <i class="fal fa-save"></i> Save as pending
                     </button>
 
                 </div>
@@ -129,7 +169,7 @@
                     <div class="panel-toolbar pr-3 align-self-end">
                         <ul class="nav nav-tabs border-bottom-0">
                             @{ var first = true; }
-                            @foreach (var f in Model.Files)
+                            @foreach (var f in Model.Document.Files)
                             {
                                 if ((f.MimeType == "application/pdf") | f.MimeType.StartsWith("text/"))
                                 {
@@ -142,7 +182,7 @@
                         </ul>
                     </div>
                     <div class="panel-toolbar">
-                        <button class="btn btn-panel waves-effect waves-themed" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+                        <button class= "btn btn-pills btn-panel waves-effect waves-themed" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
                     </div>
                 </div>
                 <div class="panel-container show">
@@ -150,7 +190,7 @@
                         <div class="tab-content">
                             <!-- PDF Pane  -->
                             @{ first = true; }
-                            @foreach (var f in Model.Files)
+                            @foreach (var f in Model.Document.Files)
                             {
                                 if ((f.MimeType == "application/pdf") | f.MimeType.StartsWith("text/"))
                                 {
@@ -175,20 +215,12 @@
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script type="text/javascript">
         $(document).ready(function() {
-            $(".toggleCheckbox").click(function() {
-                if ($(".toggleCheckbox").checked) {
-                    $(".check_accepted").not(":disabled").prop("checked", true);
-                } else {
-                    $(".check_accepted").not(":disabled").prop("checked", false);
-                }
-                return true;
-            });
             $(".toggleAll").click(function() {
-                $("#" + $(this).data("table-target") + " .check_accepted").not(":disabled").prop("checked", true);
+                $("#" + $(this).data("table-target") + " select").val("add");
                 return false;
             });
             $(".toggleNone").click(function() {
-                $("#" + $(this).data("table-target") + " .check_accepted").not(":disabled").prop("checked", false);
+                $("#" + $(this).data("table-target") + " select").val("ignore-once");
                 return false;
             });    
         });

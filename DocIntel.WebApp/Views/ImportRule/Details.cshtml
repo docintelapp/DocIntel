@@ -17,14 +17,14 @@
             @if (canEdit)
             {
                 <a asp-action="Edit" asp-route-id="@Model.ImportRuleSetId"
-                   class="btn btn-primary waves-effect waves-themed">
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
                     <i class="fal fa-edit mr-1"></i> Edit
                 </a>
             }
             @if (canDelete)
             {
                 <a asp-action="Delete" asp-route-id="@Model.ImportRuleSetId"
-                   class="btn btn-primary waves-effect waves-themed">
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
                     <i class="fal fa-trash-alt mr-1"></i> Delete
                 </a>
             }

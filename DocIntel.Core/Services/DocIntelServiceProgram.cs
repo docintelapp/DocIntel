@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 using DocIntel.Core.Authentication;
@@ -26,8 +27,6 @@ using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
 using DocIntel.Core.Utils.Indexation.SolR;
-using DocIntel.Core.Utils.Observables;
-
 using MassTransit;
 
 using Microsoft.AspNetCore.Identity;
@@ -41,34 +40,78 @@ using NLog.Web;
 
 using Npgsql;
 
+using RunMethodsSequentially;
+
 namespace DocIntel.Core.Services
 {
     public abstract class DocIntelServiceProgram
     {
-        public static void ConfigureLogging(ILoggingBuilder logging)
+        public static void ConfigureLogging(HostBuilderContext hostingContext, ILoggingBuilder logging)
         {
+            var env = hostingContext.HostingEnvironment;
+            
+            var configFiles = new string[]
+            {
+                "/etc/docintel/nlog.config",
+                $"/etc/docintel/nlog.{env.EnvironmentName}.config",
+                $"/etc/docintel/nlog.{env.ApplicationName}.config",
+                "/config/nlog.config",
+                $"/config/nlog.{env.EnvironmentName}.config",
+                $"/config/nlog.{env.ApplicationName}.config",
+                "nlog.config",
+                $"nlog.{env.EnvironmentName}.config",
+                $"nlog.{env.ApplicationName}.config"
+            };
+            
             logging.ClearProviders();
             logging.SetMinimumLevel(LogLevel.Trace);
-            
-            if (File.Exists("nlog.config"))
-                logging.AddNLog("nlog.config");
-            else if (File.Exists("/etc/docintel/nlog.config"))
-                logging.AddNLog("/etc/docintel/nlog.config");
-            else
-                throw new FileNotFoundException("nlog.config");
+
+            bool success = false;
+            foreach (var configFile in configFiles.Reverse())
+            {
+                if (File.Exists(configFile))
+                {
+                    logging.AddNLog(configFile);
+                    success = true;
+                    break;
+                }
+            }
+
+            if (!success)
+            {
+                // TODO Raise custom exception
+                throw new FileNotFoundException("Could not find logging configuration file 'nlog.config'.");
+            }
         }
 
         public static void ConfigureAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder config)
         {
             var env = hostingContext.HostingEnvironment;
-            config.AddJsonFile("/etc/docintel/appsettings.json", optional: true);
-            config.AddJsonFile("appsettings.json", optional: true);
-            config.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+            
+            var configFiles = new string[]
+            {
+                "/etc/docintel/appsettings.json",
+                $"/etc/docintel/appsettings.{env.EnvironmentName}.json",
+                $"/etc/docintel/appsettings.{env.ApplicationName}.json",
+                "/config/appsettings.json",
+                $"/config/appsettings.{env.EnvironmentName}.json",
+                $"/config/appsettings.{env.ApplicationName}.json",
+                "appsettings.json",
+                $"appsettings.{env.EnvironmentName}.json",
+                $"appsettings.{env.ApplicationName}.json"
+            };
+            foreach (var configFile in configFiles)
+            {
+                if (File.Exists(configFile))
+                {
+                    config.AddJsonFile(configFile, optional: true);
+                }
+            }
             config.AddEnvironmentVariables();
         }
 
         public static void ConfigureService(HostBuilderContext hostContext, IServiceCollection serviceCollection,
-            Assembly[] consumerAssemblies = null)
+            Assembly[] consumerAssemblies = null, bool runHostedServices = false)
         {
             NpgsqlConnection.GlobalTypeMapper.UseJsonNet();
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -108,9 +151,11 @@ namespace DocIntel.Core.Services
             {
                 Console.WriteLine("Uses native authentication");
                 serviceCollection.AddScoped<SignInManager<AppUser>, AppSignInManager>();
+                serviceCollection.AddScoped<UserManager<AppUser>, AppUserManager>();
 
                 serviceCollection.AddIdentity<AppUser, AppRole>()
                     .AddSignInManager<AppSignInManager>()
+                    .AddUserManager<AppUserManager>()
                     .AddEntityFrameworkStores<DocIntelContext>()
                     .AddDefaultTokenProviders();
             }
@@ -119,7 +164,8 @@ namespace DocIntel.Core.Services
             StartupHelpers.RegisterIndexingServices(serviceCollection);
             StartupHelpers.RegisterSearchServices(serviceCollection);
             StartupHelpers.RegisterRepositories(serviceCollection);
-            StartupHelpers.RegisterSolR(serviceCollection);
+            StartupHelpers.RegisterSolR(serviceCollection, appSettings);
+            StartupHelpers.RegisterSynapse(serviceCollection, appSettings);
             
             /*
             serviceCollection.AddIdentity<AppUser, AppRole>()
@@ -128,8 +174,8 @@ namespace DocIntel.Core.Services
             */
             
             serviceCollection.AddAuthorization();
-            
-            serviceCollection.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
+            serviceCollection.AddTransient<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
+            serviceCollection.AddTransient<AppUserClaimsPrincipalFactory, AppUserClaimsPrincipalFactory>();
 
             serviceCollection.AddMassTransit(x =>
             {
@@ -139,20 +185,40 @@ namespace DocIntel.Core.Services
 
                 x.SetKebabCaseEndpointNameFormatter();
                 x.UsingRabbitMq((context, cfg) => {
+                    cfg.Host(appSettings.RabbitMQ.Host, appSettings.RabbitMQ.VirtualHost, h =>
+                    {
+                        h.Username(appSettings.RabbitMQ.Username);
+                        h.Password(appSettings.RabbitMQ.Password);
+                    });
                     cfg.ConfigureEndpoints(context);
                 });
             });
-            serviceCollection.AddMassTransitHostedService();
             
             serviceCollection.AddAutoMapper(cfg => {
                 cfg.AddProfile<SolRProfile>();
-                cfg.AddProfile<ElasticProfile>();
             });
 
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
             serviceCollection
                 .AddDbContext<DocIntelContext>(options =>
-                    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
-                        x => x.MigrationsAssembly("DocIntel.Core")));
+                {
+                    options.UseNpgsql(connectionString,
+                        x => x.MigrationsAssembly("DocIntel.Core"));
+                }, contextLifetime: ServiceLifetime.Transient);
+
+            var lockFolder = appSettings.LockFolder;
+            if (string.IsNullOrEmpty(lockFolder))
+                lockFolder = ".";
+            
+            serviceCollection.RegisterRunMethodsSequentially(options =>
+            {
+                options.RegisterAsHostedService = runHostedServices;
+                options.AddPostgreSqlLockAndRunMethods(connectionString);
+                options.AddFileSystemLockAndRunMethods(lockFolder);
+            }).RegisterServiceToRunInJob<MigrateDbContextService>()
+                .RegisterServiceToRunInJob<BaseDataDbService>()
+                .RegisterServiceToRunInJob<InstallSynapseCustomObjects>();
+            
         }
     }
 }

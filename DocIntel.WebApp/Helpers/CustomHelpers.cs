@@ -41,13 +41,56 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
 
 using Pluralize.NET.Core;
-
+using Synsharp;
+using Synsharp.Attribute;
+using Synsharp.Forms;
 using TimeZoneConverter;
 
 namespace DocIntel.WebApp.Helpers
 {
     public static class CustomHelpers
     {
+        public static IHtmlContent ToDisplaySynsharp(this Type t)
+        {
+            if (t.IsSubclassOf(typeof(Synsharp.SynapseObject)))
+            {
+                var form = t.GetCustomAttribute<SynapseFormAttribute>();
+                if (form == null)
+                    return new HtmlString(t.FullName);
+                
+                return new HtmlString(form.Name);
+            }
+            
+            return new HtmlString(t.FullName);
+        }
+
+        public static IHtmlContent DisplaySynapse(this IHtmlHelper htmlHelper,
+            SynapseObject obj)
+        {
+            if (obj is InetFqdn fqdn)
+                return new HtmlString(fqdn.Value.ToString()); 
+                
+            if (obj is InetIPv4 ipv4)
+                return new HtmlString(ipv4.Value.ToString()); 
+            
+            if (obj is InetIPv6 ipv6)
+                return new HtmlString(ipv6.Value.ToString()); 
+            
+            if (obj is HashSHA256 sha256)
+                return new HtmlString(sha256.Value.ToString()); 
+            
+            if (obj is HashSHA1 sha1)
+                return new HtmlString(sha1.Value.ToString()); 
+            
+            if (obj is HashMD5 md5)
+                return new HtmlString(md5.Value.ToString()); 
+            
+            if (obj is InetUrl url)
+                return new HtmlString(url.Value.ToString()); 
+            
+            return new HtmlString(obj.ToString());
+        }
+    
         // TODO Check and see if necessary or cannot be inlined
         public static IHtmlContent SanitizeAndMap(this IHtmlHelper htmlHelper,
             string text)
@@ -142,7 +185,7 @@ namespace DocIntel.WebApp.Helpers
         }
 
         public static IHtmlContent Pluralize(this IHtmlHelper htmlHelper,
-            string source, int count)
+            string source, long count)
         {
             if (count > 1)
             {
@@ -154,7 +197,7 @@ namespace DocIntel.WebApp.Helpers
         }
 
         // Thanks to https://stackoverflow.com/questions/42022311/asp-net-mvc-create-action-link-preserve-query-string
-        public static string Page(this IUrlHelper url, int page, string parameter = "page")
+        public static string Page(this IUrlHelper url, long page, string parameter = "page")
         {
             //Reuse existing route values
             var resultRouteValues = new RouteValueDictionary(url.ActionContext.RouteData.Values);
@@ -206,9 +249,9 @@ namespace DocIntel.WebApp.Helpers
             _html = htmlHelper;
         }
 
-        [HtmlAttributeName("page")] public int Page { get; set; }
+        [HtmlAttributeName("page")] public long Page { get; set; }
 
-        [HtmlAttributeName("page-count")] public int PageCount { get; set; }
+        [HtmlAttributeName("page-count")] public long PageCount { get; set; }
 
         [HtmlAttributeName("method")] public string Method { get; set; }
 

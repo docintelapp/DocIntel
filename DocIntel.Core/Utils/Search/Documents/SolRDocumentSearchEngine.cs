@@ -74,10 +74,12 @@ namespace DocIntel.Core.Utils.Search.Documents
                               + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.Observables)}^5 "
                               + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.Comments)}^3";
 
+                /*
                 _logger.LogDebug("Weights: " + weights);
                 _logger.LogDebug("Page: " + query.Page);
                 _logger.LogDebug("Page: " + query.PageSize);
-
+                */
+                
                 var sortOrder = new List<SortOrder>();
                 if (query.SortCriteria == SortCriteria.DocumentDate)
                     sortOrder.Add(new SortOrder(SolRHelper<IndexedDocument>.GetSolRName(_ => _.DocumentDate),
@@ -105,6 +107,7 @@ namespace DocIntel.Core.Utils.Search.Documents
                     },
                     Facet = new FacetParameters
                     {
+                        Limit = 1000,
                         Queries = new[]
                         {
                             new SolrFacetFieldQuery(SolRHelper<IndexedDocument>.GetSolRName(_ => _.TagsId)),
@@ -156,6 +159,7 @@ namespace DocIntel.Core.Utils.Search.Documents
                 var hvrs = new Dictionary<string, HierarchicalVerticalResult<Guid, Guid>>();
                 foreach (var facet in results.FacetFields[SolRHelper<IndexedDocument>.GetSolRName(_ => _.TagsId)])
                 {
+                    _logger.LogDebug(facet.Key);
                     var prefix = facet.Key;
                     var label = "";
                     if (facet.Key.Contains("/"))
