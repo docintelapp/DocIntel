@@ -2,7 +2,7 @@
 
 Reporting security vulnerabilities is of great importance for us, as DocIntel is used in multiple critical infrastructures.
 
-In the case of a security vulnerability report, we ask the reporter to send it directly to Antoine Cailliau, if possible encrypted with the following GnuPG key: XXX. We will attempt to fix reported and confirmed security vulnerabilities as soon as possible, followed by a software release containing the fixes within the following days.
+In the case of a security vulnerability report, we ask the reporter to send it directly to antoine@docintel.org, if possible encrypted with the following GnuPG key: 0xa3d0f2782b093772. We will attempt to fix reported and confirmed security vulnerabilities as soon as possible, followed by a software release containing the fixes within the following days.
 
 If you report security vulnerabilities, do not forget to tell us if and how you want to be acknowledged and if you already requested CVE(s). Otherwise, we will request the CVE(s) directly.
 
