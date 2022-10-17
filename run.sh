@@ -87,7 +87,6 @@ echo ""
 echo "📚 Configuring SolR"
 
 docker run --name docintel-dev-solr \
-  -p 8983:8983 \
   -v $datafolder/solr/:/var/solr \
   -d solr
 echo "Wait for SolR to be up-and-running"
