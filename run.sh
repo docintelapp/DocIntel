@@ -75,7 +75,6 @@ echo "🗄️ Configuring PostgreSQL"
 docker run --name docintel-dev-postgresql \
   -e POSTGRES_PASSWORD=$postgrespw \
   -e PGUSER=postgres \
-  -p 8888:5432 \
   -v $datafolder/postgres/:/var/lib/postgresql/data \
   -d postgres
 echo "Wait for PostgreSQL to be up-and-running"
