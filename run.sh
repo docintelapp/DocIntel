@@ -97,29 +97,29 @@ sleep 60
 if [ $(curl -LI http://localhost:8983/solr/admin/cores\?action\=STATUS\&core\=document -o /dev/null -w '%{http_code}\n' -s) != "200" ]
 then
   docker exec -it docintel-dev-solr solr create_core -c document
-  curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/solrconfig-document.xml -o $datafolder/solr/data/document/conf/solrconfig.xml
-  curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/managed-schema-document -o $datafolder/solr/data/document/conf/managed-schema.xml 
+  curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/solrconfig-document.xml -o $datafolder/solr/data/document/conf/solrconfig.xml
+  curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/managed-schema-document -o $datafolder/solr/data/document/conf/managed-schema.xml 
 fi
 
 if [ $(curl -LI http://localhost:8983/solr/admin/cores\?action\=STATUS\&core\=tag -o /dev/null -w '%{http_code}\n' -s) != "200" ]
 then
   docker exec -it docintel-dev-solr solr create_core -c tag
-  curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/solrconfig-tag.xml -o $datafolder/solr/data/tag/conf/solrconfig.xml
-  curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/managed-schema-tag -o $datafolder/solr/data/tag/conf/managed-schema.xml 
+  curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/solrconfig-tag.xml -o $datafolder/solr/data/tag/conf/solrconfig.xml
+  curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/managed-schema-tag -o $datafolder/solr/data/tag/conf/managed-schema.xml 
 fi
 
 if [ $(curl -LI http://localhost:8983/solr/admin/cores\?action\=STATUS\&core\=source -o /dev/null -w '%{http_code}\n' -s) != "200" ]
 then
   docker exec -it docintel-dev-solr solr create_core -c source
-  curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/solrconfig-source.xml -o $datafolder/solr/data/source/conf/solrconfig.xml
-  curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/managed-schema-source -o $datafolder/solr/data/source/conf/managed-schema.xml 
+  curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/solrconfig-source.xml -o $datafolder/solr/data/source/conf/solrconfig.xml
+  curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/managed-schema-source -o $datafolder/solr/data/source/conf/managed-schema.xml 
 fi
 
 if [ $(curl -LI http://localhost:8983/solr/admin/cores\?action\=STATUS\&core\=facet -o /dev/null -w '%{http_code}\n' -s) != "200" ]
 then
   docker exec -it docintel-dev-solr solr create_core -c facet
-  curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/solrconfig-facet.xml -o $datafolder/solr/data/facet/conf/solrconfig.xml
-  curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/managed-schema-facet -o $datafolder/solr/data/facet/conf/managed-schema.xml 
+  curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/solrconfig-facet.xml -o $datafolder/solr/data/facet/conf/solrconfig.xml
+  curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/managed-schema-facet -o $datafolder/solr/data/facet/conf/managed-schema.xml 
 fi
 
 docker stop docintel-dev-solr
@@ -127,7 +127,7 @@ docker rm docintel-dev-solr
 
 echo ""
 echo "⚙️ Creating the configuration files"
-curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/appsettings.json.example -o $conffolder/appsettings.json
+curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/appsettings.json.example -o $conffolder/appsettings.json
 sed -i.bck "s~_POSTGRES_USER_~postgres~g" $conffolder/appsettings.json
 sed -i.bck "s~_POSTGRES_PW_~$postgrespw~g" $conffolder/appsettings.json
 sed -i.bck "s~_POSTGRES_DB_~docintel~g" $conffolder/appsettings.json
@@ -142,9 +142,9 @@ sed -i.bck "s~_RABBITMQ_USER_~guest~g" $conffolder/appsettings.json
 sed -i.bck "s~_RABBITMQ_PW_~guest~g" $conffolder/appsettings.json
 sed -i.bck "s~_SOLR_URL_~http://docintel-dev-solr:8983~g" $conffolder/appsettings.json
 
-curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/nlog.config.example -o $conffolder/nlog.config
+curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/nlog.config.example -o $conffolder/nlog.config
 
-curl https://raw.githubusercontent.com/docintelapp/DocIntel/vertex/conf/docker-compose.yml.example -o docker-compose.yml
+curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/docker-compose.yml.example -o docker-compose.yml
 sed -i.bck "s~_DOCINTEL_CONFIG_~$conffolder~g" docker-compose.yml
 sed -i.bck "s~_DOCINTEL_DATA_~$datafolder~g" docker-compose.yml
 sed -i.bck "s~_POSTGRES_USER_~postgres~g" docker-compose.yml
