@@ -135,6 +135,55 @@ namespace DocIntel.WebApp.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Details(Guid id)
+        {
+            var currentUser = await GetCurrentUser();
+
+            try
+            {
+                var facet = await _facetRepository.GetAsync(AmbientContext, id, new[] {nameof(TagFacet.Tags)});
+                if (!await _appAuthorizationService.CanEditFacetTag(User, facet))
+                {
+                    _logger.Log(LogLevel.Warning, EventIDs.EditTagFacetFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' attempted to get details about facet '{facet.Title}' without legitimate rights.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext)
+                            .AddFacet(facet),
+                        null,
+                        LogEvent.Formatter);
+
+                    return Unauthorized();
+                }
+
+                return View(facet);
+            }
+            catch (UnauthorizedOperationException)
+            {
+                _logger.Log(LogLevel.Warning, EventIDs.EditTagFacetFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to get details about facet '{id}' without legitimate rights.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddProperty("facet.id", id),
+                    null,
+                    LogEvent.Formatter);
+                return Unauthorized();
+            }
+            catch (NotFoundEntityException)
+            {
+                _logger.Log(LogLevel.Warning, EventIDs.EditTagFacetFailed,
+                    new LogEvent($"User '{currentUser.UserName}' attempted to get details about a non-existing facet '{id}'.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddProperty("facet.id", id),
+                    null,
+                    LogEvent.Formatter);
+                return NotFound();
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
             var currentUser = await GetCurrentUser();

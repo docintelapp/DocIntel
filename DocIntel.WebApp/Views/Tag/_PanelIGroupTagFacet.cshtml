@@ -3,7 +3,7 @@
 <div class="panel">
     <div class="panel-hdr">
         <h2>
-            @Model.Key.Item2
+            <a asp-action="Details" asp-controller="TagFacet" asp-route-id="@Model.Key.Item1">@Model.Key.Item2</a>
             <span class="fw-300">
                 <i>Facet</i>
             </span>

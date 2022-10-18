@@ -1,0 +1,60 @@
+@using DocIntel.Core.Authorization.Operations
+@model TagFacet
+
+@{
+    ViewData["Title"] = "Facet '" + Model.Title + "'";
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.DeleteFacet)).Succeeded;
+    var canEdit = (await AuthorizationService.AuthorizeAsync(User, null, TagOperations.EditFacet)).Succeeded;
+}
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-tags subheader-icon"></i> @ViewData["Title"]
+        </h1>
+        <div>
+            <div class="btn-group">
+                @if (canDelete)
+                {
+                    <a asp-action="Delete" asp-route-id="@Model.FacetId" class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-trash-alt"></i> Delete
+                    </a>
+                }
+                @if (canEdit)
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.FacetId" class= "btn btn-pills btn-primary btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-edit"></i> Edit
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        @Model.Title
+                        <span class="fw-300">
+                            <i>Facet</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <text>@Html.Raw(Model.Description)</text>
+                            <hr />
+                        }
+                        @foreach (var tag in Model.Tags)
+                        {
+                            <a class="badge badge-pill @tag.BackgroundColor"
+                               asp-action="Details" asp-route-label="@tag.TagId">
+                                @tag.Label
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
