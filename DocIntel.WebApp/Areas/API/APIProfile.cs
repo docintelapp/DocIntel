@@ -53,8 +53,7 @@ namespace DocIntel.WebApp.Areas.API
             CreateMap<Source, APISource>()
                 .ForMember(_ => _.Keywords,
                     _ => _.MapFrom(_ =>
-                        _.Keywords.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(__ => __.Trim())))
-                .ForMember(_ => _.FactualScore, _ => _.Ignore());
+                        _.Keywords.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(__ => __.Trim())));
             CreateMap<Document, APIDocumentExport>()
                 .ForMember(_ => _.Tags, _ => _.MapFrom(_ => _.DocumentTags.Select(__ => __.Tag)))
                 .ForMember(_ => _.Adversaries,

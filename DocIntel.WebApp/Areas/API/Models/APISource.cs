@@ -41,23 +41,6 @@ namespace DocIntel.WebApp.Areas.API.Models
         public APIAppUser LastModifiedBy { get; set; }
 
         public SourceReliability Reliability { get; set; }
-        public int BiasedWording { get; set; } = -1;
-        public int Factual { get; set; } = -1;
-        public int StoryChoice { get; set; } = -1;
-        public int PoliticalAffiliation { get; set; } = -1;
-
-        public int FactualScore
-        {
-            get
-            {
-                if ((BiasedWording < 0) | (Factual < 0) | (StoryChoice < 0) | (PoliticalAffiliation < 0))
-                    return -1;
-
-                return (int) Math.Round((BiasedWording + Factual + StoryChoice + PoliticalAffiliation) / 4.0d);
-            }
-        }
-
-        public PoliticalSpectrum PoliticalSpectrum { get; set; }
 
         public string Country { get; set; }
     }
