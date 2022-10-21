@@ -21,7 +21,7 @@ A run.sh script is available to help you install the application as easily as po
   
 Check the configurations and the compose file. You can then run the deployment with
 
-    docker compose -f docker-compose.yml -p docintel-dev up -d
+    docker-compose -f docker-compose.yml -p docintel-dev up -d
   
 However, you would not be able to log in the platform. You need to create an account. We recommend creating a specific admin account that you don't use for your daily tasks.
 
