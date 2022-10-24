@@ -60,10 +60,13 @@ namespace DocIntel.Core.Repositories.EFCore
             {
                 if (ambientContext.DatabaseContext.Classifications.AsQueryable().Any())
                 {
+                    if (classification.Default)
                     // If more than one classification, ensure that we only have one default classification 
-                    foreach (var c in ambientContext.DatabaseContext.Classifications)
                     {
-                        c.Default = !classification.Default;
+                        foreach (var c in ambientContext.DatabaseContext.Classifications)
+                        {
+                            c.Default = false;
+                        }
                     }
                 }
                 else
