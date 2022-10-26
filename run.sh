@@ -85,8 +85,10 @@ docker rm docintel-dev-postgresql
 
 echo ""
 echo "📚 Configuring SolR"
+mkdir /var/solr
 mkdir -p $datafolder/solr
 chown 8983:8983 $datafolder/solr
+chown 8983:8983 /var/solr
 docker run --name docintel-dev-solr \
   -v $datafolder/solr/:/var/solr \
   -d solr
