@@ -98,41 +98,51 @@ namespace DocIntel.Core.Utils.Thumbnail
 
         private async Task<bool> SavePDFThumbnail(AmbientContext context, DocumentFile file)
         {
-            var tempFilePath = Path.GetTempFileName();
-            var pdfFilename = Path.Combine(_configuration.DocFolder, file.Filepath);
+            try
+            {
+                var tempFilePath = Path.GetTempFileName();
+                var pdfFilename = Path.Combine(_configuration.DocFolder, file.Filepath);
 
-            var command = "pdftoppm";
-            var args = $"{pdfFilename} {tempFilePath} -png -f 1 -singlefile";
-            var psi = new ProcessStartInfo(command)
+                var command = "pdftoppm";
+                var args = $"{pdfFilename} {tempFilePath} -png -f 1 -singlefile";
+                var psi = new ProcessStartInfo(command)
+                {
+                    Arguments = args,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                _logger.LogDebug(psi.FileName + " " + psi.Arguments);
+                var proc = Process.Start(psi);
+                if (proc != null)
+                {
+                    await proc.WaitForExitAsync();
+                    var exitCode = proc.ExitCode;
+                    proc.Close();
+                }
+
+                await using var memoryStream = new MemoryStream();
+                using var image = await Image.LoadAsync(File.OpenRead(tempFilePath + ".png"));
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Size = new Size(512, 512),
+                    Mode = ResizeMode.Min
+                }));
+                image.Mutate(x => x.Crop(512, 512));
+                await image.SaveAsPngAsync(memoryStream);
+
+                await SaveThumbnail(context, file, memoryStream);
+
+                File.Delete(tempFilePath);
+
+                return true;
+            }
+            catch (Exception e)
             {
-                Arguments = args,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            _logger.LogDebug(psi.FileName + " " + psi.Arguments);
-            var proc = Process.Start(psi);
-            if (proc != null)
-            {
-                await proc.WaitForExitAsync();
-                var exitCode = proc.ExitCode;
-                proc.Close();
+                _logger.LogError(e.Message);
+                _logger.LogError(e.StackTrace);
             }
 
-            await using var memoryStream = new MemoryStream();
-            using var image = await Image.LoadAsync(File.OpenRead(tempFilePath + ".png"));
-            image.Mutate(x => x.Resize(new ResizeOptions
-            {
-                Size = new Size(512, 512),
-                Mode = ResizeMode.Min
-            }));
-            image.Mutate(x => x.Crop(512, 512));
-            await image.SaveAsPngAsync(memoryStream);
-
-            await SaveThumbnail(context, file, memoryStream);
-
-            File.Delete(tempFilePath);
-
-            return true;
+            return false;
         }
 
         private async Task SaveThumbnail(AmbientContext context, DocumentFile file, MemoryStream memoryStream)
