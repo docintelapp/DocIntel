@@ -80,14 +80,14 @@ namespace DocIntel.Core.Models
         public override int SaveChanges()
         {
             var result = base.SaveChanges();
-            _logger.LogDebug("SaveChanges return status: {0}", result);
+            _logger.LogTrace("SaveChanges return status: {0}", result);
 
             foreach (var task in OnSaveCompleteTasks)
             {
                 task().Wait();
             }
 
-            _logger.LogDebug("Completed SaveChanges tasks");
+            _logger.LogTrace("Completed SaveChanges tasks");
 
             OnSaveCompleteTasks = new ConcurrentBag<Func<Task>>();
 
@@ -97,13 +97,13 @@ namespace DocIntel.Core.Models
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var saveTask = await base.SaveChangesAsync(cancellationToken);
-            _logger.LogDebug("SaveChangesAsync return status: {0}", saveTask);
+            _logger.LogTrace("SaveChangesAsync return status: {0}", saveTask);
 
             foreach (var task in OnSaveCompleteTasks)
             {
                 await task();
             }
-            _logger.LogDebug("Completed SaveChangesAsync tasks");
+            _logger.LogTrace("Completed SaveChangesAsync tasks");
 
             OnSaveCompleteTasks = new ConcurrentBag<Func<Task>>();
 
