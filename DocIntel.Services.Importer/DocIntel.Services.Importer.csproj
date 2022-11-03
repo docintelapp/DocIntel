@@ -11,13 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BlushingPenguin.JsonPath" Version="1.0.6" />
     <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.2" />
-    <PackageReference Include="PuppeteerSharp" Version="7.0.0" />
   </ItemGroup>
 
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
-    <Copy SourceFiles="Readability.js" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="nlog.config" DestinationFolder="$(OutDir)" Condition="Exists('nlog.config')" />
   </Target>
 
 </Project>
