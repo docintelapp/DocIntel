@@ -64,14 +64,23 @@ namespace DocIntel.Services.Importer
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                await ImportFeeds();
-                _logger.LogInformation("Sleeping...");
+                try
+                {
+                    _logger.LogInformation("Will collect feeds...");
+                    await ImportFeeds();
+                    _logger.LogInformation("Sleeping...");
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.Message + "\n" + e.StackTrace);
+                }
                 await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
             }
         }
 
         private async Task ImportFeeds()
         {
+            _logger.LogDebug($"Start import feeds");
             var options =
                 (DbContextOptions<DocIntelContext>) _serviceProvider.GetService(
                     typeof(DbContextOptions<DocIntelContext>));

@@ -36,7 +36,17 @@ namespace DocIntel.Services.Importer
         protected override async Task Run(CancellationToken cancellationToken)
         {
             var worker = _serviceProvider.GetService<Runner>();
-            if (worker != null) await worker.RunAsync(cancellationToken);
+            try
+            {
+                if (worker != null) await worker.RunAsync(cancellationToken);
+                else throw new InvalidOperationException("Could not create instance of consumer");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+            }
+            await Task.Delay(Timeout.Infinite, cancellationToken);
         }
     }
 }
