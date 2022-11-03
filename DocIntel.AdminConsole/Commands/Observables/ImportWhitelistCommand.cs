@@ -1,31 +1,24 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
-using DocIntel.Core.Utils.Observables;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using Spectre.Console;
 using Spectre.Console.Cli;
 using Synsharp;
 using Synsharp.Forms;
 
-namespace DocIntel.Console.Commands.Observables
+namespace DocIntel.AdminConsole.Commands.Observables
 {
     public class ImportWhitelistCommand : DocIntelCommand<ImportWhitelistCommand.Settings>
     {

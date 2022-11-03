@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using DocIntel.Console.Commands.Observables;
+using DocIntel.AdminConsole.Commands.Observables;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace DocIntel.Console.Commands.Thumbnails;
+namespace DocIntel.AdminConsole.Commands.Thumbnails;
 
 public class GenerateThumbnailCommand : DocIntelCommand<GenerateThumbnailCommand.Settings>
 {

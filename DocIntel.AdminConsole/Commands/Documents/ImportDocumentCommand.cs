@@ -1,11 +1,9 @@
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using DocIntel.Console.Commands.Observables;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -17,7 +15,7 @@ using Newtonsoft.Json;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace DocIntel.Console.Commands.Documents;
+namespace DocIntel.AdminConsole.Commands.Documents;
 
 public class ImportDocumentCommand : DocIntelCommand<ImportDocumentCommand.Settings>
 {

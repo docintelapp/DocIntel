@@ -2,8 +2,12 @@
 using System.Linq;
 using System.Threading.Tasks;
 using DocIntel.AdminConsole.Commands.Classifications;
+using DocIntel.AdminConsole.Commands.Documents;
 using DocIntel.AdminConsole.Commands.Index;
+using DocIntel.AdminConsole.Commands.Observables;
 using DocIntel.AdminConsole.Commands.Roles;
+using DocIntel.AdminConsole.Commands.Tags;
+using DocIntel.AdminConsole.Commands.Thumbnails;
 using DocIntel.AdminConsole.Commands.Users;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Services;
@@ -92,6 +96,27 @@ namespace DocIntel.AdminConsole
                 add.AddCommand<IndexTagsCommand>("tags");
                 add.AddCommand<IndexSourcesCommand>("sources");
                 add.AddCommand<IndexFacetsCommand>("facets");
+            });
+            config.AddBranch("document", add =>
+            {
+                add.AddCommand<ImportDocumentCommand>("import");
+            });
+            config.AddBranch("observable", add =>
+            {
+                add.AddCommand<ExtractObservableCommand>("extract");
+            });
+            config.AddBranch("whitelist", add =>
+            {
+                add.AddCommand<ImportWhitelistCommand>("import");
+            });
+            config.AddBranch("tags", add =>
+            {
+                add.AddCommand<ImportTagsCommand>("import");
+                add.AddCommand<AnalyzeTagsCommand>("analyze");
+            });
+            config.AddBranch("thumbnails", add =>
+            {
+                add.AddCommand<GenerateThumbnailCommand>("generate");
             });
         }
     }

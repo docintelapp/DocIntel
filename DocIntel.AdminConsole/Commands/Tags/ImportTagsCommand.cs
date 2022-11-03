@@ -1,32 +1,24 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-
-using DocIntel.Console.Commands.Observables;
+using DocIntel.AdminConsole.Commands.Observables;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
-using DocIntel.Core.Utils.ContentExtraction;
-using DocIntel.Core.Utils.Observables;
 using Markdig;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace DocIntel.Console.Commands.Tags
+namespace DocIntel.AdminConsole.Commands.Tags
 {
     public class ImportTagsCommand : DocIntelCommand<ImportTagsCommand.Settings>
     {

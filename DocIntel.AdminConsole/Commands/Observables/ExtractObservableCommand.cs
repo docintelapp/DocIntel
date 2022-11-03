@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Spectre.Console.Cli;
 using Synsharp;
 
-namespace DocIntel.Console.Commands.Observables
+namespace DocIntel.AdminConsole.Commands.Observables
 {
     public class ExtractObservableCommand : DocIntelCommand<ExtractObservableCommand.Settings>
     {
