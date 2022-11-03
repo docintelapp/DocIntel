@@ -54,7 +54,7 @@ public class BaseDataDbService : IStartupServiceToRunSequentially
         }
         
         // Create administrator role
-        var role = await context.Roles.SingleOrDefaultAsync();
+        var role = await context.Roles.SingleOrDefaultAsync(_ => _.NormalizedName == "ADMINISTRATOR");
         if (role == null)
         {
             // Get all permissions
