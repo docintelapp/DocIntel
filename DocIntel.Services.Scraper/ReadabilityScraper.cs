@@ -111,8 +111,16 @@ namespace DocIntel.Services.Scraper
                 {
                     Headless = true,
                     IgnoreHTTPSErrors = true,
-                    Args = new[] {"--proxy-server=\"http=" + _settings.Proxy + ";https=" + _settings.Proxy + "\""}
                 };
+                
+                if (!string.IsNullOrEmpty(_settings.Proxy))
+                {
+                    options.Args = new[]
+                    {
+                        "--proxy-server=\"http=" + _settings.Proxy + ";https=" + _settings.Proxy + "\""
+                    };
+                }
+                
                 _logger.LogDebug("Browser: " + options.ExecutablePath);
                 _logger.LogDebug("Proxy used for executable: " + string.Join(" ", options.Args));
 
