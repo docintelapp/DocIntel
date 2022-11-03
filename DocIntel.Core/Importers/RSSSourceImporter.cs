@@ -61,8 +61,8 @@ namespace DocIntel.Core.Importers
 
             foreach (var source in sources)
             {
-                _logger.LogWarning("Source : " + source.Title);
-                if (source.MetaData.ContainsKey("rss_enabled") && source.MetaData.Value<bool>("rss_enabled"))
+                _logger.LogInformation("Source : " + source.Title);
+                if (source.MetaData != null && source.MetaData.ContainsKey("rss_enabled") && source.MetaData.Value<bool>("rss_enabled"))
                 {
                     var lastSourcePull = source.MetaData.Value<DateTime>("rss_last_pull");
 
@@ -89,7 +89,8 @@ namespace DocIntel.Core.Importers
                     }
 
                     if (feed != null)
-                    {foreach (var item in feed.Items)
+                    {
+                        foreach (var item in feed.Items)
                         {
                             var subject = item.Title.Text;
                             var summary = item.Summary.Text;
@@ -124,7 +125,10 @@ namespace DocIntel.Core.Importers
                         await context.DatabaseContext.SaveChangesAsync();
                     }
                 }
-
+                else
+                {
+                    _logger.LogTrace("Source has no rss_enabled");
+                }
                 await context.DatabaseContext.SaveChangesAsync();
             }
         }
