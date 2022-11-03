@@ -52,6 +52,7 @@ namespace DocIntel.Core.Scrapers
 
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
+            Init();
             Console.WriteLine("Download PDF...");
             var context = GetContext(message.SubmitterId);
             var uri = new Uri(message.URL);

@@ -66,6 +66,7 @@ namespace DocIntel.Core.Scrapers
 
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
+            Init();
             var context = GetContext();
             var match = Regex.Match(message.URL,
                 @"https?:\/\/app\.threatconnect\.com\/auth\/(document|report)\/(document|report)\.xhtml\?(document|report)\=(.*)");

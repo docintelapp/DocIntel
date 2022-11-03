@@ -66,6 +66,7 @@ namespace DocIntel.Core.Scrapers
 
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
+            Init();
             if (!string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(SecretKey))
             {
                 var client = new FireEyeAPI(ApiKey, SecretKey,

@@ -58,6 +58,7 @@ namespace DocIntel.Core.Scrapers
 
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
+            Init();
             var context = GetContext();
             var match = Regex.Match(message.URL, @"https?://eu.threatmatch.com/app/reports/view/([0-9]+)");
             var reportId = match.Groups[1].ToString();

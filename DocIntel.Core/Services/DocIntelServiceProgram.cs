@@ -82,6 +82,7 @@ namespace DocIntel.Core.Services
                 // TODO Raise custom exception
                 throw new FileNotFoundException("Could not find logging configuration file 'nlog.config'.");
             }
+
         }
 
         public static void ConfigureAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder config)

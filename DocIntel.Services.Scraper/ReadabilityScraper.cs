@@ -64,6 +64,8 @@ namespace DocIntel.Services.Scraper
 
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
+            Init();
+            
             _engine = new CustomRazorLightEngineBuilder()
                 .UseFileSystemProject(Path.Combine(Directory.GetCurrentDirectory(), "Views"))
                 .UseMemoryCachingProvider()

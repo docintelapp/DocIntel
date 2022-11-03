@@ -40,27 +40,32 @@ namespace DocIntel.Core.Scrapers
 {
     public abstract class DefaultScraper : IScraper
     {
-        protected readonly IDocumentRepository _documentRepository;
-        protected readonly ITagFacetRepository _facetRepository;
         private readonly ILogger<DefaultScraper> _logger;
-        protected readonly IServiceProvider _serviceProvider;
-        protected readonly ISourceRepository _sourceRepository;
-        protected readonly ITagRepository _tagRepository;
-        private readonly IGroupRepository _groupRepository;
         private readonly ApplicationSettings _settings;
-        protected readonly IClassificationRepository _classificationRepository;
+        
+        protected IDocumentRepository _documentRepository;
+        protected ITagFacetRepository _facetRepository;
+        protected IServiceProvider _serviceProvider;
+        protected ISourceRepository _sourceRepository;
+        protected ITagRepository _tagRepository;
+        protected IGroupRepository _groupRepository;
+        protected IClassificationRepository _classificationRepository;
 
         protected DefaultScraper(IServiceProvider serviceProvider)
         {
-            _serviceProvider = serviceProvider;
-            _documentRepository = (IDocumentRepository) serviceProvider.GetService(typeof(IDocumentRepository));
-            _sourceRepository = (ISourceRepository) serviceProvider.GetService(typeof(ISourceRepository));
-            _groupRepository = (IGroupRepository) serviceProvider.GetService(typeof(IGroupRepository));
-            _tagRepository = (ITagRepository) serviceProvider.GetService(typeof(ITagRepository));
-            _facetRepository = (ITagFacetRepository) serviceProvider.GetService(typeof(ITagFacetRepository));
-            _logger = (ILogger<DefaultScraper>) serviceProvider.GetService(typeof(ILogger<DefaultScraper>));
             _settings = (ApplicationSettings) serviceProvider.GetService(typeof(ApplicationSettings));
-            _classificationRepository = serviceProvider.GetRequiredService<IClassificationRepository>();
+            _logger = (ILogger<DefaultScraper>) serviceProvider.GetService(typeof(ILogger<DefaultScraper>));
+            _serviceProvider = serviceProvider;
+        }
+
+        protected void Init()
+        {
+            _documentRepository = (IDocumentRepository) _serviceProvider.GetService(typeof(IDocumentRepository));
+            _sourceRepository = (ISourceRepository) _serviceProvider.GetService(typeof(ISourceRepository));
+            _groupRepository = (IGroupRepository) _serviceProvider.GetService(typeof(IGroupRepository));
+            _tagRepository = (ITagRepository) _serviceProvider.GetService(typeof(ITagRepository));
+            _facetRepository = (ITagFacetRepository) _serviceProvider.GetService(typeof(ITagFacetRepository));
+            _classificationRepository = _serviceProvider.GetRequiredService<IClassificationRepository>();
         }
 
         public ScraperInformation Get()
