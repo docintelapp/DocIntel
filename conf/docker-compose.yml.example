@@ -56,6 +56,11 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+    depends_on:
+      - solr
+      - synapse
+      - postgresql
+      - rabbitmq
       
   document_indexer:
     image: "docintelapp/document-indexer"
@@ -64,6 +69,11 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+    depends_on:
+      - solr
+      - synapse
+      - postgresql
+      - rabbitmq
       
   importer:
     image: "docintelapp/importer"
@@ -72,6 +82,11 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+    depends_on:
+      - solr
+      - synapse
+      - postgresql
+      - rabbitmq
       
   newsletter:
     image: "docintelapp/newsletter"
@@ -80,6 +95,11 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+    depends_on:
+      - solr
+      - synapse
+      - postgresql
+      - rabbitmq
       
   scraper:
     image: "docintelapp/scraper"
@@ -88,6 +108,11 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+    depends_on:
+      - solr
+      - synapse
+      - postgresql
+      - rabbitmq
       
   source_indexer:
     image: "docintelapp/source-indexer"
@@ -96,6 +121,11 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+    depends_on:
+      - solr
+      - synapse
+      - postgresql
+      - rabbitmq
       
   tag_indexer:
     image: "docintelapp/tag-indexer"
@@ -104,6 +134,11 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+    depends_on:
+      - solr
+      - synapse
+      - postgresql
+      - rabbitmq
       
   thumbnailer:
     image: "docintelapp/thumbnailer"
@@ -112,6 +147,11 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+    depends_on:
+      - solr
+      - synapse
+      - postgresql
+      - rabbitmq
       
   webapp:
     image: "docintelapp/webapp"
@@ -122,3 +162,8 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+    depends_on:
+      - solr
+      - synapse
+      - postgresql
+      - rabbitmq
