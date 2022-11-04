@@ -51,11 +51,13 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
             "Timed Hosted Service is working. Count: {Count}", count);
         
         var ambientContext = await GetAmbientContext();
-        var listAsync = await _documentRepository.GetAllAsync(ambientContext,
-            _ => _.Where(__ => __.Status == DocumentStatus.Submitted)).ToListAsync();
             
-        foreach (var submitted in listAsync)
+        while (await _documentRepository.GetAllAsync(ambientContext,
+                   _ => _.Where(__ => __.Status == DocumentStatus.Submitted)).CountAsync() > 0)
         {
+            var submitted = await _documentRepository.GetAllAsync(ambientContext,
+                _ => _.Where(__ => __.Status == DocumentStatus.Submitted))
+                .OrderByDescending(__ => __.RegistrationDate).FirstAsync();
             await _documentAnalyzerUtility.Analyze(submitted.DocumentId, ambientContext);
         }
     }

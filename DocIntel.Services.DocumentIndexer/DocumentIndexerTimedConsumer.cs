@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,22 +66,18 @@ public class DocumentIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
         var count = Interlocked.Increment(ref executionCount);
         _logger.LogInformation(
             "Timed Hosted Service is working. Count: {Count}", count);
-
+        HashSet<Guid> processed = new HashSet<Guid>();
         using var ambientContext = await GetAmbientContext();
-        var listAsync = await _documentRepository.GetAllAsync(ambientContext,
-                _ => _.Include(__ => __.Source).Include(__ => __.Comments).Include(__ => __.Files)
-                    .Include(__ => __.DocumentTags).ThenInclude(__ => __.Tag).ThenInclude(__ => __.Facet)
-                    .Where(__ => __.LastIndexDate == DateTime.MinValue 
-                                 || __.LastIndexDate == DateTime.MaxValue 
-                                 || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(30)))
-            .ToListAsync();
-
-        foreach (var document in listAsync)
+        while (await GetAllAsync(ambientContext, processed).CountAsync() > 0)
+        {
+            var document = await GetAllAsync(ambientContext, processed).OrderByDescending(__ => __.DocumentDate).FirstAsync();
             try
             {
                 if (document.Status != DocumentStatus.Registered) continue;
                 _indexingUtility.Update(document);
                 document.LastIndexDate = DateTime.UtcNow;
+                processed.Add(document.DocumentId);
+                await ambientContext.DatabaseContext.SaveChangesAsync();
             }
             catch (UnauthorizedOperationException)
             {
@@ -114,6 +111,19 @@ public class DocumentIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
                     LogEvent.Formatter);
                 _logger.LogDebug(e.StackTrace);
             }
-        await ambientContext.DatabaseContext.SaveChangesAsync();
+        }
+    }
+
+    private IAsyncEnumerable<Document> GetAllAsync(AmbientContext ambientContext, HashSet<Guid> processed)
+    {
+        return _documentRepository.GetAllAsync(ambientContext,
+            _ => _.Include(__ => __.Source).Include(__ => __.Comments).Include(__ => __.Files)
+                .Include(__ => __.DocumentTags).ThenInclude(__ => __.Tag).ThenInclude(__ => __.Facet)
+                .Where(__ => 
+                    !processed.ToArray().Contains(__.DocumentId)
+                    && __.Status == DocumentStatus.Registered
+                    && (__.LastIndexDate == DateTime.MinValue 
+                         || __.LastIndexDate == DateTime.MaxValue 
+                         || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(30))));
     }
 }

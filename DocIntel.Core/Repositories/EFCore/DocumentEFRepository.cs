@@ -573,7 +573,11 @@ namespace DocIntel.Core.Repositories.EFCore
             return file;
         }
 
-        public async Task<DocumentFile> AddFile(AmbientContext ambientContext, DocumentFile file, Stream stream, ISet<Group> releasableTo = null, ISet<Group> eyesOnly = null)
+        public async Task<DocumentFile> AddFile(AmbientContext ambientContext,
+            DocumentFile file,
+            Stream stream,
+            ISet<Group> releasableTo = null,
+            ISet<Group> eyesOnly = null)
         {
             if (stream.Length == 0)
                 return null;
@@ -709,16 +713,24 @@ namespace DocIntel.Core.Repositories.EFCore
             return queryable.AsAsyncEnumerable();
         }
         
-        public void DeleteSubmittedDocument(AmbientContext ambientContext, Guid id, SubmissionStatus status = SubmissionStatus.Processed, bool hard = false)
+        public void DeleteSubmittedDocument(AmbientContext ambientContext,
+            Guid id,
+            SubmissionStatus status = SubmissionStatus.Processed,
+            bool hard = false)
         {
             if (!hard)
             {
-                var submittedDocument = ambientContext.DatabaseContext.SubmittedDocuments.AsQueryable().SingleOrDefault(_ => _.SubmittedDocumentId == id);
+                var submittedDocument = ambientContext.DatabaseContext.SubmittedDocuments.AsQueryable()
+                    .SingleOrDefault(_ => _.SubmittedDocumentId == id);
                 if (submittedDocument != null) submittedDocument.Status = status;
             }
             else
             {
-                var submittedDocuments = ambientContext.DatabaseContext.SubmittedDocuments.AsQueryable().Where(__ => __.URL == ambientContext.DatabaseContext.SubmittedDocuments.AsQueryable().SingleOrDefault(_ => _.SubmittedDocumentId == id).URL);
+                var submittedDocuments = ambientContext.DatabaseContext.SubmittedDocuments.AsQueryable()
+                    .Where(__ => __.URL ==
+                                 ambientContext.DatabaseContext.SubmittedDocuments.AsQueryable()
+                                     .SingleOrDefault(_ => _.SubmittedDocumentId == id)
+                                     .URL);
                 ambientContext.DatabaseContext.RemoveRange(submittedDocuments);
             }
         }

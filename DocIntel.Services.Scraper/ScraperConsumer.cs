@@ -58,14 +58,22 @@ namespace DocIntel.Services.Scraper
 
         public async Task ConsumeBacklogAsync()
         {
-            foreach (var submitted in _documentRepository.GetSubmittedDocuments(GetContext(),
+            
+            while (await _documentRepository.GetSubmittedDocuments(GetContext(),
                     _ => _.Include(__ => __.Classification)
                         .Include(__ => __.ReleasableTo)
                         .Include(__ => __.EyesOnly)
                         .Where(__ => __.Status == SubmissionStatus.Submitted))
-                .ToEnumerable())
+                .CountAsync() > 0)
             {
-                await Scrape(submitted);
+                var submitted = await _documentRepository.GetSubmittedDocuments(GetContext(),
+                        _ => _.Include(__ => __.Classification)
+                            .Include(__ => __.ReleasableTo)
+                            .Include(__ => __.EyesOnly)
+                            .Where(__ => __.Status == SubmissionStatus.Submitted)
+                            .OrderByDescending(__ => __.SubmissionDate))
+                    .FirstOrDefaultAsync();
+                var result = await Scrape(submitted);
             }
         }
 
@@ -118,7 +126,7 @@ namespace DocIntel.Services.Scraper
             await Scrape(submission);
         }
 
-        private async Task Scrape(SubmittedDocument submission)
+        private async Task<bool> Scrape(SubmittedDocument submission)
         {  
             submission.IngestionDate = DateTime.UtcNow;
             
@@ -133,6 +141,7 @@ namespace DocIntel.Services.Scraper
             if (exists.Any(_ => _.MetaData.Value<int>("ScraperPriority") >= submission.Priority)) {
                 _documentRepository.DeleteSubmittedDocument(context, submission.SubmittedDocumentId, SubmissionStatus.Duplicate);
                 await context.DatabaseContext.SaveChangesAsync();
+                return true;
             }
 
             bool scraped = false;
@@ -155,7 +164,7 @@ namespace DocIntel.Services.Scraper
                             if (!await instance.Scrape(submission))
                             {
                                 scraped = true;
-                                return;   
+                                break;
                             }
 
                         } catch (Exception e)
@@ -175,12 +184,17 @@ namespace DocIntel.Services.Scraper
             {
                 _documentRepository.DeleteSubmittedDocument(context, submission.SubmittedDocumentId);
                 await context.DatabaseContext.SaveChangesAsync();
-                return;
+            }
+            else
+            {
+                submission.Status = SubmissionStatus.Error;
+                await context.DatabaseContext.SaveChangesAsync();
             }
             
             _logger.LogDebug(
                 $"No scraper found for {submission.URL}");
-            
+
+            return scraped;
         }
     }
 }
