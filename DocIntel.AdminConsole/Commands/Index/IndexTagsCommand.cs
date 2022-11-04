@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 using DocIntel.Core.Models;
@@ -15,7 +16,7 @@ using Spectre.Console.Cli;
 
 namespace DocIntel.AdminConsole.Commands.Index
 {
-    public class IndexTagsCommand : DocIntelCommand<DocIntelCommandSettings>
+    public class IndexTagsCommand : DocIntelCommand<IndexTagsCommand.Settings>
     {
         private readonly ITagIndexingUtility _tagIndexingUtility;
         private readonly ITagRepository _tagRepository;
@@ -33,16 +34,19 @@ namespace DocIntel.AdminConsole.Commands.Index
             _logger = logger;
         }
 
-        public override async Task<int> ExecuteAsync(CommandContext context, DocIntelCommandSettings settings)
+        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
             await base.ExecuteAsync(context, settings);
             
             if (!TryGetAmbientContext(out var ambientContext))
                 return 1;
 
-            AnsiConsole.Render(new Markup("[grey]Will remove all tags from the index...[/]"));
-            _tagIndexingUtility.RemoveAll();
-            AnsiConsole.Render(new Markup("[green]Done.[/]\n"));
+            if (settings.Clear)
+            {
+                AnsiConsole.Render(new Markup("[grey]Will remove all tags from the index...[/]"));
+                _tagIndexingUtility.RemoveAll();
+                AnsiConsole.Render(new Markup("[green]Done.[/]\n"));
+            }
 
             // TODO Use tag repository
             var tags = _context.Tags.Include(_ => _.Facet)
@@ -62,9 +66,26 @@ namespace DocIntel.AdminConsole.Commands.Index
                     _logger.LogError($"Could not index tag '{tag.TagId}' ({e.Message}).");
                 }
 
+            if (settings.ForceCommit)
+            {
+                AnsiConsole.Render(new Markup("[green]Committing...[/]\n"));
+                _tagIndexingUtility.Commit();
+            }
+
             AnsiConsole.Render(new Markup("[green]Done.[/]\n"));
 
             return 0;
+        }
+
+        public class Settings : DocIntelCommandSettings
+        {
+            [CommandOption("-c|--clear")]
+            [DefaultValue(false)]
+            public bool Clear { get; set; }
+        
+            [CommandOption("-f|--force-commit")]
+            [DefaultValue(false)]
+            public bool ForceCommit { get; set; }
         }
     }
 }

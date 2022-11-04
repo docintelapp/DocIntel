@@ -47,27 +47,30 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         {
             _logger.LogDebug("Add " + tag.TagId);
             _solr.Add(_mapper.Map<IndexedTag>(tag));
-            _solr.Commit();
         }
 
         public void Remove(Guid tagId)
         {
             _logger.LogDebug("Delete " + tagId);
             _solr.Delete(tagId.ToString());
-            _solr.Commit();
         }
 
         public void RemoveAll()
         {
             _solr.Delete(SolrQuery.All);
-            _solr.Commit();
         }
 
         public void Update(Tag tag)
         {
             _logger.LogDebug("Update " + tag.TagId);
             _solr.Add(_mapper.Map<IndexedTag>(tag));
+        }
+
+        public void Commit()
+        {
+            _logger.LogDebug("Commit");
             _solr.Commit();
         }
+
     }
 }

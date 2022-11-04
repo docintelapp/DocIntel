@@ -41,25 +41,28 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         public void Add(TagFacet tag)
         {
             _solr.Add(_mapper.Map<IndexedTagFacet>(tag));
-            _solr.Commit();
         }
 
         public void Remove(Guid tagId)
         {
             _solr.Delete(tagId.ToString());
-            _solr.Commit();
         }
 
         public void RemoveAll()
         {
             _solr.Delete(SolrQuery.All);
-            _solr.Commit();
         }
 
         public void Update(TagFacet tag)
         {
             _solr.Add(_mapper.Map<IndexedTagFacet>(tag));
+        }
+
+        public void Commit()
+        {
+            _logger.LogDebug("Commit");
             _solr.Commit();
         }
+
     }
 }

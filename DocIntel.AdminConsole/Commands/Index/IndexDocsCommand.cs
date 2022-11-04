@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 using DocIntel.Core.Models;
@@ -15,7 +16,7 @@ using Spectre.Console.Cli;
 
 namespace DocIntel.AdminConsole.Commands.Index
 {
-    public class IndexDocsCommand : DocIntelCommand<DocIntelCommandSettings>
+    public class IndexDocsCommand : DocIntelCommand<IndexDocsCommand.Settings>
     {
         private readonly IDocumentIndexingUtility _documentIndexingService;
         private readonly IDocumentRepository _documentRepository;
@@ -33,16 +34,19 @@ namespace DocIntel.AdminConsole.Commands.Index
             _logger = logger;
         }
 
-        public override async Task<int> ExecuteAsync(CommandContext context, DocIntelCommandSettings settings)
+        public override async Task<int> ExecuteAsync(CommandContext context, IndexDocsCommand.Settings settings)
         {
             await base.ExecuteAsync(context, settings);
             
             if (!TryGetAmbientContext(out var ambientContext))
                 return 1;
 
-            AnsiConsole.Render(new Markup("[grey]Will remove all documents from the index...[/]"));
-            _documentIndexingService.RemoveAll();
-            AnsiConsole.Render(new Markup("[green]Done.[/]\n"));
+            if (settings.Clear)
+            {
+                AnsiConsole.Render(new Markup("[grey]Will remove all documents from the index...[/]"));
+                _documentIndexingService.RemoveAll();
+                AnsiConsole.Render(new Markup("[green]Done.[/]\n"));
+            }
 
             var documents = _documentRepository.GetAllAsync(ambientContext, new DocumentQuery
                 {
@@ -70,9 +74,26 @@ namespace DocIntel.AdminConsole.Commands.Index
                     _logger.LogError($"Could not index document '{document.DocumentId}' ({e.Message}).");
                 }
 
+
+            if (settings.ForceCommit)
+            {
+                AnsiConsole.Render(new Markup("[green]Committing...[/]\n"));
+                _documentIndexingService.Commit();
+            }
             AnsiConsole.Render(new Markup("[green]Done.[/]\n"));
 
             return 0;
+        }
+
+        public class Settings : DocIntelCommandSettings
+        {
+            [CommandOption("-c|--clear")]
+            [DefaultValue(false)]
+            public bool Clear { get; set; }
+        
+            [CommandOption("-f|--force-commit")]
+            [DefaultValue(false)]
+            public bool ForceCommit { get; set; }
         }
     }
 }

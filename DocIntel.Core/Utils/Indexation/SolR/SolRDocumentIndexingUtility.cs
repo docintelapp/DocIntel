@@ -57,20 +57,17 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             indexedDocument.FileContents = ExtractFileContent(document);
             indexedDocument.Observables = (_observableRepository.GetObservables(document).ToListAsync().Result).Select(_ => _.GetCoreValue());
             _solr.Add(indexedDocument);
-            _solr.Commit();
         }
 
         public void Remove(Guid documentId)
         {
             _logger.LogDebug("Delete " + documentId);
             _solr.Delete(documentId.ToString());
-            _solr.Commit();
         }
 
         public void RemoveAll()
         {
             _solr.Delete(SolrQuery.All);
-            _solr.Commit();
         }
 
         public void Update(Document document)
@@ -80,6 +77,11 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             indexedDocument.FileContents = ExtractFileContent(document);
             indexedDocument.Observables = _observableRepository.GetObservables(document).ToListAsync().Result.Select(_ => _.GetCoreValue());
             _solr.Add(indexedDocument);
+        }
+
+        public void Commit()
+        {
+            _logger.LogDebug("Commit");
             _solr.Commit();
         }
 

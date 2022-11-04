@@ -23,5 +23,6 @@ namespace DocIntel.Core.Utils.Indexation
         void Update(TValue user);
         void Remove(TKey user);
         void RemoveAll();
+        void Commit();
     }
 }
