@@ -60,7 +60,6 @@ namespace DocIntel.Core.Utils.Indexation.SolR
 
         public void Commit()
         {
-            _logger.LogDebug("Commit");
             _solr.Commit();
         }
 
