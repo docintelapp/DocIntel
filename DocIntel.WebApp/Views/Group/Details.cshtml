@@ -102,7 +102,9 @@
                         </tbody>
                     </table>
 
-                    @if ((await AuthorizationService.AuthorizeAsync(User, null, GroupOperations.AddGroupMember)).Succeeded)
+                    @if (ViewBag.AllUsers != null 
+                         && ViewBag.AllUsers.Length > 0
+                         && (await AuthorizationService.AuthorizeAsync(User, null, GroupOperations.AddGroupMember)).Succeeded)
                     {
                         <form asp-action="AddMember">
                             <input type="hidden" value="@Model.GroupId" name="GroupId"/>

@@ -52,7 +52,9 @@
                     <p class="color-secondary">No users have this role or you don't have the rights to see these users.</p>
                 }
                 
-                @if ((await AuthorizationService.AuthorizeAsync(User, null, RoleOperations.AddRole)).Succeeded)
+                @if (ViewBag.AllUsers != null 
+                    && ViewBag.AllUsers.Length > 0
+                    && (await AuthorizationService.AuthorizeAsync(User, null, RoleOperations.AddRole)).Succeeded)
                 {
                     <form asp-action="AddRole">
                         <input name="RoleId" value="@Model.Role.Id" type="hidden"/>
