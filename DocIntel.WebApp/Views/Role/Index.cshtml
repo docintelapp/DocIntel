@@ -1,6 +1,7 @@
 ﻿@using DocIntel.Core.Authorization.Operations
 @model IEnumerable<AppRole>
 
+
 @{
     ViewData["Title"] = "List roles";
     var canCreate = (await AuthorizationService.AuthorizeAsync(User, null, RoleOperations.Create)).Succeeded;
@@ -27,7 +28,7 @@
 </div>
 
 <div class="row">
-    <div class="col-9">
+    <div class="col-12">
         @if (Model != null && Model.Any())
         {
             <div id="panel-source-info" class="panel">
@@ -43,6 +44,7 @@
                             <tr>
                                 <th scope="col">Name</th>
                                 <th scope="col">Description</th>
+                                <th scope="col">Users</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -53,6 +55,7 @@
                                         <a asp-action="Details" asp-route-id="@t.Id">@t.Name</a>
                                     </th>
                                     <td>@t.Description</td>
+                                    <td>@t.UserRoles.Count</td>
                                 </tr>
                             }
                             </tbody>

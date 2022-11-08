@@ -92,7 +92,8 @@ namespace DocIntel.WebApp.Controllers
                     null,
                     LogEvent.Formatter);
 
-                return View(_roleRepository.GetAllAsync(AmbientContext).ToEnumerable());
+                return View(_roleRepository.GetAllAsync(AmbientContext, 
+                    includeRelatedData: new[] {"UserRoles" }).ToEnumerable());
             }
             catch (UnauthorizedOperationException)
             {
@@ -130,6 +131,8 @@ namespace DocIntel.WebApp.Controllers
                         .AddHttpContext(_accessor.HttpContext),
                     null,
                     LogEvent.Formatter);
+        
+                await SetupViewBag(role);
 
                 return View(viewModel);
             }
@@ -159,6 +162,13 @@ namespace DocIntel.WebApp.Controllers
 
                 return NotFound();
             }
+        }
+
+        private async Task SetupViewBag(AppRole role)
+        {
+            ViewBag.AllUsers = await _userRepository.GetAllAsync(AmbientContext)
+                .Where(_ => !role.UserRoles.Select(__ => __.UserId).ToArray().Contains(_.Id))
+                .ToArrayAsync();
         }
 
         public async Task<IActionResult> Create()
@@ -245,6 +255,7 @@ namespace DocIntel.WebApp.Controllers
                     null,
                     LogEvent.Formatter);
 
+                SetPermissions(viewModel, permissions);
                 return View(viewModel);
             }
         }
@@ -355,6 +366,7 @@ namespace DocIntel.WebApp.Controllers
                 null,
                 LogEvent.Formatter);
 
+            SetPermissions(viewModel, permissions);
             return View(viewModel);
         }
 
@@ -449,7 +461,7 @@ namespace DocIntel.WebApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddRole(string roleId, string userName)
+        public async Task<IActionResult> AddRole(string roleId, string userId)
         {
             var currentUser = await GetCurrentUser();
             AppRole role;
@@ -458,7 +470,7 @@ namespace DocIntel.WebApp.Controllers
             {
                 _logger.Log(LogLevel.Warning, EventIDs.AddRoleUserFailed,
                     new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to add a non-existing role '{roleId}' to user '{userName}'.")
+                            $"User '{currentUser.UserName}' attempted to add a non-existing role '{roleId}' to user '{userId}'.")
                         .AddUser(currentUser)
                         .AddHttpContext(_accessor.HttpContext),
                     null,
@@ -468,12 +480,12 @@ namespace DocIntel.WebApp.Controllers
             }
 
             AppUser user;
-            if (string.IsNullOrEmpty(userName) ||
-                (user = await _userRepository.GetByUserName(AmbientContext, userName)) == null)
+            if (string.IsNullOrEmpty(userId) ||
+                (user = await _userRepository.GetById(AmbientContext, userId)) == null)
             {
                 _logger.Log(LogLevel.Warning, EventIDs.AddRoleUserFailed,
                     new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to add role '{role.Name}' to a non-existing user '{userName}'.")
+                            $"User '{currentUser.UserName}' attempted to add role '{role.Name}' to a non-existing user '{userId}'.")
                         .AddUser(currentUser)
                         .AddHttpContext(_accessor.HttpContext),
                     null,
@@ -486,7 +498,7 @@ namespace DocIntel.WebApp.Controllers
             {
                 _logger.Log(LogLevel.Warning, EventIDs.AddRoleUserFailed,
                     new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to add role '{role.Name}' to user '{userName}' without legitimate rights.")
+                            $"User '{currentUser.UserName}' attempted to add role '{role.Name}' to user '{userId}' without legitimate rights.")
                         .AddUser(currentUser)
                         .AddHttpContext(_accessor.HttpContext)
                         .AddRole(role)
@@ -501,7 +513,7 @@ namespace DocIntel.WebApp.Controllers
             await _context.SaveChangesAsync();
 
             _logger.Log(LogLevel.Information, EventIDs.AddRoleUserSuccessful,
-                new LogEvent($"User '{currentUser.UserName}' added role '{role.Name}' to user '{userName}'.")
+                new LogEvent($"User '{currentUser.UserName}' added role '{role.Name}' to user '{userId}'.")
                     .AddUser(currentUser)
                     .AddHttpContext(_accessor.HttpContext)
                     .AddRole(role)
@@ -513,7 +525,7 @@ namespace DocIntel.WebApp.Controllers
         }
 
         [HttpGet("/Role/RemoveUser/{roleId}/userName")]
-        public async Task<IActionResult> RemoveRole(string roleId, string userName)
+        public async Task<IActionResult> RemoveRole(string roleId, string userId)
         {
             var currentUser = await GetCurrentUser();
             AppRole role;
@@ -522,7 +534,7 @@ namespace DocIntel.WebApp.Controllers
             {
                 _logger.Log(LogLevel.Warning, EventIDs.AddRoleUserFailed,
                     new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to remove a non-existing role '{roleId}' to user '{userName}'.")
+                            $"User '{currentUser.UserName}' attempted to remove a non-existing role '{roleId}' to user '{userId}'.")
                         .AddUser(currentUser)
                         .AddHttpContext(_accessor.HttpContext),
                     null,
@@ -532,12 +544,12 @@ namespace DocIntel.WebApp.Controllers
             }
 
             AppUser user;
-            if (string.IsNullOrEmpty(userName) ||
-                (user = await _userRepository.GetByUserName(AmbientContext, userName)) == null)
+            if (string.IsNullOrEmpty(userId) ||
+                (user = await _userRepository.GetById(AmbientContext, userId)) == null)
             {
                 _logger.Log(LogLevel.Warning, EventIDs.AddRoleUserFailed,
                     new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to remove role '{role.Name}' to a non-existing user '{userName}'.")
+                            $"User '{currentUser.UserName}' attempted to remove role '{role.Name}' to a non-existing user '{userId}'.")
                         .AddUser(currentUser)
                         .AddHttpContext(_accessor.HttpContext),
                     null,
@@ -550,7 +562,7 @@ namespace DocIntel.WebApp.Controllers
             {
                 _logger.Log(LogLevel.Warning, EventIDs.AddRoleUserFailed,
                     new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to remove role '{role.Name}' to user '{userName}' without legitimate rights.")
+                            $"User '{currentUser.UserName}' attempted to remove role '{role.Name}' to user '{userId}' without legitimate rights.")
                         .AddUser(currentUser)
                         .AddHttpContext(_accessor.HttpContext)
                         .AddRole(role)
@@ -565,7 +577,7 @@ namespace DocIntel.WebApp.Controllers
             await _context.SaveChangesAsync();
 
             _logger.Log(LogLevel.Information, EventIDs.AddRoleUserSuccessful,
-                new LogEvent($"User '{currentUser.UserName}' removed role '{role.Name}' to user '{userName}'.")
+                new LogEvent($"User '{currentUser.UserName}' removed role '{role.Name}' to user '{userId}'.")
                     .AddUser(currentUser)
                     .AddHttpContext(_accessor.HttpContext)
                     .AddRole(role)

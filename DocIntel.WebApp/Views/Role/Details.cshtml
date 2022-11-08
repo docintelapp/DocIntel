@@ -33,39 +33,8 @@
 </div>
 
 <div class="row">
-    <div class="col-9">
+    <div class="col-12">
         @await Html.PartialAsync("_PanelUserList", Model, new ViewDataDictionary(ViewData))
         @await Html.PartialAsync("_PanelPermissions", Model, new ViewDataDictionary(ViewData))
-    </div>
-
-    <div class="col-3">
-
-        @if ((await AuthorizationService.AuthorizeAsync(User, null, RoleOperations.AddRole)).Succeeded)
-        {
-            @if (Model.AllUsers.Any())
-            {
-                <div class="card">
-                    <div class="card-header">Add user to role</div>
-                    <div class="card-body">
-                        <form asp-action="AddRole" class="form-inline">
-                            <div class="form-group mr-2">
-                                <input name="RoleId" value="@Model.Role.Id" type="hidden"/>
-                                <label for="UserName" class="control-label"></label>
-                                <select name="UserName" class="form-control">
-                                    @foreach (var user in Model.AllUsers)
-                                    {
-                                        <option value="@user.UserName">@user.FriendlyName</option>
-                                    }
-                                </select>
-                            </div>
-                            <button type="submit" id="save-btn" class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified">
-                                <i class="fal fa-plus"></i> Add
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            }
-        }
-
     </div>
 </div>

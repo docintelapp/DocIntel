@@ -28,7 +28,7 @@ using DocIntel.Core.Models;
 using DocIntel.Core.Repositories.Query;
 
 using MassTransit;
-
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
@@ -51,6 +51,14 @@ namespace DocIntel.Core.Repositories.EFCore
         {
             if (!await _appAuthorizationService.CanCreateRole(ambientContext.Claims, role))
                 throw new UnauthorizedOperationException();
+
+            if (ambientContext.DatabaseContext.Roles.Any(_ => _.NormalizedName == role.Name.ToUpperInvariant()))
+            {
+                throw new InvalidArgumentException(new List<ValidationResult>()
+                {
+                    new ValidationResult($"Role name '{role.Name}' already exists.", new [] { "Name" }) 
+                });
+            }
 
             if (IsValid(role, out var modelErrors))
             {
@@ -86,6 +94,15 @@ namespace DocIntel.Core.Repositories.EFCore
             if (!await _appAuthorizationService.CanEditRole(ambientContext.Claims, role))
                 throw new UnauthorizedOperationException();
 
+            if (ambientContext.DatabaseContext.Roles.Any(_ => _.NormalizedName == role.Name.ToUpperInvariant()
+                & _.Id != role.Id))
+            {
+                throw new InvalidArgumentException(new List<ValidationResult>()
+                {
+                    new ValidationResult($"Role name '{role.Name}' already exists.", new [] { "Name" })  
+                });
+            }
+            
             if (IsValid(role, out var modelErrors))
             {
                 role.ModificationDate = role.CreationDate;
@@ -292,6 +309,7 @@ namespace DocIntel.Core.Repositories.EFCore
             var isValid = Validator.TryValidateObject(role,
                 validationContext,
                 modelErrors);
+                
             return isValid;
         }
     }
