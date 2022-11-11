@@ -78,7 +78,7 @@ namespace DocIntel.Core.Importers
                         using var httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
                         await using var responseStream = httpWebResponse.GetResponseStream();
                         using var reader = XmlReader.Create(responseStream);
-                        reader.Settings.DtdProcessing = _settings.Security.DtdProcessing;
+                        reader.Settings.DtdProcessing = _settings.Security?.DtdProcessing ?? DtdProcessing.Prohibit;
                     
                         feed = SyndicationFeed.Load(reader);
                     }
