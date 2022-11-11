@@ -154,7 +154,7 @@ namespace DocIntel.AdminConsole.Commands.Observables
             [Description("The tag to apply (default: <source>.<list>, e.g. misp.cisco_top1000)")]
             public string Tag { get; set; }
             
-            [CommandOption("-i|--ignore")]
+            [CommandOption("--ignore")]
             [Description("Whether the values should be ignored while importing")]
             public bool Ignore { get; set; }
 
