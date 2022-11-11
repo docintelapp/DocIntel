@@ -16,6 +16,7 @@
 */
 
 using System;
+using System.Xml;
 using Synsharp;
 
 namespace DocIntel.Core.Settings
@@ -44,6 +45,12 @@ namespace DocIntel.Core.Settings
 
         public string AuthenticationMethod { get; set; }
         public string LockFolder { get; set; }
+        public SecuritySettings Security { get; set; }
+    }
+
+    public class SecuritySettings
+    {
+        public DtdProcessing DtdProcessing { get; set; } = DtdProcessing.Prohibit;
     }
 
     public class MFASettings
