@@ -29,7 +29,7 @@ using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Scrapers;
 using DocIntel.Core.Settings;
 
-using Ganss.XSS;
+using Ganss.Xss;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -90,8 +90,8 @@ namespace DocIntel.Services.Scraper
             }
 
             _logger.LogDebug("Scraping " + uri);
-            Browser browser = null;
-            Page page = null;
+            IBrowser browser = null;
+            IPage page = null;
 
             try
             {

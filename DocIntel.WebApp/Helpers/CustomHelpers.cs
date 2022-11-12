@@ -31,7 +31,7 @@ using CsvHelper.Configuration;
 using DocIntel.Core.Helpers;
 using DocIntel.WebApp.ViewModels.Shared;
 
-using Ganss.XSS;
+using Ganss.Xss;
 
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;

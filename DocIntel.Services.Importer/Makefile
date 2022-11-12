@@ -18,7 +18,7 @@ publish: restore
 
 install:
 	mkdir -p $(DESTDIR)/usr/lib/docintel/importer
-	cp -R bin/Debug/net6.0/linux-x64/publish/* $(DESTDIR)/usr/lib/docintel/importer/
+	cp -R bin/Debug/net7.0/linux-x64/publish/* $(DESTDIR)/usr/lib/docintel/importer/
 	rm -f $(DESTDIR)/usr/lib/docintel/importer/appsettings.json 2> /dev/null 
 	rm -f $(DESTDIR)/usr/lib/docintel/importer/nlog.config  2> /dev/null
 

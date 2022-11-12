@@ -23,7 +23,7 @@ using System.Text.RegularExpressions;
 
 using DocIntel.Core.Authorization;
 
-using Ganss.XSS;
+using Ganss.Xss;
 
 using MassTransit;
 

@@ -32,7 +32,7 @@ using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Settings;
 using DocIntel.Integrations.FireEye;
 
-using Ganss.XSS;
+using Ganss.Xss;
 
 using Microsoft.Extensions.Logging;
 

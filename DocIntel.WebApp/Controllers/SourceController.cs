@@ -34,7 +34,7 @@ using DocIntel.Core.Utils.Search.Tags;
 using DocIntel.WebApp.Helpers;
 using DocIntel.WebApp.ViewModels.SourceViewModel;
 
-using Ganss.XSS;
+using Ganss.Xss;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

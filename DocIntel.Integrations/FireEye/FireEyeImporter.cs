@@ -6,7 +6,7 @@
 // using CommandLine;
 // using DocIntel.Core.Models;
 // using DocIntel.Core.Repositories;
-// using Ganss.XSS;
+// using Ganss.Xss;
 // using Microsoft.Extensions.Logging;
 // using System.Linq;
 // using System.Threading.Tasks;

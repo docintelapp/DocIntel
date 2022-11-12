@@ -14,7 +14,7 @@ publish: restore
 
 install:
 	mkdir -p $(DESTDIR)/usr/lib/docintel/tag-indexer/
-	cp -R bin/Debug/net6.0/linux-x64/publish/* $(DESTDIR)/usr/lib/docintel/tag-indexer/
+	cp -R bin/Debug/net7.0/linux-x64/publish/* $(DESTDIR)/usr/lib/docintel/tag-indexer/
 	rm -f $(DESTDIR)/usr/lib/docintel/tag-indexer/appsettings.json 2> /dev/null 
 	rm -f $(DESTDIR)/usr/lib/docintel/tag-indexer/nlog.config  2> /dev/null
 

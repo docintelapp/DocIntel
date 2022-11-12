@@ -14,7 +14,7 @@ publish: restore
 
 install:
 	mkdir -p $(DESTDIR)/usr/lib/docintel/document-indexer/
-	cp -R bin/Debug/net6.0/linux-x64/publish/* $(DESTDIR)/usr/lib/docintel/document-indexer/
+	cp -R bin/Debug/net7.0/linux-x64/publish/* $(DESTDIR)/usr/lib/docintel/document-indexer/
 	rm -f $(DESTDIR)/usr/lib/docintel/document-indexer/appsettings.json 2> /dev/null 
 	rm -f $(DESTDIR)/usr/lib/docintel/document-indexer/nlog.config  2> /dev/null
 

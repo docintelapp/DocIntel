@@ -28,7 +28,7 @@ using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories.Query;
 using DotLiquid;
-using Ganss.XSS;
+using Ganss.Xss;
 
 using MassTransit;
 
