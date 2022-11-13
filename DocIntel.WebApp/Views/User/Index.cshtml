@@ -28,19 +28,49 @@
 <div class="row">
     <div class="col-12">
 
-        @if (Model.Users != null && Model.Users.Any())
-        {
-            <div class="row">
-                @foreach (var t in Model.Users)
+                <div id="panel-source-info" class="panel">
+        <div class="panel-container show">
+            <div class="panel-content">
+                @if (Model.Users.Any())
                 {
-                    @await Html.PartialAsync("_UserCard", t, new ViewDataDictionary(ViewData))
+                    <table class="table table-bordered mb-0">
+                        <thead class="thead-light">
+                        <tr>
+                            <th scope="col">User</th>
+                            <th scope="col">Function</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var t in Model.Users)
+                        {
+                            <tr>
+                                <th scope="row">
+                                    <a asp-action="Profile" asp-route-username="@t.UserName">@t.FriendlyName</a>
+                                </th>
+                                <td>@t.Function</td>
+                                <td>@t.UserName</td>
+                                <td>@t.Email</td>
+                                <td>
+                                    @if ((await AuthorizationService.AuthorizeAsync(User, null, UserOperations.Edit)).Succeeded)
+                                    {
+                                        <a asp-action="Edit" asp-route-userName="@t.UserName" >Edit</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
                 }
+                else
+                {
+                    <p class="color-secondary">No users have this role or you don't have the rights to see these users.</p>
+                }
+                
             </div>
-        }
-
-        <div class="py-2">
-            <pagination page="@Model.Page" page-count="@Model.PageCount" method="GET"></pagination>
         </div>
-
+    </div>
     </div>
 </div>

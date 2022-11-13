@@ -55,122 +55,20 @@ namespace DocIntel.Core.Repositories.EFCore
         private readonly IPublishEndpoint _busClient;
         private readonly ILogger<UserRepository> _logger;
         private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory;
-        private readonly UserManager<AppUser> _userManager;
 
         /// <summary>
         ///     Initializes the user repository
         /// </summary>
         /// <param name="userManager">The user manager</param>
-        public UserRepository(UserManager<AppUser> userManager,
+        public UserRepository(
             IAppAuthorizationService appAuthorizationService,
             IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
             IPublishEndpoint busClient, ILogger<UserRepository> logger)
         {
-            _userManager = userManager;
             _appAuthorizationService = appAuthorizationService;
             _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
             _busClient = busClient;
             _logger = logger;
-        }
-
-        /// <summary>
-        ///     Resets the password of the user by generating and directly using a
-        ///     new reset token via
-        ///     <see
-        ///         cref="Microsoft.AspNetCore.Identity.UserManager{TUser}" />
-        ///     .
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="newPassword">The password</param>
-        /// <returns>
-        ///     <c>True</c> if the password was successfully resets, <c>False</c>
-        ///     otherwise.
-        /// </returns>
-        public async Task<bool> ResetPassword(AmbientContext ambientContext, AppUser user,
-            string newPassword)
-        {
-            var retreivedUser = await ambientContext.DatabaseContext.Users.FindAsync(user.Id);
-            if (retreivedUser == null)
-                throw new NotFoundEntityException();
-
-            // var claims = await _userClaimsPrincipalFactory.CreateAsync(requestingUser);
-            if (!await _appAuthorizationService.CanResetPassword(ambientContext.Claims, retreivedUser))
-                throw new UnauthorizedOperationException();
-
-            var resetToken = await _userManager
-                .GeneratePasswordResetTokenAsync(user);
-
-            var passwordChangeResult
-                = await _userManager.ResetPasswordAsync(user,
-                    resetToken,
-                    newPassword);
-            return passwordChangeResult.Succeeded;
-        }
-
-        /// <summary>
-        ///     Resets the password via
-        ///     <see
-        ///         cref="Microsoft.AspNetCore.Identity.UserManager{TUser}" />
-        ///     with the
-        ///     provided reset token.
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="resetToken">The reset token</param>
-        /// <param name="newPassword">The password</param>
-        /// <returns>
-        ///     <c>True</c> if the password was successfully reset, <c>False</c>
-        ///     otherwise.
-        /// </returns>
-        public async Task<bool> ResetPassword(AmbientContext ambientContext, AppUser user,
-            string resetToken,
-            string newPassword)
-        {
-            var retreivedUser = await ambientContext.DatabaseContext.Users.FindAsync(user.Id);
-            if (retreivedUser == null)
-                throw new NotFoundEntityException();
-
-            // var claims = await _userClaimsPrincipalFactory.CreateAsync(requestingUser);
-            if (!await _appAuthorizationService.CanResetPassword(ambientContext.Claims, retreivedUser))
-                throw new UnauthorizedOperationException();
-
-            var passwordChangeResult
-                = await _userManager.ResetPasswordAsync(user,
-                    resetToken,
-                    newPassword);
-            return passwordChangeResult.Succeeded;
-        }
-
-        /// <summary>
-        ///     Change the password by removing the existing password first and
-        ///     then adding the new one.
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="newPassword">The password</param>
-        /// <returns>
-        ///     <c>True</c> if the password was successfully changed, <c>False</c>
-        ///     otherwise.
-        /// </returns>
-        public async Task<bool> ChangePassword(AmbientContext ambientContext, AppUser user,
-            string newPassword)
-        {
-            var retreivedUser = await ambientContext.DatabaseContext.Users.FindAsync(user.Id);
-            if (retreivedUser == null)
-                throw new NotFoundEntityException();
-
-            // var claims = await _userClaimsPrincipalFactory.CreateAsync(requestingUser);
-            if (!await _appAuthorizationService.CanChangePassword(ambientContext.Claims, retreivedUser))
-                throw new UnauthorizedOperationException();
-
-            var passwordRemoveResult
-                = await _userManager.RemovePasswordAsync(user);
-            if (passwordRemoveResult.Succeeded)
-            {
-                var passwordChangeResult
-                    = await _userManager.AddPasswordAsync(user, newPassword);
-                return passwordChangeResult.Succeeded;
-            }
-
-            return false;
         }
 
         public async Task<AppUser> GetByUserName(AmbientContext ambientContext, string userName,
@@ -245,6 +143,7 @@ namespace DocIntel.Core.Repositories.EFCore
         ///     <c>true</c> if the user was successfully added, <c>false</c>
         ///     otherwise.
         /// </returns>
+        /*
         public async Task<AppUser> CreateAsync(AmbientContext ambientContext, AppUser user, string password = "", Group[] groups = null)
         {
             if (!await _appAuthorizationService.CanCreateUser(ambientContext.Claims, user))
@@ -281,6 +180,7 @@ namespace DocIntel.Core.Repositories.EFCore
 
             throw new InvalidArgumentException(modelErrors);
         }
+        */
 
         /// <summary>
         ///     Removes the user from the database.

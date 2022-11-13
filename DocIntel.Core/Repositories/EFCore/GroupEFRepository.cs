@@ -133,7 +133,6 @@ namespace DocIntel.Core.Repositories.EFCore
                     enumerable = enumerable.Include(relatedData);
 
             enumerable = BuildQuery(ambientContext.CurrentUser, enumerable, query);
-            _logger.LogError("Processing . " + enumerable.Count());
             
             foreach (var group in enumerable)
             {
@@ -143,7 +142,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 }
                 else
                 {
-                    _logger.LogError("Not allowed to see " + group.Name);
+                    _logger.LogInformation("Not allowed to see " + group.Name);
                 }
             }
         }
@@ -235,7 +234,7 @@ namespace DocIntel.Core.Repositories.EFCore
 
             if (query.Id != null)
             {
-                _logger.LogDebug("Filtering by identifiers");
+                _logger.LogTrace("Filtering by identifiers");
                 groups = groups.Where(_ => query.Id.Contains(_.GroupId));
 
             }

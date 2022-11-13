@@ -47,6 +47,7 @@ namespace DocIntel.AdminConsole.Commands.Users
                 {
                     await _roleRepository.AddUserRoleAsync(ambientContext, user.Id, role.Id);
                     await ambientContext.DatabaseContext.SaveChangesAsync();
+                    AnsiConsole.Render(new Markup($"[green]User '{userName}' has now role '{roleName}'.[/]\n"));
                 }
                 else
                 {

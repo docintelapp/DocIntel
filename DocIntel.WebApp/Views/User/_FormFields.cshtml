@@ -1,4 +1,5 @@
 @model AppUser
+@using System.Linq
 
 <div id="panel-basic" class="panel">
     <div class="panel-container show">
@@ -30,20 +31,29 @@
 
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Groups</label>
-                <select class="select2 form-control" name="groups" multiple="multiple">
-                    @foreach (var tag in (List<Group>) ViewBag.AllGroups)
-                    {
-                        <!option value="@tag.GroupId" @(Model.Memberships?.Any(_ => _.GroupId == tag.GroupId) ?? false ? "selected" : "")>@tag.Name</!option>
-                    }
-                </select>
-            </div>
+            @if (ViewBag.AllGroups != null && ((List<Group>)ViewBag.AllGroups).Any())
+            {
+                <div class="form-group">
+                    <label class="form-label">Groups</label>
+                    <select class="select2 form-control" name="groups" multiple="multiple">
+                        @foreach (var tag in (List<Group>) ViewBag.AllGroups)
+                        {
+                            <!option value="@tag.GroupId" @(Model.Memberships?.Any(_ => _.GroupId == tag.GroupId) ?? false ? "selected" : "")>@tag.Name</!option>
+                        }
+                    </select>
+                </div>   
+            }
 
             <div class="form-group">
                 <label asp-for="Email" class="control-label"></label>
                 <input asp-for="Email" class="form-control"/>
                 <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Function" class="control-label"></label>
+                <input asp-for="Function" class="form-control"/>
+                <span asp-validation-for="Function" class="text-danger"></span>
             </div>
 
             <div class="form-group">

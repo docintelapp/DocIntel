@@ -32,8 +32,8 @@
             }
 
             <input asp-for="Id" type="hidden"/>
+            
             @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
-
 
             <div class="row">
                 <div class="col-md-12">

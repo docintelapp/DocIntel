@@ -6,18 +6,56 @@
     ViewData["Category1"] = "Users";
     var canEdit = (Model.User.Id == ViewBag.CurrentUser.Id && (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.EditOwn)).Succeeded) 
                   || (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.Edit)).Succeeded;
-    var canResetPassword = (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.ResetPassword)).Succeeded;
+    var canResetPassword = (Model.User.Id == ViewBag.CurrentUser.Id) 
+                           || (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.ResetPassword)).Succeeded;
 }
+
+<div class="subheader">
+    <div class="d-flex flex-row flex-fill">
+        <div class="mr-4">
+        @if (string.IsNullOrEmpty(Model.User.ProfilePicture))
+        {
+            <img alt="" class="rounded-circle shadow-2 img-thumbnail" src="~/images/avatar-m.png"/>
+        }
+        else
+        {
+            <img alt="" class="rounded-circle shadow-2 img-thumbnail" style="max-width: 50px; height: auto;" src="@Url.Action("ProfilePicture", "Account", new { userName = Model.User.UserName })"/>
+        }
+        </div>
+        <div>
+            <h1 class="mb-0">@Model.User.FriendlyName</h1>
+            @if (!string.IsNullOrEmpty(Model.User.Function))
+            {
+                <span class="text-muted mb-0">@Model.User.Function</span>
+            }
+        </div>
+    </div>
+    <div class="btn-group">
+        @if (canEdit)
+        {
+            <a asp-action="Edit" asp-route-username="@Model.User.UserName" class= "btn btn-pills btn-primary btn-iconified">
+                <i class="fal fa-edit"></i> Edit
+            </a>
+        }
+        @if (canResetPassword)
+        {
+            <a asp-action="ResetPassword" asp-route-username="@Model.User.UserName" class= "btn btn-pills btn-primary btn-iconified">
+                <i class="fal fa-key"></i> Reset Password
+            </a>
+        }
+    </div>
+</div>
+
 
 <div class="row">
 
-    <div class="col-3">
-        @await Html.PartialAsync("UserInfoPanel", Model, new ViewDataDictionary(ViewData))
-        @await Html.PartialAsync("UserGroups", Model, new ViewDataDictionary(ViewData))
+    <div>
+        @*await Html.PartialAsync("UserInfoPanel", Model, new ViewDataDictionary(ViewData)) *@
+        @*await Html.PartialAsync("UserGroups", Model, new ViewDataDictionary(ViewData)) *@
         @* @await Html.PartialAsync("AchievementsPanel", Model, new ViewDataDictionary(this.ViewData)) *@
     </div>
 
-    <div class="col-9">
+    <div class="col-12">
         
         <div id="panel-1" class="panel">
             <div class="panel-hdr">

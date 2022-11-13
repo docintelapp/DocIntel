@@ -260,7 +260,7 @@ namespace DocIntel.WebApp.Controllers
                             LogEvent.Formatter);
                     }
 
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Profile), new { username = username });
                 }
 
                 throw new InvalidArgumentException(ModelState);
@@ -385,6 +385,7 @@ namespace DocIntel.WebApp.Controllers
                     user.Email = submittedUser.Email;
                     user.Enabled = submittedUser.Enabled;
                     user.Bot = submittedUser.Bot;
+                    user.Function = submittedUser.Function;
 
                     var filteredGroups = groups
                         .ToAsyncEnumerable()
@@ -512,7 +513,8 @@ namespace DocIntel.WebApp.Controllers
                     LastName = viewModel.LastName,
                     Email = viewModel.Email,
                     Enabled = viewModel.Enabled,
-                    Bot = viewModel.Bot
+                    Bot = viewModel.Bot,
+                    Function = viewModel.Function
                 };
 
                 var filteredGroups = groups
@@ -534,7 +536,8 @@ namespace DocIntel.WebApp.Controllers
                     })
                     .Where(_ => _ != null);
 
-                await _userRepository.CreateAsync(AmbientContext, user, groups: await filteredGroups.ToArrayAsync());
+                await _userManager.CreateAsync(user);
+                // TODO , groups: await filteredGroups.ToArrayAsync()
                 await AmbientContext.DatabaseContext.SaveChangesAsync();
 
                 return RedirectToAction(nameof(ResetPassword), new { username = user.UserName });

@@ -63,21 +63,12 @@ namespace DocIntel.Core.Repositories
         ///     <c>true</c> if the user was successfully added, <c>false</c>
         ///     otherwise.
         /// </returns>
-        Task<AppUser> CreateAsync(AmbientContext ambientContext,
+        /*
+         Task<AppUser> CreateAsync(AmbientContext ambientContext,
             AppUser user,
             string password = "",
             Group[] groups = null);
-
-        /// <summary>
-        ///     Deletes the specified user from the repository
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <returns>
-        ///     <c>true</c> if the user was successfully removed, <c>false</c>
-        ///     otherwise.
-        /// </returns>
-        Task Remove(AmbientContext ambientContext,
-            AppUser user);
+        */
 
         /// <summary>
         ///     Updates the user in the repository.
@@ -111,57 +102,6 @@ namespace DocIntel.Core.Repositories
         ///     The list of users subscribed to the daily newsletter.
         /// </returns>
         IAsyncEnumerable<AppUser> GetUsersForNewsletter(AmbientContext ambientContext);
-
-        /// <summary>
-        ///     Changes the password of a user. This method should only be called
-        ///     by users with administrative rights. For a standard user, it is
-        ///     better to use <c>ChangePassword(AppUser, string, string)</c>
-        ///     providing the old password or
-        ///     <c>
-        ///         ResetPassword(AppUser, string,
-        ///         string)
-        ///     </c>
-        ///     providing a reset token.
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="newPassword">The password</param>
-        /// <returns>
-        ///     <c>true</c> if the password was successfully updated, <c>false</c>
-        ///     otherwise.
-        /// </returns>
-        Task<bool> ResetPassword(AmbientContext ambientContext,
-            AppUser user,
-            string newPassword);
-
-        /// <summary>
-        ///     Resets the pass of a user while validating the reset token.
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="resetToken">The reset token</param>
-        /// <param name="newPassword">The password</param>
-        /// <returns>
-        ///     <c>true</c> if the password was successfully reset, <c>false</c>
-        ///     otherwise.
-        /// </returns>
-        Task<bool> ResetPassword(AmbientContext ambientContext,
-            AppUser user,
-            string resetToken,
-            string newPassword);
-
-        /// <summary>
-        ///     Changes the password of a user. This method should only be called
-        ///     by the user himself if he is logged in, or users with
-        ///     administrative rights.
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="newPassword">The password</param>
-        /// <returns>
-        ///     <c>true</c> if the password was successfully updated, <c>false</c>
-        ///     otherwise.
-        /// </returns>
-        Task<bool> ChangePassword(AmbientContext ambientContext,
-            AppUser user,
-            string newPassword);
 
         /// <summary>
         ///     Adds the specified role to the specified user.

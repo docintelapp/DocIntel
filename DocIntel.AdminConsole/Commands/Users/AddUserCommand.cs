@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -15,15 +15,15 @@ namespace DocIntel.AdminConsole.Commands.Users
 {
     public class AddUserCommand : UserCommand<AddUserCommand.Settings>
     {
-        private readonly IUserRepository _userRepository;
+        private readonly AppUserManager _userManager;
         private readonly IRoleRepository _roleRepository;
 
         public AddUserCommand(DocIntelContext context,
             IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
-            IUserRepository userRepository, ApplicationSettings applicationSettings, IRoleRepository roleRepository) : base(context,
+            AppUserManager userManager, ApplicationSettings applicationSettings, IRoleRepository roleRepository) : base(context,
             userClaimsPrincipalFactory, applicationSettings)
         {
-            _userRepository = userRepository;
+            _userManager = userManager;
             _roleRepository = roleRepository;
         }
 
@@ -56,14 +56,14 @@ namespace DocIntel.AdminConsole.Commands.Users
                 RegistrationDate = DateTime.UtcNow
             };
 
-            if (await _userRepository.Exists(ambientContext, user.UserName))
+            if (await _userManager.FindByNameAsync(user.UserName) != null)
             {
                 AnsiConsole.Render(new Markup($"[darkorange]User '{userName}' already exists.[/]\n"));
                 return 0;
             }
 
-            user = await _userRepository.CreateAsync(ambientContext, user, password);
-            if (user != null)
+            var result = await _userManager.CreateAsync(ambientContext.Claims, user, password);
+            if (result.Succeeded)
             {
                 AnsiConsole.Render(new Markup($"[green]User {userName} successfully created.[/]\n"));
                 await _context.SaveChangesAsync();
