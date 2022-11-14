@@ -45,7 +45,26 @@ namespace DocIntel.Core.Settings
 
         public string AuthenticationMethod { get; set; }
         public string LockFolder { get; set; }
-        public SecuritySettings Security { get; set; }
+        public SecuritySettings Security { get; set; } = new();
+        public ScheduleSettings Schedule { get; set; } = new();
+    }
+
+    public class ScheduleSettings
+    {
+        /// <summary>
+        /// The maximum delay, in minutes, before a source, a document, or a tag is picked up for indexing. 
+        /// </summary>
+        public double MaxIndexingDelay { get; set; } = 30;
+
+        /// <summary>
+        /// Delay, in minutes, between two check of missed messages for the document analyzer.
+        /// </summary>
+        public double AnalyzerFrequencyCheck { get; set; } = 5;
+
+        /// <summary>
+        /// Delay, in minutes, between two check of missed messages for the indexers..
+        /// </summary>
+        public double IndexingFrequencyCheck { get; set; } = 15;
     }
 
     public class SecuritySettings

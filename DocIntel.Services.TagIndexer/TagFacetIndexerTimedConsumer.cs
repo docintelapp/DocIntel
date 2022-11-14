@@ -46,7 +46,7 @@ public class TagFacetIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
     {
         _logger.LogInformation("Timed Hosted Service running.");
 
-        var fromMinutes = TimeSpan.FromMinutes(2);
+        var fromMinutes = TimeSpan.FromMinutes(_appSettings.Schedule.IndexingFrequencyCheck);
         _timer = new Timer(DoWork, null, fromMinutes, fromMinutes);
 
         return Task.CompletedTask;
@@ -71,8 +71,8 @@ public class TagFacetIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
         var listAsync = await _facetRepository.GetAllAsync(ambientContext,
                 _ => _.Where(__ => __.LastIndexDate == DateTime.MinValue 
                                    || __.LastIndexDate == DateTime.MaxValue 
-                                   || __.Tags.Max(___ => ___.ModificationDate) - __.LastIndexDate > TimeSpan.FromMinutes(30)
-                                   || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(30)))
+                                   || __.Tags.Max(___ => ___.ModificationDate) - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)
+                                   || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)))
             .ToListAsync();
 
         foreach (var facet in listAsync)

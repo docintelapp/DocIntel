@@ -44,7 +44,7 @@ public class ThumbnailerTimedConsumer : DynamicContextConsumer, IHostedService, 
     {
         _logger.LogInformation("Timed Hosted Service running.");
 
-        var fromMinutes = TimeSpan.FromMinutes(2);
+        var fromMinutes = TimeSpan.FromMinutes(_appSettings.Schedule.IndexingFrequencyCheck);
         _timer = new Timer(DoWork, null, fromMinutes, fromMinutes);
 
         return Task.CompletedTask;

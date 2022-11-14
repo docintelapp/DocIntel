@@ -38,7 +38,7 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
     {
         _logger.LogInformation("Timed Hosted Service running.");
 
-        var fromMinutes = TimeSpan.FromMinutes(2);
+        var fromMinutes = TimeSpan.FromMinutes(_appSettings.Schedule.AnalyzerFrequencyCheck);
         _timer = new Timer(DoWork, null, fromMinutes, fromMinutes);
 
         return Task.CompletedTask;

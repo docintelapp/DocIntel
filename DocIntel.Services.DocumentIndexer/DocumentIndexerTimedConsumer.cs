@@ -46,7 +46,7 @@ public class DocumentIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
     {
         _logger.LogInformation("Timed Hosted Service running.");
 
-        var fromMinutes = TimeSpan.FromMinutes(2);
+        var fromMinutes = TimeSpan.FromMinutes(_appSettings.Schedule.IndexingFrequencyCheck);
         _timer = new Timer(DoWork, null, fromMinutes, fromMinutes);
 
         return Task.CompletedTask;
@@ -124,6 +124,6 @@ public class DocumentIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
                     && __.Status == DocumentStatus.Registered
                     && (__.LastIndexDate == DateTime.MinValue 
                          || __.LastIndexDate == DateTime.MaxValue 
-                         || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(30))));
+                         || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay))));
     }
 }

@@ -45,7 +45,7 @@ public class SourceIndexerTimedConsumer : DynamicContextConsumer, IHostedService
     {
         _logger.LogInformation("Timed Hosted Service running.");
 
-        var fromMinutes = TimeSpan.FromMinutes(2);
+        var fromMinutes = TimeSpan.FromMinutes(_appSettings.Schedule.IndexingFrequencyCheck);
         _timer = new Timer(DoWork, null, fromMinutes, fromMinutes);
 
         return Task.CompletedTask;
@@ -71,8 +71,8 @@ public class SourceIndexerTimedConsumer : DynamicContextConsumer, IHostedService
                 _ => _.Include(__ => __.Documents)
                     .Where(__ => __.LastIndexDate == DateTime.MinValue 
                                  || __.LastIndexDate == DateTime.MaxValue 
-                                 || __.Documents.Max(___ => ___.ModificationDate) - __.LastIndexDate > TimeSpan.FromMinutes(30)
-                                 || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(30)))
+                                 || __.Documents.Max(___ => ___.ModificationDate) - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)
+                                 || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)))
             .ToListAsync();
 
         foreach (var source in listAsync)

@@ -46,7 +46,7 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
     {
         _logger.LogInformation("Timed Hosted Service running.");
 
-        var fromMinutes = TimeSpan.FromMinutes(2);
+        var fromMinutes = TimeSpan.FromMinutes(_appSettings.Schedule.IndexingFrequencyCheck);
         _timer = new Timer(DoWork, null, fromMinutes, fromMinutes);
 
         return Task.CompletedTask;
@@ -72,8 +72,8 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
                 _ => _.Include(__ => __.Facet).Include(__ => __.Documents).ThenInclude(__ => __.Document)
                     .Where(__ => __.LastIndexDate == DateTime.MinValue 
                                  || __.LastIndexDate == DateTime.MaxValue 
-                                 || __.Documents.Max(___ => ___.Document.DocumentDate) - __.LastIndexDate > TimeSpan.FromMinutes(30)
-                                 || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(30)))
+                                 || __.Documents.Max(___ => ___.Document.DocumentDate) - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)
+                                 || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)))
             .ToListAsync();
 
         foreach (var tag in listAsync)
