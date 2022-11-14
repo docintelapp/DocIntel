@@ -69,6 +69,7 @@ export function initApp() {
 export function initSearchPage(form_id) {
     var form = $(form_id);
     form.find('.auto-submit').change(function(){
+        $('input[name="page"]').val(1);
         form.submit();
     });
     

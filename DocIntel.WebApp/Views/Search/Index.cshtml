@@ -15,7 +15,7 @@
     ViewData["SearchTerms"] = Model.SearchTerm;
 }
 
-<form asp-action="Index" asp-controller="Search" id="search-documents" method="GET">
+<form asp-action="Index" asp-controller="Search" id="search-documents" method="GET" class="autosubmit-form">
     <div class="row">
         <div class="col-xl-9">
             <div class="input-group input-group-lg mb-2">
@@ -122,12 +122,3 @@
         </div>
     </div>
 </form>
-
-@section Scripts {
-    <script type="text/javascript">
-        $(document).ready(function()
-        {
-            DocIntel.initSearchPage('form#search-documents');
-        });
-    </script>
-}

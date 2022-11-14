@@ -92,6 +92,9 @@ namespace DocIntel.Core.Utils.Search.Documents
                         Order.DESC));
                 sortOrder.Add(SortOrder.Parse("score desc"));
 
+                // Ensure that page is always at least 1
+                query.Page = Math.Max(query.Page, 1);
+
                 var results = _solr.Query(q, new QueryOptions
                 {
                     StartOrCursor = new StartOrCursor.Start((query.Page - 1) * query.PageSize),

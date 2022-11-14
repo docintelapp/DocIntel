@@ -1,6 +1,6 @@
 import "../css/common.scss";
 
-import { initApp, resizeIFrameToFitContent } from './docintel'
+import { initApp, resizeIFrameToFitContent, initSearchPage } from './docintel'
 import '../../dist2/js/formplugins/summernote/summernote.js';
 import QRCode from "qrcode";
 
@@ -42,6 +42,11 @@ $(document).ready(function() {
             if (error) console.error(error)
             console.log('success!');
         })
+    })
+
+    $('.autosubmit-form').each(function (index, node) {
+        console.log("🦛 Init autosubmit forms...")
+        initSearchPage(node);
     })
 
     initApp();
