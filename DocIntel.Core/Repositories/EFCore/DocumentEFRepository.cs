@@ -1,5 +1,5 @@
 /* DocIntel
- * Copyright (C) 2018-2021 Belgian Defense, Antoine Cailliau
+ * Copyright (C) 2018-2022 Belgian Defense, Antoine Cailliau
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -143,27 +143,32 @@ namespace DocIntel.Core.Repositories.EFCore
             return url;
         }
 
-        public async Task UpdateStatusAsync(AmbientContext context, Guid documentId, DocumentStatus status)
+        public async Task<Document> UpdateStatusAsync(AmbientContext context, Guid documentId, DocumentStatus status)
         {
             var retrievedDocument = await context.DatabaseContext.Documents
                 .AsQueryable()
                 .SingleOrDefaultAsync(_ => _.DocumentId == documentId);
 
+            if (retrievedDocument == null)
+                throw new NotFoundEntityException();
+
             retrievedDocument.Status = status;
-            
-            await context.DatabaseContext.SingleUpdateAsync(retrievedDocument);
+            var trackingEntity = context.DatabaseContext.Update(retrievedDocument);
+
             context.DatabaseContext.OnSaveCompleteTasks.Add(
                 () =>
                 {
                     _logger.LogDebug("Sending DocumentUpdatedMessage message");
                     return _busClient.Publish(new DocumentUpdatedMessage
                     {
-                        DocumentId = retrievedDocument.DocumentId,
+                        DocumentId = trackingEntity.Entity.DocumentId,
                         UserId = context.CurrentUser.Id,
                         TagsAdded = Enumerable.Empty<Guid>(),
                         TagsRemoved = Enumerable.Empty<Guid>()
                     });
                 });
+
+            return trackingEntity.Entity;
         }
 
         public async Task<Document> UpdateAsync(AmbientContext context,

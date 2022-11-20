@@ -118,6 +118,6 @@ namespace DocIntel.Core.Repositories
         Task<SubmittedDocument> GetSubmittedDocument(AmbientContext ambientContext, Guid submissionId, Func<IQueryable<SubmittedDocument>, IQueryable<SubmittedDocument>> query = null);
         Task<bool> ExistsAsync(AmbientContext context, Func<IQueryable<Document>, IQueryable<Document>> query);
         IAsyncEnumerable<Document> GetAllAsync(AmbientContext context, Func<IQueryable<Document>, IQueryable<Document>> query);
-        Task UpdateStatusAsync(AmbientContext context, Guid documentId, DocumentStatus status);
+        Task<Document> UpdateStatusAsync(AmbientContext context, Guid documentId, DocumentStatus status);
     }
 }

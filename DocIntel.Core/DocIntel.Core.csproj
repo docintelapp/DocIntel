@@ -62,7 +62,6 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />     
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />      
     <PackageReference Include="System.ServiceModel.Syndication" Version="7.0.0" />  
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="6.16.1" />
     <PackageReference Include="RazorLight" Version="2.3.0" />
   </ItemGroup>
 
