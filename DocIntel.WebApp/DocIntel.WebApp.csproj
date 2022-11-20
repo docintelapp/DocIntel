@@ -15,22 +15,22 @@
     <PackageReference Include="CsvHelper" Version="30.0.1" />
     <PackageReference Include="Bogus" Version="34.0.2" />
     <PackageReference Include="GoogleAuthenticator" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.11" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="6.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.4" />
     <PackageReference Include="Pluralize.NET.Core" Version="1.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />        
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="Novell.Directory.Ldap.NETStandard2_0" Version="3.1.0" />
    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0" />
-   <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.5" />
+   <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.6" />
    <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.4.0" />
    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="6.4.0" />
    <PackageReference Include="TimeZoneNames" Version="6.0.0" />
