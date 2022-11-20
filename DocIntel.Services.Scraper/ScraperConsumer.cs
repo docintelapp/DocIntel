@@ -150,6 +150,8 @@ namespace DocIntel.Services.Scraper
                 .ToArrayAsync();
             foreach (var scraper in scrapers.OrderBy(_ => _.Position))
             {
+                if (scraped)
+                    break;
                 
                 var instance = await ScraperFactory.CreateScraper(scraper, _serviceProvider, context);
                 foreach (var pattern in instance.Patterns)
@@ -171,7 +173,6 @@ namespace DocIntel.Services.Scraper
                                 _logger.LogDebug(
                                     $"Could not scrape content: {e.GetType().FullName}({e.Message})\n{e?.StackTrace}");
                             } while ((e = e.InnerException) != null);
-                            
                         }
                     }
                 }
