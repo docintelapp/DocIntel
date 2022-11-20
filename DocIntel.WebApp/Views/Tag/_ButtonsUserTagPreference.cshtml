@@ -15,7 +15,7 @@
             <span class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                 @if (Model.Subscribed.Notification)
                 {
-                    <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-id="@Model.Tag.TagId"
+                    <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-tagId="@Model.Tag.TagId"
                        data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
                        title="Documents tagged with a subscribed tag will appear in your newsletters and home page feed. Use the feature to track the topics that interests you. The bell will cause you to received a notification when a related documents is added or modified.">
                         <i class="fas fa-bell"></i>
@@ -23,19 +23,19 @@
                 }
                 else
                 {
-                    <a class="text-white" asp-action="Subscribe" asp-route-notification="true" asp-route-id="@Model.Tag.TagId"
+                    <a class="text-white" asp-action="Subscribe" asp-route-notification="true" asp-route-tagId="@Model.Tag.TagId"
                        data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
                        title="Documents tagged with a subscribed tag will appear in your newsletters and home page feed. Use the feature to track the topics that interests you. The bell will cause you to received a notification when a related documents is added or modified.">
                         <i class="fal fa-bell"></i>
                     </a>
                 }
-                <a class="text-white" asp-action="Unsubscribe" asp-route-id="@Model.Tag.TagId">Subscribed</a>
+                <a class="text-white" asp-action="Unsubscribe" asp-route-tagId="@Model.Tag.TagId">Subscribed</a>
             </span>
         }
         else
         {
             <a asp-action="Subscribe"
-               asp-route-id="@Model.Tag.TagId"
+               asp-route-tagId="@Model.Tag.TagId"
                class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified"
                data-toggle="tooltip" data-delay='{"show":"1000", "hide":"100"}'
                title="Documents tagged with a subscribed tag will appear in your newsletters and home page feed. Use the feature to track the topics that interests you. The bell will cause you to received a notification when a related documents is added or modified.">

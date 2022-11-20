@@ -25,8 +25,8 @@ namespace DocIntel.Core.Repositories
 {
     public interface ICommentRepository
     {
-        Task AddAsync(AmbientContext ambientContext, Comment comment);
-        Task UpdateAsync(AmbientContext ambientContext, Comment comment);
+        Task<Comment> AddAsync(AmbientContext ambientContext, Comment comment);
+        Task<Comment> UpdateAsync(AmbientContext ambientContext, Comment comment);
         Task RemoveAsync(AmbientContext ambientContext, Guid commentId);
 
         Task<bool> ExistsAsync(AmbientContext ambientContext, Guid id);

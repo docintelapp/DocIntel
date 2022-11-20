@@ -120,7 +120,6 @@ namespace DocIntel.WebApp.Controllers
             {
                 var group = await _groupRepository.GetAsync(AmbientContext,
                     id,
-                    currentUser,
                     new[] {"Members", "Members.User", "ParentGroup"});
 
                 _logger.Log(LogLevel.Information,
@@ -211,7 +210,7 @@ namespace DocIntel.WebApp.Controllers
                         Default = viewModel.Default
                     };
 
-                    await _groupRepository.AddAsync(AmbientContext, group, currentUser);
+                    await _groupRepository.AddAsync(AmbientContext, group);
                     await _context.SaveChangesAsync();
 
                     _logger.Log(LogLevel.Information,
@@ -272,7 +271,6 @@ namespace DocIntel.WebApp.Controllers
             {
                 var group = await _groupRepository.GetAsync(AmbientContext,
                     id,
-                    currentUser,
                     new[] {"Members", "Members.User"});
 
                 _logger.Log(LogLevel.Information,
@@ -330,8 +328,7 @@ namespace DocIntel.WebApp.Controllers
             try
             {
                 var group = await _groupRepository.GetAsync(AmbientContext,
-                    viewModel.GroupId,
-                    currentUser);
+                    viewModel.GroupId);
 
                 if (ModelState.IsValid)
                 {
@@ -341,7 +338,7 @@ namespace DocIntel.WebApp.Controllers
                     group.Hidden = viewModel.Hidden;
                     group.Default = viewModel.Default;
 
-                    await _groupRepository.UpdateAsync(AmbientContext, group, currentUser);
+                    await _groupRepository.UpdateAsync(AmbientContext, group);
                     await _context.SaveChangesAsync();
 
                     _logger.Log(LogLevel.Information,
@@ -403,7 +400,6 @@ namespace DocIntel.WebApp.Controllers
             {
                 var group = await _groupRepository.GetAsync(AmbientContext,
                     id,
-                    currentUser,
                     new[] {"Members", "Members.User"});
 
                 _logger.Log(LogLevel.Information,
@@ -455,10 +451,9 @@ namespace DocIntel.WebApp.Controllers
             try
             {
                 var group = await _groupRepository.GetAsync(AmbientContext,
-                    id,
-                    currentUser);
+                    id);
 
-                await _groupRepository.RemoveAsync(AmbientContext, id, currentUser);
+                await _groupRepository.RemoveAsync(AmbientContext, id);
                 await _context.SaveChangesAsync();
 
                 _logger.Log(LogLevel.Information,
@@ -518,14 +513,13 @@ namespace DocIntel.WebApp.Controllers
                     userId,
                     new[] {nameof(AppUser.Memberships), nameof(AppUser.Memberships) + "." + nameof(Member.Group)});
                 var group = await _groupRepository.GetAsync(AmbientContext,
-                    groupId,
-                    currentUser);
+                    groupId);
                 if (user == default || group == default)
                     return NotFound();
 
                 if (user.Memberships.Any(_ => _.GroupId == groupId)) return RedirectToAction();
 
-                await _groupRepository.AddUserToGroupAsync(AmbientContext, user.Id, group.GroupId, currentUser);
+                await _groupRepository.AddUserToGroupAsync(AmbientContext, user.Id, group.GroupId);
                 await _context.SaveChangesAsync();
 
                 _logger.Log(LogLevel.Information,
@@ -585,14 +579,13 @@ namespace DocIntel.WebApp.Controllers
                     userId,
                     new[] {nameof(AppUser.Memberships), nameof(AppUser.Memberships) + "." + nameof(Member.Group)});
                 var group = await _groupRepository.GetAsync(AmbientContext,
-                    groupId,
-                    currentUser);
+                    groupId);
                 if (user == default || group == default)
                     return NotFound();
 
                 if (user.Memberships.All(_ => _.GroupId != groupId)) return RedirectToAction();
 
-                await _groupRepository.RemoveUserFromGroupAsync(AmbientContext, user.Id, group.GroupId, currentUser);
+                await _groupRepository.RemoveUserFromGroupAsync(AmbientContext, user.Id, group.GroupId);
                 await _context.SaveChangesAsync();
 
                 _logger.Log(LogLevel.Information,

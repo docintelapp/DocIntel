@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,8 +31,7 @@ namespace DocIntel.WebApp.Helpers
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
             var noAuthRequired = context.ApiDescription.CustomAttributes()
-                .Any(attr => attr.GetType() == typeof(AllowAnonymousAttribute));
-
+                .Any(attr => attr is AllowAnonymousAttribute);
             if (noAuthRequired) return;
 
             operation.Security = new List<OpenApiSecurityRequirement>

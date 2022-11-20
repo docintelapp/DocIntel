@@ -16,9 +16,12 @@
 */
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Messages;
+using DocIntel.Core.Models;
+using DocIntel.Core.Repositories;
 using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
@@ -27,20 +30,25 @@ using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Services.DocumentAnalyzer
 {
-    public class DocumentAnalyzerMessageConsumer : DynamicContextConsumer, IConsumer<DocumentCreatedMessage>
+    public class DocumentAnalyzerMessageConsumer : DynamicContextConsumer, 
+        IConsumer<DocumentCreatedMessage>, 
+        IConsumer<FileCreatedMessage>, 
+        IConsumer<FileUpdatedMessage>
     {
         private readonly ILogger<DocumentAnalyzerMessageConsumer> _logger;
         private readonly DocumentAnalyzerUtility _documentAnalyzerUtility;
+        private readonly IDocumentRepository _documentRepository;
 
         public DocumentAnalyzerMessageConsumer(ILogger<DocumentAnalyzerMessageConsumer> logger,
             DocumentAnalyzerUtility documentAnalyzerUtility,
             ApplicationSettings appSettings,
             IServiceProvider serviceProvider,
-            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory)
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, IDocumentRepository documentRepository)
             : base(appSettings, serviceProvider, userClaimsPrincipalFactory)
         {
             _logger = logger;
             _documentAnalyzerUtility = documentAnalyzerUtility;
+            _documentRepository = documentRepository;
         }
 
         public async Task Consume(ConsumeContext<DocumentCreatedMessage> context)
@@ -65,6 +73,46 @@ namespace DocIntel.Services.DocumentAnalyzer
         {
             using var ambientContext = await GetAmbientContext();
             await _documentAnalyzerUtility.Analyze(documentId, ambientContext);
+        }
+
+        public async Task Consume(ConsumeContext<FileCreatedMessage> context)
+        {
+            _logger.LogDebug("FileCreatedMessage: {0}", context.Message.FileId);
+            var ambientContext = await GetAmbientContext();
+
+            try
+            {
+                var file = await _documentRepository.GetFileAsync(ambientContext, context.Message.FileId, new [] { "Document" });
+                if (file.Document.Status != DocumentStatus.Registered)
+                    await Analyze(file.DocumentId);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Document {context.Message.FileId} could not be analyzed ({e.Message}).");
+                _logger.LogError(e.StackTrace);
+            }
+            
+            ambientContext.Dispose();
+        }
+
+        public async Task Consume(ConsumeContext<FileUpdatedMessage> context)
+        {
+            _logger.LogDebug("FileCreatedMessage: {0}", context.Message.FileId);
+            var ambientContext = await GetAmbientContext();
+
+            try
+            {
+                var file = await _documentRepository.GetFileAsync(ambientContext, context.Message.FileId, new [] { "Document" });
+                if (file.Document.Status != DocumentStatus.Registered)
+                    await Analyze(file.DocumentId);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Document {context.Message.FileId} could not be analyzed ({e.Message}).");
+                _logger.LogError(e.StackTrace);
+            }
+            
+            ambientContext.Dispose();
         }
     }
 }

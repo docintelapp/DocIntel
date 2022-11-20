@@ -63,6 +63,8 @@ namespace DocIntel.Core.Logging
         public static EventId APIEditIncomingFeedSuccessful = new EventId(23004, "edit-incoming-feed-success");
         public static EventId APIEditIncomingFeedFailed = new EventId(23005, "edit-incoming-feed-fail");
         public static EventId APIEditIncomingFeedError = new EventId(23005, "edit-incoming-feed-error");
+        public static EventId DeleteIncomingFeedSuccess= new EventId(23006, "delete-incoming-feed-success");
+        public static EventId DeleteIncomingFeedFailed = new EventId(23007, "delete-incoming-feed-fail");
 
         public static EventId APICreateSourceSuccessful = new EventId(25000, "create-source-success");
         public static EventId APICreateSourceFailed = new EventId(25001, "create-source-fail");
@@ -219,12 +221,18 @@ namespace DocIntel.Core.Logging
         public static EventId DetailsClassificationSuccessful = new(14012, "details-classification-success");
         public static EventId DetailsClassificationFailed = new(14013, "details-classification-fail");
         public static EventId DownloadFailed = new EventId(18001, "download-document-fail");
+        
         public static EventId ListFilesSuccessful = new(14006, "list-files-success");
         public static EventId ListFilesFailed = new(14007, "list-files-fail");
         public static EventId DetailsFileSuccessful = new(14006, "details-file-success");
         public static EventId DetailsFileFailed = new(14007, "details-file-fail");
         public static EventId UpdateFileSuccessful = new(14006, "update-file-success");
         public static EventId UpdateFileFailed = new(14007, "update-file-fail");
+        public static EventId CreateFileSuccessful = new(14008, "create-file-success");
+        public static EventId CreateFileFailed = new(14009, "create-file-fail");
+        public static EventId DeleteFileSuccessful = new(14010, "delete-file-success");
+        public static EventId DeleteFileFailed = new(14011, "delete-file-fail");
+
         public static EventId CreateGroupSuccessful = new EventId(14000, "create-group-success");
         public static EventId CreateGroupFailed = new EventId(14001, "create-group-fail");
         public static EventId DeleteGroupSuccessful = new EventId(14002, "delete-group-success");
@@ -241,6 +249,8 @@ namespace DocIntel.Core.Logging
         public static EventId DetailsGroupFailed = new EventId(14013, "details-group-fail");
         public static EventId ListImportRuleFailed = new EventId(12000, "list-import-rules-fail");
         public static EventId ListImportRuleSuccessful = new EventId(12001, "list-import-rules-success");
+        public static EventId DetailsImportRuleFailed = new EventId(12008, "list-import-rules-fail");
+        public static EventId DetailsImportRuleSuccessful = new EventId(12009, "list-import-rules-success");
         public static EventId CreateImportRuleFailed = new EventId(12002, "create-import-rules-fail");
         public static EventId CreateImportRuleSuccessful = new EventId(12003, "create-import-rules-success");
         public static EventId UpdateImportRuleFailed = new EventId(12004, "update-import-rules-fail");
@@ -279,6 +289,8 @@ namespace DocIntel.Core.Logging
         public static EventId EditScraperError = new EventId(13005, "edit-incoming-feed-error");
         public static EventId CreateScraperSuccess = new EventId(13006, "edit-incoming-feed-success");
         public static EventId CreateScraperFailed = new EventId(13007, "edit-incoming-feed-fail");
+        public static EventId DeleteScraperSuccess = new EventId(13008, "delete-incoming-feed-success");
+        public static EventId DeleteScraperFailed = new EventId(13009, "delete-incoming-feed-fail");
         public static EventId CreateSourceSuccessful = new EventId(15000, "create-source-success");
         public static EventId CreateSourceFailed = new EventId(15001, "create-source-fail");
         public static EventId EditSourceSuccessful = new EventId(15002, "edit-source-success");
@@ -317,6 +329,9 @@ namespace DocIntel.Core.Logging
         public static EventId DeleteTagFacetFailed = new(16005, "delete-tagfacet-fail");
         public static EventId MergeSuccessful = new(16006, "merge-tagfacet-success");
         public static EventId MergeFailed = new(16007, "merge-tagfacet-fail");
+        public static EventId GetFacetSuccessful = new(16008, "get-tagfacet-success");
+        public static EventId GetFacetFailed = new(16009, "get-tagfacet-fail");
+
         public static EventId ListUserFailed = new EventId(17000, "list-user-fail");
         public static EventId ListUserSuccessful = new EventId(17001, "list-user-success");
         public static EventId ProfileUserFailed = new EventId(17002, "user-profile-fail");
@@ -326,5 +341,28 @@ namespace DocIntel.Core.Logging
         
         public static EventId PasswordChangeSuccessful = new EventId(17006, "user-change-password-success");
         public static EventId PasswordChangeFailed = new EventId(17006, "user-change-password-fail");
+        
+        public static EventId ListImportRuleSetFailed = new EventId(18000, "list-import-rule-set-fail");
+        public static EventId ListImportRuleSetSuccessful = new EventId(18001, "list-import-rule-set-success");
+        public static EventId DetailsImportRuleSetFailed = new EventId(18008, "list-import-rule-set-fail");
+        public static EventId DetailsImportRuleSetSuccessful = new EventId(18009, "list-import-rule-set-success");
+        public static EventId CreateImportRuleSetFailed = new EventId(18002, "create-import-rule-set-fail");
+        public static EventId CreateImportRuleSetSuccessful = new EventId(18003, "create-import-rule-set-success");
+        public static EventId UpdateImportRuleSetFailed = new EventId(18004, "update-import-rule-set-fail");
+        public static EventId UpdateImportRuleSetSuccessful = new EventId(18005, "update-import-rule-set-success");
+        public static EventId DeleteImportRuleSetFailed = new EventId(18006, "delete-import-rule-set-fail");
+        public static EventId DeleteImportRuleSetSuccessful = new EventId(18007, "delete-import-rule-set-success");
+        
+        
+        public static EventId ListObservableSuccess = new EventId(19001, "list-observable-success");
+        public static EventId ListObservableFailed = new EventId(19002, "list-observable-failed");
+        public static EventId DetailsObservableSuccess = new EventId(19003, "get-observable-success");
+        public static EventId DetailsObservableFailed = new EventId(19004, "get-observable-failed");
+        public static EventId CreateObservableSuccess = new EventId(19005, "create-observable-success");
+        public static EventId CreateObservableFailed = new EventId(19006, "create-observable-failed");
+        public static EventId ReferenceObservableSuccess = new EventId(19005, "reference-observable-success");
+        public static EventId ReferenceObservableFailed = new EventId(19006, "reference-observable-failed");
+        public static EventId DereferenceObservableSuccess = new EventId(19005, "dereference-observable-success");
+        public static EventId DereferenceObservableFailed = new EventId(19006, "dereference-observable-failed");
     }
 }

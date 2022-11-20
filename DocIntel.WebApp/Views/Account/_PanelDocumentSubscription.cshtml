@@ -28,13 +28,13 @@
                                         <div class="d-flex align-items-center pt-0 pb-1 py-lg-1 flex-1 col-12 col-lg-auto">
                                             @if (item.status.Notification)
                                             {
-                                                <a asp-action="Subscribe" asp-controller="Document" asp-route-notification="false" asp-route-id="@item.document.DocumentId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                                <a asp-action="Subscribe" asp-controller="Document" asp-route-notification="false" asp-route-documentId="@item.document.DocumentId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
                                                     <i class="fas fa-bell"></i>
                                                 </a>
                                             }
                                             else
                                             {
-                                                <a asp-action="Subscribe" asp-controller="Document" asp-route-notification="true" asp-route-id="@item.document.DocumentId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                                <a asp-action="Subscribe" asp-controller="Document" asp-route-notification="true" asp-route-documentId="@item.document.DocumentId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
                                                     <i class="fal fa-bell"></i>
                                                 </a>
                                             }

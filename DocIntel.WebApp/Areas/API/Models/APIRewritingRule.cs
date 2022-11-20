@@ -16,27 +16,22 @@
 */
 
 using System;
+using Newtonsoft.Json;
 
 namespace DocIntel.WebApp.Areas.API.Models
 {
-    public class APITagFacet
+    public class APIRewritingRule
     {
-        public Guid Id { get; set; }
-        public string Title { get; set; }
-
-        public string Prefix { get; set; }
-
+        public int Position { get; set; }
+        public string Name { get; set; }
         public string Description { get; set; }
-        public bool Mandatory { get; set; }
-        public bool Hidden { get; set; }
-
-        public DateTime CreationDate { get; set; }
-        public DateTime ModificationDate { get; set; }
-
-        public APIAppUser CreatedBy { get; set; }
-        public APIAppUser LastModifiedBy { get; set; }
-        public string ExtractionRegex { get; set; }
-        public bool AutoExtract { get; set; }
-        public string TagNormalization { get; set; }
+        [JsonProperty("search_pattern")] public string SearchPattern { get; set; }
+        public string Replacement { get; set; }
+    }
+    public class APIRewritingRuleDetails : APIRewritingRule
+    {
+        [JsonProperty("rule_id")] public Guid RuleId { get; set; }
+        [JsonProperty("rule_set_id")] public Guid RuleSetId { get; set; }
+        public APIRewritingRuleSet RuleSet { get; set; }
     }
 }

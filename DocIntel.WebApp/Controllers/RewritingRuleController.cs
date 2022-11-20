@@ -186,7 +186,7 @@ namespace DocIntel.WebApp.Controllers
                 rule.SearchPattern = submittedRule.SearchPattern;
                 rule.Replacement = submittedRule.Replacement;
                 rule.ImportRuleSetId = id;
-                await _importRuleRepository.Create(AmbientContext, rule, await GetCurrentUser());
+                await _importRuleRepository.Create(AmbientContext, rule);
 
                 _logger.Log(LogLevel.Information,
                     EventIDs.CreateImportRuleSuccessful,
@@ -442,7 +442,7 @@ namespace DocIntel.WebApp.Controllers
                 null,
                 LogEvent.Formatter);
 
-            await _importRuleRepository.Remove(AmbientContext, rule, currentUser);
+            await _importRuleRepository.Remove(AmbientContext, rule.ImportRuleId);
 
             return RedirectToAction("Details", "RewritingRuleSet", new { id = rule.ImportRuleSetId });
         }

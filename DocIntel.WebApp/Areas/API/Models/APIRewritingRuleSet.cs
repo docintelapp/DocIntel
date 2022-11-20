@@ -16,37 +16,20 @@
 */
 
 using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace DocIntel.WebApp.Areas.API.Models
 {
-    public class APIDocumentUpload
+    public class APIRewritingRuleSet
     {
-        public string ExternalReference { get; set; }
-
-        public string Title { get; set; }
-
-        public string ShortDescription { get; set; }
-
-        public string SourceName { get; set; }
-
-        public Guid SourceId { get; set; }
-
-        public string SourceUrl { get; set; }
-
-        public Guid ClassificationId { get; set; }
-
-        public string Note { get; set; }
-
-        public bool SkipObservables { get; set; }
-
-        public DateTime RegistrationDate { get; set; }
-
-        public DateTime ModificationDate { get; set; }
-
-        public DateTime DocumentDate { get; set; }
-
-        public string[] Tags { get; set; }
-
-        public int Status { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int Position { get; set; }
+    }
+    public class ApiRewritingRuleSetDetails : APIRewritingRuleSet
+    {
+        [JsonProperty("rule_set_id")] public Guid RuleSetId { get; set; }
+        public List<APIRewritingRule> Rules { get; set; }
     }
 }

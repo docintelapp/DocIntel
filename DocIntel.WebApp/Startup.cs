@@ -64,6 +64,7 @@ using Newtonsoft.Json;
 using Npgsql;
 
 using RunMethodsSequentially;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace DocIntel.WebApp
 {
@@ -109,6 +110,7 @@ namespace DocIntel.WebApp
                 {
                     t.SerializerSettings.Formatting = Formatting.Indented;
                     t.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    t.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 });
 
             services.AddControllersWithViews()
@@ -116,8 +118,8 @@ namespace DocIntel.WebApp
                 {
                     t.SerializerSettings.Formatting = Formatting.Indented;
                     t.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                })
-                .AddRazorRuntimeCompilation();
+                });
+                // .AddRazorRuntimeCompilation();
 
             services.AddSingleton(Configuration);
             services.AddSingleton(appSettings);
@@ -224,13 +226,18 @@ namespace DocIntel.WebApp
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Version = "v0.1",
-                    Title = "DocIntel API",
-                    Description = "API for DocIntel"
+                    Version = "v2.1",
+                    Title = "DocIntel API Documentation",
+                    Description = "API as described here is the encouraged way to programmatically interact with " 
+                                  + "DocIntel. This new API was designed with ease of use and uniformity in mind and " 
+                                  + "it is inspired from VirusTotal and other common API specification."
                 });
-                c.CustomOperationIds(e =>
-                    $"{e.ActionDescriptor.RouteValues["controller"]}{e.ActionDescriptor.RouteValues["action"]}{e.HttpMethod.FirstCharToUpper()}");
 
+                c.ExampleFilters();
+
+                c.CustomOperationIds(e =>
+                    $"{e.ActionDescriptor.RouteValues["action"]}{e.ActionDescriptor.RouteValues["controller"]}");
+                
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -238,31 +245,22 @@ namespace DocIntel.WebApp
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "JWT Authorization header using the Bearer scheme."
+                    Description = "JWT Authorization header using the Bearer scheme. Specify `Bearer TOKEN` where " 
+                                  + "`TOKEN` is the token you obtained with the endpoint `/API/Authentication/Login`."
                 });
 
                 c.OperationFilter<BearerAuthOperationsFilter>();
-                /*c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                          new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference 
-                                { 
-                                    Type = ReferenceType.SecurityScheme, 
-                                    Id = "Bearer" 
-                                }
-                            },
-                            new string[] {} 
-                    }
-                });*/
-
+                
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
+                c.IncludeXmlComments(xmlPath, includeControllerXmlComments:true);
+                c.EnableAnnotations();
+                
             });
-
+            services.AddSwaggerExamplesFromAssemblies(Assembly.GetExecutingAssembly());
+            services.AddSwaggerGenNewtonsoftSupport();
+            
             services.AddHealthChecks();
 
             services.Configure<HealthCheckPublisherOptions>(options =>
@@ -293,12 +291,13 @@ namespace DocIntel.WebApp
         {
             app.UseDeveloperExceptionPage();
 
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "DocIntel API v0.1"); });
+            app.UseReDoc(options =>
+            {
+                options.DocumentTitle = "DocIntel API Documentation";
+                options.SpecUrl = "/swagger/v1/swagger.json";
+                options.ConfigObject.ExpandResponses = "200";
+            });
 
             app.UseRouting();
 
@@ -381,6 +380,7 @@ namespace DocIntel.WebApp
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapSwagger();
                 endpoints.MapAreaControllerRoute(
                     "APIArea",
                     "API",

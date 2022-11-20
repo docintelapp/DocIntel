@@ -18,6 +18,7 @@
 
 using System;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DocIntel.Core.Models
 {
@@ -30,5 +31,6 @@ namespace DocIntel.Core.Models
         public AppUser User { get; set; }
 
         [DefaultValue(false)] public bool Notify { get; set; }
+        [NotMapped] public bool Subscribed { get; set; } = true;
     }
 }

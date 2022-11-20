@@ -32,31 +32,28 @@ namespace DocIntel.Core.Repositories
         ///     Add the group to the database
         /// </summary>
         /// <param name="group">The group</param>
-        /// <param name="currentUser">The user requesting the addition</param>
         /// <returns>
         ///     <c>True</c> if the group was added, <c>False</c> otherwise.
         /// </returns>
-        Task AddAsync(AmbientContext ambientContext, Group group, AppUser currentUser);
+        Task AddAsync(AmbientContext ambientContext, Group group);
 
         /// <summary>
         ///     Removes the group from the database
         /// </summary>
         /// <param name="group">The group</param>
-        /// <param name="currentUser">The user requesting the removal</param>
         /// <returns>
         ///     <c>True</c> if the group was added, <c>False</c> otherwise.
         /// </returns>
-        Task RemoveAsync(AmbientContext ambientContext, Guid groupId, AppUser currentUser);
+        Task RemoveAsync(AmbientContext ambientContext, Guid groupId);
 
         /// <summary>
         ///     Updates the group in the database
         /// </summary>
         /// <param name="group">The group</param>
-        /// <param name="currentUser">The user requesting the update</param>
         /// <returns>
         ///     <c>True</c> if the group was updated, <c>False</c> otherwise.
         /// </returns>
-        Task UpdateAsync(AmbientContext ambientContext, Group group, AppUser currentUser);
+        Task UpdateAsync(AmbientContext ambientContext, Group group);
 
         /// <summary>
         ///     Returns whether the group is in the database
@@ -65,7 +62,7 @@ namespace DocIntel.Core.Repositories
         /// <returns>
         ///     <c>True</c> if the group exists, <c>False</c> otherwise.
         /// </returns>
-        Task<bool> Exists(AmbientContext ambientContext, Guid groupId, AppUser currentUser);
+        Task<bool> Exists(AmbientContext ambientContext, Guid groupId);
 
         /// <summary>
         ///     Returns all groups
@@ -82,7 +79,6 @@ namespace DocIntel.Core.Repositories
         /// <returns>The group</returns>
         Task<Group> GetAsync(AmbientContext ambientContext,
             Guid id,
-            AppUser currentUser,
             string[] includeRelatedData = null);
 
         /// <summary>
@@ -90,22 +86,18 @@ namespace DocIntel.Core.Repositories
         /// </summary>
         /// <param name="user">User</param>
         /// <param name="group">group</param>
-        /// <param name="currentUser">The user requesting the add</param>
         Task AddUserToGroupAsync(AmbientContext ambientContext,
             string userId,
-            Guid groupId,
-            AppUser currentUser);
+            Guid groupId);
 
         /// <summary>
         ///     Removes the specified user form the specified group
         /// </summary>
         /// <param name="user">The user to remove</param>
         /// <param name="group">The group to remove to the user</param>
-        /// <param name="currentUser">The user requesting the removal</param>
         Task RemoveUserFromGroupAsync(AmbientContext ambientContext,
             string userId,
-            Guid groupId,
-            AppUser currentUser);
+            Guid groupId);
 
         /// <summary>
         /// Returns the default groups

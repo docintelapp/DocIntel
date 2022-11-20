@@ -30,11 +30,11 @@ namespace DocIntel.Core.Repositories
         Task<Tag> RemoveAsync(AmbientContext ambientContext, Guid tagId);
         Task<Tag> UpdateAsync(AmbientContext ambientContext, Tag tag);
 
-        Task MergeAsync(AmbientContext ambientContext, Guid tag1, Guid tag2);
+        Task<Tag> MergeAsync(AmbientContext ambientContext, Guid tag1, Guid tag2);
 
         Task<bool> ExistsAsync(AmbientContext ambientContext, Guid tagId);
         Task<bool> ExistsAsync(AmbientContext ambientContext, string facetPrefix, string label);
-        Task<bool> ExistsAsync(AmbientContext ambientContext, Guid facetId, string label);
+        Task<bool> ExistsAsync(AmbientContext ambientContext, Guid facetId, string label, Guid? tagId = null);
 
         IAsyncEnumerable<Tag> GetAllAsync(AmbientContext ambientContext, TagQuery query,
             string[] includeRelatedData = null);

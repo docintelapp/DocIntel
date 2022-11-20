@@ -90,7 +90,7 @@ namespace DocIntel.WebApp.Controllers
                 ViewBag.DefaultClassification = _classificationRepository.GetDefault(AmbientContext);
 
                 return View(_classificationRepository
-                    .GetAllAsync(AmbientContext, currentUser, new[] {"ParentClassification"}).ToEnumerable());
+                    .GetAllAsync(AmbientContext, new[] {"ParentClassification"}).ToEnumerable());
             }
             catch (UnauthorizedOperationException)
             {
@@ -174,7 +174,7 @@ namespace DocIntel.WebApp.Controllers
             }
 
             ViewBag.AllClassifications =
-                await _classificationRepository.GetAllAsync(AmbientContext, currentUser).ToListAsync();
+                await _classificationRepository.GetAllAsync(AmbientContext).ToListAsync();
 
             return View(new Classification());
         }
@@ -202,7 +202,7 @@ namespace DocIntel.WebApp.Controllers
                         Default = viewModel.Default
                     };
 
-                    await _classificationRepository.AddAsync(AmbientContext, classification, currentUser);
+                    await _classificationRepository.AddAsync(AmbientContext, classification);
                     await _context.SaveChangesAsync();
 
                     _logger.Log(LogLevel.Information, EventIDs.CreateClassificationSuccessful,
@@ -248,7 +248,7 @@ namespace DocIntel.WebApp.Controllers
                     LogEvent.Formatter);
 
                 ViewBag.AllClassifications =
-                    await _classificationRepository.GetAllAsync(AmbientContext, currentUser).ToListAsync();
+                    await _classificationRepository.GetAllAsync(AmbientContext).ToListAsync();
                 return View(viewModel);
             }
         }
@@ -271,7 +271,7 @@ namespace DocIntel.WebApp.Controllers
                     null,
                     LogEvent.Formatter);
 
-                ViewBag.AllClassifications = await _classificationRepository.GetAllAsync(AmbientContext, currentUser)
+                ViewBag.AllClassifications = await _classificationRepository.GetAllAsync(AmbientContext)
                     .Where(_ => _.ClassificationId != id).ToListAsync();
 
                 return View(classification);
@@ -329,7 +329,7 @@ namespace DocIntel.WebApp.Controllers
                     classification.Color = viewModel.Color;
                     classification.Default = viewModel.Default;
 
-                    await _classificationRepository.UpdateAsync(AmbientContext, classification, currentUser);
+                    await _classificationRepository.UpdateAsync(AmbientContext, classification);
                     await _context.SaveChangesAsync();
 
                     _logger.Log(LogLevel.Information, EventIDs.EditClassificationSuccessful,
@@ -373,7 +373,7 @@ namespace DocIntel.WebApp.Controllers
                         .AddClassification(viewModel),
                     null,
                     LogEvent.Formatter);
-                ViewBag.AllClassifications = await _classificationRepository.GetAllAsync(AmbientContext, currentUser)
+                ViewBag.AllClassifications = await _classificationRepository.GetAllAsync(AmbientContext)
                     .Where(_ => _.ClassificationId != viewModel.ClassificationId).ToListAsync();
 
                 return View(viewModel);
@@ -441,7 +441,7 @@ namespace DocIntel.WebApp.Controllers
                     id
                 );
 
-                await _classificationRepository.RemoveAsync(AmbientContext, id, currentUser);
+                await _classificationRepository.RemoveAsync(AmbientContext, id);
                 await _context.SaveChangesAsync();
 
                 _logger.Log(LogLevel.Information, EventIDs.DeleteClassificationSuccessful,

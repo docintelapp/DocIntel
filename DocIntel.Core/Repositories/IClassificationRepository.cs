@@ -31,31 +31,28 @@ namespace DocIntel.Core.Repositories
         ///     Add the classification to the database
         /// </summary>
         /// <param name="classification">The classification</param>
-        /// <param name="currentUser">The user requesting the addition</param>
         /// <returns>
         ///     <c>True</c> if the classification was added, <c>False</c> otherwise.
         /// </returns>
-        Task<Classification> AddAsync(AmbientContext ambientContext, Classification classification, AppUser currentUser);
+        Task<Classification> AddAsync(AmbientContext ambientContext, Classification classification);
 
         /// <summary>
         ///     Removes the classification from the database
         /// </summary>
         /// <param name="classification">The classification</param>
-        /// <param name="currentUser">The user requesting the removal</param>
         /// <returns>
         ///     <c>True</c> if the classification was added, <c>False</c> otherwise.
         /// </returns>
-        Task RemoveAsync(AmbientContext ambientContext, Guid classificationId, AppUser currentUser);
+        Task RemoveAsync(AmbientContext ambientContext, Guid classificationId);
 
         /// <summary>
         ///     Updates the classification in the database
         /// </summary>
         /// <param name="classification">The classification</param>
-        /// <param name="currentUser">The user requesting the update</param>
         /// <returns>
         ///     <c>True</c> if the classification was updated, <c>False</c> otherwise.
         /// </returns>
-        Task UpdateAsync(AmbientContext ambientContext, Classification classification, AppUser currentUser);
+        Task<Classification> UpdateAsync(AmbientContext ambientContext, Classification classification);
 
         /// <summary>
         ///     Returns whether the classification is in the database
@@ -64,14 +61,13 @@ namespace DocIntel.Core.Repositories
         /// <returns>
         ///     <c>True</c> if the classification exists, <c>False</c> otherwise.
         /// </returns>
-        Task<bool> Exists(AmbientContext ambientContext, Guid classificationId, AppUser currentUser);
+        Task<bool> Exists(AmbientContext ambientContext, Guid classificationId);
 
         /// <summary>
         ///     Returns all classifications
         /// </summary>
         /// <returns>The classifications</returns>
         IAsyncEnumerable<Classification> GetAllAsync(AmbientContext ambientContext,
-            AppUser currentUser,
             string[] includeRelatedData = null);
 
         /// <summary>

@@ -20,7 +20,7 @@
                         <li class="list-group-item text-truncate">
                             @if ((await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.View)).Succeeded)
                             {
-                                <a asp-action="Details" asp-controller="Source" asp-route-id="@source.SourceId">@source.Title</a>
+                                <a asp-action="Details" asp-controller="Source" asp-route-sourceId="@source.SourceId">@source.Title</a>
                                 <br/>
                             }
                             else

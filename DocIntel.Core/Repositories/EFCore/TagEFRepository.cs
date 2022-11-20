@@ -71,7 +71,9 @@ namespace DocIntel.Core.Repositories.EFCore
                 tag.URL = Regex.Replace(Regex.Replace(tag.Label, @"[^A-Za-z0-9_\.~]+", "-"), "-{2,}", "-")
                     .ToLowerInvariant().Trim('-');
 
-                if (!string.IsNullOrEmpty(tag.Facet.TagNormalization))
+                var tagNormalization = ambientContext.DatabaseContext.Facets
+                    .SingleOrDefault(_ => _.FacetId == tag.FacetId)?.TagNormalization;
+                if (!string.IsNullOrEmpty(tagNormalization))
                 {
                     var labelTemplate = Template.Parse("{{label | " + tag.Facet.TagNormalization + "}}");
                     tag.Label = labelTemplate.Render(Hash.FromAnonymousObject(new { label = tag.Label }));
@@ -195,11 +197,12 @@ namespace DocIntel.Core.Repositories.EFCore
         public async Task<bool> ExistsAsync(
             AmbientContext ambientContext,
             Guid facetId,
-            string label)
+            string label,
+            Guid? tagId = null)
         {
             var tag = await ambientContext.DatabaseContext.Tags
                 .AsQueryable()
-                .SingleOrDefaultAsync(_ => (_.FacetId == facetId) & (_.Label == label));
+                .SingleOrDefaultAsync(_ => (_.FacetId == facetId) & (_.Label == label) & (_.TagId != tagId));
             if (tag != null) return await _appAuthorizationService.CanViewTag(ambientContext.Claims, tag);
 
             return false;
@@ -317,7 +320,7 @@ namespace DocIntel.Core.Repositories.EFCore
                     yield return tag;
         }
 
-        public async Task MergeAsync(
+        public async Task<Tag> MergeAsync(
             AmbientContext ambientContext,
             Guid tagPrimaryId,
             Guid tagSecondaryId)
@@ -362,6 +365,8 @@ namespace DocIntel.Core.Repositories.EFCore
                     UserId = ambientContext.CurrentUser.Id
                 })
             );
+
+            return tagPrimary;
         }
 
         public IAsyncEnumerable<(Tag tag, SubscriptionStatus status)> GetSubscriptionsAsync(

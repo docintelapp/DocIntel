@@ -16,16 +16,29 @@
 */
 
 using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace DocIntel.WebApp.Areas.API.Models
 {
-    public class APIComment
+    public class APIRole
     {
-        public Guid CommentId { get; set; }
-        public DateTime CommentDate { get; set; }
-        public DateTime ModificationDate { get; set; }
-        public string Body { get; set; }
-        public APIAppUser Author { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string[] Permissions { get; set; }
+    }
+    
+    public class APIRoleDetails : APIRole
+    {
+        [JsonProperty("role_id")]
+        public string Id { get; set; }
+        public string Slug { get; set; }
+        public DateTime CreationDate { get; internal set; }
+        public DateTime ModificationDate { get; internal set; }
+        public string CreatedById { get; internal set; }
+        public APIAppUser CreatedBy { get; set; }
+        public string LastModifiedById { get; internal set; }
         public APIAppUser LastModifiedBy { get; set; }
+        public IEnumerable<APIAppUser> Users { get; set; }
     }
 }

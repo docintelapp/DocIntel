@@ -16,7 +16,7 @@
                 @foreach (var tag in Model)
                 {
                     <a class="badge badge-pill @tag.BackgroundColor"
-                       asp-action="Details" asp-route-id="@tag.TagId">
+                       asp-action="Details" asp-route-tagId="@tag.TagId">
                         @if (!string.IsNullOrEmpty(tag.Facet?.Prefix))
                         {
                             <text>@tag.Facet.Prefix:@tag.Label</text>

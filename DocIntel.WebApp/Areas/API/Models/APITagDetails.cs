@@ -16,32 +16,39 @@
 */
 
 using System;
-using System.Collections.Generic;
-
-using DocIntel.Core.Models;
+using Newtonsoft.Json;
 
 namespace DocIntel.WebApp.Areas.API.Models
 {
-    public class APISource
-    {
-        public Guid SourceId { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string HomePage { get; set; }
-        public string RSSFeed { get; set; }
-        public string Facebook { get; set; }
-        public string Twitter { get; set; }
-        public string Reddit { get; set; }
-        public string LinkedIn { get; set; }
-
-        public IEnumerable<string> Keywords { get; set; }
-        public DateTime CreationDate { get; set; }
-        public DateTime ModificationDate { get; set; }
-        public APIAppUser RegisteredBy { get; set; }
+    public class APITagDetails : APITag
+    {   
+        /// <summary>
+        /// The user who created the tag
+        /// </summary>
+        [JsonProperty("created_by")]
+        public APIAppUser CreatedBy { get; set; }
+        
+        /// <summary>
+        /// The user who last modified the tag
+        /// </summary>
+        [JsonProperty("last_modified_by")]
         public APIAppUser LastModifiedBy { get; set; }
 
-        public SourceReliability Reliability { get; set; }
+        /// <summary>
+        /// The creation date
+        /// </summary>
+        [JsonProperty("creation_date")]
+        public DateTime CreationDate { get; set; }
+        
+        /// <summary>
+        /// The modification date
+        /// </summary>
+        [JsonProperty("modification_date")]
+        public DateTime ModificationDate { get; set; }
 
-        public string Country { get; set; }
+        /// <summary>
+        /// The facet
+        /// </summary>
+        public ApiFacet Facet { get; set; }
     }
 }

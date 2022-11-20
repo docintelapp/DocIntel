@@ -16,12 +16,14 @@
 */
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-
+using Bogus;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -35,9 +37,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace DocIntel.WebApp.Areas.API.Controllers
 {
+    /// <summary>
+    /// For authenticating with the API you must include the `Authentication` header with a `Bearer` token in all your
+    /// requests. The format for the `Authentication` header is `Authentication: Bearer TOKEN` where `TOKEN` is the
+    /// actual token obtained with a request to `/API/Authentication/Login`. Bearer tokens are like temporary passwords
+    /// for your account. You generate a `Bearer` token using your personal API key. Your API key can be found in your
+    /// DocIntel account user menu, under the item *Manage API Keys*. An account may have multiple API keys, last usage
+    /// is tracked separately for each.
+    ///
+    /// Your API keys and tokens carry all your privileges, so keep it secure and don't share it with anyone. Always use
+    /// HTTPS instead of HTTP for making your requests. Avoid storing these credentials in plaintext.
+    /// </summary>
     [Area("API")]
     [Route("API/Authentication")]
     [ApiController]
@@ -65,11 +81,25 @@ namespace DocIntel.WebApp.Areas.API.Controllers
             _claimPrincipalFactory = claimPrincipalFactory;
         }
 
+        /// <summary>
+        /// Login
+        /// </summary>
+        /// <remarks>
+        /// Retrieves an authentication token for the specified user.  
+        /// </remarks>
+        /// <param name="login">The login credentials</param>
+        /// <returns>The authentication token</returns>
+        /// <response code="200">Returns the newly created token</response>
+        /// <response code="400">The provided credentials are null or empty.</response>
+        /// <response code="401">The provided credentials are invalid.</response>
         [AllowAnonymous]
         [HttpPost("Login")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResult))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Produces("application/json", "application/xml")]
+        [SwaggerOperation(
+            OperationId = "Login"
+        )]
+        [ProducesResponseType(typeof(LoginResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> LoginAsync([FromBody] LoginInformation login)
         {
             _logger.Log(LogLevel.Information,
@@ -162,13 +192,50 @@ namespace DocIntel.WebApp.Areas.API.Controllers
 
         public class LoginInformation
         {
+            [Required]
+            [SwaggerSchema("The username")]
             public string Username { get; set; }
+            
+            [Required]
+            [JsonProperty("api_key")]
+            [SwaggerSchema("The API key")]
             public string APIKey { get; set; }
         }
 
         public class LoginResult
         {
+            [SwaggerSchema("The authentication token")]
             public string Token { get; set; }
+        }
+
+        public class LoginInformationExample : IExamplesProvider<LoginInformation>
+        {
+            public LoginInformation GetExamples()
+            {
+                var faker = new Faker("en");
+                return new LoginInformation
+                {
+                    Username = faker.Internet.UserName(),
+                    APIKey = Base64Encode(faker.Random.String(64))
+                };
+            }
+            
+            private static string Base64Encode(string plainText) {
+                var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+                return System.Convert.ToBase64String(plainTextBytes);
+            }
+        }
+        
+        public class LoginResultExample : IExamplesProvider<LoginResult>
+        {
+            public LoginResult GetExamples()
+            {
+                var faker = new Faker("en");
+                return new LoginResult
+                {
+                    Token = faker.Random.String2(2700, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.")
+                };
+            }
         }
     }
 }

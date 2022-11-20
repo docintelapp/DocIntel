@@ -23,9 +23,9 @@ public class SynapseRepository : ISynapseRepository
         _logger = logger;
     }
 
-    public async Task Add(SynapseObject synapseObject)
+    public Task<SynapseObject> Add(SynapseObject synapseObject)
     {
-        await _client.Nodes.Add(synapseObject);
+        return _client.Nodes.Add(synapseObject);
     }
 
     public async Task Add(IEnumerable<SynapseObject> observables, Document document, DocumentFile file,
@@ -41,6 +41,33 @@ public class SynapseRepository : ISynapseRepository
         
         await _client.Nodes.Add(synapseObject, view?.Iden).ToListAsync();
         await _client.Nodes.AddLightEdge(synapseObject.Select(_ => new SynapseLightEdge(doc, _, "refs")), view?.Iden);
+    }
+    
+    public async Task Add(SynapseObject synapseObject, Document document, SynapseView view = null)
+    {
+        await ensureLoggedIn();
+        var doc = (await _client.StormAsync<DIDocumentSynapseObject>(
+                $"[ _di:document={Synsharp.StringHelpers.Escape(document.DocumentId.ToString())} ]",
+                new ApiStormQueryOpts() { View = view?.Iden })
+            .ToListAsync()).FirstOrDefault();
+
+        await _client.Nodes.Add(synapseObject, view?.Iden);
+        await _client.Nodes.AddLightEdge(new SynapseLightEdge(doc, synapseObject, "refs"), view?.Iden);
+    }
+    
+    public async Task Remove(string iden, Document document, SynapseView view = null)
+    {
+        await ensureLoggedIn();
+        var doc = (await _client.StormAsync<DIDocumentSynapseObject>(
+                $"[ _di:document={Synsharp.StringHelpers.Escape(document.DocumentId.ToString())} ]",
+                new ApiStormQueryOpts() { View = view?.Iden })
+            .ToListAsync()).FirstOrDefault();
+
+        var node = await _client.Nodes.GetAsync<SynapseObject>(iden, view?.Iden);
+        if (node != null)
+        {
+            await _client.Nodes.RemoveLightEdge(new SynapseLightEdge(doc, node, "refs"), view?.Iden);   
+        }
     }
 
     public async Task RemoveRefs(Guid documentId)
@@ -119,6 +146,11 @@ public class SynapseRepository : ISynapseRepository
         var view = GetView(document, unmerged);
         await ensureLoggedIn();
         await _client.Nodes.RemoveTag(iden, tagName, view?.Iden);
+    }
+
+    public Task<SynapseObject> GetObservableByIden(string iden)
+    {
+        return _client.Nodes.GetAsync<SynapseObject>(iden);
     }
 
     public Task<T> GetObservableByIden<T>(Document document, string iden, bool unmerged = false)

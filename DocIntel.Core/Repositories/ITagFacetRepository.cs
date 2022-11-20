@@ -44,5 +44,7 @@ namespace DocIntel.Core.Repositories
         Task UnsubscribeAsync(AmbientContext ambientContext, AppUser user, Guid facetId);
 
         Task MergeAsync(AmbientContext ambientContext, Guid primary, Guid secondary);
+        Task<UserFacetSubscription> IsSubscribedAsync(AmbientContext ambientContext, AppUser user, Guid guid);
+        
     }
 }

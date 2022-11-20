@@ -689,9 +689,6 @@ namespace DocIntel.WebApp.Controllers
             return RedirectToAction(nameof(Pending), "Document");
         }
 
-        
-
-
         [HttpGet("Document/Create/{id}")]
         public async Task<IActionResult> Create(Guid id)
         {

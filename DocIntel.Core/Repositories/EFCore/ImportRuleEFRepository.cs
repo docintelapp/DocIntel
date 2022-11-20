@@ -29,16 +29,18 @@ namespace DocIntel.Core.Repositories.EFCore
     public class ImportRuleEFRepository : IImportRuleRepository
     {
 
-        public async Task Create(AmbientContext context, ImportRuleSet importRuleSet, AppUser appUser)
+        public async Task<ImportRuleSet> Create(AmbientContext context, ImportRuleSet importRuleSet)
         {
-            context.DatabaseContext.ImportRuleSets.Add(importRuleSet);
+            var entry = context.DatabaseContext.ImportRuleSets.Add(importRuleSet);
             await context.DatabaseContext.SaveChangesAsync();
+            return entry.Entity;
         }
 
-        public async Task Create(AmbientContext context, ImportRule importRule, AppUser appUser)
+        public async Task<ImportRule> Create(AmbientContext context, ImportRule importRule)
         {
-            context.DatabaseContext.ImportRules.Add(importRule);
+            var entry = context.DatabaseContext.ImportRules.Add(importRule);
             await context.DatabaseContext.SaveChangesAsync();
+            return entry.Entity;
         }
 
         public bool Exists(AmbientContext context, Guid importRuleId)
@@ -53,7 +55,7 @@ namespace DocIntel.Core.Repositories.EFCore
 
         public IEnumerable<ImportRule> GetAll(AmbientContext context, Guid setId)
         {
-            return context.DatabaseContext.ImportRules.Where(_ => _.ImportRuleId == setId);
+            return context.DatabaseContext.ImportRules.Where(_ => _.ImportRuleSetId == setId);
         }
 
         public IEnumerable<ImportRuleSet> GetAllSets(AmbientContext context)
@@ -68,15 +70,15 @@ namespace DocIntel.Core.Repositories.EFCore
                 .SingleOrDefault(_ => _.ImportRuleSetId == importRuleSetId);
         }
 
-        public async Task Remove(AmbientContext context, ImportRuleSet importRuleSet, AppUser appUser)
+        public async Task RemoveSet(AmbientContext context, Guid importRuleSet)
         {
-            context.DatabaseContext.ImportRuleSets.Remove(importRuleSet);
+            context.DatabaseContext.ImportRuleSets.Remove(context.DatabaseContext.ImportRuleSets.SingleOrDefault(_ => _.ImportRuleSetId == importRuleSet));
             await context.DatabaseContext.SaveChangesAsync();
         }
 
-        public async Task Remove(AmbientContext context, ImportRule importRule, AppUser appUser)
+        public async Task Remove(AmbientContext context, Guid importRule)
         {
-            context.DatabaseContext.ImportRules.Remove(importRule);
+            context.DatabaseContext.ImportRules.Remove(context.DatabaseContext.ImportRules.SingleOrDefault(_ => _.ImportRuleId == importRule));
             await context.DatabaseContext.SaveChangesAsync();
         }
 
@@ -85,16 +87,18 @@ namespace DocIntel.Core.Repositories.EFCore
             return context.DatabaseContext.ImportRuleSets.Any(_ => _.ImportRuleSetId == importRuleSetId);
         }
 
-        public async Task Update(AmbientContext context, ImportRuleSet importRuleSet, AppUser appUser)
+        public async Task<ImportRuleSet> Update(AmbientContext context, ImportRuleSet importRuleSet)
         {
-            context.DatabaseContext.ImportRuleSets.Update(importRuleSet);
+            var res = context.DatabaseContext.ImportRuleSets.Update(importRuleSet);
             await context.DatabaseContext.SaveChangesAsync();
+            return res.Entity;
         }
 
-        public async Task Update(AmbientContext context, ImportRule importRule, AppUser appUser)
+        public async Task<ImportRule> Update(AmbientContext context, ImportRule importRule)
         {
-            context.DatabaseContext.ImportRules.Update(importRule);
+            var res = context.DatabaseContext.ImportRules.Update(importRule);
             await context.DatabaseContext.SaveChangesAsync();
+            return res.Entity;
         }
     }
 }

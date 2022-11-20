@@ -34,18 +34,18 @@
                                         <div class="d-flex align-items-center pt-0 pb-0 py-lg-1 flex-1 col-12 col-lg-auto">
                                             @if (item.status.Notification)
                                             {
-                                                <a asp-action="Subscribe" asp-controller="Source" asp-route-notification="false" asp-route-id="@item.source.SourceId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                                <a asp-action="Subscribe" asp-controller="Source" asp-route-notification="false" asp-route-sourceId="@item.source.SourceId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
                                                     <i class="fas fa-bell"></i>
                                                 </a>
                                             }
                                             else
                                             {
-                                                <a asp-action="Subscribe" asp-controller="Source" asp-route-notification="true" asp-route-id="@item.source.SourceId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                                <a asp-action="Subscribe" asp-controller="Source" asp-route-notification="true" asp-route-sourceId="@item.source.SourceId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
                                                     <i class="fal fa-bell"></i>
                                                 </a>
                                             }
                                             <div class="ml-2">
-                                                <a class="name" asp-controller="Source" asp-action="Details" asp-route-id="@item.source.SourceId">
+                                                <a class="name" asp-controller="Source" asp-action="Details" asp-route-sourceId="@item.source.SourceId">
                                                     @item.source.Title
                                                 </a>
                                             </div>
@@ -53,7 +53,7 @@
                                     </div>
                                 </div>
                                 <div class="fs-sm text-muted ml-auto hide-on-hover-parent order-4 position-on-mobile-absolute pos-top pos-right mt-2 mr-3 mr-sm-4 mt-lg-0 mr-lg-0">
-                                    <a asp-controller="Source" asp-action="Unsubscribe" asp-route-id="@item.source.SourceId"  asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                    <a asp-controller="Source" asp-action="Unsubscribe" asp-route-sourceId="@item.source.SourceId"  asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
                                         <i class="fal fa-trash-alt"></i>
                                     </a>
                                 </div>
@@ -80,7 +80,7 @@
                                                 <i class="fal fa-volume-slash"></i>
                                             </a>
                                             <div class="ml-2">
-                                                <a class="name" asp-controller="Source" asp-action="Details" asp-route-id="@item.SourceId">
+                                                <a class="name" asp-controller="Source" asp-action="Details" asp-route-sourceId="@item.SourceId">
                                                     @item.Title
                                                 </a>
                                             </div>

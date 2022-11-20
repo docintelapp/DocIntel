@@ -632,6 +632,14 @@ namespace DocIntel.Core.Repositories.EFCore
                 file.MimeType = contentType;
                 
                 var trackingEntity = await ambientContext.DatabaseContext.AddAsync(file);
+
+                ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
+                    () => _busClient.Publish(new FileCreatedMessage
+                    {
+                        FileId = trackingEntity.Entity.FileId,
+                        UserId = ambientContext.CurrentUser.Id
+                    }));
+                
                 return trackingEntity.Entity;
             }
 
@@ -681,6 +689,14 @@ namespace DocIntel.Core.Repositories.EFCore
                 }
 
                 var trackingEntity = ambientContext.DatabaseContext.Update(file);
+                
+                ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
+                    () => _busClient.Publish(new FileUpdatedMessage
+                    {
+                        FileId = trackingEntity.Entity.FileId,
+                        UserId = ambientContext.CurrentUser.Id
+                    }));
+                
                 return trackingEntity.Entity;
             }
 
@@ -698,6 +714,14 @@ namespace DocIntel.Core.Repositories.EFCore
                 File.Delete(newFilePath);
 
             var trackingEntity = ambientContext.DatabaseContext.Remove(file);
+            
+            ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
+                () => _busClient.Publish(new FileDeletedMessage
+                {
+                    FileId = trackingEntity.Entity.FileId,
+                    UserId = ambientContext.CurrentUser.Id
+                }));
+            
             return trackingEntity.Entity;
         }
         

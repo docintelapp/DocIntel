@@ -50,8 +50,7 @@ namespace DocIntel.Core.Repositories.EFCore
             _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
         }
 
-        public async Task<Classification> AddAsync(AmbientContext ambientContext, Classification classification,
-            AppUser currentUser)
+        public async Task<Classification> AddAsync(AmbientContext ambientContext, Classification classification)
         {
             if (!await _appAuthorizationService.CanAddClassification(ambientContext.Claims, classification))
                 throw new UnauthorizedOperationException();
@@ -88,7 +87,7 @@ namespace DocIntel.Core.Repositories.EFCore
             throw new InvalidArgumentException(modelErrors);
         }
 
-        public async Task<bool> Exists(AmbientContext ambientContext, Guid classificationId, AppUser currentUser)
+        public async Task<bool> Exists(AmbientContext ambientContext, Guid classificationId)
         {
             IQueryable<Classification> enumerable = ambientContext.DatabaseContext.Classifications;
 
@@ -101,7 +100,7 @@ namespace DocIntel.Core.Repositories.EFCore
             return true;
         }
 
-        public async IAsyncEnumerable<Classification> GetAllAsync(AmbientContext ambientContext, AppUser currentUser,
+        public async IAsyncEnumerable<Classification> GetAllAsync(AmbientContext ambientContext,
             string[] includeRelatedData = null)
         {
             IQueryable<Classification> enumerable = ambientContext.DatabaseContext.Classifications;
@@ -137,7 +136,7 @@ namespace DocIntel.Core.Repositories.EFCore
             return ambientContext.DatabaseContext.Classifications.SingleOrDefault(_ => _.Default);
         }
 
-        public async Task RemoveAsync(AmbientContext ambientContext, Guid classificationId, AppUser currentUser)
+        public async Task RemoveAsync(AmbientContext ambientContext, Guid classificationId)
         {
             // TODO Removing a classification should have a fallback value or delete all elements with that classification
             // TODO What about the children classification?
@@ -164,7 +163,7 @@ namespace DocIntel.Core.Repositories.EFCore
             );
         }
 
-        public async Task UpdateAsync(AmbientContext ambientContext, Classification classification, AppUser currentUser)
+        public async Task<Classification> UpdateAsync(AmbientContext ambientContext, Classification classification)
         {
             if (!await _appAuthorizationService.CanUpdateClassification(ambientContext.Claims, classification))
                 throw new UnauthorizedOperationException();
@@ -185,6 +184,7 @@ namespace DocIntel.Core.Repositories.EFCore
                         UserId = ambientContext.CurrentUser.Id
                     })
                 );
+                return trackingEntity.Entity;
             }
             else
             {

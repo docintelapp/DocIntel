@@ -34,13 +34,13 @@
                                         <div class="d-flex align-items-center pt-0 pb-0 flex-1 col-12">
                                             @if (item.status.Notification)
                                             {
-                                                <a asp-action="Subscribe" asp-controller="Tag" asp-route-notification="false" asp-route-id="@item.tag.TagId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                                <a asp-action="Subscribe" asp-controller="Tag" asp-route-notification="false" asp-route-tagId="@item.tag.TagId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
                                                     <i class="fas fa-bell"></i>
                                                 </a>
                                             }
                                             else
                                             {
-                                                <a asp-action="Subscribe" asp-controller="Tag" asp-route-notification="true" asp-route-id="@item.tag.TagId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                                <a asp-action="Subscribe" asp-controller="Tag" asp-route-notification="true" asp-route-tagId="@item.tag.TagId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
                                                     <i class="fal fa-bell"></i>
                                                 </a>
                                             }

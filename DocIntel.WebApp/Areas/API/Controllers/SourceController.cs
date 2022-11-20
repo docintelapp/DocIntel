@@ -26,6 +26,7 @@ using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
+using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Utils.Search.Sources;
 using DocIntel.WebApp.Areas.API.Models;
 using DocIntel.WebApp.Helpers;
@@ -35,620 +36,820 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace DocIntel.WebApp.Areas.API.Controllers
+namespace DocIntel.WebApp.Areas.API.Controllers;
+
+[Area("API")]
+[Route("API/Source")]
+[ApiController]
+public class SourceController : DocIntelAPIControllerBase
 {
-    [Area("API")]
-    [Route("API/Source")]
-    [ApiController]
-    public class SourceController : DocIntelAPIControllerBase
+    private readonly IHttpContextAccessor _accessor;
+    private readonly ILogger _logger;
+    private readonly IMapper _mapper;
+
+    private readonly ISourceRepository _sourceRepository;
+
+    private readonly ISourceSearchService _sourceSearchEngine;
+
+    public SourceController(DocIntelContext context,
+        ILogger<SourceController> logger,
+        UserManager<AppUser> userManager,
+        ISourceSearchService sourceSearchEngine,
+        ISourceRepository sourceRepository,
+        IHttpContextAccessor accessor,
+        IMapper mapper)
+        : base(userManager, context)
     {
-        private readonly IHttpContextAccessor _accessor;
-        private readonly ILogger _logger;
-        private readonly IMapper _mapper;
+        _logger = logger;
+        _sourceSearchEngine = sourceSearchEngine;
+        _sourceRepository = sourceRepository;
+        _accessor = accessor;
+        _mapper = mapper;
+    }
+    
+    /// <summary>
+    /// Get sources
+    /// </summary>
+    /// <remarks>
+    /// Get the sources
+    ///
+    /// For example, with cURL
+    ///
+    ///     curl --request GET \
+    ///       --url http://localhost:5001/API/Source \
+    ///       --header 'Authorization: Bearer $TOKEN'
+    ///
+    /// </remarks>
+    /// <returns>The sources</returns>
+    /// <response code="200">Returns the sources</response>
+    [HttpGet("")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApiSourceDetails>))]
+    [Produces("application/json")]
+    public async Task<IActionResult> Index(
+        int page = 1, int pageSize = 10)
+    {
+        var currentUser = await GetCurrentUser();
 
-        private readonly ISourceRepository _sourceRepository;
-
-        private readonly ISourceSearchService _sourceSearchEngine;
-
-        public SourceController(DocIntelContext context,
-            ILogger<SourceController> logger,
-            UserManager<AppUser> userManager,
-            ISourceSearchService sourceSearchEngine,
-            ISourceRepository sourceRepository,
-            IHttpContextAccessor accessor,
-            IMapper mapper)
-            : base(userManager, context)
+        var query = new SourceQuery
         {
-            _logger = logger;
-            _sourceSearchEngine = sourceSearchEngine;
-            _sourceRepository = sourceRepository;
-            _accessor = accessor;
-            _mapper = mapper;
-        }
+            Page = page,
+            Limit = pageSize
+        };
 
-        [HttpGet("")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<APISource>))]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> Index(
-            string searchTerm = "",
-            SourceSortCriteria sortCriteria = SourceSortCriteria.Title,
-            int page = 1, int pageSize = 10)
+        var searchResults = await _sourceRepository.GetAllAsync(AmbientContext, query).ToListAsync();
+
+        _logger.Log(LogLevel.Information,
+            EventIDs.APIListSourceSuccessful,
+            new LogEvent($"User '{currentUser.UserName}' successfully listed sources.")
+                .AddUser(currentUser)
+                .AddHttpContext(_accessor.HttpContext),
+            null,
+            LogEvent.Formatter);
+
+        return Ok(_mapper.Map<IEnumerable<ApiSourceDetails>>(searchResults));
+    }
+
+    [HttpGet("Search")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApiSourceDetails>))]
+    [Produces("application/json")]
+    public async Task<IActionResult> Search(
+        string searchTerm = "",
+        SourceSortCriteria sortCriteria = SourceSortCriteria.Title,
+        int page = 1, int pageSize = 10)
+    {
+        var currentUser = await GetCurrentUser();
+
+        var query = new SourceSearchQuery
         {
-            var currentUser = await GetCurrentUser();
+            SearchTerms = searchTerm,
+            SortCriteria = sortCriteria,
+            Page = page,
+            PageSize = pageSize
+        };
 
-            var query = new SourceSearchQuery
+        var searchResults = _sourceSearchEngine.Search(query);
+
+        var resultsSource = new List<Source>();
+        foreach (var s in searchResults.Hits.OrderBy(_ => _.Position))
+            try
             {
-                SearchTerms = searchTerm,
-                SortCriteria = sortCriteria,
-                Page = page,
-                PageSize = pageSize
-            };
+                resultsSource.Add(await _sourceRepository.GetAsync(AmbientContext, s.Source.SourceId));
+            }
+            catch (NotFoundEntityException e)
+            {
+                _logger.Log(LogLevel.Error,
+                    EventIDs.APIListSourceFailed,
+                    new LogEvent($"Source '{s.Source.SourceId}' was found in the index but not in database.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddException(e),
+                    null,
+                    LogEvent.Formatter);
+            }
 
-            var searchResults = _sourceSearchEngine.Search(query);
+        _logger.Log(LogLevel.Information,
+            EventIDs.APIListSourceSuccessful,
+            new LogEvent($"User '{currentUser.UserName}' successfully listed sources.")
+                .AddUser(currentUser)
+                .AddHttpContext(_accessor.HttpContext),
+            null,
+            LogEvent.Formatter);
 
-            var resultsSource = new List<Source>();
-            foreach (var s in searchResults.Hits.OrderBy(_ => _.Position))
-                try
-                {
-                    resultsSource.Add(await _sourceRepository.GetAsync(AmbientContext, s.Source.SourceId));
-                }
-                catch (NotFoundEntityException e)
-                {
-                    _logger.Log(LogLevel.Error,
-                        EventIDs.APIListSourceFailed,
-                        new LogEvent($"Source '{s.Source.SourceId}' was found in the index but not in database.")
-                            .AddUser(currentUser)
-                            .AddHttpContext(_accessor.HttpContext)
-                            .AddException(e),
-                        null,
-                        LogEvent.Formatter);
-                }
-
-            _logger.Log(LogLevel.Information,
-                EventIDs.APIListSourceSuccessful,
-                new LogEvent($"User '{currentUser.UserName}' successfully listed sources.")
-                    .AddUser(currentUser)
-                    .AddHttpContext(_accessor.HttpContext),
-                null,
-                LogEvent.Formatter);
-
-            return Ok(_mapper.Map<IEnumerable<APISource>>(resultsSource));
-        }
+        return Ok(_mapper.Map<IEnumerable<ApiSourceDetails>>(resultsSource));
+    }
         
-        [HttpGet("Suggest")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<APISource>))]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> Suggest(string searchTerm = "")
-        {
-            var currentUser = await GetCurrentUser();
+    [HttpGet("Suggest")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApiSourceDetails>))]
+    [Produces("application/json")]
+    public async Task<IActionResult> Suggest(string searchTerm = "")
+    {
+        var currentUser = await GetCurrentUser();
 
-            var query = new SourceSearchQuery
+        var query = new SourceSearchQuery
+        {
+            SearchTerms = searchTerm
+        };
+
+        var searchResults = _sourceSearchEngine.Suggest(query);
+
+        var resultsSource = new List<Source>();
+        foreach (var s in searchResults.Hits.OrderBy(_ => _.Position))
+            try
             {
-                SearchTerms = searchTerm
+                resultsSource.Add(await _sourceRepository.GetAsync(AmbientContext, s.Source.SourceId));
+            }
+            catch (NotFoundEntityException e)
+            {
+                _logger.Log(LogLevel.Error,
+                    EventIDs.APIListSourceFailed,
+                    new LogEvent($"Source '{s.Source.SourceId}' was found in the index but not in database.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddException(e),
+                    null,
+                    LogEvent.Formatter);
+            }
+
+        _logger.Log(LogLevel.Information,
+            EventIDs.APIListSourceSuccessful,
+            new LogEvent($"User '{currentUser.UserName}' successfully listed sources.")
+                .AddUser(currentUser)
+                .AddHttpContext(_accessor.HttpContext),
+            null,
+            LogEvent.Formatter);
+
+        return Ok(_mapper.Map<IEnumerable<ApiSourceDetails>>(resultsSource));
+    }
+
+    /// <summary>
+    /// Get a source
+    /// </summary>
+    /// <remarks>
+    /// Gets the details of the source.
+    ///
+    /// For example, with cURL
+    ///
+    ///     curl --request GET \
+    ///       --url http://localhost:5001/API/Source/640afad4-0a3d-416a-b6f0-22cb85e0d638 \
+    ///       --header 'Authorization: Bearer $TOKEN'
+    /// 
+    /// </remarks>
+    /// <param name="sourceId" example="1ee4eac9-6d56-4665-bb78-6986dd6bf7a2">The source identifier</param>
+    /// <returns>The source</returns>
+    /// <response code="200">Returns the source</response>
+    /// <response code="401">Action is not authorized</response>
+    /// <response code="404">Source does not exists</response>
+    [HttpGet("{sourceId}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiSourceDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> Details([FromRoute] Guid sourceId)
+    {
+        var currentUser = await GetCurrentUser();
+
+        try
+        {
+            var source = await _sourceRepository.GetAsync(AmbientContext, sourceId);
+            return Ok(_mapper.Map<ApiSourceDetails>(source));
+        }
+        catch (UnauthorizedOperationException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APIDetailsSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to view details of source '{sourceId}' without legitimate rights.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
+
+            return Unauthorized();
+        }
+        catch (NotFoundEntityException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APIDetailsSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to view details of a non-existing source '{sourceId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
+
+            return NotFound();
+        }
+    }
+
+    /// <summary>
+    /// Create a source
+    /// </summary>
+    /// <remarks>
+    /// Creates a new source.
+    ///
+    /// For example, with cURL
+    ///
+    ///     curl --request POST \
+    ///       --url http://localhost:5001/API/Source/ \
+    ///       --header 'Authorization: Bearer $TOKEN' \
+    ///       --header 'Content-Type: application/json' \
+    ///       --data '{
+    ///       "title": "My source",
+    ///       "prefix": "mySource",
+    ///       "description": "<p>A simple source</p>",
+    ///       "mandatory": false,
+    ///       "hidden": false,
+    ///       "extractionRegex": "",
+    ///       "autoExtract": true,
+    ///       "tagNormalization": "upcase"
+    ///     }'
+    /// 
+    /// </remarks>
+    /// <param name="submittedSource">The source</param>
+    /// <returns>The newly created source, as recorded</returns>
+    /// <response code="200">Returns the newly created source</response>
+    /// <response code="401">Action is not authorized</response>
+    /// <response code="400">Submitted value is invalid</response>
+    [HttpPost("")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiSource))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Produces("application/json")]
+    public async Task<IActionResult> Create([FromBody] ApiSource submittedSource)
+    {
+        var currentUser = await GetCurrentUser();
+
+        try
+        {
+            var source = new Source
+            {
+                Title = submittedSource.Title,
+                Description = submittedSource.Description,
+                HomePage = submittedSource.HomePage,
+                RSSFeed = submittedSource.RSSFeed,
+                Facebook = submittedSource.Facebook,
+                Twitter = submittedSource.Twitter,
+                Reddit = submittedSource.Reddit,
+                LinkedIn = submittedSource.LinkedIn,
+                Reliability = submittedSource.Reliability,
+                Country = submittedSource.Country
             };
 
-            var searchResults = _sourceSearchEngine.Suggest(query);
+            if (submittedSource.Keywords?.Any() ?? false)
+                source.Keywords = string.Join(", ", submittedSource.Keywords.Select(_ => _.Trim()));
 
-            var resultsSource = new List<Source>();
-            foreach (var s in searchResults.Hits.OrderBy(_ => _.Position))
-                try
-                {
-                    resultsSource.Add(await _sourceRepository.GetAsync(AmbientContext, s.Source.SourceId));
-                }
-                catch (NotFoundEntityException e)
-                {
-                    _logger.Log(LogLevel.Error,
-                        EventIDs.APIListSourceFailed,
-                        new LogEvent($"Source '{s.Source.SourceId}' was found in the index but not in database.")
-                            .AddUser(currentUser)
-                            .AddHttpContext(_accessor.HttpContext)
-                            .AddException(e),
-                        null,
-                        LogEvent.Formatter);
-                }
+            source = await _sourceRepository.CreateAsync(AmbientContext, source);
+            await AmbientContext.DatabaseContext.SaveChangesAsync();
 
             _logger.Log(LogLevel.Information,
-                EventIDs.APIListSourceSuccessful,
-                new LogEvent($"User '{currentUser.UserName}' successfully listed sources.")
+                EventIDs.APICreateSourceSuccessful,
+                new LogEvent($"User '{currentUser.UserName}' successfully created a new source.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddSource(source),
+                null,
+                LogEvent.Formatter);
+
+            return Ok(_mapper.Map<ApiSourceDetails>(source));
+        }
+        catch (InvalidArgumentException e)
+        {
+            _logger.Log(LogLevel.Information,
+                EventIDs.APICreateSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to create a new source with an invalid model.")
                     .AddUser(currentUser)
                     .AddHttpContext(_accessor.HttpContext),
                 null,
                 LogEvent.Formatter);
 
-            return Ok(_mapper.Map<IEnumerable<APISource>>(resultsSource));
+            return BadRequest(e.Errors);
         }
-
-        [HttpGet("Details")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(APISource))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> Details(Guid id)
+        catch (UnauthorizedOperationException)
         {
-            var currentUser = await GetCurrentUser();
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APICreateSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to create a new source without legitimate rights.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext),
+                null,
+                LogEvent.Formatter);
 
-            try
-            {
-                var source = await _sourceRepository.GetAsync(AmbientContext, id);
-                return Ok(_mapper.Map<APISource>(source));
-            }
-            catch (UnauthorizedOperationException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APIDetailsSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to view details of source '{id}' without legitimate rights.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
-
-                return Unauthorized();
-            }
-            catch (NotFoundEntityException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APIDetailsSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to view details of a non-existing source '{id}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
-
-                return NotFound();
-            }
+            return Unauthorized();
         }
+    }
 
-        [HttpPost("")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Source))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Dictionary<string, List<string>>))]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> Create([FromBody] APISource submittedSource)
+    /// <summary>
+    /// Update a source
+    /// </summary>
+    /// <remarks>
+    /// Updates a source
+    ///
+    /// For example, with cURL
+    ///
+    ///     curl --request PATCH \
+    ///       --url http://localhost:5001/API/Source/640afad4-0a3d-416a-b6f0-22cb85e0d638 \
+    ///       --header 'Authorization: Bearer $TOKEN' \
+    ///       --header 'Content-Type: application/json' \
+    ///       --data '{
+    ///       "title": "My (updated) source",
+    ///       "prefix": "mySource",
+    ///       "description": "<p>A simple source</p>",
+    ///       "mandatory": false,
+    ///       "hidden": false,
+    ///       "extractionRegex": "",
+    ///       "autoExtract": true,
+    ///       "tagNormalization": "upcase"
+    ///     }'
+    /// 
+    /// </remarks>
+    /// <param name="sourceId" example="640afad4-0a3d-416a-b6f0-22cb85e0d638">The source identifier</param>
+    /// <param name="submittedSource">The updated source</param>
+    /// <returns>The updated source</returns>
+    /// <response code="200">Returns the newly updated source</response>
+    /// <response code="401">Action is not authorized</response>
+    /// <response code="404">The source does not exist</response>
+    [HttpPatch("{sourceId}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiSource))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Produces("application/json")]
+    public async Task<IActionResult> Edit([FromRoute] Guid sourceId, [FromBody] ApiSource submittedSource)
+    {
+        var currentUser = await GetCurrentUser();
+
+        try
         {
-            var currentUser = await GetCurrentUser();
+            var source = await _sourceRepository.GetAsync(AmbientContext, sourceId);
 
-            try
-            {
-                var source = new Source
-                {
-                    Title = submittedSource.Title,
-                    Description = submittedSource.Description,
-                    HomePage = submittedSource.HomePage,
-                    RSSFeed = submittedSource.RSSFeed,
-                    Facebook = submittedSource.Facebook,
-                    Twitter = submittedSource.Twitter,
-                    Reddit = submittedSource.Reddit,
-                    LinkedIn = submittedSource.LinkedIn
-                };
+            source.Title = submittedSource.Title;
+            source.Description = submittedSource.Description;
 
-                if (submittedSource.Keywords?.Any() ?? false)
-                    source.Keywords = string.Join(", ", submittedSource.Keywords.Select(_ => _.Trim()));
+            source.Reliability = submittedSource.Reliability;
 
-                await _sourceRepository.CreateAsync(AmbientContext, source);
+            source.HomePage = submittedSource.HomePage;
+            source.RSSFeed = submittedSource.RSSFeed;
+            source.Facebook = submittedSource.Facebook;
+            source.Twitter = submittedSource.Twitter;
+            source.Reddit = submittedSource.Reddit;
+            source.LinkedIn = submittedSource.LinkedIn;
+            source.Country = submittedSource.Country;
 
-                _logger.Log(LogLevel.Information,
-                    EventIDs.APICreateSourceSuccessful,
-                    new LogEvent($"User '{currentUser.UserName}' successfully created a new source.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddSource(source),
-                    null,
-                    LogEvent.Formatter);
+            if (submittedSource.Keywords != null && submittedSource.Keywords.Any())
+                source.Keywords = string.Join(", ", submittedSource.Keywords.Select(_ => _.Trim()));
 
-                return Ok(_mapper.Map<APISource>(source));
-            }
-            catch (InvalidArgumentException e)
-            {
-                _logger.Log(LogLevel.Information,
-                    EventIDs.APICreateSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to creat a new source with an invalid model.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", submittedSource.SourceId),
-                    null,
-                    LogEvent.Formatter);
+            source = await _sourceRepository.UpdateAsync(AmbientContext, source);
+            await AmbientContext.DatabaseContext.SaveChangesAsync();
 
-                return BadRequest(e.Errors);
-            }
-            catch (UnauthorizedOperationException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APICreateSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to create a new source without legitimate rights.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext),
-                    null,
-                    LogEvent.Formatter);
+            _logger.Log(LogLevel.Information,
+                EventIDs.APIEditSourceSuccessful,
+                new LogEvent($"User '{currentUser.UserName}' successfully edited source '{source.Title}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddSource(source),
+                null,
+                LogEvent.Formatter);
 
-                return Unauthorized();
-            }
+            return Ok(_mapper.Map<ApiSourceDetails>(source));
         }
-
-        [HttpPatch("")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Source))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(APISource))]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> Edit([FromBody] APISource submittedSource)
+        catch (UnauthorizedOperationException)
         {
-            var currentUser = await GetCurrentUser();
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APIEditSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to create a new source without legitimate rights.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
 
-            try
-            {
-                var source = await _sourceRepository.GetAsync(AmbientContext, submittedSource.SourceId);
-
-                source.Title = submittedSource.Title;
-                source.Description = submittedSource.Description;
-
-                source.Reliability = submittedSource.Reliability;
-
-                source.HomePage = submittedSource.HomePage;
-                source.RSSFeed = submittedSource.RSSFeed;
-                source.Facebook = submittedSource.Facebook;
-                source.Twitter = submittedSource.Twitter;
-                source.Reddit = submittedSource.Reddit;
-                source.LinkedIn = submittedSource.LinkedIn;
-                source.Country = submittedSource.Country;
-
-                if (submittedSource.Keywords != null && submittedSource.Keywords.Any())
-                    source.Keywords = string.Join(", ", submittedSource.Keywords.Select(_ => _.Trim()));
-
-                await _sourceRepository.UpdateAsync(AmbientContext, source);
-
-                _logger.Log(LogLevel.Information,
-                    EventIDs.APIEditSourceSuccessful,
-                    new LogEvent($"User '{currentUser.UserName}' successfully edited source '{source.Title}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddSource(source),
-                    null,
-                    LogEvent.Formatter);
-
-                return Ok(_mapper.Map<APISource>(source));
-            }
-            catch (UnauthorizedOperationException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APIEditSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to create a new source without legitimate rights.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", submittedSource.SourceId),
-                    null,
-                    LogEvent.Formatter);
-
-                return Unauthorized();
-            }
-            catch (NotFoundEntityException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APIEditSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to edit a non-existing source '{submittedSource.SourceId}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", submittedSource.SourceId),
-                    null,
-                    LogEvent.Formatter);
-
-                return NotFound();
-            }
-            catch (InvalidArgumentException e)
-            {
-                ModelState.Clear();
-                foreach (var kv in e.Errors)
-                foreach (var errorMessage in kv.Value)
-                    ModelState.AddModelError(kv.Key, errorMessage);
-
-                _logger.Log(LogLevel.Information,
-                    EventIDs.APIEditSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to edit source '{submittedSource.SourceId}' with an invalid model.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", submittedSource.SourceId),
-                    null,
-                    LogEvent.Formatter);
-
-                return BadRequest(submittedSource);
-            }
+            return Unauthorized();
         }
-
-        [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> Delete(Guid id)
+        catch (NotFoundEntityException)
         {
-            var currentUser = await GetCurrentUser();
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APIEditSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to edit a non-existing source '{sourceId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
 
-            try
-            {
-                await _sourceRepository.RemoveAsync(AmbientContext, id);
+            return NotFound();
+        }
+        catch (InvalidArgumentException e)
+        {
+            ModelState.Clear();
+            foreach (var kv in e.Errors)
+            foreach (var errorMessage in kv.Value)
+                ModelState.AddModelError(kv.Key, errorMessage);
 
-                _logger.Log(LogLevel.Information,
-                    EventIDs.APIDeleteSourceSuccessful,
-                    new LogEvent($"User '{currentUser.UserName}' deleted source '{id}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
+            _logger.Log(LogLevel.Information,
+                EventIDs.APIEditSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to edit source '{sourceId}' with an invalid model.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
 
+            return BadRequest(submittedSource);
+        }
+    }
+
+    /// <summary>
+    /// Deletes a source
+    /// </summary>
+    /// <remarks>
+    /// Deletes the specified source and the enclosed tags,
+    ///
+    /// For example, with cURL
+    ///
+    ///     curl --request DELETE \
+    ///       --url http://localhost:5001/API/Source/6e7635a0-27bb-495d-a218-15b54cb938fd \
+    ///       --header 'Authorization: Bearer $TOKEN'
+    ///
+    /// </remarks>
+    /// <param name="sourceId" example="6e7635a0-27bb-495d-a218-15b54cb938fd">The source identifier</param>
+    /// <response code="200">The source is deleted</response>
+    /// <response code="401">Action is not authorized</response>
+    /// <response code="404">The source does not exist</response>
+    [HttpDelete("{sourceId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> Delete(Guid sourceId)
+    {
+        var currentUser = await GetCurrentUser();
+
+        try
+        {
+            await _sourceRepository.RemoveAsync(AmbientContext, sourceId);
+
+            _logger.Log(LogLevel.Information,
+                EventIDs.APIDeleteSourceSuccessful,
+                new LogEvent($"User '{currentUser.UserName}' deleted source '{sourceId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
+
+            return Ok();
+        }
+        catch (UnauthorizedOperationException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APIDeleteSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to delete source '{sourceId}' without legitimate rights.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
+
+            return Unauthorized();
+        }
+        catch (NotFoundEntityException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APIDeleteSourceFailed,
+                new LogEvent($"User '{currentUser.UserName}' attempted to edit a non-existing source '{sourceId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
+
+            return NotFound();
+        }
+    }
+
+    /// <summary>
+    /// Merge two sources
+    /// </summary>
+    /// <remarks>
+    /// Merges two sources.
+    ///
+    /// For example, with cURL
+    ///
+    ///     curl --request POST \
+    ///       --url http://localhost:5001/API/Source/a28a36ec-88a4-4dfc-a241-de602c530998/Merge/1902bfa6-2fd7-4a8a-bc22-33b3fbbdd660 \
+    ///       --header 'Authorization: Bearer $TOKEN' \
+    ///             
+    /// </remarks>
+    /// <param name="primaryId" example="a28a36ec-88a4-4dfc-a241-de602c530998">The identifier of the source to keep</param>
+    /// <param name="secondaryId" example="1902bfa6-2fd7-4a8a-bc22-33b3fbbdd660">The identifier of the source to remove</param>
+    /// <returns>The merged source</returns>
+    /// <response code="200">The sources are merged</response>
+    /// <response code="401">Action is not authorized</response>
+    /// <response code="404">A source does not exist</response>
+    [HttpPost("{primaryId}/Merge/{secondaryId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> Merge([FromRoute] Guid primaryId, [FromRoute] Guid secondaryId)
+    {
+        var currentUser = await GetCurrentUser();
+
+        try
+        {
+            if (primaryId == secondaryId)
                 return Ok();
-            }
-            catch (UnauthorizedOperationException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APIDeleteSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to delete source '{id}' without legitimate rights.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
 
-                return Unauthorized();
-            }
-            catch (NotFoundEntityException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APIDeleteSourceFailed,
-                    new LogEvent($"User '{currentUser.UserName}' attempted to edit a non-existing source '{id}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
+            await _sourceRepository.MergeAsync(AmbientContext, primaryId, secondaryId);
+            await AmbientContext.DatabaseContext.SaveChangesAsync();
 
-                return NotFound();
-            }
+            _logger.Log(LogLevel.Information,
+                EventIDs.APIMergeSourceSuccessful,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' successfully merged source '{primaryId}' with '{secondaryId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source_primary.id", primaryId)
+                    .AddProperty("source_secondary.id", secondaryId),
+                null,
+                LogEvent.Formatter);
+
+            return Ok();
         }
-
-        [HttpPost("Merge")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> Merge(Guid primarySourceId, Guid secondarySourceId)
+        catch (UnauthorizedOperationException)
         {
-            var currentUser = await GetCurrentUser();
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APIMergeSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to merge source '{primaryId}' with '{secondaryId}' without legitimate rights.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source_primary.id", primaryId)
+                    .AddProperty("source_secondary.id", secondaryId),
+                null,
+                LogEvent.Formatter);
 
-            try
-            {
-                if (primarySourceId == secondarySourceId)
-                    return Ok();
-
-                await _sourceRepository.MergeAsync(AmbientContext, primarySourceId, secondarySourceId);
-
-                _logger.Log(LogLevel.Information,
-                    EventIDs.APIMergeSourceSuccessful,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' successfully merged source '{primarySourceId}' with '{secondarySourceId}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source_primary.id", primarySourceId)
-                        .AddProperty("source_secondary.id", secondarySourceId),
-                    null,
-                    LogEvent.Formatter);
-
-                return Ok();
-            }
-            catch (UnauthorizedOperationException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APIMergeSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to merge source '{primarySourceId}' with '{secondarySourceId}' without legitimate rights.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source_primary.id", primarySourceId)
-                        .AddProperty("source_secondary.id", secondarySourceId),
-                    null,
-                    LogEvent.Formatter);
-
-                return Unauthorized();
-            }
-            catch (NotFoundEntityException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APIMergeSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to merge a non-existing source '{primarySourceId}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext),
-                    null,
-                    LogEvent.Formatter);
-
-                return NotFound();
-            }
+            return Unauthorized();
         }
-
-        [HttpPut("Subscribe")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> Subscribe(Guid id, bool notification = false)
+        catch (NotFoundEntityException)
         {
-            var currentUser = await GetCurrentUser();
-            try
-            {
-                await _sourceRepository.SubscribeAsync(AmbientContext, AmbientContext.CurrentUser, id, notification);
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APIMergeSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to merge a non-existing source '{primaryId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext),
+                null,
+                LogEvent.Formatter);
 
-                _logger.Log(LogLevel.Information,
-                    EventIDs.APISubscribeSourceSuccessful,
-                    new LogEvent($"User '{currentUser.UserName}' successfully subscribed to source '{id}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
-
-                return Ok();
-            }
-            catch (UnauthorizedOperationException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APISubscribeSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to subscribe to source '{id}' without legitimate rights.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
-
-                return Unauthorized();
-            }
-            catch (NotFoundEntityException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APISubscribeSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to subscribe to a non-existing source '{id}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
-
-                return NotFound();
-            }
+            return NotFound();
         }
+    }
 
-        [HttpPut("Unsubscribe")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> Unsubscribe(Guid id)
+    /// <summary>
+    /// Get subscription status
+    /// </summary>
+    /// <remarks>
+    /// Gets whether the user is subscribed to the source.
+    ///
+    /// For example, with cURL
+    ///
+    ///     curl --request GET \
+    ///       --url http://localhost:5001/API/Source/4a9ef072-0cc5-41f8-b42a-a018ef4fb4b8/Subscription \
+    ///       --header 'Authorization: Bearer $TOKEN'
+    /// 
+    /// </remarks>
+    /// <param name="sourceId" example="4a9ef072-0cc5-41f8-b42a-a018ef4fb4b8">The source identifier</param>
+    /// <returns>The subscription to the source</returns>
+    /// <response code="200">Return the user subscription to the source</response>
+    /// <response code="404">The source does not exists.</response>
+    /// <response code="401">Action is not authorized</response>
+    [HttpGet("{sourceId}/Subscription")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type=typeof(ApiSubscriptionStatus))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> Subscription([FromRoute] Guid sourceId)
+    {
+        var currentUser = await GetCurrentUser();
+
+        try
         {
-            var currentUser = await GetCurrentUser();
-            try
-            {
-                await _sourceRepository.UnsubscribeAsync(AmbientContext, AmbientContext.CurrentUser, id);
+            var result = await _sourceRepository.IsSubscribedAsync(AmbientContext, AmbientContext.CurrentUser, sourceId);
 
-                _logger.Log(LogLevel.Information,
-                    EventIDs.APISubscribeSourceSuccessful,
-                    new LogEvent($"User '{currentUser.UserName}' successfully unsubscribed to source '{id}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
+            _logger.Log(LogLevel.Information,
+                EventIDs.APISubscribeSuccessful,
+                new LogEvent($"User '{currentUser.UserName}' queried subscription to source '{sourceId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
 
-                return Ok();
-            }
-            catch (UnauthorizedOperationException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APISubscribeSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to unsubscribe to source '{id}' without legitimate rights.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
-
-                return Unauthorized();
-            }
-            catch (NotFoundEntityException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APISubscribeSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to unsubscribe to a non-existing source '{id}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
-
-                return NotFound();
-            }
+            return Ok(_mapper.Map<ApiSubscriptionStatus>(result));
         }
-
-        [HttpGet("Statistics")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> GetStatisticsAsync(Guid id)
+        catch (UnauthorizedOperationException)
         {
-            // TODO Use SolR to build the statistics, it will be much more efficient.
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APISubscribeTagFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to query subscription to source '{sourceId}' without legitimate rights.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
 
-            var currentUser = await GetCurrentUser();
-            var period = (int) (DateTime.UtcNow - DateTime.UtcNow.AddMonths(-6)).TotalDays;
-            try
-            {
-                var source = await _sourceRepository.GetAsync(AmbientContext, id);
-                var docStats = source.Documents
-                    .Where(_ => (DateTime.UtcNow - _.Files.Min(__ => __.DocumentDate)).TotalDays <= period)
-                    .Select(_ =>
-                        new
-                        {
-                            Date = new DateTime(_.Files.Min(__ => __.DocumentDate).Year,
-                                _.Files.Min(__ => __.DocumentDate).Month, _.Files.Min(__ => __.DocumentDate).Day)
-                        }
-                    ).GroupBy(_ => _.Date)
-                    .Select(_ => new
-                    {
-                        Date = _.Key,
-                        Value = _.Count()
-                    });
+            return Unauthorized();
+        }
+        catch (NotFoundEntityException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APISubscribeTagFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to query subscription to a non-existing source '{sourceId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
 
-                var today = DateTime.UtcNow;
-                var start = new DateTime(today.Year, today.Month, today.Day);
-                var temp = from d in Enumerable.Range(0, period).Select(_ => start.AddDays(-_))
-                    join s in docStats on d.Date equals s.Date into ds
-                    from sds in ds.DefaultIfEmpty()
-                    select new {Date = d.ToString("yyyy-MM-dd"), Value = sds?.Value ?? 0};
+            return NotFound();
+        }
+    }
 
-                return Ok(new
-                {
-                    DataByTopic = new[] {new {Topic = -1, TopicName = "Documents", Dates = temp.OrderBy(_ => _.Date)}}
-                });
-            }
-            catch (UnauthorizedOperationException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APISatisticsSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to get statistics for source '{id}' without legitimate rights.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
+    /// <summary>
+    /// Subscribe to a source
+    /// </summary>
+    /// <remarks>
+    /// Subscribe to the source. The body indicates whether the user should receive a notification
+    /// when the source changes.
+    ///
+    /// For example, with cURL
+    ///
+    ///     curl --request PUT \
+    ///       --url http://localhost:5001/API/Source/a203c3dd-72e2-488f-a999-a4a8a7acd0a8/Subscribe \
+    ///       --header 'Authorization: Bearer $TOKEN' \
+    ///       --header 'Content-Type: application/json' \
+    ///       --data false
+    /// 
+    /// </remarks>
+    /// <param name="sourceId" example="a203c3dd-72e2-488f-a999-a4a8a7acd0a8">The source identifier</param>
+    /// <param name="notification" example="false">Whether the user needs to be notified</param>
+    /// <response code="200">User is subscribed to the source</response>
+    /// <response code="404">The source does not exists.</response>
+    /// <response code="401">Action is not authorized</response>
+    [HttpPut("{sourceId}/Subscribe")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> Subscribe([FromRoute] Guid sourceId, [FromBody] bool notification = false)
+    {
+        var currentUser = await GetCurrentUser();
+        try
+        {
+            await _sourceRepository.SubscribeAsync(AmbientContext, AmbientContext.CurrentUser, sourceId, notification);
+            await AmbientContext.DatabaseContext.SaveChangesAsync();
+            
+            _logger.Log(LogLevel.Information,
+                EventIDs.APISubscribeSourceSuccessful,
+                new LogEvent($"User '{currentUser.UserName}' successfully subscribed to source '{sourceId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
 
-                return Unauthorized();
-            }
-            catch (NotFoundEntityException)
-            {
-                _logger.Log(LogLevel.Warning,
-                    EventIDs.APISatisticsSourceFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to get statistics for a non-existing source '{id}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("source.id", id),
-                    null,
-                    LogEvent.Formatter);
+            return Ok();
+        }
+        catch (UnauthorizedOperationException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APISubscribeSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to subscribe to source '{sourceId}' without legitimate rights.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
 
-                return NotFound();
-            }
+            return Unauthorized();
+        }
+        catch (NotFoundEntityException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APISubscribeSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to subscribe to a non-existing source '{sourceId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
+
+            return NotFound();
+        }
+    }
+
+    /// <summary>
+    /// Unsubscribe to a source
+    /// </summary>
+    /// <remarks>
+    /// Unsubscribe to the source.
+    ///
+    /// For example, with cURL
+    ///
+    ///     curl --request PUT \
+    ///       --url http://localhost:5001/API/Source/a203c3dd-72e2-488f-a999-a4a8a7acd0a8/Unsubscribe \
+    ///       --header 'Authorization: Bearer $TOKEN' \
+    ///       --header 'Content-Type: application/json'
+    /// 
+    /// </remarks>
+    /// <param name="sourceId" example="a203c3dd-72e2-488f-a999-a4a8a7acd0a8">The source identifier</param>
+    /// <response code="200">User is not subscribed to the source</response>
+    /// <response code="404">The source does not exists.</response>
+    /// <response code="401">Action is not authorized</response>
+    [HttpPut("{sourceId}/Unsubscribe")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> Unsubscribe(Guid id)
+    {
+        var currentUser = await GetCurrentUser();
+        try
+        {
+            await _sourceRepository.UnsubscribeAsync(AmbientContext, AmbientContext.CurrentUser, id);
+            await AmbientContext.DatabaseContext.SaveChangesAsync();
+            
+            _logger.Log(LogLevel.Information,
+                EventIDs.APISubscribeSourceSuccessful,
+                new LogEvent($"User '{currentUser.UserName}' successfully unsubscribed to source '{id}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", id),
+                null,
+                LogEvent.Formatter);
+
+            return Ok();
+        }
+        catch (UnauthorizedOperationException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APISubscribeSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to unsubscribe to source '{id}' without legitimate rights.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", id),
+                null,
+                LogEvent.Formatter);
+
+            return Unauthorized();
+        }
+        catch (NotFoundEntityException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APISubscribeSourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to unsubscribe to a non-existing source '{id}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", id),
+                null,
+                LogEvent.Formatter);
+
+            return NotFound();
         }
     }
 }

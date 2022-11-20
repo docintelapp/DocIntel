@@ -291,6 +291,29 @@ namespace DocIntel.Core.Repositories.EFCore
                     .Where(_ => (_.FacetId == facetId) & (_.UserId == user.Id))
             );
         }
+        
+        public Task<UserFacetSubscription> IsSubscribedAsync(
+            AmbientContext ambientContext, AppUser user,
+            Guid facetId)
+        {
+            var subscription = ambientContext.DatabaseContext.UserFacetSubscriptions
+                .FirstOrDefault(_ => (_.FacetId == facetId) & (_.UserId == user.Id));
+
+            if (subscription == null)
+            {
+                return Task.FromResult(new UserFacetSubscription()
+                {
+                    FacetId = facetId,
+                    UserId = user.Id,
+                    Subscribed = false,
+                    Notify = false
+                });
+            }
+            else
+            {
+                return Task.FromResult(subscription);
+            }
+        }
 
         public async Task MergeAsync(AmbientContext ambientContext, Guid primaryId, Guid secondaryId)
         {

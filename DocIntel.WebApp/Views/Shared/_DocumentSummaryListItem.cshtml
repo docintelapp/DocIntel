@@ -14,7 +14,7 @@
             <div class="fs-xs mt-1">
                 <p class="mb-1">
                     <span class="mr-1">
-                        by <a asp-controller="Source" asp-action="Details" asp-route-id="@Model.Source.SourceId">@Model.Source.Title</a>
+                        by <a asp-controller="Source" asp-action="Details" asp-route-sourceId="@Model.Source.SourceId">@Model.Source.Title</a>
                     </span>
                     -
                     <time datetime="@Model.DocumentDate.ToString("o")" class="mr-1 ml-1 timeago">
@@ -37,7 +37,7 @@
                            style="background-color: @tag.Tag.BackgroundColor"
                            asp-controller="Tag"
                            asp-action="Details"
-                           asp-route-id="@tag.Tag.TagId">
+                           asp-route-tagId="@tag.Tag.TagId">
                             @tag.Tag.Label
                         </a>
                     }

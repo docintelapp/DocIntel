@@ -206,8 +206,8 @@ namespace DocIntel.WebApp.Controllers
                 ruleSet.Name = submittedRuleSet.Name;
                 ruleSet.Description = submittedRuleSet.Description;
                 ruleSet.Position = submittedRuleSet.Position;
-                await _importRuleRepository.Create(AmbientContext, ruleSet, await GetCurrentUser());
-
+                await _importRuleRepository.Create(AmbientContext, ruleSet);
+                
                 _logger.Log(LogLevel.Information,
                     EventIDs.CreateImportRuleSuccessful,
                     new LogEvent(
@@ -345,8 +345,8 @@ namespace DocIntel.WebApp.Controllers
                 ruleSet.Description = submittedRuleSet.Description;
                 ruleSet.Position = submittedRuleSet.Position;
 
-                await _importRuleRepository.Update(AmbientContext, ruleSet, currentUser);
-
+                await _importRuleRepository.Update(AmbientContext, ruleSet);
+                
                 _logger.Log(LogLevel.Information,
                     EventIDs.UpdateImportRuleSuccessful,
                     new LogEvent(
@@ -478,7 +478,7 @@ namespace DocIntel.WebApp.Controllers
                 null,
                 LogEvent.Formatter);
 
-            await _importRuleRepository.Remove(AmbientContext, ruleSet, currentUser);
+            await _importRuleRepository.RemoveSet(AmbientContext, ruleSet.ImportRuleSetId);
 
             return RedirectToAction(nameof(Index));
         }

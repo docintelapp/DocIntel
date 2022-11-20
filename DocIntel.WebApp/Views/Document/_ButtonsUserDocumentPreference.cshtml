@@ -13,13 +13,13 @@
             <span class= "btn btn-pills btn-pills btn-primary waves-effect waves-themed btn-iconified">
                 @if (Model.Subscribed.Notification)
                 {
-                    <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-id="@Model.Document.DocumentId">
+                    <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-documentId="@Model.Document.DocumentId">
                         <i class="fas fa-bell"></i>
                     </a>
                 }
                 else
                 {
-                    <a class="text-white" asp-action="Subscribe" asp-route-notification="true" asp-route-id="@Model.Document.DocumentId">
+                    <a class="text-white" asp-action="Subscribe" asp-route-notification="true" asp-route-documentId="@Model.Document.DocumentId">
                         <i class="fal fa-bell"></i>
                     </a>
                 }
@@ -29,7 +29,7 @@
         else
         {
             <a asp-action="Subscribe"
-               asp-route-id="@Model.Document.DocumentId"
+               asp-route-documentId="@Model.Document.DocumentId"
                class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                 <i class="fal fa-bell-slash"></i> Subscribe
             </a>

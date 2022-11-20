@@ -22,6 +22,7 @@ using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
 
 using Microsoft.AspNetCore.Http;
+using Synsharp;
 
 namespace DocIntel.WebApp.Helpers
 {
@@ -86,26 +87,32 @@ namespace DocIntel.WebApp.Helpers
             logEvent.AddProperty("file.id", file.FileId);
             logEvent.AddProperty("file.title", file.Title);
             logEvent.AddProperty("file.name", file.Filename);
+            logEvent.AddProperty("file.sha256", file.Sha256Hash);
+            logEvent.AddProperty("file.visible", file.Visible);
+            logEvent.AddProperty("file.preview", file.Preview);
             logEvent.AddProperty("file.classification.id", file.Classification?.ClassificationId);
             logEvent.AddProperty("file.eyes_only.id", file.EyesOnly?.Select(_ => _.GroupId));
             logEvent.AddProperty("file.releasable_to.id", file.ReleasableTo?.Select(_ => _.GroupId));
             return logEvent;
         }
 
-        public static LogEvent AddImportRule(this LogEvent logEvent, ImportRule importRule)
+        public static LogEvent AddImportRule(this LogEvent logEvent, ImportRule rule)
         {
-            logEvent.AddProperty("import_rule.id", importRule.ImportRuleId);
-            logEvent.AddProperty("import_rule.set_id", importRule.ImportRuleSetId);
-            logEvent.AddProperty("import_rule.name", importRule.Name);
-            logEvent.AddProperty("import_rule.description", importRule.Description);
+            logEvent.AddProperty("import_rule.id", rule.ImportRuleId);
+            logEvent.AddProperty("import_rule.set_id", rule.ImportRuleSetId);
+            logEvent.AddProperty("import_rule.name", rule.Name);
+            logEvent.AddProperty("import_rule.description", rule.Description);
+            logEvent.AddProperty("import_rule.replacement", rule.Replacement);
+            logEvent.AddProperty("import_rule.search_pattern", rule.SearchPattern);
+            logEvent.AddProperty("import_rule.position", rule.Position);
             return logEvent;
         }
 
-        public static LogEvent AddImportRuleSet(this LogEvent logEvent, ImportRuleSet importRuleSet)
+        public static LogEvent AddImportRuleSet(this LogEvent logEvent, ImportRuleSet set)
         {
-            logEvent.AddProperty("import_ruleset.id", importRuleSet.ImportRuleSetId);
-            logEvent.AddProperty("import_ruleset.name", importRuleSet.Name);
-            logEvent.AddProperty("import_ruleset.description", importRuleSet.Description);
+            logEvent.AddProperty("import_ruleset.id", set.ImportRuleSetId);
+            logEvent.AddProperty("import_ruleset.name", set.Name);
+            logEvent.AddProperty("import_ruleset.description", set.Description);
             return logEvent;
         }
 
@@ -147,6 +154,14 @@ namespace DocIntel.WebApp.Helpers
             logEvent.AddProperty("classification.name", classification.Title);
             return logEvent;
         }
+
+        public static LogEvent AddObservable(this LogEvent logEvent, SynapseObject observable)
+        {
+            logEvent.AddProperty("observable.id", observable.Iden);
+            logEvent.AddProperty("observable.value", observable.GetCoreValue());
+            return logEvent;
+        }
+
 
         public static LogEvent AddSource(this LogEvent logEvent, Source source, string prefix = "source")
         {

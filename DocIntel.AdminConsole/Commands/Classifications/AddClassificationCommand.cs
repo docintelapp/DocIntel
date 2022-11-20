@@ -41,7 +41,7 @@ namespace DocIntel.AdminConsole.Commands.Classifications
                 Title = settings.Title,
                 Abbreviation = settings.Abbreviation,
                 Default = settings.Default
-            }, ambientContext.CurrentUser);
+            });
 
             if (classification != null)
             {

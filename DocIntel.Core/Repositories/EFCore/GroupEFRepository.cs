@@ -50,7 +50,7 @@ namespace DocIntel.Core.Repositories.EFCore
             _logger = logger;
         }
 
-        public async Task AddAsync(AmbientContext ambientContext, Group group, AppUser currentUser)
+        public async Task AddAsync(AmbientContext ambientContext, Group group)
         {
             if (!await _appAuthorizationService.CanAddGroup(ambientContext.Claims, group))
                 throw new UnauthorizedOperationException();
@@ -65,7 +65,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 var association = new Member
                 {
                     GroupId = trackingEntity.Entity.GroupId,
-                    UserId = currentUser.Id
+                    UserId = ambientContext.CurrentUser.Id
                 };
                 
                 var trackingEntityMembership = await ambientContext.DatabaseContext.AddAsync(association);
@@ -84,8 +84,7 @@ namespace DocIntel.Core.Repositories.EFCore
             }
         }
 
-        public async Task AddUserToGroupAsync(AmbientContext ambientContext, string userId, Guid groupId,
-            AppUser currentUser)
+        public async Task AddUserToGroupAsync(AmbientContext ambientContext, string userId, Guid groupId)
         {
             var user = ambientContext.DatabaseContext.Users.SingleOrDefault(_ => _.Id == userId);
             var group = ambientContext.DatabaseContext.Groups.SingleOrDefault(_ => _.GroupId == groupId);
@@ -110,10 +109,10 @@ namespace DocIntel.Core.Repositories.EFCore
             }
         }
 
-        public async Task<bool> Exists(AmbientContext ambientContext, Guid groupId, AppUser currentUser)
+        public async Task<bool> Exists(AmbientContext ambientContext, Guid groupId)
         {
             IQueryable<Group> enumerable = ambientContext.DatabaseContext.Groups;
-            enumerable = enumerable.Where(_ => !_.Hidden || _.Members.Any(_ => _.UserId == currentUser.Id));
+            enumerable = enumerable.Where(_ => !_.Hidden || _.Members.Any(_ => _.UserId == ambientContext.CurrentUser.Id));
             
             var group = enumerable.SingleOrDefault(_ => _.GroupId == groupId);
             if (group == null) throw new NotFoundEntityException();
@@ -147,11 +146,11 @@ namespace DocIntel.Core.Repositories.EFCore
             }
         }
 
-        public async Task<Group> GetAsync(AmbientContext ambientContext, Guid groupId, AppUser currentUser,
+        public async Task<Group> GetAsync(AmbientContext ambientContext, Guid groupId,
             string[] includeRelatedData = null)
         {
             IQueryable<Group> enumerable = ambientContext.DatabaseContext.Groups;
-            enumerable = enumerable.Where(_ => !_.Hidden || _.Members.Any(_ => _.UserId == currentUser.Id));
+            enumerable = enumerable.Where(_ => !_.Hidden || _.Members.Any(_ => _.UserId == ambientContext.CurrentUser.Id));
             if (includeRelatedData != default)
                 foreach (var relatedData in includeRelatedData)
                     enumerable = enumerable.Include(relatedData);
@@ -165,7 +164,7 @@ namespace DocIntel.Core.Repositories.EFCore
             return group;
         }
 
-        public async Task RemoveAsync(AmbientContext ambientContext, Guid groupId, AppUser currentUser)
+        public async Task RemoveAsync(AmbientContext ambientContext, Guid groupId)
         {
             var group = ambientContext.DatabaseContext.Groups.SingleOrDefault(_ => _.GroupId == groupId);
             if (group == null) throw new InvalidArgumentException();
@@ -178,8 +177,7 @@ namespace DocIntel.Core.Repositories.EFCore
             );
         }
 
-        public async Task RemoveUserFromGroupAsync(AmbientContext ambientContext, string userId, Guid groupId,
-            AppUser currentUser)
+        public async Task RemoveUserFromGroupAsync(AmbientContext ambientContext, string userId, Guid groupId)
         {
             var user = ambientContext.DatabaseContext.Users.SingleOrDefault(_ => _.Id == userId);
             var group = ambientContext.DatabaseContext.Groups.SingleOrDefault(_ => _.GroupId == groupId);
@@ -199,7 +197,7 @@ namespace DocIntel.Core.Repositories.EFCore
             return ambientContext.DatabaseContext.Groups.AsQueryable().Where(_ => _.Default);
         }
 
-        public async Task UpdateAsync(AmbientContext ambientContext, Group group, AppUser currentUser)
+        public async Task UpdateAsync(AmbientContext ambientContext, Group group)
         {
             if (!await _appAuthorizationService.CanUpdateGroup(ambientContext.Claims, group))
                 throw new UnauthorizedOperationException();

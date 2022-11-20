@@ -16,13 +16,14 @@
 */
 
 using System;
+using System.Collections.Generic;
 
-namespace DocIntel.WebApp.Areas.API.Models
+namespace DocIntel.WebApp.Areas.API.Models;
+
+public class APIGroupDetails : APIGroup
 {
-    public class APIImportRuleSet
-    {
-        public Guid ImportRuleSetId { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-    }
+    public DateTime CreationDate { get; set; }
+    public DateTime ModificationDate { get; set; }
+    public APIGroupDetails ParentGroup { get; set; }
+    public IList<APIAppUser> Members { get; set; }
 }

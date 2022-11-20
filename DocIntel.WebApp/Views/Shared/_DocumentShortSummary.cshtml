@@ -14,7 +14,7 @@
                 {
                     <text>| <span class="badge badge-secondary">Read</span></text>
                 }
-                | By <a asp-controller="Source" asp-action="Details" asp-route-id="@Model.Source.SourceId">@Model.Source.Title</a>
+                | By <a asp-controller="Source" asp-action="Details" asp-route-sourceId="@Model.Source.SourceId">@Model.Source.Title</a>
                 | <time class="timeago" datetime="@Model.DocumentDate.ToString("o")">@Model.DocumentDate.ToString("yyyy-MM-dd")</time>
             </small>
         </p>

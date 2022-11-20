@@ -55,7 +55,7 @@ namespace DocIntel.Core.Repositories.EFCore
             _sanitizer = new HtmlSanitizer();
         }
 
-        public async Task AddAsync(AmbientContext ambientContext,
+        public async Task<Comment> AddAsync(AmbientContext ambientContext,
             Comment comment)
         {
             var document = await ambientContext.DatabaseContext.Documents.FindAsync(comment.DocumentId);
@@ -83,6 +83,7 @@ namespace DocIntel.Core.Repositories.EFCore
                         UserId = ambientContext.CurrentUser.Id
                     })
                 );
+                return trackingEntity.Entity;
             }
             else
             {
@@ -90,7 +91,7 @@ namespace DocIntel.Core.Repositories.EFCore
             }
         }
 
-        public async Task UpdateAsync(AmbientContext ambientContext,
+        public async Task<Comment> UpdateAsync(AmbientContext ambientContext,
             Comment comment)
         {
             var retrievedComment = await ambientContext.DatabaseContext.Comments.FindAsync(comment.CommentId);
@@ -114,6 +115,7 @@ namespace DocIntel.Core.Repositories.EFCore
                         UserId = ambientContext.CurrentUser.Id
                     })
                 );
+                return trackingEntity.Entity;
             }
             else
             {

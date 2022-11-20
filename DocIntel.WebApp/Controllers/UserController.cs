@@ -393,7 +393,7 @@ namespace DocIntel.WebApp.Controllers
                         {
                             try
                             {
-                                return await _groupRepository.GetAsync(AmbientContext, _, currentUser);
+                                return await _groupRepository.GetAsync(AmbientContext, _);
                             }
                             catch (NotFoundEntityException)
                             {
@@ -523,7 +523,7 @@ namespace DocIntel.WebApp.Controllers
                     {
                         try
                         {
-                            return await _groupRepository.GetAsync(AmbientContext, _, currentUser);
+                            return await _groupRepository.GetAsync(AmbientContext, _);
                         }
                         catch (NotFoundEntityException)
                         {

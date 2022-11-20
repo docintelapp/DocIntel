@@ -28,8 +28,8 @@ namespace DocIntel.Core.Repositories
         bool Exists(AmbientContext ambientContext, Guid importRuleId);
         bool SetExists(AmbientContext ambientContext, Guid importRuleSetId);
 
-        Task Create(AmbientContext ambientContext, ImportRuleSet importRuleSet, AppUser appUser);
-        Task Create(AmbientContext ambientContext, ImportRule importRule, AppUser appUser);
+        Task<ImportRuleSet> Create(AmbientContext ambientContext, ImportRuleSet importRuleSet);
+        Task<ImportRule> Create(AmbientContext ambientContext, ImportRule importRule);
 
         ImportRuleSet GetSet(AmbientContext ambientContext, Guid importRuleSetId);
         ImportRule Get(AmbientContext ambientContext, Guid importRuleId);
@@ -37,10 +37,10 @@ namespace DocIntel.Core.Repositories
         IEnumerable<ImportRuleSet> GetAllSets(AmbientContext ambientContext);
         IEnumerable<ImportRule> GetAll(AmbientContext ambientContext, Guid setId);
 
-        Task Update(AmbientContext ambientContext, ImportRuleSet plugin, AppUser appUser);
-        Task Update(AmbientContext ambientContext, ImportRule plugin, AppUser appUser);
+        Task<ImportRuleSet> Update(AmbientContext ambientContext, ImportRuleSet importRuleSet);
+        Task<ImportRule> Update(AmbientContext ambientContext, ImportRule importRule);
 
-        Task Remove(AmbientContext ambientContext, ImportRuleSet plugin, AppUser appUser);
-        Task Remove(AmbientContext ambientContext, ImportRule plugin, AppUser appUser);
+        Task RemoveSet(AmbientContext ambientContext, Guid importRuleSet);
+        Task Remove(AmbientContext ambientContext, Guid importRule);
     }
 }
