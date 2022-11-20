@@ -69,7 +69,7 @@ public class RegexUrlExtractor : RegexExtractor
                 )+
             )
             # CISCO ESA style defangs followed by domain/path characters.
-            (?:\x20[\/\.][^\.\/\s][\S\[\]]*?)*
+            (?:\x20[\/\.][^\.\/\s]\S*?)*
         )" + END_PUNCTUATION + @"(?=[\s""<>^`'{|}]|$)";
 
     // REVIEW Suspiciously unused field
@@ -132,8 +132,8 @@ public class RegexUrlExtractor : RegexExtractor
         matches = Regex.Matches(content, BracketUrlRegex, DEFAULT_REGEX_OPTIONS);
         foreach (Match capture in matches)
         {
-            var url = NormalizeUrl(capture.Groups[0].Value);
-            _logger.LogTrace($"Extracted {url} with BRACKET_URL_REGEX ({capture.ToString()}).");
+            var url = NormalizeUrl(capture.Groups[1].Value);
+            _logger.LogTrace($"Extracted {url} with BRACKET_URL_REGEX ({capture.Groups[1].Value.ToString()}).");
             if (url is not null) uris.Add(url);
         }
 
@@ -142,8 +142,8 @@ public class RegexUrlExtractor : RegexExtractor
         matches = Regex.Matches(content, BackslashUrlRegex, DEFAULT_REGEX_OPTIONS);
         foreach (Match capture in matches)
         {
-            var url = NormalizeUrl(capture.Groups[0].Value);
-            _logger.LogTrace($"Extracted {url} with BACKSLASH_URL_REGEX ({capture.ToString()}).");
+            var url = NormalizeUrl(capture.Groups[1].Value);
+            _logger.LogTrace($"Extracted {url} with BACKSLASH_URL_REGEX ({capture.Groups[1].Value.ToString()}).");
             if (url is not null) uris.Add(url);
         }
 

@@ -194,10 +194,33 @@ hxxp://193[.]56[.]29[.]123:8888/access.php?order=golc_finish&cmn=[Victim_HostNam
         
         Assert.That(observables.Count, Is.EqualTo(4));
 
-        Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php?order=GetPubkey&cmn=[Victim_HostName]")));
+        // We have to settle here for less ideal extraction with the last ]
+        Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php?order=GetPubkey&cmn=[Victim_HostName")));
         Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php?order=golc_key_add&cmn=[Victim_HostName]&type=1")));
         Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php?order=golc_key_add&cmn=[Victim_HostName]&type=2")));
         Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php?order=golc_finish&cmn=[Victim_HostName]&")));
+    }
+    
+    [Test]
+    public async Task TestUrlExtractedWithParenthesis()
+    {
+        using var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.SetMinimumLevel(LogLevel.Trace);
+            builder.AddConsole(options => options.DisableColors = true);
+        });
+
+        var logger = loggerFactory.CreateLogger<RegexUrlExtractor>();
+        
+        var test = @"hxxp://193[.]56[.]29[.]123:8888/access.php)";
+        
+        var extractor = new RegexUrlExtractor(logger);
+        var observables = await extractor.Extract(test).ToListAsync();
+        
+        Assert.That(observables.Count, Is.EqualTo(1));
+
+        Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php")));
+        Assert.That(observables, Does.Not.Contains(InetUrl.Parse("http://193.56.29.123:8888/access.php)")));
     }
     
 }
