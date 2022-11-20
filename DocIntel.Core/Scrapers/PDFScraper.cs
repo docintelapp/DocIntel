@@ -19,6 +19,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using DocIntel.Core.Helpers;
@@ -53,7 +54,6 @@ namespace DocIntel.Core.Scrapers
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
             Init();
-            Console.WriteLine("Download PDF...");
             var context = GetContext(message.SubmitterId);
             var uri = new Uri(message.URL);
             var host = uri.Host;
@@ -65,58 +65,73 @@ namespace DocIntel.Core.Scrapers
 
             if (exists)
             {
-                _logger.LogInformation($"Document for {uri} already exists, updating the document.");
+                _logger.LogDebug($"Document for {uri} already exists, updating the document.");
                 _documentRepository.DeleteSubmittedDocument(context, message.SubmittedDocumentId,
                     SubmissionStatus.Duplicate);
                 await context.DatabaseContext.SaveChangesAsync();
                 return false;
             }
 
-            _logger.LogInformation($"Document for {uri} unknown, register the document.");
-            var source = _sourceRepository.GetAllAsync(context, new SourceQuery
+            var httpClientHandler = new HttpClientHandler();
+            if (!string.IsNullOrEmpty(_settings.Proxy))
             {
-                HomePage = host
-            }).ToEnumerable().FirstOrDefault();
-
-            if (source == null)
-                source = await _sourceRepository.CreateAsync(context, new Source
-                {
-                    Title = host,
-                    HomePage = host
-                });
-
-            var d = new Document
-            {
-                Title = uri.GetLastPart(),
-                ShortDescription = "",
-                SourceId = source.SourceId,
-                Status = DocumentStatus.Submitted,
-                DocumentDate = message.SubmissionDate
-            };
-            var trackingD = await AddAsync(_scraper, context, d, message);
-            _logger.LogDebug("Document created...");
-
-            var webClient = new WebClient();
-            using (var stream = new MemoryStream(webClient.DownloadData(message.URL)))
-            {
-                var documentFile = new DocumentFile
-                {
-                    Document = trackingD,
-                    MimeType = "application/pdf",
-                    Filename = uri.GetLastPart(),
-                    Title = uri.GetLastPart(),
-                    ClassificationId = _classificationRepository.GetDefault(context)?.ClassificationId,
-                    SourceUrl = message.URL,
-                    Visible = true,
-                    Preview = true
-                };
-                documentFile = await AddAsync(_scraper, context, documentFile, stream);
-                _logger.LogDebug("PDF Downloaded and added");
+                httpClientHandler.Proxy = new WebProxy("http://" + _settings.Proxy + "/", true, new[] { _settings.NoProxy });
             }
 
-            _documentRepository.DeleteSubmittedDocument(context, message.SubmittedDocumentId);
-            await context.DatabaseContext.SaveChangesAsync();
-            return false;
+            HttpClient httpClient = new HttpClient(httpClientHandler);
+
+            var response = await httpClient.GetAsync(message.URL);
+            if (response.Content.Headers.ContentType.ToString() == "application/pdf")
+            {
+                _logger.LogDebug($"Document for {uri} unknown, register the document.");
+                var source = _sourceRepository.GetAllAsync(context, new SourceQuery
+                {
+                    HomePage = host
+                }).ToEnumerable().FirstOrDefault();
+
+                if (source == null)
+                    source = await _sourceRepository.CreateAsync(context, new Source
+                    {
+                        Title = host,
+                        HomePage = host
+                    });
+
+                var d = new Document
+                {
+                    Title = uri.GetLastPart(),
+                    ShortDescription = "",
+                    SourceId = source.SourceId,
+                    Status = DocumentStatus.Submitted,
+                    DocumentDate = message.SubmissionDate
+                };
+                var trackingD = await AddAsync(_scraper, context, d, message);
+                _logger.LogDebug("Document created...");
+                
+                var webClient = new WebClient();
+                var downloadData = webClient.DownloadData(message.URL);
+                using (var stream = new MemoryStream(downloadData))
+                {
+                    var documentFile = new DocumentFile
+                    {
+                        Document = trackingD,
+                        MimeType = "application/pdf",
+                        Filename = uri.GetLastPart(),
+                        Title = uri.GetLastPart(),
+                        ClassificationId = _classificationRepository.GetDefault(context)?.ClassificationId,
+                        SourceUrl = message.URL,
+                        Visible = true,
+                        Preview = true
+                    };
+                    documentFile = await AddAsync(_scraper, context, documentFile, stream);
+                    _logger.LogDebug("PDF Downloaded and added");
+                }
+
+                _documentRepository.DeleteSubmittedDocument(context, message.SubmittedDocumentId);
+                await context.DatabaseContext.SaveChangesAsync();
+                return false;
+            }
+            
+            return true;
         }
     }
 }
