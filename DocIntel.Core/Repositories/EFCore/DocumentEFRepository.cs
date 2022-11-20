@@ -275,12 +275,16 @@ namespace DocIntel.Core.Repositories.EFCore
             if (document == null)
                 throw new NotFoundEntityException();
 
-            if (document.Status == DocumentStatus.Registered)
-                if (!await _appAuthorizationService.CanDeleteDocument(context.Claims, document))
-                    throw new UnauthorizedOperationException();
-            else 
+            if (document.Status != DocumentStatus.Registered)
+            {
                 if (!await _appAuthorizationService.CanDiscardDocument(context.Claims, document))
                     throw new UnauthorizedOperationException();
+            }
+            else
+            {
+                if (!await _appAuthorizationService.CanDeleteDocument(context.Claims, document))
+                    throw new UnauthorizedOperationException();
+            }
 
             foreach (var file in document.Files)
                 if (File.Exists(Path.Combine(_configuration.DocFolder, file.Filepath)))
