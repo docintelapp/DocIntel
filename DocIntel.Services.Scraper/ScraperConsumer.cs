@@ -58,7 +58,7 @@ namespace DocIntel.Services.Scraper
 
         public async Task ConsumeBacklogAsync()
         {
-            
+            _logger.LogTrace("ConsumeBacklogAsync");
             while (await _documentRepository.GetSubmittedDocuments(GetContext(),
                     _ => _.Include(__ => __.Classification)
                         .Include(__ => __.ReleasableTo)
@@ -73,6 +73,7 @@ namespace DocIntel.Services.Scraper
                             .Where(__ => __.Status == SubmissionStatus.Submitted)
                             .OrderByDescending(__ => __.SubmissionDate))
                     .FirstOrDefaultAsync();
+                _logger.LogTrace($"ConsumeBacklogAsync {submitted.URL}");
                 var result = await Scrape(submitted);
             }
         }

@@ -34,17 +34,16 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
         _documentAnalyzerUtility = documentAnalyzerUtility;
     }
 
-    public Task StartAsync(CancellationToken stoppingToken)
+    public async Task StartAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Timed Hosted Service running.");
-
+        await DoWork(null);
+        
         var fromMinutes = TimeSpan.FromMinutes(_appSettings.Schedule.AnalyzerFrequencyCheck);
-        _timer = new Timer(DoWork, null, fromMinutes, fromMinutes);
-
-        return Task.CompletedTask;
+        _timer = new Timer(async _ => await DoWork(_), null, fromMinutes, fromMinutes);
     }
 
-    private async void DoWork(object? state)
+    private async Task DoWork(object? state)
     {
         var count = Interlocked.Increment(ref executionCount);
         _logger.LogInformation(
