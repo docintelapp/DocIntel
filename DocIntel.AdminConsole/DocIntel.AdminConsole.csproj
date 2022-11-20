@@ -41,6 +41,8 @@
     <None Remove="debian\docintel-core.substvars" />
     <None Remove="debian\files" />
     <None Remove="debian\docintel-core.lintian-overrides" />
+    <Compile Remove="Commands\Tags\ImportTagsCommand.cs" />
+    <None Include="Commands\Tags\ImportTagsCommand.cs" />
   </ItemGroup>
 
   <ItemGroup>

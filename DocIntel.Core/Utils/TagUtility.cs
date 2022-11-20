@@ -18,11 +18,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
+using Microsoft.EntityFrameworkCore;
 
 namespace DocIntel.Core.Utils
 {
@@ -37,7 +39,64 @@ namespace DocIntel.Core.Utils
             _facetRepository = facetRepository;
         }
 
-        public async Task<Tag> GetOrCreateTag(AmbientContext ambientContext, TagFacet facet, string label, HashSet<Tag> cache)
+        public IEnumerable<Tag> GetOrCreateTags(AmbientContext ambientContext, IEnumerable<string> labels, 
+            HashSet<Tag> tagCache = null, HashSet<TagFacet> facetCache = null)
+        {
+            tagCache ??= new HashSet<Tag>();
+            facetCache ??= new HashSet<TagFacet>();
+
+            var regexes = new List<Tuple<Regex,string>>();
+            // Compile all the regexes for the rewrite
+            foreach (var ruleSet in ambientContext.DatabaseContext.ImportRuleSets.Include(_ => _.ImportRules)
+                         .Where(_ => _.ImportRules.Any())
+                         .OrderBy(_ => _.Position))
+                regexes.AddRange(ruleSet.ImportRules
+                    .OrderBy(_ => _.Position)
+                    .Select(rule => new Tuple<Regex,string>(new Regex(rule.SearchPattern),rule.Replacement))
+                    );
+
+            return labels.Distinct()
+                .SelectMany(_ => GetOrCreateTag(ambientContext,
+                        _,
+                        tagCache,
+                        facetCache,
+                        regexes)
+                    .ToListAsync().Result)
+                .Where(_ => _ != null)
+                .DistinctBy(_ => _.TagId);
+        }
+        
+        private string[] Rewrite (string tag, List<Tuple<Regex,string>> regexes)
+        {
+            string rt = tag;
+            foreach (var regex in regexes)
+                rt = regex.Item1.Replace(rt, regex.Item2);
+
+            return rt.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        private async IAsyncEnumerable<Tag> GetOrCreateTag(AmbientContext ambientContext,
+            string label,
+            HashSet<Tag> tagCache,
+            HashSet<TagFacet> facetCache,
+            List<Tuple<Regex,string>> regexes)
+        {
+            var labels = Rewrite(label, regexes);
+            foreach (var l in labels)
+            {
+                var splittedLabel = l.Split(':', 2);
+                if (splittedLabel.Length != 2)
+                    continue;
+            
+                var facetPrefix = splittedLabel[0];
+                var tagLabel = splittedLabel[1];
+                var f = await GetOrCreateFacet(ambientContext, facetPrefix, facetCache);
+                var t = await GetOrCreateTag(ambientContext, f, tagLabel, tagCache);
+                yield return t;
+            }
+        }
+
+        private async Task<Tag> GetOrCreateTag(AmbientContext ambientContext, TagFacet facet, string label, HashSet<Tag> cache)
         {
             Tag cached;
             if ((cached = cache.FirstOrDefault(_ => _.FacetId == facet.FacetId & _.Label.ToUpper() == label.ToUpper())) != null)
@@ -69,23 +128,34 @@ namespace DocIntel.Core.Utils
             return retrievedTag;
         }
 
-        public async Task<TagFacet> GetOrCreateFacet(AmbientContext ambientContext, string prefix, string name = "")
+        private async Task<TagFacet> GetOrCreateFacet(AmbientContext ambientContext, string prefix, HashSet<TagFacet> cache)
         {
-            var facet = await _facetRepository.GetAllAsync(ambientContext, new FacetQuery
+            TagFacet cached;
+            if ((cached = cache.FirstOrDefault(_ => _.Prefix == prefix)) != null)
+            {
+                return cached;
+            }
+            
+            var retrievedFacet = await _facetRepository.GetAllAsync(ambientContext, new FacetQuery
             {
                 Prefix = prefix
             }).SingleOrDefaultAsync();
-            if (facet != null)
+            
+            if (retrievedFacet != null)
             {
-                await _facetRepository.UpdateAsync(ambientContext, facet);
-                return facet;
+                await _facetRepository.UpdateAsync(ambientContext, retrievedFacet);
+            }
+            else
+            {
+                retrievedFacet = await _facetRepository.AddAsync(ambientContext, new TagFacet
+                {
+                    Title = prefix,
+                    Prefix = prefix
+                });
             }
 
-            return await _facetRepository.AddAsync(ambientContext, new TagFacet
-            {
-                Title = string.IsNullOrEmpty(name) ? prefix : name,
-                Prefix = prefix
-            });
+            cache.Add(retrievedFacet);
+            return retrievedFacet;
         }
     }
 }

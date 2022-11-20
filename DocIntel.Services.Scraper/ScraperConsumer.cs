@@ -146,10 +146,7 @@ namespace DocIntel.Services.Scraper
 
             bool scraped = false;
             var scrapers = await _scraperRepository.GetAllAsync(context,
-                    _ => _.Where(__ => __.Enabled),
-                    _ => _.Include(__ => __.ImportRuleSets)
-                        .ThenInclude(__ => __.ImportRuleSet)
-                        .ThenInclude(__ => __.ImportRules))
+                    _ => _.Where(__ => __.Enabled))
                 .ToArrayAsync();
             foreach (var scraper in scrapers.OrderBy(_ => _.Position))
             {

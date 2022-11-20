@@ -41,12 +41,6 @@ namespace DocIntel.Core.Repositories.EFCore
             await context.DatabaseContext.SaveChangesAsync();
         }
 
-        public async Task<OrderedImportRuleSet> Create(AmbientContext context, OrderedImportRuleSet s)
-        {
-            var trackingEntity = await context.DatabaseContext.AddAsync(s);
-            return trackingEntity.Entity;
-        }
-
         public bool Exists(AmbientContext context, Guid importRuleId)
         {
             return context.DatabaseContext.ImportRules.Any(_ => _.ImportRuleId == importRuleId);
@@ -57,9 +51,9 @@ namespace DocIntel.Core.Repositories.EFCore
             return context.DatabaseContext.ImportRules.SingleOrDefault(_ => _.ImportRuleId == importRuleId);
         }
 
-        public IEnumerable<ImportRule> GetAll(AmbientContext context)
+        public IEnumerable<ImportRule> GetAll(AmbientContext context, Guid setId)
         {
-            return context.DatabaseContext.ImportRules;
+            return context.DatabaseContext.ImportRules.Where(_ => _.ImportRuleId == setId);
         }
 
         public IEnumerable<ImportRuleSet> GetAllSets(AmbientContext context)
@@ -71,7 +65,6 @@ namespace DocIntel.Core.Repositories.EFCore
         {
             return context.DatabaseContext.ImportRuleSets
                 .Include(_ => _.ImportRules)
-                .Include(_ => _.IncomingFeeds)
                 .SingleOrDefault(_ => _.ImportRuleSetId == importRuleSetId);
         }
 

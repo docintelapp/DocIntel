@@ -30,7 +30,6 @@ namespace DocIntel.WebApp.Areas.API
         public APIProfile()
         {
             CreateMap<Importer, APIIncomingFeed>();
-            CreateMap<OrderedImportRuleSet, APIOrderedImportRuleSet>();
             CreateMap<ImportRuleSet, APIImportRuleSet>();
             CreateMap<ImportRule, APIImportRule>();
             CreateMap<Document, APIDocument>()

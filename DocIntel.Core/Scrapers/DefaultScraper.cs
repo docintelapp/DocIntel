@@ -28,7 +28,7 @@ using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Settings;
-
+using DocIntel.Core.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +42,7 @@ namespace DocIntel.Core.Scrapers
     {
         private readonly ILogger<DefaultScraper> _logger;
         private readonly ApplicationSettings _settings;
+        private readonly TagUtility _tagUtility;
         
         protected IDocumentRepository _documentRepository;
         protected ITagFacetRepository _facetRepository;
@@ -178,7 +179,7 @@ namespace DocIntel.Core.Scrapers
 
             document.Status = scraper.SkipInbox ? DocumentStatus.Registered : DocumentStatus.Submitted;
 
-            var tagInstances = tags == null ? Enumerable.Empty<Tag>() : GetTags(scraper, context, tags);
+            var tagInstances = tags == null ? Enumerable.Empty<Tag>() : _tagUtility.GetOrCreateTags(context, tags);
             return await _documentRepository.AddAsync(context, document, tagInstances.ToArray());
         }
 
@@ -188,92 +189,5 @@ namespace DocIntel.Core.Scrapers
             return await _documentRepository.AddFile(context, documentFile, stream);
         }
 
-        private IEnumerable<Tag> GetTags(Scraper scraper, AmbientContext context, IEnumerable<string> attributes)
-        {
-            var facetCache = new Dictionary<string, TagFacet>();
-            var tagCache = new Dictionary<string, Tag>();
-
-            var tags = attributes as string[] ?? attributes.ToArray();
-            List<string> finalTags;
-            if (scraper.ImportRuleSets != null)
-            {
-                finalTags = new List<string>();
-                for (var index = 0; index < tags.Length; index++)
-                {
-                    var originalTag = tags[index];
-                    foreach (var ruleSet in scraper.ImportRuleSets.OrderBy(_ => _.Position))
-                        if (ruleSet.ImportRuleSet?.ImportRules != null)
-                            foreach (var rule in ruleSet.ImportRuleSet.ImportRules.OrderBy(_ => _.Position))
-                            {
-                                var regex = new Regex(rule.SearchPattern);
-                                tags[index] = regex.Replace(tags[index], rule.Replacement);
-                                _logger.LogWarning("Rewrite " + originalTag + " to " + tags[index]);
-                            }
-
-                    var collection = tags[index].Split(',',
-                        StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-                    finalTags.AddRange(collection);
-                }
-            }
-            else
-            {
-                finalTags = tags.ToList();
-            }
-
-            return finalTags.Where(_ => !string.IsNullOrEmpty(_))
-                .Distinct()
-                .Select(_ => CreateOrAddTag(context, _, tagCache, facetCache).Result);
-        }
-
-        // TODO This code is probably all over the place. To be refactor and provided in a central location.
-        private async Task<Tag> CreateOrAddTag(AmbientContext context, string label, Dictionary<string, Tag> tagCache,
-            Dictionary<string, TagFacet> facetCache)
-        {
-            if (tagCache.ContainsKey(label))
-                return tagCache[label];
-
-            var facetPrefix = "";
-            var tagName = label;
-            if (tagName.IndexOf(':') > 0)
-            {
-                facetPrefix = label.Split(':', 2)[0];
-                tagName = label.Split(':', 2)[1];
-            }
-
-            TagFacet facet;
-            if (facetCache.ContainsKey(facetPrefix))
-            {
-                facet = facetCache[facetPrefix];
-            }
-            else
-            {
-                try
-                {
-                    facet = await _facetRepository.GetAsync(context, facetPrefix);
-                }
-                catch (NotFoundEntityException)
-                {
-                    _logger.LogWarning("Creating new facet " + facetPrefix);
-                    facet = await _facetRepository.AddAsync(context,
-                        new TagFacet {Prefix = facetPrefix, Title = facetPrefix});
-                }
-
-                facetCache.Add(facet.Prefix, facet);
-            }
-
-            Tag tag;
-            try
-            {
-                tag = await _tagRepository.GetAsync(context, facet.FacetId, tagName);
-            }
-            catch (NotFoundEntityException)
-            {
-                _logger.LogWarning("Creating new tag " + tagName + " for facet " + facet.Prefix);
-                tag = await _tagRepository.CreateAsync(context, new Tag {FacetId = facet.FacetId, Label = tagName});
-            }
-
-            tagCache.Add(label, tag);
-            return tag;
-        }
     }
 }

@@ -130,12 +130,6 @@ namespace DocIntel.Core.Models
             modelBuilder.Entity<UserSourceSubscription>()
                 .HasKey(t => new {t.UserId, t.SourceId});
 
-            modelBuilder.Entity<ImportRuleSet>()
-                .HasMany(t => t.IncomingFeeds);
-
-            modelBuilder.Entity<OrderedImportRuleSet>()
-                .HasKey(t => new {IncomingFeedId = t.ScraperId, t.ImportRuleSetId});
-
             modelBuilder.Entity<TagFacet>()
                 .HasIndex(_ => _.Prefix).IsUnique();
 

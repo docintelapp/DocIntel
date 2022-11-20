@@ -65,6 +65,7 @@ public class DocumentAnalyzerUtility
                     });
                 
                 var tagCache = new HashSet<Tag>();
+                var facetCache = new HashSet<TagFacet>();
                 
                 var doExtractObservables = true;
                 if (document.MetaData != default && document.MetaData.ContainsKey("ExtractObservables"))
@@ -94,7 +95,7 @@ public class DocumentAnalyzerUtility
                             if (date == DateTime.MinValue)
                                 date = DateTime.UtcNow;
 
-                            await DetectAutoExtractFacet(response, ambientContext, document, tagCache);
+                            await DetectAutoExtractFacet(response, ambientContext, document, tagCache, facetCache);
 
                             if (doExtractObservables)
                             {
@@ -185,7 +186,7 @@ public class DocumentAnalyzerUtility
         }
 
         private async Task DetectAutoExtractFacet(ExtractResponse response, AmbientContext ambientContext,
-            Document document, HashSet<Tag> tagCache)
+            Document document, HashSet<Tag> tagCache, HashSet<TagFacet> facetCache)
         {
             var facets = await _facetRepository.GetAllAsync(ambientContext, new FacetQuery(), new string[] { "Tags" }).ToListAsync();
 
@@ -196,20 +197,19 @@ public class DocumentAnalyzerUtility
 
                 if (patternMatches.Any())
                     _logger.LogDebug($"Detected tags in '{facet.Title}': " + string.Join(",", patternMatches));
+
+                var tags = _tagUtility
+                    .GetOrCreateTags(ambientContext, patternMatches.Where(match => !string.IsNullOrEmpty(match)), tagCache, facetCache);
                 
-                foreach (var match in patternMatches)
-                {
-                    if (!string.IsNullOrEmpty(match))
-                    {
-                        var tag = await _tagUtility.GetOrCreateTag(ambientContext, facet, match, tagCache);
-                        if (!document.DocumentTags.Any(_ =>
-                                _.DocumentId == document.DocumentId && _.TagId == tag.TagId))
-                            document.DocumentTags.Add(new DocumentTag
-                            {
-                                DocumentId = document.DocumentId,
-                                TagId = tag.TagId
-                            });
-                    }
+                foreach (var tag in tags)
+                {   
+                    if (!document.DocumentTags.Any(_ =>
+                            _.DocumentId == document.DocumentId && _.TagId == tag.TagId))
+                        document.DocumentTags.Add(new DocumentTag
+                        {
+                            DocumentId = document.DocumentId,
+                            TagId = tag.TagId
+                        });
                 }
             }
         }

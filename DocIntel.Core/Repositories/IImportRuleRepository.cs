@@ -30,13 +30,12 @@ namespace DocIntel.Core.Repositories
 
         Task Create(AmbientContext ambientContext, ImportRuleSet importRuleSet, AppUser appUser);
         Task Create(AmbientContext ambientContext, ImportRule importRule, AppUser appUser);
-        Task<OrderedImportRuleSet> Create(AmbientContext ambientContext, OrderedImportRuleSet importRuleSet);
 
         ImportRuleSet GetSet(AmbientContext ambientContext, Guid importRuleSetId);
         ImportRule Get(AmbientContext ambientContext, Guid importRuleId);
 
         IEnumerable<ImportRuleSet> GetAllSets(AmbientContext ambientContext);
-        IEnumerable<ImportRule> GetAll(AmbientContext ambientContext);
+        IEnumerable<ImportRule> GetAll(AmbientContext ambientContext, Guid setId);
 
         Task Update(AmbientContext ambientContext, ImportRuleSet plugin, AppUser appUser);
         Task Update(AmbientContext ambientContext, ImportRule plugin, AppUser appUser);

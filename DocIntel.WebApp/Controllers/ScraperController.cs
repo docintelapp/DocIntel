@@ -57,11 +57,10 @@ namespace DocIntel.WebApp.Controllers
         private readonly ILogger _logger;
         private readonly IScraperRepository _scraperRepository;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ApplicationSettings _setting;
 
         public ScraperController(IAppAuthorizationService appAuthorizationService,
             DocIntelContext context,
-            ILogger<DocumentController> logger,
+            ILogger<ScraperController> logger,
             ApplicationSettings configuration,
             UserManager<AppUser> userManager,
             IAuthorizationService authorizationService,
@@ -81,7 +80,6 @@ namespace DocIntel.WebApp.Controllers
             _serviceProvider = serviceProvider;
             _importRulesRepository = importRulesRepository;
             _groupRepository = groupRepository;
-            _setting = setting;
             _classificationRepository = classificationRepository;
         }
 
@@ -151,10 +149,7 @@ namespace DocIntel.WebApp.Controllers
                     _ => _.Include(__ => __.Classification)
                         .Include(__ => __.ReleasableTo)
                         .Include(__ => __.EyesOnly)
-                        .Include(__ => __.Source)
-                        .Include(__ => __.ImportRuleSets)
-                        .ThenInclude(__ => __.ImportRuleSet)
-                        .ThenInclude(__ => __.ImportRules));
+                        .Include(__ => __.Source));
 
                 await InitializeViewBag(id, scraper, currentUser);
 
@@ -248,9 +243,6 @@ namespace DocIntel.WebApp.Controllers
             ViewBag.AllGroups = allGroups;
             ViewBag.OwnGroups = allGroups.Where(_ =>
                 currentUser.Memberships.Any(__ => __.GroupId == _.GroupId));
-
-            var installedScrapers =
-                await _scraperRepository.GetAllAsync(AmbientContext).Select(_ => _.ScraperId).ToArrayAsync();
 
             // Search for classes with Scrapers
             var types = ScraperFactory.GetAllScrapers();
@@ -396,7 +388,7 @@ namespace DocIntel.WebApp.Controllers
                     AmbientContext,
                     id,
                     _ => _.Include(__ => __.Classification).Include(__ => __.ReleasableTo)
-                        .Include(__ => __.EyesOnly).Include(__ => __.Source).Include(__ => __.ImportRuleSets));
+                        .Include(__ => __.EyesOnly).Include(__ => __.Source));
 
                 if (scraper.Settings != null) ViewData["settings"] = scraper.Settings.ToString();
 
@@ -472,8 +464,6 @@ namespace DocIntel.WebApp.Controllers
 
             ViewBag.Settings = dict;
 
-            ViewBag.ImportRules = _importRulesRepository.GetAll(AmbientContext);
-
             await InitializeViewBag(currentUser);
         }
 
@@ -513,8 +503,7 @@ namespace DocIntel.WebApp.Controllers
                     _ => _.Include(__ => __.Classification)
                         .Include(__ => __.ReleasableTo)
                         .Include(__ => __.EyesOnly)
-                        .Include(__ => __.Source)
-                        .Include(__ => __.ImportRuleSets));
+                        .Include(__ => __.Source));
 
                 try
                 {
@@ -537,34 +526,6 @@ namespace DocIntel.WebApp.Controllers
 
                         scraper.ReleasableTo = filteredRelTo;
                         scraper.EyesOnly = filteredEyes;
-
-                        scraper.ImportRuleSets?.Clear();
-
-                        await _scraperRepository.UpdateAsync(
-                            AmbientContext,
-                            scraper);
-
-                        await _context.SaveChangesAsync();
-
-                        scraper.ImportRuleSets = new List<OrderedImportRuleSet>();
-                        if (!string.IsNullOrEmpty(importRuleSets))
-                        {
-                            var split = importRuleSets.Split(Environment.NewLine);
-                            for (var index = 0; index < split.Length; index++)
-                            {
-                                var lines = split[index];
-                                var importRuleSetId = Guid.Parse(lines);
-                                if (_importRulesRepository.SetExists(AmbientContext, importRuleSetId))
-                                    scraper.ImportRuleSets.Add(new OrderedImportRuleSet
-                                    {
-                                        Scraper = scraper,
-                                        ImportRuleSetId = importRuleSetId,
-                                        Position = index
-                                    });
-                                else
-                                    _logger.LogDebug("Could not find " + lines);
-                            }
-                        }
 
                         await _scraperRepository.UpdateAsync(
                             AmbientContext,
@@ -650,7 +611,7 @@ namespace DocIntel.WebApp.Controllers
                 var scraper = await _scraperRepository.GetAsync(
                     AmbientContext,
                     id,
-                    _ => _.Include(__ => __.Source).Include(__ => __.ImportRuleSets));
+                    _ => _.Include(__ => __.Source));
 
                 _logger.Log(LogLevel.Information,
                     EventIDs.EditScraperSuccessful,
@@ -707,7 +668,7 @@ namespace DocIntel.WebApp.Controllers
             {
                 var scraper = await _scraperRepository.GetAsync(
                     AmbientContext,
-                    id, _ => _.Include(__ => __.Source).Include(__ => __.ImportRuleSets));
+                    id, _ => _.Include(__ => __.Source));
 
                 var json = JObject.Parse("{}");
                 if (settings != null)

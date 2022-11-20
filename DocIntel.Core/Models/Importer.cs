@@ -92,8 +92,6 @@ namespace DocIntel.Core.Models
         [Column(TypeName = "jsonb")]
         public JObject Settings { get; set; }
         
-        public ICollection<OrderedImportRuleSet> ImportRuleSets { get; set; }
-        
         public Guid ReferenceClass { get; set; }
         
         public bool OverrideSource { get; set; }

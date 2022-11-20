@@ -1,12 +1,12 @@
-﻿@model Scraper
+﻿@model ImportRuleSet
 
 @{
-    ViewData["Title"] = $"Edit scraper '{Model.Name}'";
+    ViewData["Title"] = "Create rewriting ruleset";
 }
 
 <div class="subheader">
     <h1 class="subheader-title">
-        <i class="fal fa-inbox-in subheader-icon"></i> @ViewData["Title"]
+        <i class="fal fa-broom subheader-icon"></i> Create a new rewriting ruleset
     </h1>
 </div>
 
@@ -31,22 +31,34 @@
             </div>
         }
 
-        <form asp-action="Edit">
+        <form asp-action="Create">
             @Html.AntiForgeryToken()
 
             <div id="panel-source-info" class="panel">
                 <div class="panel-container show">
                     <div class="panel-content">
 
-                        <input asp-for="ScraperId" type="hidden"/>
+                        <div class="form-group">
+                            <label asp-for="Name" class="control-label"></label>
+                            <input asp-for="Name" class="form-control"/>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
 
-                        @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
+                        <div class="form-group">
+                            <label asp-for="Description" class="control-label"></label>
+                            <input asp-for="Description" class="form-control"/>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Position" class="control-label"></label>
+                            <input asp-for="Position" class="form-control"/>
+                            <span asp-validation-for="Position" class="text-danger"></span>
+                        </div>
 
                     </div>
                 </div>
             </div>
-
-            @await Html.PartialAsync("_FormFieldsClassification", Model, new ViewDataDictionary(ViewData))
 
             <button type="submit" id="save-btn" class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified">
                 <i class="fal fa-save"></i> Save

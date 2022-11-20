@@ -68,7 +68,6 @@ namespace DocIntel.AdminConsole.Commands.Tags
             try
             {
                 var tags = new HashSet<string>();
-                var cache = new HashSet<Tag>();
 
                 using var client = new WebClient();
                 if (!string.IsNullOrEmpty(_applicationSettings.Proxy))
@@ -82,21 +81,21 @@ namespace DocIntel.AdminConsole.Commands.Tags
                     JsonSerializer serializer = new JsonSerializer();
                     var p = (JObject)serializer.Deserialize(reader);
                     var ns = p["namespace"].Value<string>().ToLower();
+                    
+                    /*
                     var facet = await tu.GetOrCreateFacet(ambientContext, ns);
                     facet.Description = p["description"].Value<string>();
                     if (facet.MetaData == null)
                         facet.MetaData = new JObject();
                     facet.MetaData.Add("version", p["version"].Value<int>());
+                    */
                     
                     foreach (var item in p["predicates"].ToArray())
                     {
-                        tags.Add(item["value"].Value<string>());
+                        tags.Add(ns + ":" + item["value"].Value<string>());
                     }
 
-                    foreach (var t in tags)
-                    {
-                        var tt = await tu.GetOrCreateTag(ambientContext, facet, t, cache);
-                    }
+                    tu.GetOrCreateTags(ambientContext, tags);
                 }
             }
             catch (WebException)
@@ -151,18 +150,19 @@ namespace DocIntel.AdminConsole.Commands.Tags
                 {
                     JsonSerializer serializer = new JsonSerializer();
                     var p = (JObject)serializer.Deserialize(reader);
-                    var facet = await tu.GetOrCreateFacet(ambientContext, settings.Facet);
+                    // var facet = await tu.GetOrCreateFacet(ambientContext, settings.Facet);
                     // facet.Title = p["name"].Value<string>();
                     // facet.Description = p["description"].Value<string>();
-                    
+                    /*
                     if (facet.MetaData == null)
                         facet.MetaData = new JObject();
                     if (facet.MetaData.ContainsKey("misp-uuid"))
                         facet.MetaData["misp-uuid"] = p["uuid"].Value<string>();
                     else
                         facet.MetaData.Add("misp-uuid", p["uuid"].Value<string>());
+                    */
                     
-                    
+                    /*
                     foreach (var item in p["values"].ToArray())
                     {
                         var tagDescription = new TagDescription
@@ -174,8 +174,11 @@ namespace DocIntel.AdminConsole.Commands.Tags
                         tags.Add(tagDescription);
                         _logger.LogDebug($"TagDescription '{tagDescription.Label}'");
                     }
+                    */
+
+                    tu.GetOrCreateTags(ambientContext, tags.Select(_ => settings.Facet + ":" + _.Label));
                     
-                    
+                    /*
                     foreach (var t in tags)
                     {
                         var tt = await tu.GetOrCreateTag(ambientContext, facet, t.Label, cache);
@@ -184,6 +187,7 @@ namespace DocIntel.AdminConsole.Commands.Tags
                         
                         _logger.LogDebug($"TagDescription '{tt.TagId}'");
                     }
+                    */
                 }
             }
             catch (WebException)

@@ -28,6 +28,6 @@ namespace DocIntel.Core.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public ICollection<ImportRule> ImportRules { get; set; }
-        public ICollection<OrderedImportRuleSet> IncomingFeeds { get; set; }
+        public int Position { get; set; }
     }
 }

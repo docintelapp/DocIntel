@@ -16,6 +16,14 @@
         <div class="btn-group">
             @if (canEdit)
             {
+                <a asp-action="Create" asp-route-id="@Model.ImportRuleSetId"
+                   asp-controller="RewritingRule"
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
+                    <i class="fal fa-plus mr-1"></i> Add a rule
+                </a>
+            }
+            @if (canEdit)
+            {
                 <a asp-action="Edit" asp-route-id="@Model.ImportRuleSetId"
                    class= "btn btn-pills btn-primary waves-effect waves-themed">
                     <i class="fal fa-edit mr-1"></i> Edit
@@ -69,6 +77,13 @@
                                             <i class="fas fa-arrow-right"></i>
                                         </div>
                                         <div class="col">@rule.Replacement</div>
+                                        <div class="col text-right">
+                                            <a asp-action="Edit" asp-controller="RewritingRule"
+                                               asp-route-id="@rule.ImportRuleId"
+                                               class="btn btn-xs btn-pills btn-primary waves-effect waves-themed">
+                                                Edit
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

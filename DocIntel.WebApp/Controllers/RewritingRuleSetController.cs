@@ -1,5 +1,5 @@
 ﻿/* DocIntel
- * Copyright (C) 2018-2021 Belgian Defense, Antoine Cailliau
+ * Copyright (C) 2018-2022 Belgian Defense, Antoine Cailliau
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -25,8 +25,6 @@ using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 using DocIntel.WebApp.Helpers;
-using DocIntel.WebApp.ViewModels.ImportRule;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -42,7 +40,7 @@ namespace DocIntel.WebApp.Controllers
     ///     prioritized rules and filters that are regexes to be applied to the tags
     ///     of the incoming feeds. A feed can have multiple, prioritized, sets.
     /// </summary>
-    public class ImportRuleController : BaseController
+    public class RewritingRuleSetController : BaseController
     {
         private readonly IHttpContextAccessor _accessor;
         private readonly IAppAuthorizationService _appAuthorizationService;
@@ -50,14 +48,13 @@ namespace DocIntel.WebApp.Controllers
         private readonly IIncomingFeedRepository _incomingFeedRepository;
         private readonly ILogger _logger;
 
-        public ImportRuleController(IAppAuthorizationService appAuthorizationService,
+        public RewritingRuleSetController(IAppAuthorizationService appAuthorizationService,
             DocIntelContext context,
-            ILogger<DocumentController> logger,
+            ILogger<RewritingRuleSetController> logger,
             ApplicationSettings configuration,
             IIncomingFeedRepository incomingFeedRepository,
             UserManager<AppUser> userManager,
             IAuthorizationService authorizationService,
-            IIncomingFeedRepository pluginRepository,
             IImportRuleRepository importRuleRepository,
             IHttpContextAccessor accessor)
             : base(context,
@@ -84,14 +81,8 @@ namespace DocIntel.WebApp.Controllers
         [HttpGet("ImportRuleSet/Index")]
         public IActionResult Index()
         {
-            // REFACTOR to avoid view model
             var importRules = _importRuleRepository.GetAllSets(AmbientContext);
-            var vm = new IndexViewModel
-            {
-                ImportRuleSets = importRules,
-                ImportRuleSetsCount = importRules.Count()
-            };
-            return View(vm);
+            return View(importRules);
         }
 
         /// <summary>
@@ -187,16 +178,11 @@ namespace DocIntel.WebApp.Controllers
         /// <param name="submittedRuleSet">
         ///     The name and description of the ruleset to create.
         /// </param>
-        /// <param name="importRules">
-        ///     The list of import rules, formatted as
-        ///     <c>name;description;pattern;replacement</c>.
-        /// </param>
         /// <returns></returns>
         [HttpPost("ImportRuleSet/Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Name,Description")] ImportRuleSet submittedRuleSet,
-            [Bind("ImportRules")] string importRules)
+            [Bind("Name,Description,Position")] ImportRuleSet submittedRuleSet)
         {
             var currentUser = await GetCurrentUser();
             if (!await _appAuthorizationService.CanCreateImportRule(User, submittedRuleSet))
@@ -219,34 +205,8 @@ namespace DocIntel.WebApp.Controllers
             {
                 ruleSet.Name = submittedRuleSet.Name;
                 ruleSet.Description = submittedRuleSet.Description;
+                ruleSet.Position = submittedRuleSet.Position;
                 await _importRuleRepository.Create(AmbientContext, ruleSet, await GetCurrentUser());
-
-                if (!string.IsNullOrEmpty(importRules))
-                {
-                    var i = 0;
-                    foreach (var rule in importRules.Split("\n"))
-                    {
-                        if (string.IsNullOrEmpty(rule.Trim()))
-                            continue;
-                        var row = rule.Trim().Split(";");
-
-                        var name = row[0].Trim();
-                        var description = row[1].Trim();
-                        var pattern = row[2].Trim();
-                        var replacement = row[3].Trim();
-                        var r = new ImportRule
-                        {
-                            Name = name,
-                            Description = description,
-                            SearchPattern = pattern,
-                            Replacement = replacement,
-                            Position = i,
-                            ImportRuleSetId = ruleSet.ImportRuleSetId
-                        };
-                        await _importRuleRepository.Create(AmbientContext, r, await GetCurrentUser());
-                        i++;
-                    }
-                }
 
                 _logger.Log(LogLevel.Information,
                     EventIDs.CreateImportRuleSuccessful,
@@ -346,8 +306,7 @@ namespace DocIntel.WebApp.Controllers
         public async Task<IActionResult> Edit(
             Guid id,
             [Bind("ImportRuleSetId,Name,Description")]
-            ImportRuleSet submittedRuleSet,
-            [Bind("ImportRules")] string importRules)
+            ImportRuleSet submittedRuleSet)
         {
             var currentUser = await GetCurrentUser();
 
@@ -384,42 +343,9 @@ namespace DocIntel.WebApp.Controllers
             {
                 ruleSet.Name = submittedRuleSet.Name;
                 ruleSet.Description = submittedRuleSet.Description;
-                if (ruleSet.ImportRules != null)
-                    ruleSet.ImportRules.Clear();
-
-                if (ruleSet.IncomingFeeds != null)
-                    ruleSet.IncomingFeeds.Clear();
+                ruleSet.Position = submittedRuleSet.Position;
 
                 await _importRuleRepository.Update(AmbientContext, ruleSet, currentUser);
-
-                if (!string.IsNullOrEmpty(importRules))
-                {
-                    var i = 0;
-                    foreach (var rule in importRules.Split("\n"))
-                    {
-                        if (string.IsNullOrEmpty(rule.Trim()))
-                            continue;
-                        var row = rule.Trim().Split(";");
-
-                        var name = row[0].Trim();
-                        var description = row[1].Trim();
-                        var pattern = row[2].Trim();
-                        var replacement = row[3].Trim();
-                        var r = new ImportRule
-                        {
-                            Name = name,
-                            Description = description,
-                            SearchPattern = pattern,
-                            Replacement = replacement,
-                            Position = i,
-                            ImportRuleSetId = ruleSet.ImportRuleSetId
-                        };
-                        await _importRuleRepository.Create(AmbientContext, r, await GetCurrentUser());
-                        i++;
-                    }
-                }
-
-                await AmbientContext.DatabaseContext.SaveChangesAsync();
 
                 _logger.Log(LogLevel.Information,
                     EventIDs.UpdateImportRuleSuccessful,

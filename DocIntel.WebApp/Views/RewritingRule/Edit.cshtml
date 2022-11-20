@@ -1,12 +1,12 @@
-﻿@model ImportRuleSet
+﻿@model ImportRule
 
 @{
-    ViewData["Title"] = "Create rewriting ruleset";
+    ViewData["Title"] = $"Edit rule set '{Model.Name}'";
 }
 
 <div class="subheader">
     <h1 class="subheader-title">
-        <i class="fal fa-broom subheader-icon"></i> Create a new rewriting ruleset
+        <i class="fal fa-broom subheader-icon"></i> Edit rule '@Model.Name'
     </h1>
 </div>
 
@@ -31,12 +31,14 @@
             </div>
         }
 
-        <form asp-action="Create">
+        <form asp-action="Edit">
             @Html.AntiForgeryToken()
 
             <div id="panel-source-info" class="panel">
                 <div class="panel-container show">
                     <div class="panel-content">
+
+                        <input asp-for="ImportRuleId" type="hidden"/>
 
                         <div class="form-group">
                             <label asp-for="Name" class="control-label"></label>
@@ -51,9 +53,21 @@
                         </div>
 
                         <div class="form-group">
-                            <label asp-for="ImportRules" class="control-label"></label>
-                            <textarea name="ImportRules" class="form-control" ></textarea>
-                            <span asp-validation-for="ImportRules" class="text-danger"></span>
+                            <label asp-for="Position" class="control-label"></label>
+                            <input asp-for="Description" class="form-control"/>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="SearchPattern" class="control-label"></label>
+                            <input asp-for="SearchPattern" class="form-control"/>
+                            <span asp-validation-for="SearchPattern" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Replacement" class="control-label"></label>
+                            <input asp-for="Replacement" class="form-control"/>
+                            <span asp-validation-for="Replacement" class="text-danger"></span>
                         </div>
 
                     </div>

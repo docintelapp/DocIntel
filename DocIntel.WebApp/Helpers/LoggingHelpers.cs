@@ -92,6 +92,15 @@ namespace DocIntel.WebApp.Helpers
             return logEvent;
         }
 
+        public static LogEvent AddImportRule(this LogEvent logEvent, ImportRule importRule)
+        {
+            logEvent.AddProperty("import_rule.id", importRule.ImportRuleId);
+            logEvent.AddProperty("import_rule.set_id", importRule.ImportRuleSetId);
+            logEvent.AddProperty("import_rule.name", importRule.Name);
+            logEvent.AddProperty("import_rule.description", importRule.Description);
+            return logEvent;
+        }
+
         public static LogEvent AddImportRuleSet(this LogEvent logEvent, ImportRuleSet importRuleSet)
         {
             logEvent.AddProperty("import_ruleset.id", importRuleSet.ImportRuleSetId);

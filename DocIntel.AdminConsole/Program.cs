@@ -111,7 +111,7 @@ namespace DocIntel.AdminConsole
             });
             config.AddBranch("tags", add =>
             {
-                add.AddCommand<ImportTagsCommand>("import");
+                // add.AddCommand<ImportTagsCommand>("import");
                 add.AddCommand<AnalyzeTagsCommand>("analyze");
             });
             config.AddBranch("thumbnails", add =>

@@ -30,6 +30,7 @@ using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
+using DocIntel.Core.Utils;
 using DocIntel.Core.Utils.Observables;
 using DocIntel.Core.Utils.Search.Documents;
 using DocIntel.WebApp.Areas.API.Models;
@@ -55,6 +56,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
         private readonly IAppAuthorizationService _appAuthorizationService;
         private readonly IClassificationRepository _classificationRepository;
         private readonly ICommentRepository _commentRepository;
+        private readonly TagUtility _tagUtility;
 
         private readonly IDocumentRepository _documentRepository;
         private readonly ITagFacetRepository _facetRepository;
@@ -77,7 +79,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
             ITagFacetRepository facetRepository,
             ISynapseRepository synapseRepository,
             IClassificationRepository classificationRepository,
-            ICommentRepository commentRepository, IHttpContextAccessor httpContextAccessor)
+            ICommentRepository commentRepository, IHttpContextAccessor httpContextAccessor, TagUtility tagUtility)
             : base(userManager, context)
         {
             _appAuthorizationService = appAuthorizationService;
@@ -88,6 +90,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
             _tagRepository = tagRepository;
             _facetRepository = facetRepository;
             _commentRepository = commentRepository;
+            _tagUtility = tagUtility;
             _synapseRepository = synapseRepository;
             _sourceRepository = sourceRepository;
             _classificationRepository = classificationRepository;
@@ -1011,24 +1014,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
 
         private async Task<ISet<Tag>> GetTags(string[] tags, AppUser currentUser)
         {
-            var filteredTags = new HashSet<Tag>();
-
-            // A cache is needed in order to avoid creating multiple time a new
-            // facet with the same prefix when adding multiple tags. E.g. assume
-            // that facet "test" is not known, and tags contains { "test:a", 
-            // "test:b" }. Without the cache, the code would create a facet 
-            // with prefix "test" twice, as it would not get it from database
-            // (changes are not yet commited). EF Core caching should handle the
-            // case and it could be later investigated.
-            var facetCache = new Dictionary<string, TagFacet>();
-            foreach (var label in tags.Distinct())
-                try
-                {
-                    filteredTags.Add(await CreateOrAddTag(currentUser, facetCache, label));
-                }
-                catch (UnauthorizedOperationException)
-                {
-                }
+            var filteredTags = _tagUtility.GetOrCreateTags(AmbientContext, tags);
 
             // check that there is a tag for all mandatory facets
             var mandatoryFacets = _facetRepository.GetAllAsync(AmbientContext, new FacetQuery
@@ -1046,46 +1032,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
                 ModelState.AddModelError("Tags", str);
             }
 
-            return filteredTags;
-        }
-
-        private async Task<Tag> CreateOrAddTag(AppUser user, Dictionary<string, TagFacet> facetCache, string label)
-        {
-            var facetName = "";
-            var tagName = label;
-            if (tagName.IndexOf(':') > 0)
-            {
-                facetName = label.Split(':', 2)[0];
-                tagName = label.Split(':', 2)[1];
-            }
-
-            TagFacet facet;
-            if (facetCache.ContainsKey(facetName))
-                facet = facetCache[facetName];
-            else
-                try
-                {
-                    facet = await _facetRepository.GetAsync(AmbientContext, facetName);
-                    facetCache[facet.Prefix] = facet;
-                }
-                catch (NotFoundEntityException)
-                {
-                    facet = await _facetRepository.AddAsync(AmbientContext,
-                        new TagFacet {Prefix = facetName, Title = facetName});
-                    facetCache[facet.Prefix] = facet;
-                }
-
-            Tag tag;
-            try
-            {
-                tag = await _tagRepository.GetAsync(AmbientContext, facet.FacetId, tagName);
-            }
-            catch (NotFoundEntityException)
-            {
-                tag = await _tagRepository.CreateAsync(AmbientContext, new Tag {FacetId = facet.FacetId, Label = tagName});
-            }
-
-            return tag;
+            return filteredTags.ToHashSet();
         }
 
         #endregion

@@ -1,5 +1,5 @@
 ﻿@using DocIntel.Core.Authorization.Operations
-@model DocIntel.WebApp.ViewModels.ImportRule.IndexViewModel
+@model IEnumerable<ImportRuleSet>
 
 @{
     ViewData["Title"] = "Tag rewriting rules";
@@ -28,7 +28,7 @@
 
 <div class="row">
     <div class="col-12">
-        @if (Model != null && Model.ImportRuleSets.Any())
+        @if (Model != null && Model.Any())
         {
             <div id="panel-source-info" class="panel">
                 <div class="panel-hdr">
@@ -47,7 +47,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach (var t in Model.ImportRuleSets)
+                            @foreach (var t in Model.OrderBy(_ => _.Position))
                             {
                                 <tr>
                                     <th scope="row">
@@ -71,7 +71,7 @@
                         <div class="text-center fs-xl m-3 my-6">
                             <i class="fal fa-broom fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
                             No rewriting rules.<br/>
-                            <small>All the tags will be imported as providers decide.</small>
+                            <small>All the tags will be as provided.</small>
                         </div>
                     </div>
                 </div>
