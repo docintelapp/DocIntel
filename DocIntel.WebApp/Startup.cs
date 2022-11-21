@@ -54,6 +54,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
@@ -65,6 +66,7 @@ using Npgsql;
 
 using RunMethodsSequentially;
 using Swashbuckle.AspNetCore.Filters;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace DocIntel.WebApp
 {
@@ -113,13 +115,15 @@ namespace DocIntel.WebApp
                     t.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 });
 
-            services.AddControllersWithViews()
+            var mvcBuilder = services.AddControllersWithViews()
                 .AddNewtonsoftJson(t =>
                 {
                     t.SerializerSettings.Formatting = Formatting.Indented;
                     t.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 });
-                // .AddRazorRuntimeCompilation();
+            
+            if (_environment.IsDevelopment())
+                mvcBuilder.AddRazorRuntimeCompilation();
 
             services.AddSingleton(Configuration);
             services.AddSingleton(appSettings);
