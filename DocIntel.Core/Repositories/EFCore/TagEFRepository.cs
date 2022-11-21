@@ -374,7 +374,8 @@ namespace DocIntel.Core.Repositories.EFCore
             int page = 0,
             int limit = 10)
         {
-            var queryable = ambientContext.DatabaseContext.UserTagSubscriptions.Include(_ => _.Tag).AsQueryable()
+            var queryable = ambientContext.DatabaseContext.UserTagSubscriptions.Include(_ => _.Tag)
+                .ThenInclude(_ => _.Facet).AsQueryable()
                 .Where(_ => _.UserId == user.Id && _.Subscribed);
 
             if ((page > 0) & (limit > 0))

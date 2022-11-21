@@ -28,18 +28,18 @@
                                         <div class="d-flex align-items-center pt-0 pb-1 py-lg-1 flex-1 col-12 col-lg-auto">
                                             @if (item.status.Notification)
                                             {
-                                                <a asp-action="Subscribe" asp-controller="Document" asp-route-notification="false" asp-route-documentId="@item.document.DocumentId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                                <a asp-action="Subscribe" asp-controller="Document" asp-route-notification="false" asp-route-id="@item.document.DocumentId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
                                                     <i class="fas fa-bell"></i>
                                                 </a>
                                             }
                                             else
                                             {
-                                                <a asp-action="Subscribe" asp-controller="Document" asp-route-notification="true" asp-route-documentId="@item.document.DocumentId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
+                                                <a asp-action="Subscribe" asp-controller="Document" asp-route-notification="true" asp-route-id="@item.document.DocumentId" asp-route-returnUrl="@Url.Action("Subscriptions", "Account")">
                                                     <i class="fal fa-bell"></i>
                                                 </a>
                                             }
                                             <div class="ml-2">
-                                                <a class="name" asp-controller="Document" asp-action="Details" asp-route-reference="@item.document.Reference">
+                                                <a class="name" asp-controller="Document" asp-action="Details" asp-route-url="@item.document.DocumentId">
                                                     @item.document.Title <span class="fw-300">(@item.document.Reference)</span>
                                                 </a>
                                             </div>
@@ -47,7 +47,7 @@
                                     </div>
                                 </div>
                                 <div class="fs-sm text-muted ml-auto hide-on-hover-parent order-4 position-on-mobile-absolute pos-top pos-right mt-2 mr-3 mr-sm-4 mt-lg-0 mr-lg-0">
-                                    <a asp-controller="Document" asp-action="Unsubscribe" asp-route-reference="@item.document.Reference">
+                                    <a asp-controller="Document" asp-action="Unsubscribe" asp-route-id="@item.document.DocumentId">
                                         <i class="fal fa-trash-alt"></i>
                                     </a>
                                 </div>

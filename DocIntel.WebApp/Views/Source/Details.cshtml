@@ -22,23 +22,23 @@
                     <span class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                         @if (Model.Subscribed.Notification)
                         {
-                            <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-sourceId="@Model.Source.SourceId">
+                            <a class="text-white" asp-action="Subscribe" asp-route-notification="false" asp-route-id="@Model.Source.SourceId">
                                 <i class="fas fa-bell"></i>
                             </a>
                         }
                         else
                         {
-                            <a class="text-white" asp-action="Subscribe" asp-route-notification="true" asp-route-sourceId="@Model.Source.SourceId">
+                            <a class="text-white" asp-action="Subscribe" asp-route-notification="true" asp-route-id="@Model.Source.SourceId">
                                 <i class="fal fa-bell"></i>
                             </a>
                         }
-                        <a class="text-white" asp-action="Unsubscribe" asp-route-sourceId="@Model.Source.SourceId">Subscribed</a>
+                        <a class="text-white" asp-action="Unsubscribe" asp-route-id="@Model.Source.SourceId">Subscribed</a>
                     </span>
                 }
                 else
                 {
                     <a asp-action="Subscribe"
-                       asp-route-sourceId="@Model.Source.SourceId"
+                       asp-route-id="@Model.Source.SourceId"
                        class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                         <i class="fal fa-bell-slash"></i> Subscribe
                     </a>
@@ -74,14 +74,14 @@
             }
             @if (canMerge)
             {
-                <a asp-action="Merge" asp-route-primaryId="@Model.Source.SourceId"
+                <a asp-action="Merge" asp-route-primarySourceId="@Model.Source.SourceId"
                    class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                     <i class="fal fa-code-merge"></i> Merge
                 </a>
             }
             @if (canDelete)
             {
-                <a asp-action="Delete" asp-route-sourceId="@Model.Source.SourceId" class= "btn btn-pills btn-primary btn-iconified">
+                <a asp-action="Delete" asp-route-id="@Model.Source.SourceId" class= "btn btn-pills btn-primary btn-iconified">
                     <i class="fal fa-trash-alt"></i> Delete
                 </a>
             }

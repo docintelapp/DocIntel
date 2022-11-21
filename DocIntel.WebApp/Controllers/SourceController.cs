@@ -603,7 +603,7 @@ namespace DocIntel.WebApp.Controllers
             }
         }
 
-        public async Task<IActionResult> Merge(Guid? source1)
+        public async Task<IActionResult> Merge(Guid? primarySourceId)
         {
             var currentUser = await GetCurrentUser();
             if (!await _appAuthorizationService.CanMergeSource(User, null))
@@ -627,8 +627,8 @@ namespace DocIntel.WebApp.Controllers
                 null,
                 LogEvent.Formatter);
 
-            if (source1 != default)
-                ViewData["source1"] = await _sourceRepository.GetAsync(AmbientContext, (Guid) source1);
+            if (primarySourceId != default)
+                ViewData["source1"] = await _sourceRepository.GetAsync(AmbientContext, (Guid) primarySourceId);
 
             return View();
         }

@@ -20,7 +20,7 @@
                 @if (Model.Source != null)
                 {
                     <span class="mr-1">
-                        by <a asp-controller="Source" asp-action="Details" asp-route-sourceId="@Model.Source.SourceId">@Model.Source.Title</a>
+                        by <a asp-controller="Source" asp-action="Details" asp-route-url="@Model.Source.SourceId">@Model.Source.Title</a>
                     </span>
                     <span class="mr-1">-</span>
                 }

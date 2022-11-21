@@ -23,7 +23,7 @@
             | By
             @if ((await AuthorizationService.AuthorizeAsync(User, null, SourceOperations.View)).Succeeded)
             {
-                <a asp-controller="Source" asp-action="Details" asp-route-sourceId="@Model.Source.SourceId">@Model.Source.Title</a>
+                <a asp-controller="Source" asp-action="Details" asp-route-url="@Model.Source.SourceId">@Model.Source.Title</a>
             }
             else
             {
@@ -41,7 +41,7 @@
                            style="background-color: @tag.Tag.BackgroundColor"
                            asp-controller="Tag"
                            asp-action="Details"
-                           asp-route-tagId="@tag.Tag.TagId">
+                           asp-route-label="@tag.Tag.TagId">
                             @tag.Tag.Label
                         </a>
                     }

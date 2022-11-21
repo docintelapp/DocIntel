@@ -27,7 +27,7 @@
                 textColor = "badge-secondary";
             }
         }
-        <a class="text-truncate fs-lg fw-500" asp-action="Details" asp-controller="Source" asp-route-sourceId="@Model.Source.SourceId">
+        <a class="text-truncate fs-lg fw-500" asp-action="Details" asp-controller="Source" asp-route-url="@Model.Source.SourceId">
             @if (string.IsNullOrEmpty(Model.TitleExcerpt))
             {
                 <text>@Model.Source.Title</text>
