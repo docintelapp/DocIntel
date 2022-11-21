@@ -248,51 +248,6 @@ public class TagController : DocIntelAPIControllerBase
             return Unauthorized();
         }
     }
-        
-        
-    [HttpGet("Suggest")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<APITagDetails>))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [Produces("application/json")]
-    public async Task<IActionResult> Suggest(
-        string searchTerm = "")
-    {
-        var currentUser = await GetCurrentUser();
-
-        try
-        {
-            var results = _tagSearchEngine.Suggest(new TagSearchQuery
-            {
-                SearchTerms = searchTerm
-            });
-
-            var tags = new List<object>();
-            foreach (var h in results.Hits)
-                try
-                {
-                    var tag = await _tagRepository.GetAsync(AmbientContext, h.Tag.TagId, new[] {"Facet"});
-                    tags.Add(tag);
-                }
-                catch (NotFoundEntityException)
-                {
-                    // TODO Fail silently and log the error.
-                }
-
-            return Ok(_mapper.Map<IEnumerable<APITagDetails>>(tags));
-        }
-        catch (UnauthorizedOperationException)
-        {
-            _logger.Log(LogLevel.Warning,
-                EventIDs.APIListTagFailed,
-                new LogEvent($"User '{currentUser.UserName}' attempted to list tag without legitimate rights.")
-                    .AddUser(currentUser)
-                    .AddHttpContext(_accessor.HttpContext),
-                null,
-                LogEvent.Formatter);
-
-            return Unauthorized();
-        }
-    }
 
     /// <summary>
     /// Get a tag

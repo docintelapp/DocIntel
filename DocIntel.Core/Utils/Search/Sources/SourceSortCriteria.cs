@@ -21,9 +21,9 @@ namespace DocIntel.Core.Utils.Search.Sources
 {
     public enum SourceSortCriteria
     {
-        [Display(Name = "Title (A-Z)")] Title,
-        [Display(Name = "Relevance")] Relevance,
-        [Display(Name = "Last update")] LastUpdate,
-        [Display(Name = "Documents count")] DocumentsCount
+        [Display(Name = "Relevance")] Relevance = 0,
+        [Display(Name = "Title (A-Z)")] Title = 1,
+        [Display(Name = "Last update")] LastUpdate = 2,
+        [Display(Name = "Documents count")] DocumentsCount = 3
     }
 }

@@ -99,6 +99,8 @@ namespace DocIntel.Core.Logging
         public static EventId APISubscribeTagFailed = new EventId(26013, "subscribe-tag-fail");
         public static EventId APIUnsubscribeTagSuccessful = new EventId(26012, "unsubscribe-tag-success");
         public static EventId APIUnsubscribeTagFailed = new EventId(26013, "unsubscribe-tag-fail");
+        public static EventId APISearchTagSuccessful = new EventId(26014, "search-tag-success");
+        public static EventId APISearchTagFailed = new EventId(26015, "search-tag-fail");
 
         public static EventId APICreateTagFacetSuccessful = new EventId(26014, "create-tagfacet-success");
         public static EventId APICreateTagFacetFailed = new EventId(26015, "create-tagfacet-fail");

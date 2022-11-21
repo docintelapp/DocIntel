@@ -52,5 +52,5 @@ public class ApiFacetDetails : ApiFacet
     /// <summary>
     /// The tags
     /// </summary>
-    public List<APITagDetails> Tags { get; set; }
+    public List<APITag> Tags { get; set; }
 }
