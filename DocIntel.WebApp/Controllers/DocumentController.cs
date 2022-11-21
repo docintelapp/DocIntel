@@ -777,7 +777,6 @@ namespace DocIntel.WebApp.Controllers
                 
                 document = await SaveDocument(document, submittedDocument, sourceId, tags, releasableTo, eyesOnly, file,
                     observables.Any() ? DocumentStatus.Analyzed : DocumentStatus.Registered);
-                await _documentRepository.SubscribeAsync(AmbientContext, document.DocumentId);
                 await AmbientContext.DatabaseContext.SaveChangesAsync();
                 
                 if (observables.Any())

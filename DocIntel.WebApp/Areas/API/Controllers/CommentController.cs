@@ -206,7 +206,6 @@ public class CommentController : DocIntelAPIControllerBase
             };
 
             comment = await _commentRepository.AddAsync(AmbientContext, comment);
-            await _documentRepository.SubscribeAsync(AmbientContext, document.DocumentId);
             await _context.SaveChangesAsync();
 
             _logger.Log(LogLevel.Information,
