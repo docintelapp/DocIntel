@@ -7,7 +7,7 @@ using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 
 using Microsoft.AspNetCore.Identity;
-
+using Microsoft.Extensions.Options;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -16,15 +16,17 @@ namespace DocIntel.AdminConsole.Commands.Users
     public class AddUserCommand : UserCommand<AddUserCommand.Settings>
     {
         private readonly AppUserManager _userManager;
-        private readonly IRoleRepository _roleRepository;
-
+        private readonly IOptions<IdentityOptions> _identityOptions;
+        
         public AddUserCommand(DocIntelContext context,
             IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
-            AppUserManager userManager, ApplicationSettings applicationSettings, IRoleRepository roleRepository) : base(context,
+            AppUserManager userManager,
+            ApplicationSettings applicationSettings,
+            IOptions<IdentityOptions> identityOptions) : base(context,
             userClaimsPrincipalFactory, applicationSettings)
         {
             _userManager = userManager;
-            _roleRepository = roleRepository;
+            _identityOptions = identityOptions;
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -62,17 +64,39 @@ namespace DocIntel.AdminConsole.Commands.Users
                 return 0;
             }
 
-            var result = await _userManager.CreateAsync(ambientContext.Claims, user, password);
-            if (result.Succeeded)
+            var passwordValidator = new PasswordValidator<AppUser>();
+            var isValidPassword = await passwordValidator.ValidateAsync(_userManager, null, password);
+
+            if (!isValidPassword.Succeeded)
             {
-                AnsiConsole.Render(new Markup($"[green]User {userName} successfully created.[/]\n"));
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                AnsiConsole.Render(new Markup($"[red]Could not create user '{userName}'.[/]\n"));
+                var options = _identityOptions.Value.Password;
+                AnsiConsole.Render(new Markup($"[red]The password does not match the policy.[/]\n"));
+                AnsiConsole.Render(
+                    new Markup($"[red]- Length must be greater than {options.RequiredLength} characters.[/]\n"));
+                if (options.RequireDigit)
+                    AnsiConsole.Render(new Markup($"[red]- Password must contain numbers.[/]\n"));
+                if (options.RequireLowercase)
+                    AnsiConsole.Render(new Markup($"[red]- Password must contain lowercase letters.[/]\n"));
+                if (options.RequireUppercase)
+                    AnsiConsole.Render(new Markup($"[red]- Password must contain uppercase letters.[/]\n"));
+                if (options.RequiredUniqueChars > 0)
+                    AnsiConsole.Render(new Markup(
+                        $"[red]- Password must contain at last {options.RequiredUniqueChars} unique characters.[/]\n"));
+                if (options.RequireNonAlphanumeric)
+                    AnsiConsole.Render(
+                        new Markup($"[red]- Password must have at least one non-alphanumeric (e.g. @#$) symbol.[/]\n"));
+                return 1;
             }
 
+            var result = await _userManager.CreateAsync(ambientContext.Claims, user, password);
+            if (!result.Succeeded)
+            {
+                AnsiConsole.Render(new Markup($"[red]Could not create user '{userName}'.[/]\n"));
+                return 1;
+            }
+
+            AnsiConsole.Render(new Markup($"[green]User {userName} successfully created.[/]\n"));
+            await _context.SaveChangesAsync();
             return 0;
         }
 
