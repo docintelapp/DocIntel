@@ -75,7 +75,7 @@ namespace DocIntel.Services.Importer
                     _logger.LogError(e.GetType().FullName);
                     _logger.LogError(e.Message + "\n" + e.StackTrace);
                 }
-                await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+                await Task.Delay(TimeSpan.FromMinutes(_appSettings.Schedule.ImporterFrequencyCheck), cancellationToken);
             }
         }
 

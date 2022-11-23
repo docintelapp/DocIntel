@@ -65,6 +65,11 @@ namespace DocIntel.Core.Settings
         /// Delay, in minutes, between two check of missed messages for the indexers..
         /// </summary>
         public double IndexingFrequencyCheck { get; set; } = 15;
+
+        /// <summary>
+        /// Delay, in minutes, between two check of importers.
+        /// </summary>
+        public double ImporterFrequencyCheck { get; set; } = 5;
     }
 
     public class SecuritySettings
