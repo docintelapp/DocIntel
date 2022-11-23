@@ -144,11 +144,6 @@ namespace DocIntel.WebApp.Areas.API
                     _.PreCondition(_ => _.OverrideEyesOnly != null);
                     _.MapFrom(_ => _.OverrideEyesOnly);
                 })
-                .ForMember(_ => _.MetaData, _ =>
-                {
-                    _.PreCondition(_ => _.MetaData != null);
-                    _.MapFrom(_ => _.MetaData);
-                })
                 .ForMember(_ => _.Visible, _ =>
                 {
                     _.PreCondition(_ => _.Visible != null);

@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using DocIntel.Core.Utils.Search.Documents;
+using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Models;
 
@@ -32,4 +35,6 @@ public class SavedSearch
     public IList<SearchFilter> Filters { get; set; }
     public SortCriteria SortCriteria { get; set; }
     public int PageSize { get; set; }
+    
+    [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
 }

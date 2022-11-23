@@ -16,6 +16,7 @@
 */
 
 using System;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
 namespace DocIntel.WebApp.Areas.API.Models
@@ -25,25 +26,25 @@ namespace DocIntel.WebApp.Areas.API.Models
         /// <summary>
         /// The user who created the tag
         /// </summary>
-        [JsonProperty("created_by")]
+        [JsonPropertyName("created_by")]
         public APIAppUser CreatedBy { get; set; }
         
         /// <summary>
         /// The user who last modified the tag
         /// </summary>
-        [JsonProperty("last_modified_by")]
+        [JsonPropertyName("last_modified_by")]
         public APIAppUser LastModifiedBy { get; set; }
 
         /// <summary>
         /// The creation date
         /// </summary>
-        [JsonProperty("creation_date")]
+        [JsonPropertyName("creation_date")]
         public DateTime CreationDate { get; set; }
         
         /// <summary>
         /// The modification date
         /// </summary>
-        [JsonProperty("modification_date")]
+        [JsonPropertyName("modification_date")]
         public DateTime ModificationDate { get; set; }
 
         /// <summary>

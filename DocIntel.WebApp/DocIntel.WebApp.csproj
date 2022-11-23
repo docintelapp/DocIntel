@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>DocIntel.WebApp</RootNamespace>
-    <LangVersion>default</LangVersion>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,8 +22,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.4" />
     <PackageReference Include="Pluralize.NET.Core" Version="1.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />        
@@ -31,7 +29,6 @@
     <PackageReference Include="Novell.Directory.Ldap.NETStandard2_0" Version="3.1.0" />
    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0" />
    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.6" />
-   <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.4.0" />
    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="6.4.0" />
    <PackageReference Include="TimeZoneNames" Version="6.0.0" />
   </ItemGroup>

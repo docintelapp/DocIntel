@@ -16,8 +16,13 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Models
 {
@@ -61,5 +66,7 @@ namespace DocIntel.Core.Models
         public AppUser CreatedBy { get; set; }
         public string LastModifiedById { get; set; }
         public AppUser LastModifiedBy { get; set; }
+        
+        [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
     }
 }

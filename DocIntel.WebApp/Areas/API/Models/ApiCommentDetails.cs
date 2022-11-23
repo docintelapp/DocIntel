@@ -16,6 +16,7 @@
 */
 
 using System;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
 namespace DocIntel.WebApp.Areas.API.Models;
@@ -26,21 +27,21 @@ public class ApiCommentDetails : ApiComment
     /// The identifier of the comment
     /// </summary>
     /// <example>0125f9ff-d026-48f3-9726-83bbf2c56d24</example>
-    [JsonProperty("comment_id")]
+    [JsonPropertyName("comment_id")]
     public Guid CommentId { get; set; }
     
     /// <summary>
     /// The date of the comment
     /// </summary>
     /// <example>2022-10-31T12:11:29.677902+01:00</example>
-    [JsonProperty("comment_date")]
+    [JsonPropertyName("comment_date")]
     public DateTime CommentDate { get; set; }
     
     /// <summary>
     /// The last modification date of the comment
     /// </summary>
     /// <example>2022-10-31T12:11:29.677902+01:00</example>
-    [JsonProperty("modification_id")]
+    [JsonPropertyName("modification_id")]
     public DateTime ModificationDate { get; set; }
     
     /// <summary>
@@ -51,6 +52,6 @@ public class ApiCommentDetails : ApiComment
     /// <summary>
     /// The last modifier
     /// </summary>
-    [JsonProperty("last_modified_by")]
+    [JsonPropertyName("last_modified_by")]
     public APIAppUser LastModifiedBy { get; set; }
 }

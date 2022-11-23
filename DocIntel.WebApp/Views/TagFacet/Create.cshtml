@@ -1,5 +1,9 @@
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Newtonsoft.Json
 @model TagFacet
+@using JsonSerializer = System.Text.Json.JsonSerializer
+@using DocIntel.Core.Modules
+@using System.Text
 
 @{
     ViewData["Title"] = "Create a new facet";
@@ -38,6 +42,8 @@
                     </div>
                 </div>
             </div>
+
+            @await Html.PartialAsync("_MetaDataFields", Model, new ViewDataDictionary(ViewData))
 
             <div class="row">
                 <div class="col-md-12">

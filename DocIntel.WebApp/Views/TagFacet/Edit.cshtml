@@ -1,6 +1,10 @@
 @using DocIntel.Core.Authorization.Operations
+@using DocIntel.Core.Modules
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Newtonsoft.Json
+@using System.Text
 @model TagFacet
+@using JsonSerializer = System.Text.Json.JsonSerializer
 
 @{
     ViewData["Title"] = "Edit facet '" + Model.Title + "'";
@@ -52,6 +56,8 @@
                     </div>
                 </div>
             </div>
+            
+            @await Html.PartialAsync("_MetaDataFields", Model, new ViewDataDictionary(ViewData))
 
             <div class="row">
                 <div class="col-md-12">

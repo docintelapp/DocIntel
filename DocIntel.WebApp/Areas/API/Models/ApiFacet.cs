@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -9,7 +10,7 @@ public class ApiFacet
     /// <summary>
     /// The facet identifier
     /// </summary>
-    [JsonProperty("facet_id")]
+    [JsonPropertyName("facet_id")]
     [SwaggerSchema(ReadOnly = true)]
     public Guid FacetId { get; set; }
     
@@ -41,18 +42,18 @@ public class ApiFacet
     /// <summary>
     /// The regex to use for extracting new tags
     /// </summary>
-    [JsonProperty("extraction_regex")]
+    [JsonPropertyName("extraction_regex")]
     public string ExtractionRegex { get; set; }
     
     /// <summary>
     /// Whether the tags should be extracted
     /// </summary>
-    [JsonProperty("auto_extract")]
+    [JsonPropertyName("auto_extract")]
     public bool AutoExtract { get; set; }
     
     /// <summary>
     /// How tags should be normalized
     /// </summary>
-    [JsonProperty("tag_normalization")]
+    [JsonPropertyName("tag_normalization")]
     public string TagNormalization { get; set; }
 }

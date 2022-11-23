@@ -20,6 +20,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.ServiceModel.Syndication;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Xml;
 
 using AngleSharp.Text;
@@ -27,7 +30,7 @@ using AngleSharp.Text;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
-
+using Json.More;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Core.Importers
@@ -63,10 +66,15 @@ namespace DocIntel.Core.Importers
 
             foreach (var source in sources)
             {
-                if (source.MetaData != null && source.MetaData.ContainsKey("rss_enabled") && source.MetaData.Value<bool>("rss_enabled"))
+                RssSourceImporterFullMetaData rssMetadata = null;
+                
+                if (source.MetaData != null &&
+                    source.MetaData.ContainsKey("rss") &&
+                    (rssMetadata = source.MetaData["rss"].Deserialize<RssSourceImporterFullMetaData>()) != null &&
+                    rssMetadata.Enabled)
                 {
                     _logger.LogInformation($"Collecting RSS feed for '{source.Title}' ({source.SourceId})");
-                    var lastSourcePull = source.MetaData.Value<DateTime>("rss_last_pull");
+                    var lastSourcePull = rssMetadata.LastPull;
 
                     var httpWebRequest = (HttpWebRequest) WebRequest.Create(source.RSSFeed);
                     if (!string.IsNullOrEmpty(_settings.Proxy))
@@ -108,11 +116,10 @@ namespace DocIntel.Core.Importers
                             var summary = item.Summary?.Text ?? "";
                             var link = item.Links.FirstOrDefault()?.Uri;
                             var date = item.PublishDate;
-
-                            if ((!source.MetaData.ContainsKey("rss_last_pull") || date > lastSourcePull) && link != default)
+                            
+                            if ((rssMetadata.LastPull == default || date > lastSourcePull) && link != default)
                             {
-                                var keywords = source.MetaData.Value<string>("rss_keywords")?.SplitSpaces() ??
-                                               new string[] { };
+                                var keywords = rssMetadata.Keywords;
                                 if (keywords.Length > 0 && !(subject + summary).SplitSpaces()
                                     .Any(_ => keywords.Contains(_)))
                                 {
@@ -133,15 +140,14 @@ namespace DocIntel.Core.Importers
                             }
                         }
 
-                        source.MetaData["rss_last_pull"] = feed.Items.Max(_ => _.PublishDate);
-                        _logger.LogTrace(source.MetaData.ToString());
+                        rssMetadata.LastPull = feed.Items.Max(_ => _.PublishDate).DateTime;
                         await _sourceRepository.UpdateAsync(context, source);
                         await context.DatabaseContext.SaveChangesAsync();
                     }
                 }
                 else
                 {
-                    _logger.LogTrace("Source has no rss_enabled");
+                    _logger.LogTrace("Source has no rss.enabled flag set to true.");
                 }
                 await context.DatabaseContext.SaveChangesAsync();
             }
@@ -156,4 +162,5 @@ namespace DocIntel.Core.Importers
         {
         }
     }
+
 }

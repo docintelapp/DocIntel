@@ -17,6 +17,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -62,7 +63,7 @@ public class APIClassification
     /// The identifier of the parent classification
     /// </summary>
     /// <example>9e1d962e-7155-45e9-af02-40ee6356ccd6</example>
-    [JsonProperty("parent_classification_id")]
+    [JsonPropertyName("parent_classification_id")]
     public Guid? ParentClassificationId { get; set; }
         
     /// <summary>
@@ -78,11 +79,11 @@ public class APIClassificationDetails : APIClassification
     /// The classification identifier
     /// </summary>
     /// <example>f0a8ebb6-dcad-45ac-a0c9-1bc0f15b22c3</example>
-    [JsonProperty("classification_id")]
+    [JsonPropertyName("classification_id")]
     [SwaggerSchema(ReadOnly = true)]
     public Guid ClassificationId { get; set; }
     
-    [JsonProperty("parent_classification")]
+    [JsonPropertyName("parent_classification")]
     [SwaggerSchema("The parent classification", ReadOnly = true)]
     public APIClassification ParentClassification { get; set; }
 }

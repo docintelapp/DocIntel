@@ -839,13 +839,13 @@ namespace DocIntel.Core.Repositories.EFCore
             else if (query.OrderBy == SortCriteria.RegistrationDate)
                 documents = documents.OrderByDescending(_ => _.RegistrationDate);
 
-            if ((query.RegisteredAfter != DateTime.MinValue))
+            if (query.RegisteredAfter != default && (query.RegisteredAfter != DateTime.MinValue))
                 documents = documents.Where(x => x.RegistrationDate > query.RegisteredAfter);
             
-            if ((query.ModifiedAfter != DateTime.MinValue))
+            if (query.ModifiedAfter != default && (query.ModifiedAfter != DateTime.MinValue))
                 documents = documents.Where(x => x.ModificationDate > query.ModifiedAfter);
             
-            if ((query.ModifiedBefore != DateTime.MinValue))
+            if (query.ModifiedBefore != default && (query.ModifiedBefore != DateTime.MinValue))
                 documents = documents.Where(x => x.ModificationDate < query.ModifiedBefore);
 
             if (!string.IsNullOrEmpty(query.ExternalReference))

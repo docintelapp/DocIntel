@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -9,7 +10,7 @@ public class APIGroup
     /// <summary>
     /// The group identifier
     /// </summary>
-    [JsonProperty("group_id")]
+    [JsonPropertyName("group_id")]
     [SwaggerSchema(ReadOnly = true)]
     public Guid GroupId { get; set; }
     

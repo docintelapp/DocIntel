@@ -25,6 +25,7 @@ using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
+using DocIntel.Core.Modules;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Settings;
@@ -56,13 +57,12 @@ namespace DocIntel.WebApp.Controllers
         private readonly IAppAuthorizationService _appAuthorizationService;
         private readonly IDocumentRepository _documentRepository;
         private readonly ILogger _logger;
-        private readonly IDocumentSearchEngine _searchEngine;
         private readonly ISourceRepository _sourceRepository;
         private readonly ISourceSearchService _sourceSearchEngine;
-        private readonly ITagSearchService _tagSearchEngine;
         private readonly HtmlSanitizer _sanitizer;
         private readonly ApplicationSettings _appSettings;
-
+        private readonly ModuleFactory _moduleFactory;
+        
         public SourceController(IAppAuthorizationService appAuthorizationService,
             DocIntelContext context,
             ITagSearchService tagSearchEngine,
@@ -74,21 +74,20 @@ namespace DocIntel.WebApp.Controllers
             ISourceSearchService sourceSearchEngine,
             ISourceRepository sourceRepository,
             IDocumentRepository documentRepository,
-            IHttpContextAccessor accessor, ApplicationSettings appSettings)
+            IHttpContextAccessor accessor, ApplicationSettings appSettings, ModuleFactory moduleFactory)
             : base(context,
                 userManager,
                 configuration,
                 authorizationService)
         {
             _logger = logger;
-            _searchEngine = searchEngine;
-            _tagSearchEngine = tagSearchEngine;
             _sourceSearchEngine = sourceSearchEngine;
             _sourceRepository = sourceRepository;
             _documentRepository = documentRepository;
             _appAuthorizationService = appAuthorizationService;
             _accessor = accessor;
             _appSettings = appSettings;
+            _moduleFactory = moduleFactory;
 
             _sanitizer = new HtmlSanitizer();
             _sanitizer.AllowedSchemes.Add("data");
@@ -184,7 +183,6 @@ namespace DocIntel.WebApp.Controllers
                     ? source.Documents.Max(_ => _.DocumentDate)
                     : null;
 
-                _logger.LogDebug("Country: " + source.Country);
                 if (!string.IsNullOrEmpty(source.Country))
                     vm.Country = GeoHelpers.GetUNList().Where(_ => _.M49Code == source.Country);
 
@@ -255,6 +253,8 @@ namespace DocIntel.WebApp.Controllers
                 null,
                 LogEvent.Formatter);
 
+            ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Source));
+            
             return View(new Source());
         }
 
@@ -288,10 +288,7 @@ namespace DocIntel.WebApp.Controllers
 
                 SaveLogo(logo, source);
 
-                if (source.MetaData != null)
-                    source.MetaData.Merge(JObject.FromObject(metadata));
-                else
-                    source.MetaData = JObject.FromObject(metadata);
+                source.MetaData = ParseMetaData(metadata, currentUser);
 
                 await _sourceRepository.CreateAsync(AmbientContext, source);
                 await AmbientContext.DatabaseContext.SaveChangesAsync();
@@ -324,6 +321,7 @@ namespace DocIntel.WebApp.Controllers
                     null,
                     LogEvent.Formatter);
 
+                ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Source));
                 return View(submittedSource);
             }
             catch (UnauthorizedOperationException)
@@ -356,7 +354,8 @@ namespace DocIntel.WebApp.Controllers
                         .AddSource(source),
                     null,
                     LogEvent.Formatter);
-                source.MetaData ??= new JObject();
+                
+                ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Source));
                 return View(source);
             }
             catch (UnauthorizedOperationException)
@@ -413,8 +412,6 @@ namespace DocIntel.WebApp.Controllers
                 var source = await _sourceRepository.GetAsync(AmbientContext, submittedSource.SourceId);
                 SaveLogo(logo, source);
                 
-                _logger.LogDebug("ModelState is " + ModelState.IsValid);
-
                 if (ModelState.IsValid)
                 {
                     source.Title = submittedSource.Title;
@@ -430,10 +427,7 @@ namespace DocIntel.WebApp.Controllers
                     source.LinkedIn = submittedSource.LinkedIn;
                     source.Country = submittedSource.Country;
 
-                    if (source.MetaData != null)
-                        source.MetaData.Merge(JObject.FromObject(metadata));
-                    else
-                        source.MetaData = JObject.FromObject(metadata);
+                    source.MetaData = ParseMetaData(metadata, currentUser);
 
                     if (!string.IsNullOrEmpty(submittedSource.Keywords))
                         source.Keywords = string.Join(", ", submittedSource.Keywords.Split(",").Select(_ => _.Trim()));
@@ -500,6 +494,7 @@ namespace DocIntel.WebApp.Controllers
                     null,
                     LogEvent.Formatter);
 
+                ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Source));
                 return View(submittedSource);
             }
         }

@@ -1,0 +1,20 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using DocIntel.Core.Utils
+@using DocIntel.Core.Importers
+@using DocIntel.Core.Modules
+@model Source
+
+<h3>Structured Data Extraction</h3>
+@(Html.JsonEditor("extraction", Model.MetaData, typeof(ExtractionMetaData)))
+
+<h3>Registration</h3>
+@(Html.JsonEditor("registration", Model.MetaData, typeof(RegistrationMetadata)))
+
+<h3>RSS Import</h3>
+@(Html.JsonEditor("rss", Model.MetaData, typeof(RssSourceImporterMetaData)))
+
+@foreach (var metadata in (IEnumerable<ModuleModelMetadata>) ViewBag.ModuleMetadata)
+{
+    <h3>@metadata.Title</h3>    
+    @(Html.JsonEditor(metadata.Name, Model.MetaData, metadata.Type))
+}

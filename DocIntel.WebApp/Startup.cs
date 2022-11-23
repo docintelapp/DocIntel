@@ -23,11 +23,13 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
+using DocIntel.Core.Modules;
 using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
@@ -60,7 +62,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
-using Newtonsoft.Json;
+// using Newtonsoft.Json;
 
 using Npgsql;
 
@@ -91,15 +93,15 @@ namespace DocIntel.WebApp
         {
             Console.WriteLine("--- Configuring service");
 
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings {
+            /*JsonConvert.DefaultSettings = () => new JsonSerializerSettings {
                 Formatting = Formatting.Indented,
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 NullValueHandling = NullValueHandling.Ignore
-            };
+            };*/
             
             services.AddMvc();
 
-            NpgsqlConnection.GlobalTypeMapper.UseJsonNet();
+            // NpgsqlConnection.GlobalTypeMapper.UseJsonNet();
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             var policyBuilder = new AuthorizationPolicyBuilder(CookieAuthenticationDefaults.AuthenticationScheme,
@@ -108,19 +110,19 @@ namespace DocIntel.WebApp
             var policy = policyBuilder.Build();
 
             services.AddMvc(options => { options.Filters.Add(new AuthorizeFilter(policy)); })
-                .AddNewtonsoftJson(t =>
+                /*.AddNewtonsoftJson(t =>
                 {
                     t.SerializerSettings.Formatting = Formatting.Indented;
                     t.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                     t.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                });
+                })*/;
 
             var mvcBuilder = services.AddControllersWithViews()
-                .AddNewtonsoftJson(t =>
+                /*.AddNewtonsoftJson(t =>
                 {
                     t.SerializerSettings.Formatting = Formatting.Indented;
                     t.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                });
+                })*/;
             
             if (_environment.IsDevelopment())
                 mvcBuilder.AddRazorRuntimeCompilation();
@@ -219,7 +221,9 @@ namespace DocIntel.WebApp
             StartupHelpers.RegisterServices(services);
             StartupHelpers.RegisterSolR(services, appSettings);
             StartupHelpers.RegisterSynapse(services, appSettings);
-
+            
+            StartupHelpers.RegisterModules(services, appSettings);
+            
             services.AddAutoMapper(cfg =>
             {
                 cfg.AddProfile<SolRProfile>();
@@ -265,7 +269,7 @@ namespace DocIntel.WebApp
                 
             });
             services.AddSwaggerExamplesFromAssemblies(Assembly.GetExecutingAssembly());
-            services.AddSwaggerGenNewtonsoftSupport();
+            // services.AddSwaggerGenNewtonsoftSupport();
             
             services.AddHealthChecks();
 

@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Bogus;
 using DocIntel.Core.Authentication;
@@ -196,7 +197,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
             public string Username { get; set; }
             
             [Required]
-            [JsonProperty("api_key")]
+            [JsonPropertyName("api_key")]
             [SwaggerSchema("The API key")]
             public string APIKey { get; set; }
         }

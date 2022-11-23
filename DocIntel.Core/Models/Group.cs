@@ -17,8 +17,11 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using DocIntel.Core.Helpers;
+using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Models
 {
@@ -51,14 +54,7 @@ namespace DocIntel.Core.Models
         public ICollection<Scraper> ScraperEyesOnly { get; set; }
         public ICollection<SubmittedDocument> SubmittedDocumentReleasableTo { get; set; }
         public ICollection<SubmittedDocument> SubmittedDocumentEyesOnly { get; set; }
-    }
-
-    public class Member
-    {
-        public Guid MemberId { get; set; }
-        public Guid GroupId { get; set; }
-        public Group Group { get; set; }
-        public string UserId { get; set; }
-        public AppUser User { get; set; }
+        
+        [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
     }
 }

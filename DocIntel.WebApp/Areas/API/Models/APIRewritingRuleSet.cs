@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
 namespace DocIntel.WebApp.Areas.API.Models
@@ -29,7 +30,7 @@ namespace DocIntel.WebApp.Areas.API.Models
     }
     public class ApiRewritingRuleSetDetails : APIRewritingRuleSet
     {
-        [JsonProperty("rule_set_id")] public Guid RuleSetId { get; set; }
+        [JsonPropertyName("rule_set_id")] public Guid RuleSetId { get; set; }
         public List<APIRewritingRule> Rules { get; set; }
     }
 }

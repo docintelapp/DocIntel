@@ -1,5 +1,9 @@
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using DocIntel.Core.Modules
+@using Newtonsoft.Json
 @model Classification
+@using JsonSerializer = System.Text.Json.JsonSerializer
+@using System.Text
 
 <div class="panel">
     <div class="panel-container show">
@@ -83,7 +87,6 @@
                 @Html.HelpTextFor(m => m.Default)
                 <span asp-validation-for="Default" class="text-danger"></span>
             </div>
-
 
         </div>
     </div>

@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
@@ -142,8 +144,14 @@ namespace DocIntel.Core.Scrapers
             string[] tags = null)
         {
             if (scraper.OverrideSource) document.SourceId = scraper.SourceId;
-            document.MetaData ??= new JObject();
-            document.MetaData["ScrapePriority"] = submission.Priority;
+            document.MetaData ??= new ();
+            
+            var scraperMetadata = new DefaultScraperMetaData
+            {
+                Priority = submission.Priority
+            };
+
+            document.MetaData["scraper"] = JsonSerializer.SerializeToNode(scraperMetadata)?.AsObject();
 
             if (scraper.OverrideClassification && scraper.ClassificationId != null)
             {
@@ -208,5 +216,10 @@ namespace DocIntel.Core.Scrapers
             
             return generator;
         }
+    }
+
+    public class DefaultScraperMetaData
+    {
+        public int? Priority { get; set; }
     }
 }

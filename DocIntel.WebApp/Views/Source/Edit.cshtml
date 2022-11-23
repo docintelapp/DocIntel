@@ -1,6 +1,16 @@
 ﻿@using DocIntel.Core.Authorization.Operations
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Newtonsoft.Json
+@using System.Text
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using DocIntel.Core.Helpers
+@using DocIntel.Core.Importers
+@using DocIntel.Core.Utils
+@using Json.Schema
+@using Json.Schema.Generation
 @model Source
+@using JsonSerializer = System.Text.Json.JsonSerializer
 
 @{
     ViewData["Title"] = $"Edit Source '{Model.Title}'";
@@ -61,6 +71,8 @@
             <input type="hidden" asp-for="SourceId"/>
             @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
 
+            @await Html.PartialAsync("_MetaDataFields", Model, new ViewDataDictionary(ViewData))
+            
             <div class="row">
                 <div class="col-md-12">
                     <button type="submit" class= "btn btn-pills btn-success btn-iconified waves-effect waves-themed">

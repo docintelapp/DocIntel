@@ -16,6 +16,7 @@
 */
 
 using System;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
 namespace DocIntel.WebApp.Areas.API.Models
@@ -25,13 +26,13 @@ namespace DocIntel.WebApp.Areas.API.Models
         public int Position { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        [JsonProperty("search_pattern")] public string SearchPattern { get; set; }
+        [JsonPropertyName("search_pattern")] public string SearchPattern { get; set; }
         public string Replacement { get; set; }
     }
     public class APIRewritingRuleDetails : APIRewritingRule
     {
-        [JsonProperty("rule_id")] public Guid RuleId { get; set; }
-        [JsonProperty("rule_set_id")] public Guid RuleSetId { get; set; }
+        [JsonPropertyName("rule_id")] public Guid RuleId { get; set; }
+        [JsonPropertyName("rule_set_id")] public Guid RuleSetId { get; set; }
         public APIRewritingRuleSet RuleSet { get; set; }
     }
 }

@@ -25,6 +25,7 @@ using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
+using DocIntel.Core.Modules;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Settings;
@@ -54,6 +55,7 @@ namespace DocIntel.WebApp.Controllers
         private readonly IDocumentSearchEngine _searchEngine;
         private readonly ITagRepository _tagRepository;
         private readonly ITagSearchService _tagSearchEngine;
+        private readonly ModuleFactory _moduleFactory;
 
         private readonly Regex regex = new(@"[^a-zA-Z0-9 ]");
 
@@ -67,7 +69,8 @@ namespace DocIntel.WebApp.Controllers
             ITagRepository tagRepository,
             IDocumentRepository documentRepository,
             IAuthorizationService authorizationService,
-            IHttpContextAccessor accessor, ITagFacetRepository facetRepository)
+            IHttpContextAccessor accessor, ITagFacetRepository facetRepository, 
+            ModuleFactory moduleFactory)
             : base(context,
                 userManager,
                 configuration,
@@ -81,6 +84,7 @@ namespace DocIntel.WebApp.Controllers
             _documentRepository = documentRepository;
             _accessor = accessor;
             _facetRepository = facetRepository;
+            _moduleFactory = moduleFactory;
         }
 
         public async Task<IActionResult> Index(
@@ -260,7 +264,8 @@ namespace DocIntel.WebApp.Controllers
             }
 
             ViewBag.Facets = await GetAvailableFacetsAsync();
-
+            ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Tag));
+            
             return View(new Tag());
         }
 
@@ -268,7 +273,8 @@ namespace DocIntel.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
             [Bind("Label", "FacetId", "Description", "Keywords", "BackgroundColor", "ExtractionKeywords")]
-            Tag submittedViewModel)
+            Tag submittedViewModel,
+            [Bind(Prefix = "Metadata")] Dictionary<string,string> metadata)
         {
             var currentUser = await GetCurrentUser();
 
@@ -294,6 +300,7 @@ namespace DocIntel.WebApp.Controllers
                         Facet = facet,
                         FacetId = submittedViewModel.FacetId
                     };
+                    tag.MetaData = ParseMetaData(metadata, currentUser);
 
                     if (!string.IsNullOrEmpty(submittedViewModel.ExtractionKeywords))
                         tag.ExtractionKeywords = string.Join(", ",
@@ -351,6 +358,7 @@ namespace DocIntel.WebApp.Controllers
                 }
 
                 ViewBag.Facets = await GetAvailableFacetsAsync();
+                ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Tag));
 
                 _logger.Log(LogLevel.Information,
                     EventIDs.CreateTagSuccessful,
@@ -372,6 +380,7 @@ namespace DocIntel.WebApp.Controllers
             {
                 var tag = await _tagRepository.GetAsync(AmbientContext, id, new[] {"Facet"});
                 ViewBag.Facets = await GetAvailableFacetsAsync();
+                ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Tag));
 
                 _logger.Log(LogLevel.Information,
                     EventIDs.EditTagSuccessful,
@@ -419,7 +428,8 @@ namespace DocIntel.WebApp.Controllers
         public async Task<IActionResult> Edit(
             Guid id,
             [Bind("TagId", "Label", "Description", "Keywords", "BackgroundColor", "FacetId", "ExtractionKeywords")]
-            Tag submittedTag)
+            Tag submittedTag,
+            [Bind(Prefix = "Metadata")] Dictionary<string,string> metadata)
         {
             var currentUser = await GetCurrentUser();
 
@@ -445,8 +455,7 @@ namespace DocIntel.WebApp.Controllers
                     if (!string.IsNullOrEmpty(submittedTag.Keywords))
                         tag.Keywords = string.Join(", ", submittedTag.Keywords.Split(',').Select(x => x.Trim()));
 
-                    if (tag.MetaData == null)
-                        tag.MetaData = new JObject();
+                    tag.MetaData = ParseMetaData(metadata, currentUser);
                     
                     await _tagRepository.UpdateAsync(AmbientContext, tag);
                     await _context.SaveChangesAsync();
@@ -502,6 +511,7 @@ namespace DocIntel.WebApp.Controllers
 
                 submittedTag.Facet = await _facetRepository.GetAsync(AmbientContext, submittedTag.FacetId);
                 ViewBag.Facets = await GetAvailableFacetsAsync();
+                ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Tag));
 
                 _logger.Log(LogLevel.Information,
                     EventIDs.EditTagFailed,

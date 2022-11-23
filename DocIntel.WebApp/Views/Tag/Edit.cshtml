@@ -1,7 +1,10 @@
 ﻿@using DocIntel.Core.Authorization.Operations
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model DocIntel.Core.Models.Tag
-
+@using JsonSerializer = System.Text.Json.JsonSerializer
+@using DocIntel.Core.Modules
+@using Newtonsoft.Json
+@using System.Text
 
 @{
     ViewData["Title"] = $"Edit {Model.Label}";
@@ -121,7 +124,9 @@
                     </div>
                 </div>
             </div>
-
+            
+            @await Html.PartialAsync("_MetaDataFields", Model, new ViewDataDictionary(ViewData))
+            
             <div class="row">
                 <div class="col-md-12">
                     <button type="submit" class= "btn btn-pills btn-success btn-iconified waves-effect waves-themed">

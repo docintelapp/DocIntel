@@ -45,6 +45,9 @@ namespace DocIntel.Core.Migrations
                     b.Property<DateTime?>("LastUsage")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<Dictionary<string, JObject>>("MetaData")
+                        .HasColumnType("jsonb");
+
                     b.Property<DateTime>("ModificationDate")
                         .HasColumnType("timestamp without time zone");
 
@@ -82,6 +85,9 @@ namespace DocIntel.Core.Migrations
 
                     b.Property<string>("LastModifiedById")
                         .HasColumnType("text");
+
+                    b.Property<Dictionary<string, JObject>>("MetaData")
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("ModificationDate")
                         .HasColumnType("timestamp without time zone");
@@ -157,6 +163,9 @@ namespace DocIntel.Core.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Dictionary<string, JObject>>("MetaData")
+                        .HasColumnType("jsonb");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -223,6 +232,9 @@ namespace DocIntel.Core.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<Dictionary<string, JObject>>("MetaData")
+                        .HasColumnType("jsonb");
+
                     b.Property<Guid?>("ParentClassificationId")
                         .HasColumnType("uuid");
 
@@ -260,6 +272,9 @@ namespace DocIntel.Core.Migrations
 
                     b.Property<string>("LastModifiedById")
                         .HasColumnType("text");
+
+                    b.Property<Dictionary<string, JObject>>("MetaData")
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("ModificationDate")
                         .HasColumnType("timestamp without time zone");
@@ -473,6 +488,9 @@ namespace DocIntel.Core.Migrations
                     b.Property<bool>("Hidden")
                         .HasColumnType("boolean");
 
+                    b.Property<Dictionary<string, JObject>>("MetaData")
+                        .HasColumnType("jsonb");
+
                     b.Property<DateTime>("ModificationDate")
                         .HasColumnType("timestamp without time zone");
 
@@ -663,6 +681,9 @@ namespace DocIntel.Core.Migrations
 
                     b.Property<string>("LastModifiedById")
                         .HasColumnType("text");
+
+                    b.Property<Dictionary<string, JObject>>("MetaData")
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("ModificationDate")
                         .HasColumnType("timestamp without time zone");
@@ -858,6 +879,9 @@ namespace DocIntel.Core.Migrations
                     b.Property<DateTime>("IngestionDate")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<Dictionary<string, JObject>>("MetaData")
+                        .HasColumnType("jsonb");
+
                     b.Property<bool>("OverrideClassification")
                         .HasColumnType("boolean");
 
@@ -1006,7 +1030,7 @@ namespace DocIntel.Core.Migrations
                     b.Property<bool>("Mandatory")
                         .HasColumnType("boolean");
 
-                    b.Property<JObject>("MetaData")
+                    b.Property<Dictionary<string, JObject>>("MetaData")
                         .HasColumnType("jsonb");
 
                     b.Property<DateTime>("ModificationDate")

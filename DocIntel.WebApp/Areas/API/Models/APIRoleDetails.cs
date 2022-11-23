@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
 namespace DocIntel.WebApp.Areas.API.Models
@@ -30,21 +31,21 @@ namespace DocIntel.WebApp.Areas.API.Models
     
     public class APIRoleDetails : APIRole
     {
-        [JsonProperty("role_id")]
+        [JsonPropertyName("role_id")]
         public string Id { get; set; }
         public string Slug { get; set; }
-        [JsonProperty("creation_date")]
+        [JsonPropertyName("creation_date")]
         public DateTime CreationDate { get; internal set; }
-        [JsonProperty("modification_date")]
+        [JsonPropertyName("modification_date")]
         public DateTime ModificationDate { get; internal set; }
-        [JsonProperty("created_by_id")]
+        [JsonPropertyName("created_by_id")]
         public string CreatedById { get; internal set; }
-        [JsonProperty("last_modified_by_id")]
+        [JsonPropertyName("last_modified_by_id")]
         public string LastModifiedById { get; internal set; }
         
-        [JsonProperty("created_by")]
+        [JsonPropertyName("created_by")]
         public APIAppUser CreatedBy { get; set; }
-        [JsonProperty("last_modified")]
+        [JsonPropertyName("last_modified")]
         public APIAppUser LastModifiedBy { get; set; }
         public IEnumerable<APIAppUser> Users { get; set; }
     }

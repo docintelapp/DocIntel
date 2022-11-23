@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.Text.Json.Serialization;
 using DocIntel.Core.Models;
 using Newtonsoft.Json;
 
@@ -28,24 +28,24 @@ public class ApiSourceDetails : ApiSource
     /// <summary>
     /// The creation date
     /// </summary>
-    [JsonProperty("creation_date")] 
+    [JsonPropertyName("creation_date")] 
     public DateTime CreationDate { get; set; }
     
     /// <summary>
     /// The last modification date
     /// </summary>
-    [JsonProperty("modification_date")] 
+    [JsonPropertyName("modification_date")] 
     public DateTime ModificationDate { get; set; }
     
     /// <summary>
     /// The user who registered the source
     /// </summary>
-    [JsonProperty("registered_by")] 
+    [JsonPropertyName("registered_by")] 
     public APIAppUser RegisteredBy { get; set; }
     
     /// <summary>
     /// The user who last modified the source
     /// </summary>
-    [JsonProperty("last_modified_by")] 
+    [JsonPropertyName("last_modified_by")] 
     public APIAppUser LastModifiedBy { get; set; }
 }

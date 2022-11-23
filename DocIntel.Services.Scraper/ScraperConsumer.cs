@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DocIntel.Core.Authorization;
@@ -131,9 +132,13 @@ public class ScraperConsumer :
                     (__.SourceUrl == submission.URL) | __.Files.Any(___ => ___.SourceUrl == submission.URL)))
             .ToArrayAsync();
 
+        DefaultScraperMetaData scraperMetaData = null;
+        
         // If we have an existing document with a priority higher, we can skip the scraper.
-        if (exists.Any(_ =>
-                _.MetaData != null && (_.MetaData.Value<int?>("ScraperPriority") ?? -1) >= submission.Priority))
+        if (exists.Any(_ => _.MetaData != null 
+                            && _.MetaData.ContainsKey("scraper") 
+                            && (scraperMetaData = _.MetaData["scraper"].Deserialize<DefaultScraperMetaData>()) != null 
+                            && (scraperMetaData.Priority ?? -1) >= submission.Priority))
         {
             _documentRepository.DeleteSubmittedDocument(context, submission.SubmittedDocumentId,
                 SubmissionStatus.Duplicate);
@@ -165,8 +170,7 @@ public class ScraperConsumer :
                     {
                         do
                         {
-                            _logger.LogDebug(
-                                $"Could not scrape content: {e.GetType().FullName}({e.Message})\n{e?.StackTrace}");
+                            _logger.LogDebug($"Could not scrape content: {e.GetType().FullName}({e.Message})\n{e?.StackTrace}");
                         } while ((e = e.InnerException) != null);
                     }
         }

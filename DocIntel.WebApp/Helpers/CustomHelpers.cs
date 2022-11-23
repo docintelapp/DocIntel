@@ -23,6 +23,10 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 using CsvHelper;
@@ -32,7 +36,7 @@ using DocIntel.Core.Helpers;
 using DocIntel.WebApp.ViewModels.Shared;
 
 using Ganss.Xss;
-
+using Json.Schema;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -80,6 +84,41 @@ namespace DocIntel.WebApp.Helpers
                 .Where(_ => !string.IsNullOrEmpty(_.Item1) & !string.IsNullOrEmpty(_.Item2))
                 .Select(_ => new SelectListItem(_.Item1, _.Item2) { Selected = selected == _.Item2 } )
                 .Union(new SelectListItem[] { new SelectListItem("Unknown", "") { Selected = string.IsNullOrEmpty(selected) } });
+        }
+
+        public static IHtmlContent JsonEditor<TModel>(this IHtmlHelper<TModel> html, string key,
+            Dictionary<string, JsonObject> metadata, Type tMetaData)
+        {
+            var schema = JsonSchemaHelpers.ToJsonEditorSchema(tMetaData);
+            return JsonEditor<TModel>(html, tMetaData, schema, key, metadata);
+        }
+
+        public static IHtmlContent JsonEditor<TModel>(this IHtmlHelper<TModel> html, Type tMetaData, string schema, string key, Dictionary<string,JsonObject> metadata)
+        {
+            var b64Schema = Convert.ToBase64String(Encoding.UTF8.GetBytes(schema));
+            
+            string b64Value;
+            if (metadata != null && metadata.ContainsKey(key))
+            {
+                JsonSerializerOptions options = new JsonSerializerOptions()
+                {
+                    Converters = { new JsonStringEnumConverter() }
+                };
+                
+                var metaData = metadata[key].Deserialize(tMetaData, options);
+                var serializedMetaData = JsonSerializer.Serialize(metaData, options);
+                b64Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(serializedMetaData));
+            }
+            else
+                b64Value = "";
+
+            var htmlString = $@"<input name=""MetaData[{key}]"" id=""metadata_{key}"" type=""hidden""/>
+                <div class=""editorJSON"" 
+                     data-inputid=""metadata_{key}""
+                     data-schema=""{b64Schema}""
+                     data-startval=""{b64Value}""></div>";
+            
+            return new HtmlString(htmlString);
         }
 
         public static IHtmlContent HelpTextFor<TModel, TValue>(this IHtmlHelper<TModel> html,

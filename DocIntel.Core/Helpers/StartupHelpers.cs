@@ -22,6 +22,7 @@ using System.Net.Http;
 
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Authorization.Handlers;
+using DocIntel.Core.Modules;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.EFCore;
 using DocIntel.Core.Settings;
@@ -48,6 +49,17 @@ namespace DocIntel.Core.Helpers
     /// </summary>
     public class StartupHelpers
     {
+        /// <summary>
+        ///     Register all external modules.
+        /// </summary>
+        /// <param name="services">The service collection</param>
+        /// <param name="applicationSettings"></param>
+        public static void RegisterModules(IServiceCollection services, ApplicationSettings applicationSettings)
+        {
+            services.AddTransient<ModuleFactory>();
+            ModuleFactory.Register(applicationSettings);
+        }
+        
         /// <summary>
         ///     Register all services required for DocIntel.
         /// </summary>

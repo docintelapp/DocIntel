@@ -16,6 +16,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
@@ -23,15 +24,17 @@ using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
+using DocIntel.Core.Modules;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 using DocIntel.WebApp.Helpers;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DocIntel.WebApp.Controllers
 {
@@ -47,6 +50,7 @@ namespace DocIntel.WebApp.Controllers
         private readonly ApplicationSettings _appSettings;
         private readonly IClassificationRepository _classificationRepository;
         private readonly ILogger _logger;
+        private readonly ModuleFactory _moduleFactory;
 
         public ClassificationController(IAppAuthorizationService appAuthorizationService,
             IClassificationRepository classificationRepository,
@@ -55,7 +59,7 @@ namespace DocIntel.WebApp.Controllers
             ILogger<ClassificationController> logger,
             DocIntelContext context,
             IAuthorizationService authorizationService,
-            IHttpContextAccessor accessor, ApplicationSettings appSettings)
+            IHttpContextAccessor accessor, ApplicationSettings appSettings, ModuleFactory moduleFactory)
             : base(context,
                 userManager,
                 configuration,
@@ -66,6 +70,7 @@ namespace DocIntel.WebApp.Controllers
             _classificationRepository = classificationRepository;
             _accessor = accessor;
             _appSettings = appSettings;
+            _moduleFactory = moduleFactory;
         }
 
         /// <summary>
@@ -176,6 +181,8 @@ namespace DocIntel.WebApp.Controllers
             ViewBag.AllClassifications =
                 await _classificationRepository.GetAllAsync(AmbientContext).ToListAsync();
 
+            ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Classification));
+            
             return View(new Classification());
         }
 
@@ -183,7 +190,8 @@ namespace DocIntel.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
             [Bind("Title", "Subtitle", "Abbreviation", "ParentClassificationId", "Description", "Color", "Default")]
-            Classification viewModel)
+            Classification viewModel,
+            [Bind(Prefix = "Metadata")] Dictionary<string,string> metadata)
         {
             var currentUser = await GetCurrentUser();
 
@@ -201,6 +209,8 @@ namespace DocIntel.WebApp.Controllers
                         Abbreviation = viewModel.Abbreviation,
                         Default = viewModel.Default
                     };
+
+                    classification.MetaData = this.ParseMetaData(metadata, currentUser);
 
                     await _classificationRepository.AddAsync(AmbientContext, classification);
                     await _context.SaveChangesAsync();
@@ -274,6 +284,8 @@ namespace DocIntel.WebApp.Controllers
                 ViewBag.AllClassifications = await _classificationRepository.GetAllAsync(AmbientContext)
                     .Where(_ => _.ClassificationId != id).ToListAsync();
 
+                ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Classification));
+
                 return View(classification);
             }
             catch (UnauthorizedOperationException)
@@ -309,7 +321,8 @@ namespace DocIntel.WebApp.Controllers
         public async Task<IActionResult> Edit(
             [Bind("ClassificationId", "Title", "Subtitle", "Abbreviation", "ParentClassificationId", "Description",
                 "Color", "Default")]
-            Classification viewModel)
+            Classification viewModel,
+            [Bind(Prefix = "Metadata")] Dictionary<string,string> metadata)
         {
             var currentUser = await GetCurrentUser();
 
@@ -328,6 +341,8 @@ namespace DocIntel.WebApp.Controllers
                     classification.Description = viewModel.Description;
                     classification.Color = viewModel.Color;
                     classification.Default = viewModel.Default;
+
+                    classification.MetaData = this.ParseMetaData(metadata, currentUser);
 
                     await _classificationRepository.UpdateAsync(AmbientContext, classification);
                     await _context.SaveChangesAsync();
@@ -375,7 +390,7 @@ namespace DocIntel.WebApp.Controllers
                     LogEvent.Formatter);
                 ViewBag.AllClassifications = await _classificationRepository.GetAllAsync(AmbientContext)
                     .Where(_ => _.ClassificationId != viewModel.ClassificationId).ToListAsync();
-
+                ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(Classification));
                 return View(viewModel);
             }
         }

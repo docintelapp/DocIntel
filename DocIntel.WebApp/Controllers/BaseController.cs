@@ -17,17 +17,23 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
+using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
+using DocIntel.WebApp.Helpers;
 using DocIntel.WebApp.ViewModels;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DocIntel.WebApp.Controllers
 {
@@ -132,6 +138,37 @@ namespace DocIntel.WebApp.Controllers
         {
             ProcessViewModel().Wait();
             return base.View(viewName, model);
+        }
+        
+        protected Dictionary<string, JsonObject> ParseMetaData(Dictionary<string, string> metadata, AppUser currentUser)
+        {
+            var json = new Dictionary<string, JsonObject>();
+            if (metadata != null)
+            {
+                foreach (var kv in metadata)
+                {
+                    try
+                    {
+                        json.Add(kv.Key, JsonNode.Parse(kv.Value)?.AsObject() ?? new JsonObject());
+                    }
+                    catch (JsonReaderException e)
+                    {
+                        // ModelState.AddModelError("Settings", "The provided JSON is invalid.");
+                        /*
+                        _logger.Log(LogLevel.Error,
+                            EventIDs.EditIncomingFeedError,
+                            new LogEvent($"User '{currentUser.UserName}' provided an invalid JSON.")
+                                .AddUser(currentUser)
+                                .AddHttpContext(_accessor.HttpContext)
+                                .AddException(e),
+                            e,
+                            LogEvent.Formatter);
+                        */
+                    }
+                }
+            }
+
+            return json;
         }
     }
 }

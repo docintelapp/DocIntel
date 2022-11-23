@@ -52,7 +52,7 @@ $(document).ready(function() {
         initSearchPage(node);
     })
 
-    $('#editor_holder').each(function (index, node) {
+    $('.editorJSON').each(function (index, node) {
         console.log("🦛 Init json-editor forms...")
 
         let schema = JSON.parse(atob($(node).data("schema")));
@@ -65,14 +65,24 @@ $(document).ready(function() {
             schema: schema
         };
 
-        if ($(node).data("startval").length > 0) {
+        if ($(node).data("startval") && $(node).data("startval").length > 0) {
             options.startval = JSON.parse(atob($(node).data("startval")));
         }
 
         let editor = new JSONEditor(node, options);
 
+        let inputSelector = '[name="Settings"]';
+        if ($(node).data("inputid") && $(node).data("inputid").length > 0) {
+            inputSelector = '#' + $(node).data("inputid") + '';
+        }
+
+        let dict = '';
+        if ($(node).data("dict") && $(node).data("dict").length > 0) {
+            dict = $(node).data("dict");
+        }
+        
         $(this).parents("form").submit(function() {
-            $('[name="Settings"]').val(JSON.stringify(editor.getValue()));
+            $(inputSelector).val(JSON.stringify(editor.getValue()));
             return true;
         })
     })

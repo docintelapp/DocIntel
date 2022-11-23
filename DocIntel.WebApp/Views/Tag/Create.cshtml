@@ -1,5 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model DocIntel.Core.Models.Tag
+@using JsonSerializer = System.Text.Json.JsonSerializer
+@using DocIntel.Core.Modules
+@using Newtonsoft.Json
+@using System.Text
 
 @{
     ViewData["Title"] = "Add new";
@@ -105,6 +109,8 @@
                     </div>
                 </div>
             </div>
+            
+            @await Html.PartialAsync("_MetaDataFields", Model, new ViewDataDictionary(ViewData))
 
             <div class="row">
                 <div class="col-md-12">

@@ -1,0 +1,11 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using DocIntel.Core.Utils
+@using DocIntel.Core.Importers
+@using DocIntel.Core.Modules
+@model Classification
+
+@foreach (var metadata in (IEnumerable<ModuleModelMetadata>) ViewBag.ModuleMetadata)
+{
+    <h3>@metadata.Title</h3>    
+    @(Html.JsonEditor(metadata.Name, Model.MetaData, metadata.Type))
+}

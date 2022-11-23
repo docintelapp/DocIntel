@@ -16,7 +16,12 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Models
 {
@@ -44,5 +49,7 @@ namespace DocIntel.Core.Models
         public AppUser LastModifiedBy { get; set; }
 
         public DateTime ModificationDate { get; set; }
+        
+        [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
     }
 }

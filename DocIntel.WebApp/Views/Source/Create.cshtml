@@ -35,6 +35,7 @@
 
 
             @await Html.PartialAsync("_FormFields", Model, new ViewDataDictionary(ViewData))
+            @await Html.PartialAsync("_MetaDataFields", Model, new ViewDataDictionary(ViewData))
 
             <div class="row">
                 <div class="col-md-12">

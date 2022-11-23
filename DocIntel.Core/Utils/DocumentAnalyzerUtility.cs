@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -69,18 +70,27 @@ public class DocumentAnalyzerUtility
             var facetCache = new HashSet<TagFacet>();
             
             var doExtractObservables = true;
-            if (document.MetaData != default && document.MetaData.ContainsKey("ExtractObservables"))
-                if (document.MetaData["ExtractObservables"]?.ToString()?.ToLower() == "false")
-                    doExtractObservables = false;
-            
+            ExtractionMetaData extractionMetaData = null;
+            if (document.MetaData != default 
+                && document.MetaData.ContainsKey("extraction")
+                && (extractionMetaData = document.MetaData["extraction"].Deserialize<ExtractionMetaData>()) != null
+                && !extractionMetaData.StructuredData)
+            {
+                _logger.LogDebug("Skip extraction of structured data to document metadata");
+                doExtractObservables = false;
+            }
+
             // Check if source requires no extraction
             if (document.Source != null)
             {
-                if (document.Source.MetaData != default && document.Source.MetaData.ContainsKey("extract_structured_data"))
-                    if (document.Source.MetaData["extract_structured_data"]?.ToString()?.ToLower() == "false") {
-                        _logger.LogDebug("Skip extraction of strucutred data to source setting");
-                        doExtractObservables = false;
-                    }
+                ExtractionMetaData sourceExtractionMetaData = null;
+                if (document.Source.MetaData != default 
+                    && document.Source.MetaData.ContainsKey("extraction")
+                    && (sourceExtractionMetaData = document.Source.MetaData["extraction"].Deserialize<ExtractionMetaData>()) != null
+                    && !sourceExtractionMetaData.StructuredData) {
+                    _logger.LogDebug("Skip extraction of structured data to source metadata");
+                    doExtractObservables = false;
+                }
             }
 
             foreach (var file in document.Files.Where(_ =>
@@ -156,13 +166,17 @@ public class DocumentAnalyzerUtility
                 // Check if auto-register is enabled for the source
                 if (document.Source != null)
                 {
-                    if (document.Source.MetaData != default && document.Source.MetaData.ContainsKey("auto_register"))
-                        if (document.Source.MetaData["auto_register"]?.ToString()?.ToLower() == "true")
-                        {
-                            _logger.LogDebug("Skip inbox due to source setting");
-                            await _observablesRepository.Merge(document);
-                            document.Status = DocumentStatus.Registered;   
-                        }
+                    RegistrationMetadata registrationMetadata = null;
+                    if (document.Source.MetaData != default
+                        && document.Source.MetaData.ContainsKey("registration")
+                        && (registrationMetadata =
+                            document.Source.MetaData["registration"].Deserialize<RegistrationMetadata>()) != null
+                        && registrationMetadata.Auto)
+                    {
+                        _logger.LogDebug("Skip inbox due to source setting");
+                        await _observablesRepository.Merge(document);
+                        document.Status = DocumentStatus.Registered;
+                    }
                 }   
             }
 

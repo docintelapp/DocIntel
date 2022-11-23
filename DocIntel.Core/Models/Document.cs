@@ -20,6 +20,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Models
@@ -90,7 +92,7 @@ namespace DocIntel.Core.Models
         public ICollection<Group> ReleasableTo { get; set; }
         public ICollection<Group> EyesOnly { get; set; }
 
-        [Column(TypeName = "jsonb")] public JObject MetaData { get; set; }
+        [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
 
         public Guid? ThumbnailId { get; set; }
         [ForeignKey("ThumbnailId")]

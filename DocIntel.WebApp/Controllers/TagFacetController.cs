@@ -16,12 +16,14 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
+using DocIntel.Core.Modules;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 using DocIntel.WebApp.Helpers;
@@ -31,6 +33,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DocIntel.WebApp.Controllers
 {
@@ -40,6 +44,7 @@ namespace DocIntel.WebApp.Controllers
         private readonly IAppAuthorizationService _appAuthorizationService;
         private readonly ITagFacetRepository _facetRepository;
         private readonly ILogger _logger;
+        private readonly ModuleFactory _moduleFactory;
 
         public TagFacetController(DocIntelContext context,
             ILogger<TagFacetController> logger,
@@ -48,7 +53,7 @@ namespace DocIntel.WebApp.Controllers
             IAuthorizationService authorizationService,
             IAppAuthorizationService appAuthorizationService,
             IHttpContextAccessor accessor,
-            ITagFacetRepository facetRepository)
+            ITagFacetRepository facetRepository, ModuleFactory moduleFactory)
             : base(context,
                 userManager,
                 configuration,
@@ -58,6 +63,7 @@ namespace DocIntel.WebApp.Controllers
             _appAuthorizationService = appAuthorizationService;
             _accessor = accessor;
             _facetRepository = facetRepository;
+            _moduleFactory = moduleFactory;
         }
 
         [HttpGet]
@@ -76,19 +82,22 @@ namespace DocIntel.WebApp.Controllers
 
                 return Unauthorized();
             }
-
+            ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(TagFacet));
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Description,Prefix,Mandatory,Hidden,AutoExtract,ExtractionRegex,TagNormalization")]
-            TagFacet submittedViewModel)
+            TagFacet submittedViewModel,
+            [Bind(Prefix = "Metadata")] Dictionary<string,string> metadata)
         {
             var currentUser = await GetCurrentUser();
             try
             {
                 var tagFacet = await _facetRepository.AddAsync(AmbientContext, submittedViewModel);
+                tagFacet.MetaData = this.ParseMetaData(metadata, currentUser);
+                
                 await _context.SaveChangesAsync();
 
                 _logger.Log(LogLevel.Information, EventIDs.CreateTagFacetSuccessful,
@@ -204,7 +213,7 @@ namespace DocIntel.WebApp.Controllers
 
                     return Unauthorized();
                 }
-
+                ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(TagFacet));
                 return View(facet);
             }
             catch (UnauthorizedOperationException)
@@ -235,7 +244,8 @@ namespace DocIntel.WebApp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind("Id,Title,Description,Prefix,Mandatory,Hidden,AutoExtract,ExtractionRegex,TagNormalization")]
-            TagFacet submittedViewModel)
+            TagFacet submittedViewModel,
+            [Bind(Prefix = "Metadata")] Dictionary<string,string> metadata)
         {
             var currentUser = await GetCurrentUser();
             try
@@ -252,6 +262,8 @@ namespace DocIntel.WebApp.Controllers
                     facet.AutoExtract = submittedViewModel.AutoExtract;
                     facet.ExtractionRegex = submittedViewModel.ExtractionRegex;
                     facet.TagNormalization = submittedViewModel.TagNormalization;
+                    
+                    facet.MetaData = this.ParseMetaData(metadata, currentUser);
 
                     var tagFacet = await _facetRepository.UpdateAsync(AmbientContext, facet);
                     await _context.SaveChangesAsync();
@@ -306,7 +318,7 @@ namespace DocIntel.WebApp.Controllers
                         .AddProperty("facet.id", id),
                     null,
                     LogEvent.Formatter);
-
+                ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(TagFacet));
                 return View(submittedViewModel);
             }
         }

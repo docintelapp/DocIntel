@@ -13,10 +13,3 @@ public class SearchFilter
     public string Operator { get; set; }
     public IList<SearchFilterValue> Values { get; set; }
 }
-
-public class SearchFilterValue
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public string Color { get; set; }
-}

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>default</LangVersion>
+    <LangVersion>preview</LangVersion>
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
@@ -58,6 +58,10 @@
     <_ContentIncludedByDefault Remove="debian\docintel-cli\usr\lib\docintel\cli\temp.app.json" />
     <_ContentIncludedByDefault Remove="debian\docintel-core\usr\lib\docintel\DocIntel.Core.deps.json" />
     <_ContentIncludedByDefault Remove="debian\docintel-core\usr\lib\docintel\DocIntel.Core.runtimeconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\Modules" />
   </ItemGroup>
 
   <Target Name="BuildCustomContent" AfterTargets="AfterBuild">

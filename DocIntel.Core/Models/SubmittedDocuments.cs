@@ -17,6 +17,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Models
 {
@@ -49,6 +53,8 @@ namespace DocIntel.Core.Models
         public Guid? SourceId { get; set; }
         public bool OverrideSource { get; set; }
         public bool SkipInbox { get; set; }
+        
+        [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
     }
 
     public enum SubmissionStatus

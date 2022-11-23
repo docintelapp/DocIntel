@@ -44,7 +44,7 @@
             @{
                 var schema = JsonSerializer.Serialize((JsonSchema)ViewBag.Schema);
             }
-            <div id='editor_holder' data-schema="@(Convert.ToBase64String(Encoding.UTF8.GetBytes(schema)))"
+            <div class="editorJSON" data-schema="@(Convert.ToBase64String(Encoding.UTF8.GetBytes(schema)))"
                  data-startval="@(Model.Settings != null ? Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Model.Settings))) : "")"></div>
 
             <button type="submit" id="save-btn" class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified">

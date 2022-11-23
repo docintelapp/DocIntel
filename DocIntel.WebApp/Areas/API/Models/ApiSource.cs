@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using DocIntel.Core.Models;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
@@ -11,7 +12,7 @@ public class ApiSource
     /// <summary>
     /// The source identifier
     /// </summary>
-    [JsonProperty("source_id")]
+    [JsonPropertyName("source_id")]
     [SwaggerSchema(ReadOnly = true)]
     public Guid SourceId { get; set; }
     
@@ -28,13 +29,13 @@ public class ApiSource
     /// <summary>
     /// The URL to the homepage
     /// </summary>
-    [JsonProperty("homepage")]
+    [JsonPropertyName("homepage")]
     public string HomePage { get; set; }
     
     /// <summary>
     /// The URL to the syndication feed
     /// </summary>
-    [JsonProperty("rss")]
+    [JsonPropertyName("rss")]
     public string RSSFeed { get; set; }
     
     /// <summary>

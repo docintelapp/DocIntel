@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
 namespace DocIntel.WebApp.Areas.API.Models;
@@ -9,7 +10,7 @@ public class APITag
     /// <summary>
     /// The tag identifier
     /// </summary>
-    [JsonProperty("tag_id")]
+    [JsonPropertyName("tag_id")]
     public Guid TagId { get; set; }
         
     /// <summary>
@@ -40,18 +41,18 @@ public class APITag
     /// <summary>
     /// The facet identifier
     /// </summary>
-    [JsonProperty("facet_id")]
+    [JsonPropertyName("facet_id")]
     public Guid? FacetId { get; set; }
         
     /// <summary>
     /// The facet prefix
     /// </summary>
-    [JsonProperty("facet_prefix")]
+    [JsonPropertyName("facet_prefix")]
     public string? FacetPrefix { get; set; }
         
     /// <summary>
     /// The friendly name
     /// </summary>
-    [JsonProperty("friendly_name")]
+    [JsonPropertyName("friendly_name")]
     public string FriendlyName { get; set; }
 }
