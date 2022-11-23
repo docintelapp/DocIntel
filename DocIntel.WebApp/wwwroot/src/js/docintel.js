@@ -18,7 +18,7 @@ export function initApp() {
     $(document).on('select2:open', () => {
         document.querySelector('.select2-container--open .select2-search__field').focus();
     });
-    
+
     autocompleteFacet();
     autocompleteTags();
     autocompleteColors();
@@ -175,7 +175,7 @@ export function autocompleteTags() {
             tokenSeparators: [','],
             ajax:
                 {
-                    url: "/API/Tag/Suggest",
+                    url: "/API/Suggest/Tag",
                     dataType: 'json',
                     delay: 250,
                     data: function(params)
@@ -186,7 +186,7 @@ export function autocompleteTags() {
                     },
                     processResults: function (tags) {
                         var data = $.map(tags, function (tag) {
-                            tag.id = tag.friendlyName;
+                            tag.id = tag.friendly_name;
                             return tag;
                         });
                         return {
@@ -242,7 +242,7 @@ export function autocompleteTags() {
 
         if (tag.label) {
             return "<div class='clearfix d-flex'>" +
-                "<div>" + "<span class='badge badge-pill " + tag.backgroundColor + "'>" + 
+                "<div>" + "<span class='badge badge-pill " + tag.background_color + "'>" + 
                 (tag.facet && tag.facet.prefix ? tag.facet.prefix + ":" : "") + tag.label + "</span>" +
                 (tag.keywords && tag.keywords.length > 0 ? "<span class='text-muted ml-2 fs-sm keywords'>(" + tag.keywords.join(', ') + ")</span>" : "")
                 + "</div>" +
@@ -257,7 +257,7 @@ export function autocompleteTags() {
         var prefix = (tag.facet && tag.facet.prefix ? tag.facet.prefix: "");
         var label = (tag.label || tag.text).trim();
 
-        var backgroundColor = tag.backgroundColor;
+        var backgroundColor = tag.background_color;
         if (!backgroundColor && tag.hasOwnProperty("element") && tag.element.dataset.hasOwnProperty("backgroundcolor")) {
             backgroundColor = tag.element.dataset.backgroundcolor;
         }
@@ -277,7 +277,7 @@ export function autocompleteFacet () {
         $(this).select2({
             placeholder: 'Search for a facet',
             ajax: {
-                url: "/API/Facet/Suggest",
+                url: "/API/Suggest/Facet/",
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
@@ -285,9 +285,13 @@ export function autocompleteFacet () {
                         searchTerm: params.term
                     };
                 },
-                processResults: function (tags) {
+                processResults: function (facets) {
+                    var data = $.map(facets, function (facet) {
+                        facet.id = facet.id || facet.facet_id;
+                        return facet;
+                    });
                     return {
-                        results: tags
+                        results: data
                     };
                 }
             },
@@ -332,7 +336,7 @@ export function autocompleteSource () {
             placeholder: 'Search for a source',
             ajax:
                 {
-                    url: "/API/Source/Suggest",
+                    url: "/API/Suggest/Source",
                     dataType: 'json',
                     delay: 250,
                     data: function(params)
@@ -343,7 +347,7 @@ export function autocompleteSource () {
                     },
                     processResults: function (sources) {
                         var data = $.map(sources, function (source) {
-                            source.id = source.id || source.sourceId;
+                            source.id = source.id || source.source_id;
                             return source;
                         });
                         return {
