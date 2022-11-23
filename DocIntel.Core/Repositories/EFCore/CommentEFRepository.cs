@@ -30,8 +30,6 @@ using DocIntel.Core.Repositories.Query;
 using Ganss.Xss;
 
 using MassTransit;
-
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
@@ -46,7 +44,6 @@ namespace DocIntel.Core.Repositories.EFCore
         private readonly HtmlSanitizer _sanitizer;
 
         public CommentEFRepository(IPublishEndpoint busClient,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
             IAppAuthorizationService appAuthorizationService)
         {
             _busClient = busClient;

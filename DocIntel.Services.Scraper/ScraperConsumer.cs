@@ -58,15 +58,15 @@ namespace DocIntel.Services.Scraper
 
         public async Task ConsumeBacklogAsync()
         {
-            _logger.LogTrace("ConsumeBacklogAsync");
-            while (await _documentRepository.GetSubmittedDocuments(GetContext(),
+            var context = await GetAmbientContext();
+            while (await _documentRepository.GetSubmittedDocuments(context,
                     _ => _.Include(__ => __.Classification)
                         .Include(__ => __.ReleasableTo)
                         .Include(__ => __.EyesOnly)
                         .Where(__ => __.Status == SubmissionStatus.Submitted))
                 .CountAsync() > 0)
             {
-                var submitted = await _documentRepository.GetSubmittedDocuments(GetContext(),
+                var submitted = await _documentRepository.GetSubmittedDocuments(context,
                         _ => _.Include(__ => __.Classification)
                             .Include(__ => __.ReleasableTo)
                             .Include(__ => __.EyesOnly)
@@ -77,7 +77,7 @@ namespace DocIntel.Services.Scraper
                 var result = await Scrape(submitted);
             }
         }
-
+/*
         private AmbientContext GetContext(string registeredBy = null)
         {
             var userClaimsPrincipalFactory =
@@ -109,18 +109,17 @@ namespace DocIntel.Services.Scraper
             throw new InvalidOperationException(
                 "Could not create instance of `IUserClaimsPrincipalFactory<AppUser>`");
         }
-
-        public Task Consume(ConsumeContext<URLSubmittedMessage> c)
+*/
+        public async Task Consume(ConsumeContext<URLSubmittedMessage> c)
         {
             _logger.LogDebug($"Received a new message: {c.Message.SubmissionId}");
             var urlSubmittedMessage = c.Message;
-            Scrape(urlSubmittedMessage).Wait();
-            return Task.CompletedTask;
+            await Scrape(urlSubmittedMessage);
         }
 
         private async Task Scrape(URLSubmittedMessage urlSubmittedMessage)
         {   
-            var context = GetContext();
+            var context = await GetAmbientContext();
             var submission = await _documentRepository.GetSubmittedDocument(context, 
                 urlSubmittedMessage.SubmissionId,
                 _ => _.Include(__ => __.Classification).Include(__ => __.ReleasableTo).Include(__ => __.EyesOnly));
@@ -131,7 +130,7 @@ namespace DocIntel.Services.Scraper
         {  
             submission.IngestionDate = DateTime.UtcNow;
             
-            var context = GetContext();
+            var context = await GetAmbientContext();
             _logger.LogDebug($"Scrape: {submission.URL}");
             var exists = await _documentRepository.GetAllAsync(context,
                     _ => _.Where(__ =>
@@ -139,7 +138,7 @@ namespace DocIntel.Services.Scraper
                 .ToArrayAsync();
             
             // If we have an existing document with a priority higher, we can skip the scraper.
-            if (exists.Any(_ => _.MetaData.Value<int>("ScraperPriority") >= submission.Priority)) {
+            if (exists.Any(_ => _.MetaData != null && (_.MetaData.Value<int?>("ScraperPriority") ?? -1) >= submission.Priority)) {
                 _documentRepository.DeleteSubmittedDocument(context, submission.SubmittedDocumentId, SubmissionStatus.Duplicate);
                 await context.DatabaseContext.SaveChangesAsync();
                 return true;

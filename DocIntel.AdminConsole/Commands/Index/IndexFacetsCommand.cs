@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -22,7 +22,7 @@ namespace DocIntel.AdminConsole.Commands.Index
         private readonly ILogger<IndexFacetsCommand> _logger;
 
         public IndexFacetsCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             ApplicationSettings applicationSettings,
             ITagFacetIndexingUtility facetIndexingUtility,
             ITagFacetRepository facetRepository, ILogger<IndexFacetsCommand> logger) : base(context,

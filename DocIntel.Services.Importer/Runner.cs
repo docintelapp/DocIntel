@@ -19,7 +19,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Importers;
 using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
@@ -42,12 +42,12 @@ namespace DocIntel.Services.Importer
         private readonly IIncomingFeedRepository _feedRepository;
         private readonly ILogger<Runner> _logger;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory;
+        private readonly AppUserClaimsPrincipalFactory _userClaimsPrincipalFactory;
 
         public Runner(IIncomingFeedRepository feedRepository,
             ILogger<Runner> logger,
             ILogger<DocIntelContext> contextLogger,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             IServiceProvider serviceProvider, IPublishEndpoint busClient,
             ApplicationSettings appSettings)
         {
@@ -93,7 +93,7 @@ namespace DocIntel.Services.Importer
             if (automationUser == null)
                 return;
 
-            var claims = _userClaimsPrincipalFactory.CreateAsync(automationUser).Result;
+            var claims = _userClaimsPrincipalFactory.CreateAsync(context, automationUser).Result;
             var ambientContext = new AmbientContext
             {
                 DatabaseContext = context,
@@ -157,10 +157,12 @@ namespace DocIntel.Services.Importer
 
                         feed.LastCollection = now;
                         await ambientContext.DatabaseContext.SaveChangesAsync();
+                        _logger.LogDebug($"Collecting from {feed.Name} importer...done");
                     }
                     else
                     {
                         feed.Status = ImporterStatus.Error;
+                        _logger.LogDebug($"Collecting from {feed.Name} importer failed.");
                     }
                 }
                 else

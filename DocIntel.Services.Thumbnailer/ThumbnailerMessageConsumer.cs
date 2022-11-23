@@ -48,7 +48,6 @@ namespace DocIntel.Services.Thumbnailer
         
         private readonly IDocumentRepository _documentRepository;
         private readonly ILogger<ThumbnailerMessageConsumer> _logger;
-        private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory;
         private readonly IThumbnailUtility _utility;
 
         public ThumbnailerMessageConsumer(ILogger<ThumbnailerMessageConsumer> logger,
@@ -59,7 +58,6 @@ namespace DocIntel.Services.Thumbnailer
         {
             _logger = logger;
             _documentRepository = documentRepository;
-            _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
             _utility = utility;
         }
 

@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -20,7 +20,7 @@ namespace DocIntel.AdminConsole.Commands.Roles
         private readonly IRoleRepository _roleRepository;
 
         public ListRoleCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             IRoleRepository roleRepository, ApplicationSettings applicationSettings) : base(context,
             userClaimsPrincipalFactory, applicationSettings)
         {

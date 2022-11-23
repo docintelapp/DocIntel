@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Authorization.Operations;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -22,7 +22,7 @@ namespace DocIntel.AdminConsole.Commands.Roles
         private readonly IRoleRepository _roleRepository;
 
         public PermissionRoleCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             IRoleRepository roleRepository, ApplicationSettings applicationSettings) : base(context,
             userClaimsPrincipalFactory, applicationSettings)
         {

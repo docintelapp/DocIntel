@@ -27,8 +27,6 @@ using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 
 using MassTransit;
-
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
@@ -39,15 +37,12 @@ namespace DocIntel.Core.Repositories.EFCore
     {
         private readonly IAppAuthorizationService _appAuthorizationService;
         private readonly IPublishEndpoint _busClient;
-        private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory;
 
         public ClassificationEFRepository(IPublishEndpoint busClient,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
             IAppAuthorizationService appAuthorizationService)
         {
             _busClient = busClient;
             _appAuthorizationService = appAuthorizationService;
-            _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
         }
 
         public async Task<Classification> AddAsync(AmbientContext ambientContext, Classification classification)

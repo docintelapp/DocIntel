@@ -18,7 +18,7 @@
 // 
 
 using System;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
@@ -31,7 +31,7 @@ namespace DocIntel.AdminConsole.Commands.Users
 {
     public abstract class UserCommand<T> : DocIntelCommand<T> where T : UserCommandSettings
     {
-        protected UserCommand(DocIntelContext context, IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+        protected UserCommand(DocIntelContext context, AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             ApplicationSettings applicationSettings) : base(context, userClaimsPrincipalFactory, applicationSettings)
         {
         }

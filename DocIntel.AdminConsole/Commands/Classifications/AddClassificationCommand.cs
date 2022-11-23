@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Threading.Tasks;
 
 using DocIntel.AdminConsole.Commands.Users;
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -22,7 +23,7 @@ namespace DocIntel.AdminConsole.Commands.Classifications
         private readonly IClassificationRepository _classificationRepository;
 
         public AddClassificationCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             IClassificationRepository classificationRepository, ApplicationSettings applicationSettings) : base(context,
             userClaimsPrincipalFactory, applicationSettings)
         {

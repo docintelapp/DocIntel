@@ -39,7 +39,8 @@ namespace DocIntel.Core.Repositories.EFCore
         private readonly ILogger<SourceEFRepository> _logger;
 
         public SourceEFRepository(IPublishEndpoint busClient,
-            IAppAuthorizationService appAuthorizationService, ILogger<SourceEFRepository> logger) : base(_ => _.DatabaseContext.Sources, busClient, appAuthorizationService)
+            IAppAuthorizationService appAuthorizationService, ILogger<SourceEFRepository> logger) 
+            : base(_ => _.DatabaseContext.Sources, busClient, appAuthorizationService)
         {
             _logger = logger;
         }
@@ -94,7 +95,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 if (ambientContext.CurrentUser != null) source.LastModifiedById = ambientContext.CurrentUser.Id;
 
                 source.Description = _sanitizer.Sanitize(source.Description);
-                source.URL = UpdateSourceURL(ambientContext, source, _ => _.Title, url => data => data.SourceId != source.SourceId && data.URL == url);
+                source.URL = UpdateSourceURL(ambientContext, source, _ => _.Title, url => data => data.SourceId != source.SourceId & data.URL == url);
 
                 var trackingEntity = ambientContext.DatabaseContext.Update(source);
                 PublishMessage(ambientContext, new SourceUpdatedMessage

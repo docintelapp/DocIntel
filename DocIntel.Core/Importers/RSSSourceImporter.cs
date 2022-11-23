@@ -61,9 +61,9 @@ namespace DocIntel.Core.Importers
 
             foreach (var source in sources)
             {
-                _logger.LogInformation("Source : " + source.Title);
                 if (source.MetaData != null && source.MetaData.ContainsKey("rss_enabled") && source.MetaData.Value<bool>("rss_enabled"))
                 {
+                    _logger.LogInformation($"Collecting RSS feed for '{source.Title}' ({source.SourceId})");
                     var lastSourcePull = source.MetaData.Value<DateTime>("rss_last_pull");
 
                     var httpWebRequest = (HttpWebRequest) WebRequest.Create(source.RSSFeed);

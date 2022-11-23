@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -37,7 +37,7 @@ namespace DocIntel.AdminConsole.Commands.Users
         private readonly ApplicationSettings _settings;
 
         public VerifyEmailUserCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             IUserRepository userRepository, ApplicationSettings applicationSettings, UserManager<AppUser> userManager, ApplicationSettings settings, MailKitEmailSender emailSender) : base(context,
             userClaimsPrincipalFactory, applicationSettings)
         {

@@ -51,9 +51,7 @@ namespace DocIntel.Core.Authorization.Handlers
         
         protected AmbientContext GetContext(string registeredBy = null)
         {
-            var userClaimsPrincipalFactory =
-                (IUserClaimsPrincipalFactory<AppUser>) _serviceProvider.GetService(
-                    typeof(IUserClaimsPrincipalFactory<AppUser>));
+            var userClaimsPrincipalFactory = _serviceProvider.GetService<AppUserClaimsPrincipalFactory>();
             if (userClaimsPrincipalFactory == null) throw new ArgumentNullException(nameof(userClaimsPrincipalFactory));
 
             var options =
@@ -68,7 +66,7 @@ namespace DocIntel.Core.Authorization.Handlers
             if (automationUser == null)
                 return null;
 
-            var claims = userClaimsPrincipalFactory.CreateAsync(automationUser).Result;
+            var claims = userClaimsPrincipalFactory.CreateAsync(context, automationUser).Result;
             return new AmbientContext
             {
                 DatabaseContext = context,

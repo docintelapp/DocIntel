@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -19,7 +20,7 @@ namespace DocIntel.AdminConsole.Commands.Users
         private readonly IOptions<IdentityOptions> _identityOptions;
         
         public AddUserCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             AppUserManager userManager,
             ApplicationSettings applicationSettings,
             IOptions<IdentityOptions> identityOptions) : base(context,

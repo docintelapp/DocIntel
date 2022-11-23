@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
 using Microsoft.AspNetCore.Identity;
@@ -26,7 +27,7 @@ namespace DocIntel.AdminConsole.Commands.Observables
         protected readonly SynapseClient _synapseClient;
 
         public ImportWhitelistCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory, 
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, 
             ApplicationSettings applicationSettings, 
             ILogger<ExtractObservableCommand> logger, SynapseClient synapseClient) : base(context,
             userClaimsPrincipalFactory, applicationSettings)

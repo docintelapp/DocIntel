@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -26,7 +27,7 @@ public class ImportDocumentCommand : DocIntelCommand<ImportDocumentCommand.Setti
     private readonly ISourceRepository _sourceRepository;
 
     public ImportDocumentCommand(DocIntelContext context,
-        IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
         ApplicationSettings applicationSettings,
         ILogger<ImportDocumentCommand> logger, IThumbnailUtility utility, IDocumentRepository documentRepository, IClassificationRepository classificationRepository, ISourceRepository sourceRepository) : base(context,
         userClaimsPrincipalFactory, applicationSettings)

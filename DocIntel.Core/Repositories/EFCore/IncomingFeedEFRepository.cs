@@ -26,9 +26,6 @@ using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 
 using MassTransit;
-
-using Microsoft.AspNetCore.Identity;
-
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
 namespace DocIntel.Core.Repositories.EFCore
@@ -44,10 +41,8 @@ namespace DocIntel.Core.Repositories.EFCore
         ///     Initialize a new instance of <see cref="IncomingFeedEFRepository" />.
         /// </summary>
         /// <param name="busClient">The bus on which operations shall be announced.</param>
-        /// <param name="userClaimsPrincipalFactory">The factory to retreive claims for a user.</param>
         /// <param name="appAuthorizationService">The service for checking permissions of users.</param>
         public IncomingFeedEFRepository(IPublishEndpoint busClient,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
             IAppAuthorizationService appAuthorizationService)
         : base(context => context.DatabaseContext.IncomingFeeds,
             busClient, appAuthorizationService)

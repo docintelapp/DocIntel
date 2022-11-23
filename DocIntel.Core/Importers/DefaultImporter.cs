@@ -19,12 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Core.Importers
@@ -40,9 +41,7 @@ namespace DocIntel.Core.Importers
         
         protected AmbientContext GetContext()
         {
-            var userClaimsPrincipalFactory =
-                (IUserClaimsPrincipalFactory<AppUser>) _serviceProvider.GetService(
-                    typeof(IUserClaimsPrincipalFactory<AppUser>));
+            var userClaimsPrincipalFactory = _serviceProvider.GetService<AppUserClaimsPrincipalFactory>();
             if (userClaimsPrincipalFactory == null) throw new ArgumentNullException(nameof(userClaimsPrincipalFactory));
 
             var options =
@@ -56,7 +55,7 @@ namespace DocIntel.Core.Importers
             if (automationUser == null)
                 return null;
 
-            var claims = userClaimsPrincipalFactory.CreateAsync(automationUser).Result;
+            var claims = userClaimsPrincipalFactory.CreateAsync(context, automationUser).Result;
             return new AmbientContext {
                 DatabaseContext = context,
                 Claims = claims,

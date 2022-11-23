@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -47,7 +48,7 @@ namespace DocIntel.Services.Newsletters
         private readonly IDocumentRepository _documentRepository;
         private readonly ISourceRepository _sourceRepository;
         private readonly ILogger<NewsletterSender> _logger;
-        private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory;
+        private readonly AppUserClaimsPrincipalFactory _userClaimsPrincipalFactory;
         private readonly IServiceProvider _serviceProvider;
 
         public NewsletterSender(EmailSettings emailSettings,
@@ -56,7 +57,7 @@ namespace DocIntel.Services.Newsletters
                            IDocumentRepository documentRepository,
                            ISourceRepository sourceRepository,
                            ILogger<NewsletterSender> logger,
-                           IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+                           AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
                            ApplicationSettings applicationSettings, IServiceProvider serviceProvider)
         {
             _emailSettings = emailSettings;
@@ -259,7 +260,7 @@ namespace DocIntel.Services.Newsletters
             if (automationUser == null)
                 throw new ArgumentNullException($"User '{_applicationSettings.AutomationAccount}' does not exists.");
 
-            var claims = _userClaimsPrincipalFactory.CreateAsync(automationUser).Result;
+            var claims = _userClaimsPrincipalFactory.CreateAsync(_dbContext, automationUser).Result;
             var ambientContext = new AmbientContext
             {
                 DatabaseContext = _dbContext,

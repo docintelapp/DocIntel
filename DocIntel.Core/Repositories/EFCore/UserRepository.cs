@@ -54,7 +54,6 @@ namespace DocIntel.Core.Repositories.EFCore
 
         private readonly IPublishEndpoint _busClient;
         private readonly ILogger<UserRepository> _logger;
-        private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory;
 
         /// <summary>
         ///     Initializes the user repository
@@ -62,11 +61,9 @@ namespace DocIntel.Core.Repositories.EFCore
         /// <param name="userManager">The user manager</param>
         public UserRepository(
             IAppAuthorizationService appAuthorizationService,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
             IPublishEndpoint busClient, ILogger<UserRepository> logger)
         {
             _appAuthorizationService = appAuthorizationService;
-            _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
             _busClient = busClient;
             _logger = logger;
         }

@@ -30,8 +30,6 @@ using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation;
 
 using MassTransit;
-
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -59,7 +57,6 @@ public class DocumentIndexerMessageConsumer :
     private readonly IDocumentIndexingUtility _indexingUtility;
     private readonly ILogger<DocumentIndexerMessageConsumer> _logger;
 
-    private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory;
     private readonly ApplicationSettings _appSettings;
     private readonly IServiceProvider _serviceProvider;
 
@@ -75,7 +72,6 @@ public class DocumentIndexerMessageConsumer :
         _logger = logger;
         _documentRepository = documentRepository;
         _indexingUtility = indexingUtility;
-        _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
         _appSettings = appSettings;
     }
 

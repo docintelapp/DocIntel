@@ -22,7 +22,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -112,9 +112,7 @@ namespace DocIntel.Core.Scrapers
 
         protected AmbientContext GetContext(string registeredBy = null)
         {
-            var userClaimsPrincipalFactory =
-                (IUserClaimsPrincipalFactory<AppUser>) _serviceProvider.GetService(
-                    typeof(IUserClaimsPrincipalFactory<AppUser>));
+            var userClaimsPrincipalFactory = _serviceProvider.GetService<AppUserClaimsPrincipalFactory>();
             if (userClaimsPrincipalFactory == null) throw new ArgumentNullException(nameof(userClaimsPrincipalFactory));
 
             var options =
@@ -130,7 +128,7 @@ namespace DocIntel.Core.Scrapers
             if (automationUser == null)
                 return null;
 
-            var claims = userClaimsPrincipalFactory.CreateAsync(automationUser).Result;
+            var claims = userClaimsPrincipalFactory.CreateAsync(context, automationUser).Result;
             return new AmbientContext
             {
                 DatabaseContext = context,

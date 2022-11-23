@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -24,7 +25,7 @@ namespace DocIntel.AdminConsole.Commands.Observables
         private readonly ISynapseRepository _observablesRepository;
 
         public ExtractObservableCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory, 
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, 
             ApplicationSettings applicationSettings, 
             IObservablesUtility observablesUtility, 
             IContentExtractionUtility contentExtractionUtility, 

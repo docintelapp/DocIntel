@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -17,7 +17,7 @@ namespace DocIntel.AdminConsole.Commands.Roles
         private readonly IRoleRepository _roleRepository;
 
         public AddRoleCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             IRoleRepository roleRepository, ApplicationSettings applicationSettings) : base(context,
             userClaimsPrincipalFactory, applicationSettings)
         {

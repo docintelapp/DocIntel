@@ -182,7 +182,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
                     apiKey.LastIP = HttpContext.Connection.RemoteIpAddress.ToString();
                 AmbientContext.DatabaseContext.APIKeys.Update(apiKey);
                 await AmbientContext.DatabaseContext.SaveChangesAsync();
-                return apiKey.User;
+                return apiKey.User; // TODO user should come from usermanager
             }
             catch (NotFoundEntityException)
             {

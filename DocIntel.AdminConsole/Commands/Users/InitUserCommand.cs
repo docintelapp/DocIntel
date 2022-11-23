@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Authorization.Operations;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -22,7 +22,7 @@ namespace DocIntel.AdminConsole.Commands.Users
         
         public InitUserCommand(DocIntelContext context,
             UserManager<AppUser> userManager,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             ApplicationSettings appSettings)
             : base(context, userClaimsPrincipalFactory, appSettings)
         {

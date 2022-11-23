@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -16,7 +17,7 @@ namespace DocIntel.AdminConsole.Commands.Users
         private readonly AppUserManager _userManager;
 
         public ResetUserCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             AppUserManager userManager, ApplicationSettings applicationSettings) : base(context,
             userClaimsPrincipalFactory, applicationSettings)
         {

@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
@@ -25,7 +26,7 @@ namespace DocIntel.AdminConsole.Commands.Tags
         private readonly IContentExtractionUtility _contentExtractionUtility;
 
         public AnalyzeTagsCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             ApplicationSettings applicationSettings,
             ILogger<AnalyzeTagsCommand> logger,
             ITagRepository tagRepository,

@@ -27,7 +27,7 @@ namespace DocIntel.AdminConsole.Commands.Tags
         private readonly ITagFacetRepository _facetRepository;
 
         public ImportTagsCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory, ApplicationSettings applicationSettings, ILogger<ExtractObservableCommand> logger, ITagRepository tagRepository, ITagFacetRepository facetRepository) : base(context,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, ApplicationSettings applicationSettings, ILogger<ExtractObservableCommand> logger, ITagRepository tagRepository, ITagFacetRepository facetRepository) : base(context,
             userClaimsPrincipalFactory, applicationSettings)
         {
             _logger = logger;

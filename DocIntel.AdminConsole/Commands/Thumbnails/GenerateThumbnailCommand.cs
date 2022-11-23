@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using DocIntel.AdminConsole.Commands.Observables;
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -18,14 +19,14 @@ namespace DocIntel.AdminConsole.Commands.Thumbnails;
 
 public class GenerateThumbnailCommand : DocIntelCommand<GenerateThumbnailCommand.Settings>
 {
-    private readonly ILogger<ExtractObservableCommand> _logger;
+    private readonly ILogger<GenerateThumbnailCommand> _logger;
     private readonly IThumbnailUtility _utility;
     private readonly IDocumentRepository _documentRepository;
 
     public GenerateThumbnailCommand(DocIntelContext context,
-        IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
         ApplicationSettings applicationSettings,
-        ILogger<ExtractObservableCommand> logger, IThumbnailUtility utility, IDocumentRepository documentRepository) : base(context,
+        ILogger<GenerateThumbnailCommand> logger, IThumbnailUtility utility, IDocumentRepository documentRepository) : base(context,
         userClaimsPrincipalFactory, applicationSettings)
     {
         _logger = logger;

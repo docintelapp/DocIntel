@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -23,7 +23,7 @@ namespace DocIntel.AdminConsole.Commands.Index
         private readonly ILogger<IndexSourcesCommand> _logger;
 
         public IndexSourcesCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             ApplicationSettings applicationSettings,
             ISourceIndexingUtility sourceIndexingUtility,
             ISourceRepository sourceRepository, ILogger<IndexSourcesCommand> logger) : base(context,

@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -23,7 +23,7 @@ namespace DocIntel.AdminConsole.Commands.Index
         private readonly ILogger<IndexTagsCommand> _logger;
 
         public IndexTagsCommand(DocIntelContext context,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             ApplicationSettings applicationSettings,
             ITagIndexingUtility tagIndexingUtility,
             ITagRepository tagRepository, ILogger<IndexTagsCommand> logger) : base(context,

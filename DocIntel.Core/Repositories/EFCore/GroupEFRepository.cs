@@ -27,7 +27,6 @@ using DocIntel.Core.Models;
 using DocIntel.Core.Repositories.Query;
 
 using MassTransit;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -42,7 +41,6 @@ namespace DocIntel.Core.Repositories.EFCore
         private readonly ILogger<GroupEFRepository> _logger;
 
         public GroupEFRepository(IPublishEndpoint busClient,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
             IAppAuthorizationService appAuthorizationService, ILogger<GroupEFRepository> logger)
         {
             _busClient = busClient;
