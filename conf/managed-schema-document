@@ -55,7 +55,7 @@
        or to add multiple fields to the same field for easier/faster searching.
     -->
     <field name="title_order" type="string" indexed="true" stored="false" multiValued="false" />
-	<copyField source="title" dest="title_order" maxChars="1024" />
+	  <copyField source="title" dest="title_order" maxChars="1024" />
     
     <!-- field type definitions. The "name" attribute is
        just a label to be used by field definitions.  The "class"
