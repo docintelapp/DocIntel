@@ -75,18 +75,30 @@ namespace DocIntel.Core.Importers
                     SyndicationFeed feed = null;
                     try
                     {
+                        var settings = new XmlReaderSettings();
+                        settings.DtdProcessing = _settings.Security?.DtdProcessing ?? DtdProcessing.Prohibit;
                         using var httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
                         await using var responseStream = httpWebResponse.GetResponseStream();
-                        using var reader = XmlReader.Create(responseStream);
-                        reader.Settings.DtdProcessing = _settings.Security?.DtdProcessing ?? DtdProcessing.Prohibit;
-                    
+                        using var reader = XmlReader.Create(responseStream, settings);
                         feed = SyndicationFeed.Load(reader);
                     }
                     catch (System.Net.WebException e)
                     {
+                        _logger.LogError(e.GetType().FullName);
                         _logger.LogError(e.Message);
                         _logger.LogError(e.StackTrace);
                         _logger.LogError(e.Response?.ToString());
+                    }
+                    catch (XmlException e)
+                    {
+                        if (e.Message.Contains("DtdProcessing"))
+                        {
+                            _logger.LogWarning($"Could not process XML feed '{source.RSSFeed}' of source '{source.SourceId}' due to DTD processing policy ({_settings.Security.DtdProcessing}). Set 'DtdProcessing' in your appsettings.json to a different value (see documentation).");   
+                        }
+                        else
+                        {
+                            _logger.LogError($"Could not process XML feed '{source.RSSFeed}' of source '{source.SourceId}': {e.Message}");
+                        }
                     }
 
                     if (feed != null)

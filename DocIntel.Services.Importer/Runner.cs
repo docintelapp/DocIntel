@@ -72,6 +72,7 @@ namespace DocIntel.Services.Importer
                 }
                 catch (Exception e)
                 {
+                    _logger.LogError(e.GetType().FullName);
                     _logger.LogError(e.Message + "\n" + e.StackTrace);
                 }
                 await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
