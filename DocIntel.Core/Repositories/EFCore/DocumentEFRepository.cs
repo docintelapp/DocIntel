@@ -906,6 +906,10 @@ namespace DocIntel.Core.Repositories.EFCore
             if (string.IsNullOrEmpty(file.Sha256Hash))
                 throw new ArgumentNullException(nameof(file.Sha256Hash));
 
+            /*
+             TODO Remove because you know have multiple files in a same document and it proved useful to store
+             the same file in different document. It should however only be stored once. 
+             
             var docWithFileSameHash = context.DatabaseContext.Files.Include(_ => _.Document).AsQueryable()
                 .Where(_ => _.DocumentId != file.DocumentId && _.Sha256Hash == file.Sha256Hash);
             if (docWithFileSameHash.Any())
@@ -917,6 +921,7 @@ namespace DocIntel.Core.Repositories.EFCore
                     Document = docWithFileSameHash.First().Document
                 };
             }
+            */
 
             var docs = context.DatabaseContext.Files.Include(_ => _.Document).AsQueryable()
                 .Where(_ => _.DocumentId != file.DocumentId && _.SourceUrl == file.SourceUrl);
