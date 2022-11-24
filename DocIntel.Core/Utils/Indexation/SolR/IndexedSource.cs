@@ -53,8 +53,6 @@ namespace DocIntel.Core.Utils.Indexation.SolR
 
         [SolrField("country")] public string Country { get; set; }
         
-        [SolrField("title_order")] public string TitleOrder { get; set; }
-        
         [SolrField("num_docs")] public int NumDocs { get; set; }
         
         [SolrField("last_doc_update")] public DateTime LastDocumentDate { get; set; }

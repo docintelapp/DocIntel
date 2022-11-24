@@ -68,7 +68,7 @@ namespace DocIntel.Core.Utils.Search.Sources
                 var sortOrder = new List<SortOrder>();
                 _logger.LogDebug("Sorting source by " + query.SortCriteria);
                 if (query.SortCriteria == SourceSortCriteria.Title)
-                    sortOrder.Add(new SortOrder(SolRHelper<IndexedSource>.GetSolRName(_ => _.TitleOrder),
+                    sortOrder.Add(new SortOrder("title_order",
                         Order.ASC));
                 else if (query.SortCriteria == SourceSortCriteria.LastUpdate)
                     sortOrder.Add(new SortOrder(SolRHelper<IndexedSource>.GetSolRName(_ => _.LastDocumentDate),
