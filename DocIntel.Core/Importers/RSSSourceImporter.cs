@@ -84,10 +84,7 @@ namespace DocIntel.Core.Importers
                     }
                     catch (System.Net.WebException e)
                     {
-                        _logger.LogError(e.GetType().FullName);
-                        _logger.LogError(e.Message);
-                        _logger.LogError(e.StackTrace);
-                        _logger.LogError(e.Response?.ToString());
+                        _logger.LogError($"Could not process XML feed '{source.RSSFeed}' of source '{source.SourceId}' due to unexpected conditions: {e.Message}");
                     }
                     catch (XmlException e)
                     {
