@@ -23,6 +23,9 @@
     <None Update="Readability.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Content Include="Views\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
