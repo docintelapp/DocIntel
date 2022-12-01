@@ -16,6 +16,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -89,7 +90,6 @@ namespace DocIntel.Services.Scraper
                 return false;
             }
 
-            _logger.LogDebug("Scraping " + uri);
             IBrowser browser = null;
             IPage page = null;
 
@@ -104,7 +104,7 @@ namespace DocIntel.Services.Scraper
                     KeepChildNodes = true
                 };
                 hardSanitizer.AllowedTags.Clear();
-                _logger.LogDebug("Scrape with a browser");
+                _logger.LogTrace("Scrape with a browser");
 
                 // This is needed in order to avoid the component to NOT be able to communicate with the browser
                 // I know, it's silly...
@@ -114,32 +114,32 @@ namespace DocIntel.Services.Scraper
                     Headless = true,
                     IgnoreHTTPSErrors = true,
                 };
-                
+
+                List<string> args = new();
                 if (!string.IsNullOrEmpty(_settings.Proxy))
                 {
-                    options.Args = new[]
-                    {
-                        "--proxy-server=\"http=" + _settings.Proxy + ";https=" + _settings.Proxy + "\""
-                    };
+                    args.Add("--proxy-server=\"http=" + _settings.Proxy + ";https=" + _settings.Proxy + "\"");
                 }
+                args.Add("--no-sandbox");
+                options.Args = args.ToArray();
                 
-                _logger.LogDebug("Browser: " + options.ExecutablePath);
-                _logger.LogDebug("Proxy used for executable: " + string.Join(" ", options.Args));
+                _logger.LogTrace("Browser: " + options.ExecutablePath);
+                _logger.LogTrace("Arguments used for the browser: " + string.Join(" ", options.Args));
 
                 browser = await Puppeteer.LaunchAsync(options);
-                _logger.LogDebug("Browser launched");
+                _logger.LogTrace("Browser launched");
 
                 page = await browser.NewPageAsync();
-                _logger.LogDebug("New page");
+                _logger.LogTrace("New page");
                 var readabilityScript = File.ReadAllText("Readability.js");
-                _logger.LogDebug("Go to URL: " + uri);
+                _logger.LogTrace("Go to URL: " + uri);
                 var res = await page.GoToAsync(uri.ToString(), new NavigationOptions
                 {
                     Timeout = 0,
                     WaitUntil = new[] {WaitUntilNavigation.DOMContentLoaded, WaitUntilNavigation.Networkidle0}
                 });
-                _logger.LogDebug("Loaded: " + res.Status);
-                foreach (var header in res.Headers) _logger.LogDebug("Header " + header.Key + " = " + header.Value);
+                _logger.LogTrace("Loaded: " + res.Status);
+                foreach (var header in res.Headers) _logger.LogTrace("Header " + header.Key + " = " + header.Value);
 
                 var enUS = new CultureInfo("en-US");
                 DateTime lastModifiedDate;
@@ -168,14 +168,28 @@ namespace DocIntel.Services.Scraper
                 var extractedContent =
                     await page.EvaluateFunctionAsync<ReadabilityArticle>("() => new Readability(document).parse()");
 
-                var source = _sourceRepository.GetAllAsync(context, new SourceQuery
+                Source source;
+
+                if (message.SourceId != null)
                 {
-                    HomePage = host
-                }).ToEnumerable().FirstOrDefault() ?? await _sourceRepository.CreateAsync(context, new Source
+                    source = await _sourceRepository.GetAsync(context, (Guid)message.SourceId);
+                }
+                else
                 {
-                    Title = string.IsNullOrEmpty(extractedContent.SiteName) ? host : extractedContent.SiteName,
-                    HomePage = host
-                });
+                    source = (await _sourceRepository.GetAllAsync(context, new SourceQuery
+                    {
+                        HomePage = host
+                    }).ToListAsync()).FirstOrDefault();
+                }
+                
+                if (source == null)
+                {
+                    source = await _sourceRepository.CreateAsync(context, new Source
+                    {
+                        Title = string.IsNullOrEmpty(extractedContent.SiteName) ? host : extractedContent.SiteName,
+                        HomePage = host
+                    });
+                }
 
                 var d = new Document
                 {
@@ -190,7 +204,7 @@ namespace DocIntel.Services.Scraper
                     DocumentDate = message.SubmissionDate
                 };
                 var trackingD = await _documentRepository.AddAsync(context, d, new Tag[] { });
-                _logger.LogDebug("Document created...");
+                _logger.LogTrace("Document created...");
 
                 var screenshot = new DocumentFile
                 {
@@ -208,7 +222,7 @@ namespace DocIntel.Services.Scraper
                 await using var screenshotStream = new FileStream(screenshotFilename, FileMode.Open);
                 screenshot = await _documentRepository.AddFile(context, screenshot, screenshotStream);
                 File.Delete(screenshotFilename);
-                _logger.LogDebug("Screenshot captured...");
+                _logger.LogTrace("Screenshot captured...");
 
                 extractedContent.Content = sanitizer.Sanitize(extractedContent.Content);
 
@@ -231,17 +245,17 @@ namespace DocIntel.Services.Scraper
                 extractedStream.Write(Encoding.UTF8.GetBytes(pageHTML));
                 extractedStream.Position = 0;
                 documentFile = await _documentRepository.AddFile(context, documentFile, extractedStream);
-                _logger.LogDebug("HTML extracted...");
+                _logger.LogTrace("HTML extracted...");
 
-                _logger.LogDebug("Closing Browser...");
+                _logger.LogTrace("Closing Browser...");
                 await page.CloseAsync();
                 await browser.CloseAsync();
-                _logger.LogDebug("Closed...");
+                _logger.LogTrace("Closed...");
 
                 _documentRepository.DeleteSubmittedDocument(context, message.SubmittedDocumentId);
-                _logger.LogDebug("Saving changes...");
+                _logger.LogTrace("Saving changes...");
                 await context.DatabaseContext.SaveChangesAsync();
-                _logger.LogDebug("Saved changes...");
+                _logger.LogTrace("Saved changes...");
             }
             catch (NavigationException e)
             {
@@ -278,7 +292,7 @@ namespace DocIntel.Services.Scraper
                 if (page != null)
                     await page.CloseAsync();
                 if (browser != null) await browser.CloseAsync();
-                _logger.LogDebug("Closed (2)...");
+                _logger.LogTrace("Closed (2)...");
             }
 
             return false;

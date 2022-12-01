@@ -180,17 +180,19 @@ namespace DocIntel.Services.Scraper
 
             if (scraped)
             {
+            
+                _logger.LogDebug(
+                    $"Submitted URL '{submission.URL}' was successfully scraped.");
                 _documentRepository.DeleteSubmittedDocument(context, submission.SubmittedDocumentId);
                 await context.DatabaseContext.SaveChangesAsync();
             }
             else
             {
+                _logger.LogDebug(
+                    $"Submitted URL '{submission.URL}' could not be scraped.");
                 submission.Status = SubmissionStatus.Error;
                 await context.DatabaseContext.SaveChangesAsync();
             }
-            
-            _logger.LogDebug(
-                $"No scraper found for {submission.URL}");
 
             return scraped;
         }

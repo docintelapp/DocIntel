@@ -46,6 +46,7 @@ namespace DocIntel.Core.Models
         public bool OverrideClassification { get; set; }
         public bool OverrideReleasableTo { get; set; }
         public bool OverrideEyesOnly { get; set; }
+        public Guid? SourceId { get; set; }
     }
 
     public enum SubmissionStatus

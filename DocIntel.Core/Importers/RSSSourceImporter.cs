@@ -102,8 +102,8 @@ namespace DocIntel.Core.Importers
                     {
                         foreach (var item in feed.Items)
                         {
-                            var subject = item.Title.Text;
-                            var summary = item.Summary.Text;
+                            var subject = item.Title?.Text ?? "";
+                            var summary = item.Summary?.Text ?? "";
                             var link = item.Links.FirstOrDefault()?.Uri;
                             var date = item.PublishDate;
 
@@ -124,7 +124,8 @@ namespace DocIntel.Core.Importers
                                 {
                                     Title = subject,
                                     Description = summary,
-                                    URL = link.ToString()
+                                    URL = link.ToString(),
+                                    SourceId = source.SourceId
                                 };
                             }
                         }

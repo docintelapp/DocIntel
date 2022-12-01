@@ -52,10 +52,12 @@ namespace DocIntel.Core.Repositories.EFCore
         protected string UpdateSourceURL(AmbientContext ambientContext, T data, Func<T,string> mapTitle, Func<string,Func<T, bool>> sameURL)
         {
             var url = ComputeURL(mapTitle(data));
+            Console.WriteLine("Computed URL: " + url);
             int i = 1;
             while (_tableSelector(ambientContext).Any(sameURL(url)))
             {
                 url = ComputeURL(mapTitle(data), i++);
+                Console.WriteLine("Computed URL: " + url);
             }
             return url;
         }
