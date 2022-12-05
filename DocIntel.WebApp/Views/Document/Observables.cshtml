@@ -147,7 +147,7 @@
                         <i class="fal fa-pencil-alt"></i> Register
                     </button>
                     
-                    <button type="submit" formaction=@Url.Action("Save") formmethod="post" formenctype="multipart/form-data"
+                    <button type="submit" formaction=@Url.Action("SaveObservables", "Document", new { id = Model.Document.DocumentId}) formmethod="post" formenctype="multipart/form-data"
                             id="save-btn"
                             class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
                         <i class="fal fa-save"></i> Save as pending

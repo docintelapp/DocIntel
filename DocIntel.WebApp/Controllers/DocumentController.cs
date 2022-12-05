@@ -1142,6 +1142,79 @@ namespace DocIntel.WebApp.Controllers
                 Document = document
             });
         }
+        
+        [HttpPost("Document/Observables/Save/{id}")]
+        [RequestFormSizeLimit(20000, Order = 1)]
+        [ValidateAntiForgeryToken(Order = 2)]
+        public async Task<IActionResult> SaveObservables(
+            Guid id, 
+            [Bind(Prefix = "observables")] string[] observableIden,
+            [Bind(Prefix = "status")] string[] observableStatus
+        )
+        {
+            var currentUser = await GetCurrentUser();
+            if (!await _appAuthorizationService.CanCreateDocument(User, null))
+                return Unauthorized();
+
+            var document = await _documentRepository.GetAsync(AmbientContext, id,
+                new[]
+                {
+                    nameof(Document.Files),
+                    nameof(Document.DocumentTags),
+                    nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag),
+                    nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag) + "." + nameof(Tag.Facet),
+                    nameof(Document.Source),
+                    nameof(Document.Comments)
+                });
+            
+            if (document.Status != DocumentStatus.Analyzed)
+                return NotFound();
+            
+            document.RegisteredBy = currentUser;
+            for (var index = 0; index < observableIden.Length; index++)
+            {
+                try
+                {
+                    var iden = observableIden[index];
+                    var status = observableStatus[index];
+                    if (status == "ignore-once")
+                    {
+                        _logger.LogDebug($"Remove {iden}");
+                        await _synapseRepository.Remove(document, iden, true);
+                    } else if (status == "ignore-always")
+                    {
+                        _logger.LogDebug($"Add _di.workflow.ignore to {iden}");
+                        await _synapseRepository.AddTag(document, iden, "_di.workflow.ignore", false);
+                    } else if (status == "ignore-domain")
+                    {
+                        _logger.LogDebug($"Ignore-domain {iden}");
+                        var url = await _synapseRepository.GetObservableByIden<InetUrl>(document, iden, true);
+                        if (url != null)
+                        {
+                            // Add the FQDN with the proper tag globally
+                            var fqdn = new InetFqdn(url.FQDN);
+                            fqdn.Tags.Add("_di.workflow.ignore");
+                            await _synapseRepository.Add(fqdn);
+
+                            var urls = await _synapseRepository.GetBySecondary<InetUrl>(document, "fqdn", url.FQDN, true).ToListAsync();
+                            foreach (var u in urls)
+                            {
+                                await _synapseRepository.Remove(document, iden, true);
+                            }
+                        }
+                    }
+
+                    await _synapseRepository.RemoveTag(document, iden, "_di.workflow.review", false);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.Message);
+                    _logger.LogError(e.StackTrace);
+                }
+            }
+
+            return RedirectToAction("Observables", new { id = document.DocumentId });
+        }
 
         private Task UpdateObservable(Guid id, DocumentObservablesViewModel viewModel)
         {
