@@ -34,19 +34,19 @@ namespace DocIntel.Core.Utils.Indexation.SolR
 {
     public class SolRDocumentIndexingUtility : IDocumentIndexingUtility
     {
-        private readonly ApplicationSettings _appSettings;
+        private readonly ApplicationSettings _settings;
         private readonly ILogger<SolRDocumentIndexingUtility> _logger;
         private readonly IMapper _mapper;
         private readonly ISolrOperations<IndexedDocument> _solr;
         private readonly ISynapseRepository _observableRepository;
 
         public SolRDocumentIndexingUtility(ISolrOperations<IndexedDocument> solr,
-            ILogger<SolRDocumentIndexingUtility> logger, IMapper mapper, ApplicationSettings appSettings, ISynapseRepository observableRepository)
+            ILogger<SolRDocumentIndexingUtility> logger, IMapper mapper, ApplicationSettings settings, ISynapseRepository observableRepository)
         {
             _solr = solr;
             _logger = logger;
             _mapper = mapper;
-            _appSettings = appSettings;
+            _settings = settings;
             _observableRepository = observableRepository;
         }
 
@@ -56,18 +56,28 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             var indexedDocument = _mapper.Map<IndexedDocument>(document);
             indexedDocument.FileContents = ExtractFileContent(document);
             indexedDocument.Observables = (_observableRepository.GetObservables(document).ToListAsync().Result).Select(_ => _.GetCoreValue());
-            _solr.Add(indexedDocument);
+            _solr.Add(indexedDocument, new AddParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin,
+                Overwrite = true
+            });
         }
 
         public void Remove(Guid documentId)
         {
             _logger.LogDebug("Delete " + documentId);
-            _solr.Delete(documentId.ToString());
+            _solr.Delete(documentId.ToString(), new DeleteParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin
+            });
         }
 
         public void RemoveAll()
         {
-            _solr.Delete(SolrQuery.All);
+            _solr.Delete(SolrQuery.All, new DeleteParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin
+            });
         }
 
         public void Update(Document document)
@@ -76,7 +86,11 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             var indexedDocument = _mapper.Map<IndexedDocument>(document);
             indexedDocument.FileContents = ExtractFileContent(document);
             indexedDocument.Observables = _observableRepository.GetObservables(document).ToListAsync().Result.Select(_ => _.GetCoreValue());
-            _solr.Add(indexedDocument);
+            _solr.Add(indexedDocument, new AddParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin,
+                Overwrite = true
+            });
         }
 
         public void Commit()
@@ -91,7 +105,7 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             foreach (var file in document.Files.Where(_ =>
                 _.MimeType == "application/pdf" || _.MimeType.StartsWith("text")))
             {
-                var filename = Path.Combine(_appSettings.DocFolder, file.Filepath);
+                var filename = Path.Combine(_settings.DocFolder, file.Filepath);
                 if (File.Exists(filename))
                 {
                     using var f = File.OpenRead(filename);

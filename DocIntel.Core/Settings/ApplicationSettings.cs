@@ -70,6 +70,11 @@ namespace DocIntel.Core.Settings
         /// Delay, in minutes, between two check of importers.
         /// </summary>
         public double ImporterFrequencyCheck { get; set; } = 5;
+
+        /// <summary>
+        /// Delay, in milliseconds, before a document/tag/facet/source gets committed to the SolR index.
+        /// </summary>
+        public int? CommitWithin { get; set; } = 1000;
     }
 
     public class SecuritySettings

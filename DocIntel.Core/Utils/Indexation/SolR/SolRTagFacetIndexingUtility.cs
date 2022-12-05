@@ -20,7 +20,7 @@ using System;
 using AutoMapper;
 
 using DocIntel.Core.Models;
-
+using DocIntel.Core.Settings;
 using SolrNet;
 
 namespace DocIntel.Core.Utils.Indexation.SolR
@@ -29,33 +29,49 @@ namespace DocIntel.Core.Utils.Indexation.SolR
     {
         private readonly IMapper _mapper;
         private readonly ISolrOperations<IndexedTagFacet> _solr;
+        private readonly ApplicationSettings _settings;
 
         public SolRTagFacetIndexingUtility(
             ISolrOperations<IndexedTagFacet> solr,
-            IMapper mapper)
+            IMapper mapper, ApplicationSettings settings)
         {
             _solr = solr;
             _mapper = mapper;
+            _settings = settings;
         }
 
         public void Add(TagFacet tag)
         {
-            _solr.Add(_mapper.Map<IndexedTagFacet>(tag));
+            _solr.Add(_mapper.Map<IndexedTagFacet>(tag), new AddParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin,
+                Overwrite = true
+            });
         }
 
         public void Remove(Guid tagId)
         {
-            _solr.Delete(tagId.ToString());
+            _solr.Delete(tagId.ToString(), new DeleteParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin
+            });
         }
 
         public void RemoveAll()
         {
-            _solr.Delete(SolrQuery.All);
+            _solr.Delete(SolrQuery.All, new DeleteParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin
+            });
         }
 
         public void Update(TagFacet tag)
         {
-            _solr.Add(_mapper.Map<IndexedTagFacet>(tag));
+            _solr.Add(_mapper.Map<IndexedTagFacet>(tag), new AddParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin,
+                Overwrite = true
+            });
         }
 
         public void Commit()

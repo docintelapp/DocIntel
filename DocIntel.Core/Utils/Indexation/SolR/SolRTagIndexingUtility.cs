@@ -20,7 +20,7 @@ using System;
 using AutoMapper;
 
 using DocIntel.Core.Models;
-
+using DocIntel.Core.Settings;
 using Microsoft.Extensions.Logging;
 
 using SolrNet;
@@ -32,38 +32,54 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         private readonly ILogger<SolRTagIndexingUtility> _logger;
         private readonly IMapper _mapper;
         private readonly ISolrOperations<IndexedTag> _solr;
+        private readonly ApplicationSettings _settings;
 
         public SolRTagIndexingUtility(
             ISolrOperations<IndexedTag> solr,
             ILogger<SolRTagIndexingUtility> logger,
-            IMapper mapper)
+            IMapper mapper, ApplicationSettings settings)
         {
             _solr = solr;
             _logger = logger;
             _mapper = mapper;
+            _settings = settings;
         }
 
         public void Add(Tag tag)
         {
             _logger.LogDebug("Add " + tag.TagId);
-            _solr.Add(_mapper.Map<IndexedTag>(tag));
+            _solr.Add(_mapper.Map<IndexedTag>(tag), new AddParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin,
+                Overwrite = true
+            });
         }
 
         public void Remove(Guid tagId)
         {
             _logger.LogDebug("Delete " + tagId);
-            _solr.Delete(tagId.ToString());
+            _solr.Delete(tagId.ToString(), new DeleteParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin
+            });
         }
 
         public void RemoveAll()
         {
-            _solr.Delete(SolrQuery.All);
+            _solr.Delete(SolrQuery.All, new DeleteParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin
+            });
         }
 
         public void Update(Tag tag)
         {
             _logger.LogDebug("Update " + tag.TagId);
-            _solr.Add(_mapper.Map<IndexedTag>(tag));
+            _solr.Add(_mapper.Map<IndexedTag>(tag), new AddParameters()
+            {
+                CommitWithin = _settings.Schedule.CommitWithin,
+                Overwrite = true
+            });
         }
 
         public void Commit()
