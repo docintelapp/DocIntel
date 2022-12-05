@@ -83,9 +83,8 @@
                             @await Html.PartialAsync("PendingListItem", item, new ViewDataDictionary(ViewData))
                         }
                         </table>
-
                     </div>
-                    @if (Model.PageCount > 1)
+                    @if (Model.PageCount > 0)
                     {
                         <div class="panel-content py-2 rounded-bottom border-faded border-left-0 border-right-0 border-bottom-0 text-muted">
                             <pagination page="@Model.Page" page-count="@Model.PageCount"></pagination>

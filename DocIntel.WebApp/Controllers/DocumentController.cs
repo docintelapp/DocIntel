@@ -151,10 +151,19 @@ namespace DocIntel.WebApp.Controllers
                 Limit = 20,
                 OrderBy = SortCriteria.RegistrationDate
             };
+            
+            var documentQueryCount = new DocumentQuery
+            {
+                Statuses = new[] {DocumentStatus.Submitted, DocumentStatus.Analyzed}.ToHashSet(),
+                Limit = -1
+            };
 
             if (user != null)
+            {
                 documentQuery.RegisteredBy = user.Id;
-            
+                documentQueryCount.RegisteredBy = user.Id;
+            }
+
             var pendingDocuments = _documentRepository.GetAllAsync(AmbientContext, documentQuery,
                     new[]
                     {
@@ -167,7 +176,7 @@ namespace DocIntel.WebApp.Controllers
                     })
                 .ToEnumerable();
 
-            var pendingCount = pendingDocuments.Count();
+            var pendingCount = await _documentRepository.CountAsync(AmbientContext, documentQueryCount);
 
             var viewModel = new InboxViewModel
             {
