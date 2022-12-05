@@ -41,7 +41,7 @@ public class NodeController : BaseController
         var synapseFormAttribute = synapseType.GetCustomAttribute<SynapseFormAttribute>();
         if (synapseFormAttribute == null) return NotFound();
         
-        var docIds = (await _synapseClient.StormAsync<DIDocumentSynapseObject>("-(refs)> _di:document",
+        var docIds = (await _synapseClient.StormAsync<DIDocumentSynapseObject>("<(refs)- _di:document",
                     new ApiStormQueryOpts()
                     {
                         Idens = new[]
