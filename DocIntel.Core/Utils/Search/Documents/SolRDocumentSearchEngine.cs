@@ -128,7 +128,8 @@ namespace DocIntel.Core.Utils.Search.Documents
                         {"defType", "edismax"},
                         {"hl.fragsize", "250"},
                         {"hl.simple.pre", "<span class='bg-warning-50'>"},
-                        {"hl.simple.post", "</span>"}
+                        {"hl.simple.post", "</span>"},
+                        {"bf", "recip(ms(NOW,registration_date),3.16e-11,1,1)"}
                     }
                 });
 
