@@ -1,4 +1,5 @@
 ﻿@using DocIntel.Core.Authorization.Operations
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     var canEditProfile = (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.EditOwn)).Succeeded;
     var canView = (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.View)).Succeeded;

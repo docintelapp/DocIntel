@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 
 using AutoMapper;
 using Bogus;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -75,7 +76,7 @@ public class ClassificationController : DocIntelAPIControllerBase
     private readonly IMapper _mapper;
     private readonly IClassificationRepository _classificationRepository;
 
-    public ClassificationController(UserManager<AppUser> userManager,
+    public ClassificationController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<ClassificationController> logger,
         IClassificationRepository classificationRepository,

@@ -16,7 +16,7 @@
 */
 
 using System.Collections.Generic;
-
+using System.Threading.Tasks;
 using DocIntel.Core.Models;
 
 namespace DocIntel.WebApp.ViewModels.RoleViewModel
@@ -25,5 +25,7 @@ namespace DocIntel.WebApp.ViewModels.RoleViewModel
     {
         public AppRole Role { get; set; }
         public IEnumerable<AppUser> AllUsers { get; set; }
+        public IList<AppUser> Users { get; set; }
+        public IList<string> Permissions { get; set; }
     }
 }

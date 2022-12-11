@@ -15,7 +15,8 @@ namespace DocIntel.Core.Authentication;
 
 public class AppUserManager : AspNetUserManager<AppUser>
 {
-    public override bool SupportsUserClaim => false;
+    public override bool SupportsUserClaim => true;
+    public override bool SupportsUserRole => true;
 
     public AppUserManager(IUserStore<AppUser> store,
         IOptions<IdentityOptions> optionsAccessor,
@@ -25,7 +26,7 @@ public class AppUserManager : AspNetUserManager<AppUser>
         ILookupNormalizer keyNormalizer,
         IdentityErrorDescriber errors,
         IServiceProvider services,
-        ILogger<UserManager<AppUser>> logger) : base(store,
+        ILogger<AppUserManager> logger) : base(store,
         optionsAccessor,
         passwordHasher,
         userValidators,
@@ -36,7 +37,6 @@ public class AppUserManager : AspNetUserManager<AppUser>
         logger)
     {
     }
-    
 
     /// <summary>
     ///     Resets the password of the user by generating and directly using a

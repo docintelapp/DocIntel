@@ -57,7 +57,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("APIKeys");
+                    b.ToTable("APIKeys", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.AppRole", b =>
@@ -91,9 +91,6 @@ namespace DocIntel.Core.Migrations
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
-
-                    b.Property<string>("PermissionList")
-                        .HasColumnType("text");
 
                     b.Property<string>("Slug")
                         .HasColumnType("text");
@@ -213,9 +210,19 @@ namespace DocIntel.Core.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("text");
 
+                    b.Property<string>("RoleId1")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId1")
+                        .HasColumnType("text");
+
                     b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("RoleId1");
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
@@ -251,7 +258,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("ParentClassificationId");
 
-                    b.ToTable("Classifications");
+                    b.ToTable("Classifications", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Comment", b =>
@@ -287,7 +294,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("LastModifiedById");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Document", b =>
@@ -372,7 +379,7 @@ namespace DocIntel.Core.Migrations
                     b.HasIndex("URL")
                         .IsUnique();
 
-                    b.ToTable("Documents");
+                    b.ToTable("Documents", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.DocumentFile", b =>
@@ -452,7 +459,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("RegisteredById");
 
-                    b.ToTable("Files");
+                    b.ToTable("Files", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.DocumentTag", b =>
@@ -467,7 +474,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("DocumentTag");
+                    b.ToTable("DocumentTag", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Group", b =>
@@ -501,7 +508,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("ParentGroupId");
 
-                    b.ToTable("Groups");
+                    b.ToTable("Groups", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.ImportRule", b =>
@@ -532,7 +539,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("ImportRuleSetId");
 
-                    b.ToTable("ImportRules");
+                    b.ToTable("ImportRules", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.ImportRuleSet", b =>
@@ -553,7 +560,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasKey("ImportRuleSetId");
 
-                    b.ToTable("ImportRuleSets");
+                    b.ToTable("ImportRuleSets", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Importer", b =>
@@ -610,7 +617,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("FetchingUserId");
 
-                    b.ToTable("IncomingFeeds");
+                    b.ToTable("IncomingFeeds", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Member", b =>
@@ -632,7 +639,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("Members");
+                    b.ToTable("Members", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Scraper", b =>
@@ -686,7 +693,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("SourceId");
 
-                    b.ToTable("Scrapers");
+                    b.ToTable("Scrapers", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Source", b =>
@@ -763,7 +770,7 @@ namespace DocIntel.Core.Migrations
                     b.HasIndex("URL")
                         .IsUnique();
 
-                    b.ToTable("Sources");
+                    b.ToTable("Sources", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.SubmittedDocument", b =>
@@ -799,7 +806,7 @@ namespace DocIntel.Core.Migrations
                     b.Property<int>("Priority")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("SourceId")
+                    b.Property<Guid?>("SourceId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Status")
@@ -830,7 +837,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("SubmitterId");
 
-                    b.ToTable("SubmittedDocuments");
+                    b.ToTable("SubmittedDocuments", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Tag", b =>
@@ -893,7 +900,7 @@ namespace DocIntel.Core.Migrations
                     b.HasIndex("FacetId", "Label")
                         .IsUnique();
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.TagFacet", b =>
@@ -953,7 +960,7 @@ namespace DocIntel.Core.Migrations
                     b.HasIndex("Prefix")
                         .IsUnique();
 
-                    b.ToTable("Facets");
+                    b.ToTable("Facets", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.UserDocumentSubscription", b =>
@@ -971,7 +978,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("DocumentId");
 
-                    b.ToTable("UserDocumentSubscription");
+                    b.ToTable("UserDocumentSubscription", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.UserFacetSubscription", b =>
@@ -989,7 +996,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("FacetId");
 
-                    b.ToTable("UserFacetSubscriptions");
+                    b.ToTable("UserFacetSubscriptions", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.UserSourceSubscription", b =>
@@ -1013,7 +1020,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("SourceId");
 
-                    b.ToTable("UserSourceSubscription");
+                    b.ToTable("UserSourceSubscription", (string)null);
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.UserTagSubscription", b =>
@@ -1037,7 +1044,7 @@ namespace DocIntel.Core.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("UserTagSubscriptions");
+                    b.ToTable("UserTagSubscriptions", (string)null);
                 });
 
             modelBuilder.Entity("DocumentFileGroup", b =>
@@ -1307,17 +1314,25 @@ namespace DocIntel.Core.Migrations
 
             modelBuilder.Entity("DocIntel.Core.Models.AppUserRole", b =>
                 {
-                    b.HasOne("DocIntel.Core.Models.AppRole", "Role")
-                        .WithMany("UserRoles")
+                    b.HasOne("DocIntel.Core.Models.AppRole", null)
+                        .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DocIntel.Core.Models.AppUser", "User")
-                        .WithMany("UserRoles")
+                    b.HasOne("DocIntel.Core.Models.AppRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId1");
+
+                    b.HasOne("DocIntel.Core.Models.AppUser", null)
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("DocIntel.Core.Models.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("Role");
 
@@ -1851,11 +1866,6 @@ namespace DocIntel.Core.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DocIntel.Core.Models.AppRole", b =>
-                {
-                    b.Navigation("UserRoles");
-                });
-
             modelBuilder.Entity("DocIntel.Core.Models.AppUser", b =>
                 {
                     b.Navigation("APIKeys");
@@ -1865,8 +1875,6 @@ namespace DocIntel.Core.Migrations
                     b.Navigation("SubscribedFacets");
 
                     b.Navigation("SubscribedTags");
-
-                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("DocIntel.Core.Models.Document", b =>

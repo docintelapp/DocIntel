@@ -10,6 +10,7 @@ using DocIntel.Core.Repositories;
 using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -28,8 +29,9 @@ public class SourceIndexerTimedConsumer : DynamicContextConsumer, IHostedService
         ISourceRepository sourceRepository,
         ApplicationSettings appSettings,
         IServiceProvider serviceProvider,
-        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, ISourceIndexingUtility indexingUtility)
-        : base(appSettings, serviceProvider, userClaimsPrincipalFactory)
+        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, ISourceIndexingUtility indexingUtility,
+        UserManager<AppUser> userManager)
+        : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
     {
         _logger = logger;
         _sourceRepository = sourceRepository;

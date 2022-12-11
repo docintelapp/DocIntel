@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 using DocIntel.Core.Models;
@@ -32,7 +33,7 @@ namespace DocIntel.Core.Authorization.Handlers
     {
         protected readonly ILogger _logger;
         protected readonly SignInManager<AppUser> _signInManager;
-        private readonly UserManager<AppUser> _userManager;
+        protected readonly UserManager<AppUser> _userManager;
 
         protected CustomAuthorizationHandler(
             SignInManager<AppUser> signInManager,
@@ -65,17 +66,17 @@ namespace DocIntel.Core.Authorization.Handlers
         {
             if (context is null) throw new ArgumentNullException(nameof(context));
             if (requirement is null) throw new ArgumentNullException(nameof(requirement));
-            
-            var userId = _userManager.GetUserId(context.User);
 
-            if (context.User.HasClaim("Permission", requirement.Name))
+            var userId = context.User.Claims.Single(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+
+            if (context.User.HasClaim(DocIntelConstants.ClaimPermissionType, requirement.Name))
             {
                 context.Succeed(requirement);
             }
             else
             {
                 // TODO Use structured logging
-                _logger.LogWarning($"User '{userId}' ({userId}) does not have permission '{requirement.Name}'.");
+                _logger.LogWarning($"User {userId} does not have permission '{requirement.Name}'.");
             }
 
             return Task.CompletedTask;

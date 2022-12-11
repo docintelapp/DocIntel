@@ -137,7 +137,6 @@ namespace DocIntel.WebApp.Helpers
             logEvent.AddProperty("role.id", role.Id);
             logEvent.AddProperty("role.name", role.Name);
             logEvent.AddProperty("role.description", role.Description);
-            logEvent.AddProperty("role.permissions", role.Permissions);
             return logEvent;
         }
 

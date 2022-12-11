@@ -2,6 +2,7 @@
 
 using System.Linq;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -20,39 +21,40 @@ namespace DocIntel.AdminConsole.Commands
         protected readonly DocIntelContext _context;
         private readonly AppUserClaimsPrincipalFactory _userClaimsPrincipalFactory;
 
+        protected readonly UserManager<AppUser> _userManager;
+        protected readonly AppRoleManager _roleManager;
+
         protected DocIntelCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            ApplicationSettings applicationSettings)
+            ApplicationSettings applicationSettings, UserManager<AppUser> userManager, AppRoleManager roleManager)
         {
             _context = context;
             _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
             _applicationSettings = applicationSettings;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
-        protected bool TryGetAmbientContext(out AmbientContext ambientContext)
+        protected async Task<AmbientContext> TryGetAmbientContext()
         {
-            var automationUser = GetAutomationUser();
+            var automationUser = await GetAutomationUserAsync();
             if (automationUser == null)
             {
-                ambientContext = null;
-                return false;
+                return null;
             }
 
-            var claims = _userClaimsPrincipalFactory.CreateAsync(automationUser).Result;
-            ambientContext = new AmbientContext
+            var claims = await _userClaimsPrincipalFactory.CreateAsync(automationUser);
+            return new AmbientContext
             {
                 DatabaseContext = _context,
                 Claims = claims,
                 CurrentUser = automationUser
             };
-
-            return true;
         }
 
-        private AppUser GetAutomationUser()
+        protected async Task<AppUser> GetAutomationUserAsync()
         {
-            var automationUser =
-                _context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _applicationSettings.AutomationAccount);
+            var automationUser = await _userManager.FindByNameAsync(_applicationSettings.AutomationAccount);
             if (automationUser == null)
                 AnsiConsole.Render(
                     new Markup($"[red]The user '{_applicationSettings.AutomationAccount}' was not found.[/]"));

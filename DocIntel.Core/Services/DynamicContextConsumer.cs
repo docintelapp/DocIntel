@@ -6,6 +6,7 @@ using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,14 +19,16 @@ public class DynamicContextConsumer
     protected readonly IServiceProvider _serviceProvider;
     private readonly AppUserClaimsPrincipalFactory _userClaimsPrincipalFactory;
     private readonly ILogger<DynamicContextConsumer> _logger;
+    private readonly UserManager<AppUser> _userManager;
 
     public DynamicContextConsumer(ApplicationSettings appSettings,
         IServiceProvider serviceProvider,
-        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory)
+        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, UserManager<AppUser> userManager)
     {
         _appSettings = appSettings;
         _serviceProvider = serviceProvider;
         _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
+        _userManager = userManager;
         _logger = serviceProvider.GetRequiredService<ILogger<DynamicContextConsumer>>();
     }
 
@@ -39,45 +42,13 @@ public class DynamicContextConsumer
             var dbContextOptions = ServiceProviderServiceExtensions.GetRequiredService<DbContextOptions<DocIntelContext>>(_serviceProvider);
             var dbContextLogger = ServiceProviderServiceExtensions.GetRequiredService<ILogger<DocIntelContext>>(_serviceProvider);
             dbContext = new DocIntelContext(dbContextOptions, dbContextLogger);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-        }
-
-        ClaimsPrincipal claims = null;
-        AppUser automationUser = null;
-        try
-        {
-            var dbContextOptions = ServiceProviderServiceExtensions.GetRequiredService<DbContextOptions<DocIntelContext>>(_serviceProvider);
-            var dbContextLogger = ServiceProviderServiceExtensions.GetRequiredService<ILogger<DocIntelContext>>(_serviceProvider);
-            var dbContext2 = new DocIntelContext(dbContextOptions, dbContextLogger);
-            automationUser = Queryable.FirstOrDefault(dbContext2.Users.AsNoTracking(), _ => _.UserName == _appSettings.AutomationAccount);
+            var automationUser = await _userManager.FindByNameAsync(_appSettings.AutomationAccount);
             
             if (automationUser == null)
                 throw new ArgumentNullException($"User '{_appSettings.AutomationAccount}' was not found.");
-            dbContext2.Dispose();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-        }
-
-        try
-        {
-            var dbContextOptions = ServiceProviderServiceExtensions.GetRequiredService<DbContextOptions<DocIntelContext>>(_serviceProvider);
-            var dbContextLogger = ServiceProviderServiceExtensions.GetRequiredService<ILogger<DocIntelContext>>(_serviceProvider);
-            var dbContext2 = new DocIntelContext(dbContextOptions, dbContextLogger);
-            claims = await _userClaimsPrincipalFactory.CreateAsync(dbContext2, automationUser);
-            dbContext2.Dispose();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-        }
+        
+            var claims = await _userClaimsPrincipalFactory.CreateAsync(automationUser);
             
-        try
-        {
             if (dbContext != null && claims != null && automationUser != null)
             {
                 var ambientContext = new AmbientContext

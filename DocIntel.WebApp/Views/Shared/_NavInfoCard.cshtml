@@ -1,4 +1,5 @@
-﻿<div class="info-card">
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+<div class="info-card">
     @if (string.IsNullOrEmpty(ViewBag.CurrentUser.ProfilePicture))
     {
         <img alt="" class="profile-image rounded-circle" src="~/images/avatar-m.png"/>

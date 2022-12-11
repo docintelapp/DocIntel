@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
+using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation;
 using DocIntel.Core.Utils.Thumbnail;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -27,8 +29,9 @@ public class ThumbnailerTimedConsumer : DynamicContextConsumer, IHostedService, 
     public ThumbnailerTimedConsumer(ILogger<ThumbnailerTimedConsumer> logger,
         IDocumentRepository documentRepository,
         AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-        IThumbnailUtility utility, ApplicationSettings appSettings, IServiceProvider serviceProvider)
-        : base(appSettings, serviceProvider, userClaimsPrincipalFactory)
+        IThumbnailUtility utility, ApplicationSettings appSettings, IServiceProvider serviceProvider,
+        UserManager<AppUser> userManager)
+        : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
     {
         _logger = logger;
         _documentRepository = documentRepository;

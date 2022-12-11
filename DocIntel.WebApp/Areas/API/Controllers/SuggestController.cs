@@ -21,7 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -59,7 +59,7 @@ public class SuggestController : DocIntelAPIControllerBase
     private readonly IFacetSearchService _facetSearchEngine;
     private readonly ISourceSearchService _sourceSearchEngine;
 
-    public SuggestController(UserManager<AppUser> userManager,
+    public SuggestController(AppUserManager userManager,
         DocIntelContext context,
         ITagSearchService tagSearchEngine,
         ILogger<SuggestController> logger,

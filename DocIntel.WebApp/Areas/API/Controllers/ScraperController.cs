@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -48,7 +49,7 @@ public class ScraperController : DocIntelAPIControllerBase
     private readonly IGroupRepository _groupRepository;
     private readonly IServiceProvider _serviceProvider;
 
-    public ScraperController(UserManager<AppUser> userManager,
+    public ScraperController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<ScraperController> logger,
         IScraperRepository scraperRepository,

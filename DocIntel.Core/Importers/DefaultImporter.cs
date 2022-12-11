@@ -19,10 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
-
+using DocIntel.Core.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,23 +40,24 @@ namespace DocIntel.Core.Importers
             _serviceProvider = serviceProvider;
         }
         
-        protected AmbientContext GetContext()
+        protected async Task<AmbientContext> GetContextAsync()
         {
             var userClaimsPrincipalFactory = _serviceProvider.GetService<AppUserClaimsPrincipalFactory>();
             if (userClaimsPrincipalFactory == null) throw new ArgumentNullException(nameof(userClaimsPrincipalFactory));
 
-            var options =
-                (DbContextOptions<DocIntelContext>) _serviceProvider.GetService(
-                    typeof(DbContextOptions<DocIntelContext>));
-            var context = new DocIntelContext(options,
-                (ILogger<DocIntelContext>) _serviceProvider.GetService(typeof(ILogger<DocIntelContext>)));
+            var userManager = _serviceProvider.GetService<UserManager<AppUser>>();
+            if (userManager == null) throw new ArgumentNullException(nameof(userManager));
+
+            var settings = _serviceProvider.GetRequiredService<ApplicationSettings>();
+            var options = _serviceProvider.GetRequiredService<DbContextOptions<DocIntelContext>>();
+            var context = new DocIntelContext(options, _serviceProvider.GetService<ILogger<DocIntelContext>>());
 
             // TODO Moves the name of the default automation user to the application configuration.
-            var automationUser = context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == "automation");
+            var automationUser = await userManager.FindByNameAsync(settings.AutomationAccount);
             if (automationUser == null)
                 return null;
 
-            var claims = userClaimsPrincipalFactory.CreateAsync(context, automationUser).Result;
+            var claims = await userClaimsPrincipalFactory.CreateAsync(automationUser);
             return new AmbientContext {
                 DatabaseContext = context,
                 Claims = claims,

@@ -16,17 +16,15 @@ namespace DocIntel.AdminConsole.Commands.Users
 {
     public class AddUserCommand : UserCommand<AddUserCommand.Settings>
     {
-        private readonly AppUserManager _userManager;
         private readonly IOptions<IdentityOptions> _identityOptions;
         
         public AddUserCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             AppUserManager userManager,
             ApplicationSettings applicationSettings,
-            IOptions<IdentityOptions> identityOptions) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            IOptions<IdentityOptions> identityOptions, AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
-            _userManager = userManager;
             _identityOptions = identityOptions;
         }
 
@@ -34,7 +32,8 @@ namespace DocIntel.AdminConsole.Commands.Users
         {
             await base.ExecuteAsync(context, settings);
             
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             var userName = GetUserName(settings);
@@ -89,7 +88,7 @@ namespace DocIntel.AdminConsole.Commands.Users
                 return 1;
             }
 
-            var result = await _userManager.CreateAsync(ambientContext.Claims, user, password);
+            var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded)
             {
                 AnsiConsole.Render(new Markup($"[red]Could not create user '{userName}'.[/]\n"));

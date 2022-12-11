@@ -21,7 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -53,7 +53,7 @@ public class SourceController : DocIntelAPIControllerBase
 
     public SourceController(DocIntelContext context,
         ILogger<SourceController> logger,
-        UserManager<AppUser> userManager,
+        AppUserManager userManager,
         ISourceSearchService sourceSearchEngine,
         ISourceRepository sourceRepository,
         IHttpContextAccessor accessor,

@@ -54,7 +54,7 @@ namespace DocIntel.Core.Scrapers
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
             Init();
-            var context = GetContext(message.SubmitterId);
+            var context = await GetContextAsync(message.SubmitterId);
             var uri = new Uri(message.URL);
             var host = uri.Host;
 

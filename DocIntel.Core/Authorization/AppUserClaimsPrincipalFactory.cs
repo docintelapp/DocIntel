@@ -19,6 +19,7 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -37,7 +38,7 @@ namespace DocIntel.Core.Authorization
         
         public AppUserClaimsPrincipalFactory(
             UserManager<AppUser> userManager,
-            RoleManager<AppRole> roleManager,
+            AppRoleManager roleManager,
             IOptions<IdentityOptions> options, IServiceProvider serviceProvider)
             : base(userManager, roleManager, options)
         {
@@ -60,7 +61,7 @@ namespace DocIntel.Core.Authorization
             try
             {   
                 var context = GetContext();
-                PopulateClaims(context, claimsIdentity, user);
+                await PopulateClaims(context, claimsIdentity, user);
                 await context.DisposeAsync();
 
             }
@@ -85,7 +86,7 @@ namespace DocIntel.Core.Authorization
         }
 
 
-        private void PopulateClaims(DocIntelContext context, ClaimsIdentity claimsIdentity, AppUser user)
+        private async Task PopulateClaims(DocIntelContext context, ClaimsIdentity claimsIdentity, AppUser user)
         {
             if (claimsIdentity != null)
             {
@@ -93,13 +94,8 @@ namespace DocIntel.Core.Authorization
                 if (user.Bot)
                     claimsIdentity.AddClaim(new Claim("Bot", user.Bot.ToString()));
 
-                var permissions = context.UserRoles.AsNoTracking()
-                    .Where(x => x.UserId == user.Id)
-                    .Select(_ => _.Role).ToList()
-                    .SelectMany(x => x.Permissions).ToList();
-                foreach (var permission in permissions) 
-                    claimsIdentity.AddClaim(new Claim("Permission", permission));
-
+                // TODO Replace by using claims in user, as it should be :-)
+                /*
                 var groups = context.Members.AsNoTracking().Include(_ => _.Group)
                     .Where(x => x.UserId == user.Id)
                     .Select(_ => _.Group).ToList();
@@ -108,40 +104,8 @@ namespace DocIntel.Core.Authorization
                     claimsIdentity.AddClaim(new Claim("Group", @group.GroupId.ToString()));
                     AddParentGroup(context, claimsIdentity, @group);
                 }
+                */
             }
-        }
-        
-        public async Task<ClaimsPrincipal> CreateAsync(DocIntelContext context, AppUser user)
-        {
-            ClaimsPrincipal principal = null;
-            try
-            {
-                var id = new ClaimsIdentity("Identity.Application",
-                    Options.ClaimsIdentity.UserNameClaimType,
-                    Options.ClaimsIdentity.RoleClaimType);
-                id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, user.Id));
-                id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, user.UserName));
-                if (!string.IsNullOrEmpty(user.Email))
-                    id.AddClaim(new Claim(Options.ClaimsIdentity.EmailClaimType, user.Email));
-                
-                principal = new ClaimsPrincipal(id);
-            }
-            catch
-            {
-                Console.WriteLine("Error in AppUserClaimsPrincipalFactory.1");
-                return null;
-            }
-
-            var claimsIdentity = (ClaimsIdentity) principal.Identity;
-            try
-            {
-                PopulateClaims(context, claimsIdentity, user);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error in AppUserClaimsPrincipalFactory.2");
-            }
-            return principal;
         }
     }
 }

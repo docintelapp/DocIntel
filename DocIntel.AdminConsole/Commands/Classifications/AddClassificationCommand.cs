@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Threading.Tasks;
 
 using DocIntel.AdminConsole.Commands.Users;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -24,8 +25,9 @@ namespace DocIntel.AdminConsole.Commands.Classifications
 
         public AddClassificationCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            IClassificationRepository classificationRepository, ApplicationSettings applicationSettings) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            IClassificationRepository classificationRepository, ApplicationSettings applicationSettings,
+            UserManager<AppUser> userManager, AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
             _classificationRepository = classificationRepository;
         }
@@ -34,7 +36,8 @@ namespace DocIntel.AdminConsole.Commands.Classifications
         {
             await base.ExecuteAsync(context, settings);
             
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             var classification = await _classificationRepository.AddAsync(ambientContext, new Classification

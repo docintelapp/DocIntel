@@ -18,7 +18,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
@@ -51,7 +51,7 @@ namespace DocIntel.WebApp.Controllers
         private readonly IOptions<IdentityOptions> _identityOptions;
 
         public UserController(
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             ApplicationSettings configuration,
             ILogger<UserController> logger,
             DocIntelContext context,

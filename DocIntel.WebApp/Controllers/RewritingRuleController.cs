@@ -18,7 +18,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -47,7 +47,7 @@ namespace DocIntel.WebApp.Controllers
             DocIntelContext context,
             ILogger<RewritingRuleController> logger,
             ApplicationSettings configuration,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             IAuthorizationService authorizationService,
             IImportRuleRepository importRuleRepository,
             IHttpContextAccessor accessor)

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
@@ -25,7 +26,15 @@ public class NodeController : BaseController
     private readonly SynapseClient _synapseClient;
     private readonly IDocumentRepository _documentRepository;
 
-    public NodeController(DocIntelContext context, UserManager<AppUser> userManager, ApplicationSettings configuration, IAuthorizationService authorizationService, SynapseClient synapseClient, IDocumentRepository documentRepository) : base(context, userManager, configuration, authorizationService)
+    public NodeController(DocIntelContext context, 
+        AppUserManager userManager,
+        ApplicationSettings configuration,
+        IAuthorizationService authorizationService,
+        SynapseClient synapseClient,
+        IDocumentRepository documentRepository) : base(context,
+        userManager,
+        configuration,
+        authorizationService)
     {
         _synapseClient = synapseClient;
         _documentRepository = documentRepository;

@@ -23,7 +23,7 @@ using System.Net.Mime;
 using System.Threading.Tasks;
 
 using AutoMapper;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -90,7 +90,7 @@ public class FileController : DocIntelAPIControllerBase
     private readonly IGroupRepository _groupRepository;
     private readonly ApplicationSettings _configuration;
 
-    public FileController(UserManager<AppUser> userManager,
+    public FileController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<FileController> logger,
         IHttpContextAccessor accessor,

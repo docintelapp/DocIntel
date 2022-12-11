@@ -16,7 +16,7 @@
 */
 
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 
@@ -30,9 +30,9 @@ namespace DocIntel.WebApp.Areas.API.Controllers
     public abstract class DocIntelAPIControllerBase : ControllerBase
     {
         protected readonly DocIntelContext _context;
-        protected readonly UserManager<AppUser> _userManager;
+        protected readonly AppUserManager _userManager;
 
-        protected DocIntelAPIControllerBase(UserManager<AppUser> userManager,
+        protected DocIntelAPIControllerBase(AppUserManager userManager,
             DocIntelContext context)
         {
             _userManager = userManager;

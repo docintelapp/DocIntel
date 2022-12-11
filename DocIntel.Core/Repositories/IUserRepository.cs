@@ -53,23 +53,6 @@ namespace DocIntel.Core.Repositories
             IEnumerable<string> id,
             string[] includeRelatedData = null);
 
-
-        /// <summary>
-        ///     Adds the user to the repository
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="password">The password</param>
-        /// <returns>
-        ///     <c>true</c> if the user was successfully added, <c>false</c>
-        ///     otherwise.
-        /// </returns>
-        /*
-         Task<AppUser> CreateAsync(AmbientContext ambientContext,
-            AppUser user,
-            string password = "",
-            Group[] groups = null);
-        */
-
         /// <summary>
         ///     Updates the user in the repository.
         /// </summary>
@@ -102,32 +85,6 @@ namespace DocIntel.Core.Repositories
         ///     The list of users subscribed to the daily newsletter.
         /// </returns>
         IAsyncEnumerable<AppUser> GetUsersForNewsletter(AmbientContext ambientContext);
-
-        /// <summary>
-        ///     Adds the specified role to the specified user.
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="role">The role</param>
-        /// <returns>
-        ///     <c>true</c> if the role was successfully added, <c>false</c>
-        ///     otherwise.
-        /// </returns>
-        Task AddRole(AmbientContext ambientContext,
-            AppUser user,
-            AppRole role);
-
-        /// <summary>
-        ///     Removes the specified role from the specified user.
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="role">The role</param>
-        /// <returns>
-        ///     <c>true</c> if the role was successfully removed, <c>false</c>
-        ///     otherwise.
-        /// </returns>
-        Task RemoveRole(AmbientContext ambientContext,
-            AppUser user,
-            AppRole role);
 
         /// <summary>
         ///     Returns all users

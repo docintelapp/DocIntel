@@ -21,7 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -59,7 +59,7 @@ public class SearchController : DocIntelAPIControllerBase
     private readonly IFacetSearchService _facetSearchEngine;
     private readonly ISourceSearchService _sourceSearchEngine;
 
-    public SearchController(UserManager<AppUser> userManager,
+    public SearchController(AppUserManager userManager,
         DocIntelContext context,
         ITagSearchService tagSearchEngine,
         ILogger<SearchController> logger,

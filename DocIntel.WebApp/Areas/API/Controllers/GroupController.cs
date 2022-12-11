@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -78,7 +79,7 @@ public class GroupController : DocIntelAPIControllerBase
     private readonly IMapper _mapper;
     private readonly IGroupRepository _groupRepository;
 
-    public GroupController(UserManager<AppUser> userManager,
+    public GroupController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<GroupController> logger,
         IGroupRepository groupRepository,

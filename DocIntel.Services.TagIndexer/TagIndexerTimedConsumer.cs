@@ -10,6 +10,7 @@ using DocIntel.Core.Repositories;
 using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -28,9 +29,9 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
         ITagRepository tagRepository,
         ApplicationSettings appSettings,
         IServiceProvider serviceProvider,
-        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, 
-        ITagIndexingUtility indexingUtility)
-        : base(appSettings, serviceProvider, userClaimsPrincipalFactory)
+        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
+        ITagIndexingUtility indexingUtility, UserManager<AppUser> userManager)
+        : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
     {
         _logger = logger;
         _tagRepository = tagRepository;

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -32,17 +33,16 @@ namespace DocIntel.AdminConsole.Commands.Users
         }
         
         private readonly IUserRepository _userRepository;
-        private readonly UserManager<AppUser> _userManager;
         private readonly MailKitEmailSender _emailSender;
         private readonly ApplicationSettings _settings;
 
         public SendResetEmailCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            IUserRepository userRepository, ApplicationSettings applicationSettings, UserManager<AppUser> userManager, ApplicationSettings settings, MailKitEmailSender emailSender) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            IUserRepository userRepository, ApplicationSettings applicationSettings, UserManager<AppUser> userManager,
+            ApplicationSettings settings, MailKitEmailSender emailSender, AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
             _userRepository = userRepository;
-            _userManager = userManager;
             _settings = settings;
             _emailSender = emailSender;
         }
@@ -51,7 +51,8 @@ namespace DocIntel.AdminConsole.Commands.Users
         {
             await base.ExecuteAsync(context, settings);
             
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             if (settings.All)

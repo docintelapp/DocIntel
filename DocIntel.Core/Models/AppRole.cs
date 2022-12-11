@@ -34,7 +34,6 @@ namespace DocIntel.Core.Models
         /// </summary>
         public AppRole()
         {
-            Id = Guid.NewGuid().ToString();
         }
 
         /// <summary>
@@ -43,8 +42,6 @@ namespace DocIntel.Core.Models
         /// <param name="name">The name of the role</param>
         public AppRole(string name) : base(name)
         {
-            Id = Guid.NewGuid().ToString();
-            NormalizedName = name.ToUpperInvariant();
         }
 
         /// <summary>
@@ -60,40 +57,12 @@ namespace DocIntel.Core.Models
         /// <value>Description</value>
         public string Description { get; set; }
 
-        /// <summary>
-        ///     A string representing all permisssions. See Permissions for more details.
-        /// </summary>
-        /// <value>The permissions</value>
-        public string PermissionList { get; set; }
-
-        /// <summary>
-        ///     The list of users included in the role
-        /// </summary>
-        /// <value>The users</value>
-        public ICollection<AppUserRole> UserRoles { get; set; }
-
-        /// <summary>
-        ///     An array containing the string representation of the permissions. See IOperations* for exact strings for
-        ///     each permission.
-        /// </summary>
-        /// <value>The permissions</value>
-        [NotMapped]
-        public string[] Permissions
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(PermissionList))
-                    return new string[] { };
-                return PermissionList.Split(',').Select(x => x.Trim()).ToArray();
-            }
-            set => PermissionList = string.Join(",", value);
-        }
-
         public DateTime CreationDate { get; internal set; }
         public DateTime ModificationDate { get; internal set; }
-        public string CreatedById { get; internal set; }
+        
+        public string CreatedById { get; set; }
         public AppUser CreatedBy { get; set; }
-        public string LastModifiedById { get; internal set; }
+        public string LastModifiedById { get; set; }
         public AppUser LastModifiedBy { get; set; }
     }
 }

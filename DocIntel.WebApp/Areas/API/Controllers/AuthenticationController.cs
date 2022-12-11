@@ -18,12 +18,11 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Bogus;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -65,7 +64,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
         private readonly ILogger<AuthenticationController> _logger;
         private readonly IUserRepository _userRepository;
 
-        public AuthenticationController(UserManager<AppUser> userManager,
+        public AuthenticationController(AppUserManager userManager,
             DocIntelContext context,
             IConfiguration config,
             IUserRepository userRepository,

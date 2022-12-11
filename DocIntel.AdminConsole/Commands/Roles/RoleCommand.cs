@@ -17,6 +17,7 @@
 
 // 
 
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
@@ -28,7 +29,7 @@ namespace DocIntel.AdminConsole.Commands.Roles
     public abstract class RoleCommand<T> : DocIntelCommand<T> where T : RoleCommandSettings
     {
         protected RoleCommand(DocIntelContext context, AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            ApplicationSettings applicationSettings) : base(context, userClaimsPrincipalFactory, applicationSettings)
+            ApplicationSettings applicationSettings, UserManager<AppUser> userManager, AppRoleManager roleManager) : base(context, userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
         }
     }

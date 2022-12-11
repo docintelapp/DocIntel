@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
@@ -62,7 +62,7 @@ namespace DocIntel.WebApp.Controllers
             DocIntelContext context,
             ILogger<ScraperController> logger,
             ApplicationSettings configuration,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             IAuthorizationService authorizationService,
             IScraperRepository scraperRepository,
             IHttpContextAccessor accessor, IServiceProvider serviceProvider,
@@ -253,9 +253,7 @@ namespace DocIntel.WebApp.Controllers
                 .Select(instance => instance.Get())
                 .ToList();
 
-            ViewBag.BotUsers = AmbientContext.DatabaseContext.Users.AsQueryable()
-                .Where(_ => _.Bot)
-                .ToList();
+            ViewBag.BotUsers = _userManager.Users.AsNoTracking().Where(_ => _.Bot).ToList();
         }
 
         /// <summary>

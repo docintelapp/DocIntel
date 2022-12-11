@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -25,8 +26,9 @@ namespace DocIntel.AdminConsole.Commands.Index
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             ApplicationSettings applicationSettings,
             ITagFacetIndexingUtility facetIndexingUtility,
-            ITagFacetRepository facetRepository, ILogger<IndexFacetsCommand> logger) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            ITagFacetRepository facetRepository, ILogger<IndexFacetsCommand> logger, UserManager<AppUser> userManager,
+            AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
             _facetIndexingUtility = facetIndexingUtility;
             _facetRepository = facetRepository;
@@ -37,7 +39,8 @@ namespace DocIntel.AdminConsole.Commands.Index
         {
             await base.ExecuteAsync(context, settings);
             
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             AnsiConsole.Render(new Markup("[grey]Will remove all facets from the index...[/]"));

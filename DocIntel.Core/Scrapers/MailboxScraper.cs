@@ -85,7 +85,7 @@ namespace DocIntel.Core.Scrapers
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
             Init();
-            var context = GetContext();
+            var context = await GetContextAsync();
             var match = Regex.Match(message.URL, @"imap://([A-Za-z@\.-_]+)/([a-zA-Z\.-_]+)/;uid=(.+)");
             var email = match.Groups[1].ToString();
             var inbox = match.Groups[2].ToString();

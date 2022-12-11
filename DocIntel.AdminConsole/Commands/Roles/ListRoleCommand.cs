@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -17,26 +18,25 @@ namespace DocIntel.AdminConsole.Commands.Roles
 {
     public class ListRoleCommand : RoleCommand<RoleCommandSettings>
     {
-        private readonly IRoleRepository _roleRepository;
-
         public ListRoleCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            IRoleRepository roleRepository, ApplicationSettings applicationSettings) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            ApplicationSettings applicationSettings, UserManager<AppUser> userManager,
+            AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
-            _roleRepository = roleRepository;
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, RoleCommandSettings settings)
         {
             await base.ExecuteAsync(context, settings);
             
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             if (settings.JSON)
             {
-                Console.Write(JsonConvert.SerializeObject(await _roleRepository.GetAllAsync(ambientContext).ToArrayAsync()));
+                Console.Write(JsonConvert.SerializeObject(_roleManager.Roles.ToArray()));
             }
             else
             {
@@ -45,7 +45,7 @@ namespace DocIntel.AdminConsole.Commands.Roles
                 table.AddColumn("Name");
                 table.AddColumn("Description");
 
-                await foreach (var role in _roleRepository.GetAllAsync(ambientContext))
+                foreach (var role in _roleManager.Roles.ToArray())
                     table.AddRow(role.Id, role.Name?.EscapeMarkup() ?? "", role.Description?.EscapeMarkup() ?? "");
 
                 AnsiConsole.Render(table);   

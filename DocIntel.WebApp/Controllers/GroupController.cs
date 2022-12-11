@@ -18,7 +18,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Helpers;
@@ -52,7 +52,7 @@ namespace DocIntel.WebApp.Controllers
 
         public GroupController(IAppAuthorizationService appAuthorizationService,
             IGroupRepository groupRepository,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             ApplicationSettings configuration,
             ILogger<GroupController> logger,
             DocIntelContext context,

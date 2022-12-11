@@ -33,11 +33,18 @@ namespace DocIntel.WebApp.Areas.API.Models
         [JsonProperty("role_id")]
         public string Id { get; set; }
         public string Slug { get; set; }
+        [JsonProperty("creation_date")]
         public DateTime CreationDate { get; internal set; }
+        [JsonProperty("modification_date")]
         public DateTime ModificationDate { get; internal set; }
+        [JsonProperty("created_by_id")]
         public string CreatedById { get; internal set; }
-        public APIAppUser CreatedBy { get; set; }
+        [JsonProperty("last_modified_by_id")]
         public string LastModifiedById { get; internal set; }
+        
+        [JsonProperty("created_by")]
+        public APIAppUser CreatedBy { get; set; }
+        [JsonProperty("last_modified")]
         public APIAppUser LastModifiedBy { get; set; }
         public IEnumerable<APIAppUser> Users { get; set; }
     }

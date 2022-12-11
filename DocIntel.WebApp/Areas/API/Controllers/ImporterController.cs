@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Importers;
 using DocIntel.Core.Logging;
@@ -48,7 +49,7 @@ public class ImporterController : DocIntelAPIControllerBase
     private readonly IGroupRepository _groupRepository;
     private readonly IServiceProvider _serviceProvider;
 
-    public ImporterController(UserManager<AppUser> userManager,
+    public ImporterController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<ImporterController> logger,
         IIncomingFeedRepository importerRepository,

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -61,7 +62,7 @@ public class ObservableController : DocIntelAPIControllerBase
     private readonly ISynapseRepository _observableRepository;
     private readonly IDocumentRepository _documentRepository;
 
-    public ObservableController(UserManager<AppUser> userManager,
+    public ObservableController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<ObservableController> logger,
         ISynapseRepository observableRepository,

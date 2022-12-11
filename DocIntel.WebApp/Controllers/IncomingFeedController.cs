@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Importers;
@@ -61,7 +61,7 @@ namespace DocIntel.WebApp.Controllers
             DocIntelContext context,
             ILogger<DocumentController> logger,
             ApplicationSettings configuration,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             IAuthorizationService authorizationService,
             IIncomingFeedRepository incomingFeedRepository,
             IHttpContextAccessor accessor, IServiceProvider serviceProvider,
@@ -238,13 +238,13 @@ namespace DocIntel.WebApp.Controllers
                 .Select(instance => instance.Get())
                 .ToList();
 
-            ViewBag.BotUsers = AmbientContext.DatabaseContext.Users.AsQueryable()
-                .Where(_ => _.Bot)
-                .ToList();
+            ViewBag.BotUsers = _userManager.Users.AsNoTracking().Where(_ => _.Bot).ToList();
 
-            ViewBag.AllClassifications = AmbientContext.DatabaseContext.Classifications.ToList();
+            ViewBag.AllClassifications = await _classificationRepository.GetAllAsync(AmbientContext).ToListAsync();
             var allGroups = await _groupRepository.GetAllAsync(AmbientContext).ToListAsync();
             ViewBag.AllGroups = allGroups;
+            
+            // TODO Use user claims instead
             ViewBag.OwnGroups = allGroups.Where(_ =>
                 currentUser.Memberships.Any(__ => __.GroupId == _.GroupId));
         }

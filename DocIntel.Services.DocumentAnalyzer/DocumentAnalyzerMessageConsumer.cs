@@ -26,6 +26,7 @@ using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
 using MassTransit;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Services.DocumentAnalyzer
@@ -43,8 +44,9 @@ namespace DocIntel.Services.DocumentAnalyzer
             DocumentAnalyzerUtility documentAnalyzerUtility,
             ApplicationSettings appSettings,
             IServiceProvider serviceProvider,
-            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, IDocumentRepository documentRepository)
-            : base(appSettings, serviceProvider, userClaimsPrincipalFactory)
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, IDocumentRepository documentRepository,
+            UserManager<AppUser> userManager)
+            : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
         {
             _logger = logger;
             _documentAnalyzerUtility = documentAnalyzerUtility;

@@ -14,21 +14,20 @@ namespace DocIntel.AdminConsole.Commands.Users
 {
     public class ResetUserCommand : UserCommand<UserCommandSettings>
     {
-        private readonly AppUserManager _userManager;
 
         public ResetUserCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            AppUserManager userManager, ApplicationSettings applicationSettings) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            AppUserManager userManager, ApplicationSettings applicationSettings, AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
-            _userManager = userManager;
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, UserCommandSettings settings)
         {
             await base.ExecuteAsync(context, settings);
             
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             var userName = GetUserName(settings);
@@ -41,8 +40,8 @@ namespace DocIntel.AdminConsole.Commands.Users
             }
             
             var password = GetPassword(settings);
-
-            if (await _userManager.ResetPassword(ambientContext.Claims, user, password))
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            if ((await _userManager.ResetPasswordAsync(user, token, password)).Succeeded)
             {
                 await _context.SaveChangesAsync();
                 AnsiConsole.Render(new Markup("[green]Password has been successfully changed.[/]"));

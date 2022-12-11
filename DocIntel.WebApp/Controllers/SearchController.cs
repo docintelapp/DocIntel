@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
@@ -55,7 +55,7 @@ namespace DocIntel.WebApp.Controllers
             ILogger<SearchController> logger,
             ApplicationSettings configuration,
             IDocumentSearchEngine documentSearchEngine,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             IAuthorizationService authorizationService,
             IDocumentRepository documentRepository,
             ISourceRepository sourceRepository,
@@ -282,6 +282,9 @@ namespace DocIntel.WebApp.Controllers
                         didYouMeanTerms.Add(q);
                 }
 
+            var taskSelectedRegistrants = registrants.Select(_ => _userManager.FindByIdAsync(_));
+            var selectedRegistrants = await Task.WhenAll(taskSelectedRegistrants);
+
             return View(new SearchIndexViewModel
             {
                 SearchTerm = searchTerm,
@@ -292,7 +295,7 @@ namespace DocIntel.WebApp.Controllers
                 SelectedTags = _context.Tags.AsQueryable().Where(_ => tags.Any(t => t == _.TagId)),
 
                 Registrants = registrantsVR,
-                SelectedRegistrants = _context.Users.AsQueryable().Where(_ => registrants.Contains(_.Id)),
+                SelectedRegistrants = selectedRegistrants,
 
                 Classifications = classificationVR,
                 SelectedClassifications = _context.Classifications.AsQueryable().Where(_ => classifications.Any(__ => __ == _.ClassificationId)),

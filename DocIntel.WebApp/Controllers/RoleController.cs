@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Authorization.Operations;
 using DocIntel.Core.Exceptions;
@@ -29,7 +29,6 @@ using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 using DocIntel.WebApp.Helpers;
 using DocIntel.WebApp.ViewModels.RoleViewModel;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -49,12 +48,12 @@ namespace DocIntel.WebApp.Controllers
         private readonly IHttpContextAccessor _accessor;
         private readonly IAppAuthorizationService _appAuthorizationService;
         private readonly ILogger _logger;
-        private readonly IRoleRepository _roleRepository;
+        private readonly AppRoleManager _roleManager;
         private readonly IUserRepository _userRepository;
 
         public RoleController(IAppAuthorizationService appAuthorizationService,
-            IRoleRepository roleRepository,
-            UserManager<AppUser> userManager,
+            AppRoleManager roleManager,
+            AppUserManager userManager,
             ApplicationSettings configuration,
             ILogger<RoleController> logger,
             DocIntelContext context,
@@ -68,7 +67,7 @@ namespace DocIntel.WebApp.Controllers
         {
             _logger = logger;
             _appAuthorizationService = appAuthorizationService;
-            _roleRepository = roleRepository;
+            _roleManager = roleManager;
             _userRepository = userRepository;
             _accessor = accessor;
         }
@@ -92,8 +91,7 @@ namespace DocIntel.WebApp.Controllers
                     null,
                     LogEvent.Formatter);
 
-                return View(_roleRepository.GetAllAsync(AmbientContext, 
-                    includeRelatedData: new[] {"UserRoles" }).ToEnumerable());
+                return View(_roleManager.Roles.ToList());
             }
             catch (UnauthorizedOperationException)
             {
@@ -115,16 +113,29 @@ namespace DocIntel.WebApp.Controllers
 
             try
             {
-                var role = await _roleRepository.GetAsync(AmbientContext,
-                    id,
-                    new[] {"UserRoles", "UserRoles.User"});
+                var role = await _roleManager.FindByIdAsync(id);
+                if (role == null)
+                {
+                    _logger.Log(LogLevel.Warning, EventIDs.DetailsRoleFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' attempted to view details of a non-existing role '{id}'.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext)
+                            .AddProperty("role.id", id),
+                        null,
+                        LogEvent.Formatter);
+
+                    return NotFound();
+                }
 
                 var viewModel = new DetailsViewModel
                 {
                     Role = role,
+                    Users = await _userManager.GetUsersInRoleAsync(role.Name),
+                    Permissions = await _roleManager.GetPermissionsAsync(role),
                     AllUsers = _userRepository.GetAllAsync(AmbientContext).ToEnumerable()
                 };
-
+                
                 _logger.Log(LogLevel.Information, EventIDs.DetailsRoleSuccessful,
                     new LogEvent($"User '{currentUser.UserName}' successfully viewed details of '{role.Name}'.")
                         .AddUser(currentUser)
@@ -149,25 +160,13 @@ namespace DocIntel.WebApp.Controllers
 
                 return Unauthorized();
             }
-            catch (NotFoundEntityException)
-            {
-                _logger.Log(LogLevel.Warning, EventIDs.DetailsRoleFailed,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' attempted to view details of a non-existing role '{id}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddProperty("role.id", id),
-                    null,
-                    LogEvent.Formatter);
-
-                return NotFound();
-            }
         }
 
         private async Task SetupViewBag(AppRole role)
         {
+            var userRoles = (await _userManager.GetUsersInRoleAsync(role.Name)).Select(user => user.Id).ToArray();
             ViewBag.AllUsers = await _userRepository.GetAllAsync(AmbientContext)
-                .Where(_ => !role.UserRoles.Select(__ => __.UserId).ToArray().Contains(_.Id))
+                .Where(_ => !userRoles.Contains(_.Id))
                 .ToArrayAsync();
         }
 
@@ -195,7 +194,7 @@ namespace DocIntel.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
             [Bind("Name", "Description")] AppRole viewModel,
-            [Bind(Prefix = "permissions")] IEnumerable<string> permissions)
+            [Bind(Prefix = "permissions")] string[] submittedPermissions)
         {
             var currentUser = await GetCurrentUser();
 
@@ -206,23 +205,42 @@ namespace DocIntel.WebApp.Controllers
                     var role = new AppRole
                     {
                         Name = viewModel.Name,
-                        Description = viewModel.Description
+                        Description = viewModel.Description,
+                        CreatedById = currentUser.Id,
+                        LastModifiedById = currentUser.Id
                     };
 
-                    SetPermissions(role, permissions);
-                    await _roleRepository.AddAsync(AmbientContext, role);
-                    await _context.SaveChangesAsync();
+                    await _roleManager.CreateAsync(role);
+                    var roleOperation = await _roleManager.CreateAsync(role);
+                    if (roleOperation.Succeeded)
+                    {
+                        await _roleManager.SetPermissionAsync(role, submittedPermissions);
+                        
+                        _logger.Log(LogLevel.Information, EventIDs.CreateRoleSuccessful,
+                            new LogEvent(
+                                    $"User '{currentUser.UserName}' successfully created a new role '{viewModel.Name}'.")
+                                .AddUser(currentUser)
+                                .AddHttpContext(_accessor.HttpContext)
+                                .AddRole(role),
+                            null,
+                            LogEvent.Formatter);
 
-                    _logger.Log(LogLevel.Information, EventIDs.CreateRoleSuccessful,
-                        new LogEvent(
-                                $"User '{currentUser.UserName}' successfully created a new role '{viewModel.Name}'.")
-                            .AddUser(currentUser)
-                            .AddHttpContext(_accessor.HttpContext)
-                            .AddRole(role),
-                        null,
-                        LogEvent.Formatter);
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        _logger.Log(LogLevel.Information, EventIDs.CreateRoleFailed,
+                            new LogEvent(
+                                    $"User '{currentUser.UserName}' attempted to create a new role '{viewModel.Name}' with an invalid model.")
+                                .AddUser(currentUser)
+                                .AddHttpContext(_accessor.HttpContext)
+                                .AddRole(viewModel),
+                            null,
+                            LogEvent.Formatter);
 
-                    return RedirectToAction(nameof(Index));
+                        ViewBag.Permissions = submittedPermissions;
+                        return View(viewModel);
+                    }
                 }
 
                 throw new InvalidArgumentException(ModelState);
@@ -255,7 +273,7 @@ namespace DocIntel.WebApp.Controllers
                     null,
                     LogEvent.Formatter);
 
-                SetPermissions(viewModel, permissions);
+                ViewBag.Permissions = submittedPermissions;
                 return View(viewModel);
             }
         }
@@ -265,7 +283,7 @@ namespace DocIntel.WebApp.Controllers
             var currentUser = await GetCurrentUser();
             AppRole role;
             if (string.IsNullOrEmpty(id) ||
-                (role = await _roleRepository.GetAsync(AmbientContext, id)) == null)
+                (role = await _roleManager.FindByIdAsync(id)) == null)
             {
                 _logger.Log(LogLevel.Warning, EventIDs.EditRoleFailed,
                     new LogEvent($"User '{currentUser.UserName}' attempted to edit a non-existing role '{id}'.")
@@ -299,6 +317,7 @@ namespace DocIntel.WebApp.Controllers
                 null,
                 LogEvent.Formatter);
 
+            ViewBag.Permissions = await _roleManager.GetPermissionsAsync(role);
             return View(role);
         }
 
@@ -306,12 +325,12 @@ namespace DocIntel.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             [Bind("Id", "Name", "Description")] AppRole viewModel,
-            [Bind(Prefix = "permissions")] IEnumerable<string> permissions)
+            [Bind(Prefix = "permissions")] string[] submittedPermissions)
         {
             var currentUser = await GetCurrentUser();
             AppRole role;
             if (string.IsNullOrEmpty(viewModel.Id) ||
-                (role = await _roleRepository.GetAsync(AmbientContext, viewModel.Id)) == null)
+                (role = await _roleManager.FindByIdAsync(viewModel.Id)) == null)
             {
                 _logger.Log(LogLevel.Warning, EventIDs.EditRoleFailed,
                     new LogEvent(
@@ -342,9 +361,10 @@ namespace DocIntel.WebApp.Controllers
             {
                 role.Name = viewModel.Name;
                 role.Description = viewModel.Description;
-                SetPermissions(role, permissions);
-                await _roleRepository.UpdateAsync(AmbientContext, role);
-                await _context.SaveChangesAsync();
+                role.CreatedById = currentUser.Id;
+                role.LastModifiedById = currentUser.Id;
+                await _roleManager.UpdateAsync(role);
+                await _roleManager.SetPermissionAsync(role, submittedPermissions);
 
                 _logger.Log(LogLevel.Information, EventIDs.EditRoleSuccessful,
                     new LogEvent($"User '{currentUser.UserName}' successfully edited role '{role.Name}'.")
@@ -366,7 +386,7 @@ namespace DocIntel.WebApp.Controllers
                 null,
                 LogEvent.Formatter);
 
-            SetPermissions(viewModel, permissions);
+            ViewBag.Permissions = submittedPermissions;
             return View(viewModel);
         }
 
@@ -376,7 +396,7 @@ namespace DocIntel.WebApp.Controllers
             var currentUser = await GetCurrentUser();
             AppRole role;
             if (string.IsNullOrEmpty(id) ||
-                (role = await _roleRepository.GetAsync(AmbientContext, id)) == null)
+                (role = await _roleManager.FindByIdAsync(id)) == null)
             {
                 _logger.Log(LogLevel.Warning, EventIDs.EditRoleFailed,
                     new LogEvent($"User '{currentUser.UserName}' attempted to delete a non-existing role '{id}'.")
@@ -420,7 +440,7 @@ namespace DocIntel.WebApp.Controllers
             var currentUser = await GetCurrentUser();
             AppRole role;
             if (string.IsNullOrEmpty(id) ||
-                (role = await _roleRepository.GetAsync(AmbientContext, id)) == null)
+                (role = await _roleManager.FindByIdAsync(id)) == null)
             {
                 _logger.Log(LogLevel.Warning, EventIDs.EditRoleFailed,
                     new LogEvent($"User '{currentUser.UserName}' attempted to delete a non-existing role '{id}'.")
@@ -454,7 +474,7 @@ namespace DocIntel.WebApp.Controllers
                 null,
                 LogEvent.Formatter);
 
-            await _roleRepository.RemoveAsync(AmbientContext, role.Id);
+            await _roleManager.DeleteAsync(role);
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
@@ -466,7 +486,7 @@ namespace DocIntel.WebApp.Controllers
             var currentUser = await GetCurrentUser();
             AppRole role;
             if (string.IsNullOrEmpty(roleId) ||
-                (role = await _roleRepository.GetAsync(AmbientContext, roleId)) == null)
+                (role = await _roleManager.FindByIdAsync(roleId)) == null)
             {
                 _logger.Log(LogLevel.Warning, EventIDs.AddRoleUserFailed,
                     new LogEvent(
@@ -509,7 +529,7 @@ namespace DocIntel.WebApp.Controllers
                 return Unauthorized();
             }
 
-            await _roleRepository.AddUserRoleAsync(AmbientContext, user.Id, role.Id);
+            await _userManager.AddToRoleAsync(user, role.Name);
             await _context.SaveChangesAsync();
 
             _logger.Log(LogLevel.Information, EventIDs.AddRoleUserSuccessful,
@@ -524,13 +544,13 @@ namespace DocIntel.WebApp.Controllers
             return RedirectToAction(nameof(Details), new {id = role.Id});
         }
 
-        [HttpGet("/Role/RemoveUser/{roleId}/userName")]
+        [HttpGet("/Role/RemoveUser/{roleId}/{userId}")]
         public async Task<IActionResult> RemoveRole(string roleId, string userId)
         {
             var currentUser = await GetCurrentUser();
             AppRole role;
             if (string.IsNullOrEmpty(roleId) ||
-                (role = await _roleRepository.GetAsync(AmbientContext, roleId)) == null)
+                (role = await _roleManager.FindByIdAsync(roleId)) == null)
             {
                 _logger.Log(LogLevel.Warning, EventIDs.AddRoleUserFailed,
                     new LogEvent(
@@ -573,7 +593,7 @@ namespace DocIntel.WebApp.Controllers
                 return Unauthorized();
             }
 
-            await _roleRepository.RemoveUserRoleAsync(AmbientContext, user.Id, role.Id);
+            await _userManager.RemoveFromRoleAsync(user, role.Name);
             await _context.SaveChangesAsync();
 
             _logger.Log(LogLevel.Information, EventIDs.AddRoleUserSuccessful,
@@ -586,20 +606,6 @@ namespace DocIntel.WebApp.Controllers
                 LogEvent.Formatter);
 
             return RedirectToAction(nameof(Details), new {id = role.Id});
-        }
-
-        private void SetPermissions(AppRole role, IEnumerable<string> permissions)
-        {
-            // Get possible permissions using reflection.
-            var type = typeof(IOperationConstants);
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p)).ToArray();
-            var possiblePermissions = types
-                .SelectMany(t => t.GetFields().Where(f => f.IsPublic).Select(x => (string) x.GetValue(null)))
-                .Union(types.SelectMany(t => t.GetProperties().Select(x => (string) x.GetValue(null))));
-
-            role.Permissions = permissions.Intersect(possiblePermissions).ToArray();
         }
     }
 }

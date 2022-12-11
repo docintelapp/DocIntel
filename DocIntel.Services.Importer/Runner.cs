@@ -43,13 +43,14 @@ namespace DocIntel.Services.Importer
         private readonly ILogger<Runner> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly AppUserClaimsPrincipalFactory _userClaimsPrincipalFactory;
+        private readonly UserManager<AppUser> _userManager;
 
         public Runner(IIncomingFeedRepository feedRepository,
             ILogger<Runner> logger,
             ILogger<DocIntelContext> contextLogger,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             IServiceProvider serviceProvider, IPublishEndpoint busClient,
-            ApplicationSettings appSettings)
+            ApplicationSettings appSettings, UserManager<AppUser> userManager)
         {
             _feedRepository = feedRepository;
             _contextLogger = contextLogger;
@@ -58,6 +59,7 @@ namespace DocIntel.Services.Importer
             _serviceProvider = serviceProvider;
             _busClient = busClient;
             _appSettings = appSettings;
+            _userManager = userManager;
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
@@ -89,11 +91,11 @@ namespace DocIntel.Services.Importer
             if (documentRepository == null) throw new ArgumentNullException(nameof(documentRepository));
             var context = new DocIntelContext(options, _contextLogger);
 
-            var automationUser = context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _appSettings.AutomationAccount);
+            var automationUser = await _userManager.FindByNameAsync(_appSettings.AutomationAccount);
             if (automationUser == null)
                 return;
 
-            var claims = _userClaimsPrincipalFactory.CreateAsync(context, automationUser).Result;
+            var claims = await _userClaimsPrincipalFactory.CreateAsync(automationUser);
             var ambientContext = new AmbientContext
             {
                 DatabaseContext = context,

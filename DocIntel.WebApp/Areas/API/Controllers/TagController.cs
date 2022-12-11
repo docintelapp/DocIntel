@@ -21,7 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -53,7 +53,7 @@ public class TagController : DocIntelAPIControllerBase
     private readonly ITagRepository _tagRepository;
     private readonly ITagSearchService _tagSearchEngine;
 
-    public TagController(UserManager<AppUser> userManager,
+    public TagController(AppUserManager userManager,
         DocIntelContext context,
         ITagSearchService tagSearchEngine,
         ILogger<TagController> logger,

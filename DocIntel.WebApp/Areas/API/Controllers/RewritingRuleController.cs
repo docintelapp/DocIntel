@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -67,7 +68,7 @@ public class RewritingRuleController : DocIntelAPIControllerBase
     private readonly IMapper _mapper;
     private readonly IImportRuleRepository _importRuleRepository;
 
-    public RewritingRuleController(UserManager<AppUser> userManager,
+    public RewritingRuleController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<RewritingRuleController> logger,
         IImportRuleRepository importRuleRepository,

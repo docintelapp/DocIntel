@@ -32,7 +32,7 @@ namespace DocIntel.Core.Models
         AppRole,
         string,
         IdentityUserClaim<string>,
-        AppUserRole,
+        IdentityUserRole<string>,
         IdentityUserLogin<string>,
         IdentityRoleClaim<string>,
         IdentityUserToken<string>>
@@ -171,22 +171,9 @@ namespace DocIntel.Core.Models
             modelBuilder.Entity<Document>().HasOne(_ => _.Thumbnail).WithOne(_ => _.DocumentThumbnail).OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Document>().HasMany(_ => _.Files).WithOne(_ => _.Document);
             
-            // See https://stackoverflow.com/questions/51004516/net-core-2-1-identity-get-all-users-with-their-associated-roles/51005445#51005445
-            // for more details
-            modelBuilder.Entity<AppUserRole>(userRole =>
-            {
-                userRole.HasKey(ur => new {ur.UserId, ur.RoleId});
 
-                userRole.HasOne(ur => ur.Role)
-                    .WithMany(r => r.UserRoles)
-                    .HasForeignKey(ur => ur.RoleId)
-                    .IsRequired();
-
-                userRole.HasOne(ur => ur.User)
-                    .WithMany(r => r.UserRoles)
-                    .HasForeignKey(ur => ur.UserId)
-                    .IsRequired();
-            });
+            modelBuilder.Entity<AppRole>().HasOne<AppUser>(u => u.CreatedBy);
+            modelBuilder.Entity<AppRole>().HasOne<AppUser>(u => u.LastModifiedBy);
         }
     }
 }

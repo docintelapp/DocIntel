@@ -59,12 +59,12 @@ namespace DocIntel.Core.Scrapers
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
             Init();
-            var context = GetContext();
+            var context = GetContextAsync();
             var match = Regex.Match(message.URL, @"https?://eu.threatmatch.com/app/reports/view/([0-9]+)");
             var reportId = match.Groups[1].ToString();
 
             var client = new APIClient(Username, APIKey, proxy: new WebProxy("http://" + _settings.Proxy + "/", true, new string[] { _settings.NoProxy }));
-            await ImportReport(message, client, int.Parse(reportId), context);
+            await ImportReport(message, client, int.Parse(reportId), await context);
             return false;
         }
 

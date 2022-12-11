@@ -55,7 +55,7 @@ namespace DocIntel.Core.Importers
             _logger.LogDebug(
                 $"Pulling {GetType().FullName} from {lastPull?.ToString() ?? "(not date)"} but max {limit} documents.");
 
-            var context = GetContext();
+            var context = await GetContextAsync();
             var sources = await _sourceRepository
                 .GetAllAsync(context, _ => _.Where(s => !string.IsNullOrEmpty(s.RSSFeed))).ToListAsync();
 

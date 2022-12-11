@@ -47,7 +47,6 @@ namespace DocIntel.Core.Models
 
         public ICollection<UserTagSubscription> SubscribedTags { get; set; }
         public ICollection<UserFacetSubscription> SubscribedFacets { get; set; }
-        public ICollection<AppUserRole> UserRoles { get; set; }
 
         public ICollection<APIKey> APIKeys { get; set; }
 

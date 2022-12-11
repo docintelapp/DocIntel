@@ -21,11 +21,11 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization.Operations;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
-using DocIntel.Core.Repositories;
 using DocIntel.WebApp.Areas.API.Models;
 using DocIntel.WebApp.Helpers;
 using Microsoft.AspNetCore.Http;
@@ -70,18 +70,18 @@ public class RoleController : DocIntelAPIControllerBase
     private readonly IHttpContextAccessor _accessor;
     private readonly ILogger _logger;
     private readonly IMapper _mapper;
-    private readonly IRoleRepository _roleRepository;
+    private readonly AppRoleManager _roleManager;
 
-    public RoleController(UserManager<AppUser> userManager,
+    public RoleController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<RoleController> logger,
-        IRoleRepository roleRepository,
+        AppRoleManager roleManager,
         IHttpContextAccessor accessor,
         IMapper mapper)
         : base(userManager, context)
     {
         _logger = logger;
-        _roleRepository = roleRepository;
+        _roleManager = roleManager;
         _accessor = accessor;
         _mapper = mapper;
     }
@@ -112,7 +112,7 @@ public class RoleController : DocIntelAPIControllerBase
         try
         {
             return Ok(_mapper.Map<IEnumerable<APIRoleDetails>>(
-                await _roleRepository.GetAllAsync(AmbientContext).ToListAsync()
+                _roleManager.Roles.ToList()
                 ));
         }
         catch (UnauthorizedOperationException)
@@ -156,7 +156,7 @@ public class RoleController : DocIntelAPIControllerBase
         var currentUser = await GetCurrentUser();
         try
         {
-            var role = await _roleRepository.GetAsync(AmbientContext, roleId);
+            var role = await _roleManager.FindByIdAsync(roleId);
             return Ok(_mapper.Map<APIRoleDetails>(role));
         }
         catch (UnauthorizedOperationException)
@@ -231,23 +231,39 @@ public class RoleController : DocIntelAPIControllerBase
                 var role = new AppRole
                 {
                     Name = submittedRole.Name,
-                    Description = submittedRole.Description
+                    Description = submittedRole.Description,
+                    CreatedById = currentUser.Id,
+                    LastModifiedById = currentUser.Id
                 };
 
-                SetPermissions(role, submittedRole.Permissions);
-                await _roleRepository.AddAsync(AmbientContext, role);
-                await _context.SaveChangesAsync();
+                var roleOperation = await _roleManager.CreateAsync(role);
+                if (roleOperation.Succeeded)
+                {
+                    await _roleManager.SetPermissionAsync(role, submittedRole.Permissions);
 
-                _logger.Log(LogLevel.Information, EventIDs.CreateRoleSuccessful,
-                    new LogEvent(
-                            $"User '{currentUser.UserName}' successfully created a new role '{submittedRole.Name}'.")
-                        .AddUser(currentUser)
-                        .AddHttpContext(_accessor.HttpContext)
-                        .AddRole(role),
-                    null,
-                    LogEvent.Formatter);
+                    _logger.Log(LogLevel.Information, EventIDs.CreateRoleSuccessful,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' successfully created a new role '{submittedRole.Name}'.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext)
+                            .AddRole(role),
+                        null,
+                        LogEvent.Formatter);
 
-                return Ok(_mapper.Map<APIRoleDetails>(role));
+                    return Ok(_mapper.Map<APIRoleDetails>(role));
+                }
+                else
+                {
+                    _logger.Log(LogLevel.Warning,
+                        EventIDs.CreateRoleFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' failed to create a new role '{submittedRole.Name}': {string.Join(",", roleOperation.Errors.Select(e => e.Description))}")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+                    return BadRequest();
+                }
             }
 
             return BadRequest(ModelState);
@@ -324,15 +340,29 @@ public class RoleController : DocIntelAPIControllerBase
 
         try
         {
-            var role = await _roleRepository.GetAsync(AmbientContext, roleId);
+            var role = await _roleManager.FindByIdAsync(roleId);
+            if (role == null)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditRoleFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to edit a non-existing role '{roleId}'.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddProperty("role.id", roleId),
+                    null,
+                    LogEvent.Formatter);
+
+                return NotFound();   
+            }
             
             if (ModelState.IsValid)
             {
                 role.Name = submittedRole.Name;
                 role.Description = submittedRole.Description;
-                SetPermissions(role, submittedRole.Permissions);
-                await _roleRepository.UpdateAsync(AmbientContext, role);
-                await _context.SaveChangesAsync();
+                role.LastModifiedById = currentUser.Id;
+                await _roleManager.UpdateAsync(role);
+                await _roleManager.SetPermissionAsync(role, submittedRole.Permissions);
 
                 _logger.Log(LogLevel.Information, EventIDs.EditRoleSuccessful,
                     new LogEvent($"User '{currentUser.UserName}' successfully edited role '{role.Name}'.")
@@ -360,20 +390,6 @@ public class RoleController : DocIntelAPIControllerBase
                 LogEvent.Formatter);
 
             return Unauthorized();
-        }
-        catch (NotFoundEntityException)
-        {
-            _logger.Log(LogLevel.Warning,
-                EventIDs.EditRoleFailed,
-                new LogEvent(
-                        $"User '{currentUser.UserName}' attempted to edit a non-existing role '{roleId}'.")
-                    .AddUser(currentUser)
-                    .AddHttpContext(_accessor.HttpContext)
-                    .AddProperty("role.id", roleId),
-                null,
-                LogEvent.Formatter);
-
-            return NotFound();
         }
         catch (InvalidArgumentException e)
         {
@@ -421,8 +437,21 @@ public class RoleController : DocIntelAPIControllerBase
         var currentUser = await GetCurrentUser();
         try
         {
-            await _roleRepository.RemoveAsync(AmbientContext, roleId);
-            await _context.SaveChangesAsync();
+            var role = await _roleManager.FindByIdAsync(roleId);
+            if (role == null)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.DeleteRoleFailed,
+                    new LogEvent($"User '{currentUser.UserName}' attempted to delete a non-existing role '{roleId}'.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddProperty("role.id", roleId),
+                    null,
+                    LogEvent.Formatter);
+                return NotFound();
+            }
+
+            await _roleManager.DeleteAsync(role);
 
             _logger.Log(LogLevel.Information,
                 EventIDs.DeleteRoleSuccessful,
@@ -464,18 +493,91 @@ public class RoleController : DocIntelAPIControllerBase
         }
     }
     
-
-    private void SetPermissions(AppRole role, IEnumerable<string> permissions)
+    /// <summary>
+    /// Get role permissions
+    /// </summary>
+    /// <remarks>
+    /// Returns the permissions associated with the role.
+    ///
+    /// For example, with cURL
+    /// 
+    ///     curl --request GET \
+    ///         --url http://localhost:5001/API/Role/04573fca-f1b1-48a4-b55b-b26b8c09bb9d/Permissions \
+    ///         --header 'Authorization: Bearer $TOKEN'
+    /// 
+    /// </remarks>
+    /// <param name="roleId" example="7dd7bdd3-05c3-cc34-c560-8cc94664f810">The identifier of the role</param>
+    /// <returns>The role</returns>
+    /// <response code="201">Returns the permissions</response>
+    /// <response code="401">Action is not authorized</response>
+    [HttpGet("{roleId}/Permissions")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(APIRoleDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetPermissions(string roleId)
     {
-        // Get possible permissions using reflection.
-        var type = typeof(IOperationConstants);
-        var types = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => type.IsAssignableFrom(p)).ToArray();
-        var possiblePermissions = types
-            .SelectMany(t => t.GetFields().Where(f => f.IsPublic).Select(x => (string) x.GetValue(null)))
-            .Union(types.SelectMany(t => t.GetProperties().Select(x => (string) x.GetValue(null))));
+        var currentUser = await GetCurrentUser();
+        var role = await _roleManager.FindByIdAsync(roleId);
+        if (role == null) {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.DetailsRoleFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to get permissions of a non-existing role '{roleId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("role.id", roleId),
+                null,
+                LogEvent.Formatter);
 
-        role.Permissions = permissions.Intersect(possiblePermissions).ToArray();
+            return NotFound();
+        }
+        
+        var permission = await _roleManager.GetPermissionsAsync(role);
+        return Ok(permission);
+    }
+    
+    /// <summary>
+    /// Get users in role
+    /// </summary>
+    /// <remarks>
+    /// Returns the users in the specified role.
+    ///
+    /// For example, with cURL
+    /// 
+    ///     curl --request GET \
+    ///         --url http://localhost:5001/API/Role/04573fca-f1b1-48a4-b55b-b26b8c09bb9d/Users \
+    ///         --header 'Authorization: Bearer $TOKEN'
+    /// 
+    /// </remarks>
+    /// <param name="roleId" example="7dd7bdd3-05c3-cc34-c560-8cc94664f810">The identifier of the role</param>
+    /// <returns>The role</returns>
+    /// <response code="201">Returns the users</response>
+    /// <response code="401">Action is not authorized</response>
+    [HttpGet("{roleId}/Users")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(APIRoleDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetUsersInRole(string roleId)
+    {
+        var currentUser = await GetCurrentUser();
+        var role = await _roleManager.FindByIdAsync(roleId);
+        if (role == null) {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.DetailsRoleFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to get permissions of a non-existing role '{roleId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("role.id", roleId),
+                null,
+                LogEvent.Formatter);
+
+            return NotFound();
+        }
+
+        var users = await _userManager.GetUsersInRoleAsync(role.Name);
+        return Ok(users);
     }
 }

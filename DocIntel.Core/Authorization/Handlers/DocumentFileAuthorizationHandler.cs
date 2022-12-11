@@ -49,7 +49,7 @@ namespace DocIntel.Core.Authorization.Handlers
             _serviceProvider = serviceProvider;
         }
         
-        protected AmbientContext GetContext(string registeredBy = null)
+        protected async Task<AmbientContext> GetContext(string registeredBy = null)
         {
             var userClaimsPrincipalFactory = _serviceProvider.GetService<AppUserClaimsPrincipalFactory>();
             if (userClaimsPrincipalFactory == null) throw new ArgumentNullException(nameof(userClaimsPrincipalFactory));
@@ -61,12 +61,12 @@ namespace DocIntel.Core.Authorization.Handlers
                 (ILogger<DocIntelContext>) _serviceProvider.GetService(typeof(ILogger<DocIntelContext>)));
 
             var automationUser = !string.IsNullOrEmpty(registeredBy)
-                ? context.Users.AsNoTracking().FirstOrDefault(_ => _.Id == registeredBy)
-                : context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _settings.AutomationAccount);
+                ? await _userManager.FindByIdAsync(registeredBy)
+                : await _userManager.FindByNameAsync(_settings.AutomationAccount);
             if (automationUser == null)
                 return null;
 
-            var claims = userClaimsPrincipalFactory.CreateAsync(context, automationUser).Result;
+            var claims = await userClaimsPrincipalFactory.CreateAsync(automationUser);
             return new AmbientContext
             {
                 DatabaseContext = context,
@@ -75,7 +75,7 @@ namespace DocIntel.Core.Authorization.Handlers
             };
         }
 
-        protected override Task HandleRequirementAsync(
+        protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             OperationAuthorizationRequirement requirement,
             DocumentFile resource)
@@ -105,8 +105,8 @@ namespace DocIntel.Core.Authorization.Handlers
 
                 if ((resource.ReleasableTo?.Any() ?? false))
                 {
-                    // TODO Should be optimized to avoid getting data from the database everytime we need to check the default groups. Should be cached?
-                    var ambientContext = GetContext();
+                    // TODO Use user and role claims to avoid querying the database unnecessarily
+                    var ambientContext = await GetContext();
                     var groupRepository = _serviceProvider.GetRequiredService<IGroupRepository>();
                     var defaultGroups = groupRepository.GetDefaultGroups(ambientContext).Select(_ => _.GroupId).ToArray();
                     
@@ -124,11 +124,7 @@ namespace DocIntel.Core.Authorization.Handlers
                 }
 
                 if (!context.HasFailed) base.HandleRequirementAsync(context, requirement, resource);
-
-                return Task.CompletedTask;
             }
-
-            return Task.CompletedTask;
         }
     }
 }

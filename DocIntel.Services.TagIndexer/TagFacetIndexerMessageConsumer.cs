@@ -57,8 +57,8 @@ public class TagFacetIndexerMessageConsumer :
         ITagFacetIndexingUtility facetIndexingUtility,
         AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, ITagFacetRepository facetRepository,
         ApplicationSettings appSettings,
-        IServiceProvider serviceProvider)
-        : base(appSettings, serviceProvider, userClaimsPrincipalFactory)
+        IServiceProvider serviceProvider, UserManager<AppUser> userManager)
+        : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
     {
         _logger = logger;
         _tagRepository = tagRepository;

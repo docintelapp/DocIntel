@@ -53,8 +53,9 @@ namespace DocIntel.Services.Thumbnailer
         public ThumbnailerMessageConsumer(ILogger<ThumbnailerMessageConsumer> logger,
             IDocumentRepository documentRepository,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            IThumbnailUtility utility, ApplicationSettings appSettings, IServiceProvider serviceProvider)
-            : base(appSettings, serviceProvider, userClaimsPrincipalFactory)
+            IThumbnailUtility utility, ApplicationSettings appSettings, IServiceProvider serviceProvider,
+            UserManager<AppUser> userManager)
+            : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
         {
             _logger = logger;
             _documentRepository = documentRepository;

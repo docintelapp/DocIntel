@@ -49,6 +49,7 @@ namespace DocIntel.Services.Newsletters
         private readonly ISourceRepository _sourceRepository;
         private readonly ILogger<NewsletterSender> _logger;
         private readonly AppUserClaimsPrincipalFactory _userClaimsPrincipalFactory;
+        private readonly UserManager<AppUser> _userManager;
         private readonly IServiceProvider _serviceProvider;
 
         public NewsletterSender(EmailSettings emailSettings,
@@ -58,7 +59,7 @@ namespace DocIntel.Services.Newsletters
                            ISourceRepository sourceRepository,
                            ILogger<NewsletterSender> logger,
                            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-                           ApplicationSettings applicationSettings, IServiceProvider serviceProvider)
+                           ApplicationSettings applicationSettings, IServiceProvider serviceProvider, UserManager<AppUser> userManager)
         {
             _emailSettings = emailSettings;
             _userRepository = userRepository;
@@ -69,6 +70,7 @@ namespace DocIntel.Services.Newsletters
             _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
             _applicationSettings = applicationSettings;
             _serviceProvider = serviceProvider;
+            _userManager = userManager;
         }
 
         // Courtesy of https://stackoverflow.com/questions/22368434/best-way-to-split-string-into-lines-with-maximum-length-without-breaking-words
@@ -108,7 +110,7 @@ namespace DocIntel.Services.Newsletters
                 .UseMemoryCachingProvider()
                 .Build();
 
-            AmbientContext ambientContext = GetAmbientContext();
+            AmbientContext ambientContext = await GetAmbientContext();
             var users = await _userRepository.GetUsersForNewsletter(ambientContext).ToArrayAsync();
             
             int i = 0;
@@ -250,23 +252,23 @@ namespace DocIntel.Services.Newsletters
             return text;
         }
 
-        private AmbientContext GetAmbientContext()
+        private async Task<AmbientContext> GetAmbientContext()
         {
             var dbContextOptions = _serviceProvider.GetRequiredService<DbContextOptions<DocIntelContext>>();
             var dbContextLogger = _serviceProvider.GetRequiredService<ILogger<DocIntelContext>>();
-            var _dbContext = new DocIntelContext(dbContextOptions, dbContextLogger);
-            var automationUser =
-                _dbContext.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _applicationSettings.AutomationAccount);
+            var dbContext = new DocIntelContext(dbContextOptions, dbContextLogger);
+            var automationUser = await _userManager.FindByNameAsync(_applicationSettings.AutomationAccount);
             if (automationUser == null)
                 throw new ArgumentNullException($"User '{_applicationSettings.AutomationAccount}' does not exists.");
 
-            var claims = _userClaimsPrincipalFactory.CreateAsync(_dbContext, automationUser).Result;
+            var claims = await _userClaimsPrincipalFactory.CreateAsync(automationUser);
             var ambientContext = new AmbientContext
             {
-                DatabaseContext = _dbContext,
+                DatabaseContext = dbContext,
                 Claims = claims,
                 CurrentUser = automationUser
             };
+            
             return ambientContext;
         }
     }

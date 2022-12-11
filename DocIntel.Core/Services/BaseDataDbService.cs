@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization.Operations;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
@@ -27,11 +28,13 @@ public class BaseDataDbService : IStartupServiceToRunSequentially
             .GetRequiredService<ApplicationSettings>();
         var userManager = scopedServices
             .GetRequiredService<UserManager<AppUser>>();
+        var roleManager = scopedServices
+            .GetRequiredService<AppRoleManager>();
             
         var context = scopedServices.GetRequiredService<DocIntelContext>();
 
         AppUser automation = null;
-        if (await context.Users.CountAsync() == 0)
+        if (!userManager.Users.Any())
         {
             // Create automation account
             if (string.IsNullOrEmpty(settings.AutomationAccount))
@@ -54,7 +57,7 @@ public class BaseDataDbService : IStartupServiceToRunSequentially
         }
         
         // Create administrator role
-        var role = await context.Roles.FirstOrDefaultAsync(_ => _.NormalizedName == "ADMINISTRATOR");
+        var role = await roleManager.FindByNameAsync("Administrator");
         if (role == null)
         {
             // Get all permissions
@@ -70,16 +73,26 @@ public class BaseDataDbService : IStartupServiceToRunSequentially
                 
             role = new AppRole
             {
-                Name = "Administrator", 
-                NormalizedName = "ADMINISTRATOR",
-                PermissionList = string.Join(",", permissions)
+                Name = "Administrator"
             };
-            context.Add(role);
+            var result = await roleManager.CreateAsync(role);
+            if (result.Succeeded)
+            {
+                await roleManager.SetPermissionAsync(role, permissions.ToArray());
+            }
+            else
+            {
+                logger.LogDebug($"Could not add role '{role.Name}' to database.");
+            }
             
             // Assign the automation account to the 'Administrator' role
             if (automation == null)
-                automation = context.Users.Single(_ => _.UserName == settings.AutomationAccount);
-            context.Add(new AppUserRole {User = automation, Role = role});
+                automation = await userManager.FindByNameAsync(settings.AutomationAccount);
+
+            if (automation != null) 
+                await userManager.AddToRoleAsync(automation, "Administrator");
+            else if (logger != null) 
+                logger.LogDebug($"Could not get user '{settings.AutomationAccount}' to database.");
         }
             
         if (await context.Classifications.CountAsync() == 0)
@@ -91,7 +104,8 @@ public class BaseDataDbService : IStartupServiceToRunSequentially
                 Default = true
             });
 
-            if (logger != null) logger.LogDebug($"Adding default classification '{classification.Entity.ClassificationId}' to database.");
+            if (logger != null) 
+                logger.LogDebug($"Adding default classification '{classification.Entity.ClassificationId}' to database.");
         }
 
         await context.SaveChangesAsync();

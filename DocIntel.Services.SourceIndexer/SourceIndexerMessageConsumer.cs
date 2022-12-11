@@ -21,11 +21,13 @@ using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Messages;
+using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation;
 using MassTransit;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Services.SourceIndexer;
@@ -48,8 +50,8 @@ public class SourceIndexerMessageConsumer :
         ISourceRepository sourceRepository,
         ISourceIndexingUtility indexingUtility,
         ApplicationSettings appSettings, IServiceProvider serviceProvider,
-        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory)
-        : base(appSettings, serviceProvider, userClaimsPrincipalFactory)
+        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, UserManager<AppUser> userManager)
+        : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
     {
         _logger = logger;
         _sourceRepository = sourceRepository;

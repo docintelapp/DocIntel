@@ -1,7 +1,8 @@
 @using DocIntel.Core.Authorization.Operations
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model DocIntel.WebApp.ViewModels.RoleViewModel.DetailsViewModel
 
-@if (Model.Role.UserRoles != null)
+@if (Model.Users != null)
 {
     <div id="panel-source-info" class="panel">
         <div class="panel-hdr">
@@ -14,7 +15,7 @@
         </div>
         <div class="panel-container show">
             <div class="panel-content">
-                @if (Model.Role.UserRoles.Any())
+                @if (Model.Users.Any())
                 {
                     <table class="table table-bordered mb-0">
                         <thead class="thead-light">
@@ -27,19 +28,19 @@
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach (var t in Model.Role.UserRoles)
+                        @foreach (var t in Model.Users)
                         {
                             <tr>
                                 <th scope="row">
-                                    <a asp-action="Details" asp-route-id="@t.RoleId">@t.User.FriendlyName</a>
+                                    <a asp-action="Details" asp-route-id="@t.Id">@t.FriendlyName</a>
                                 </th>
-                                <td>@t.User.Function</td>
-                                <td>@t.User.UserName</td>
-                                <td>@t.User.Email</td>
+                                <td>@t.Function</td>
+                                <td>@t.UserName</td>
+                                <td>@t.Email</td>
                                 <td>
                                     @if ((await AuthorizationService.AuthorizeAsync(User, null, RoleOperations.RemoveRole)).Succeeded)
                                     {
-                                        <a asp-action="Removerole" asp-route-userName="@t.User.UserName" asp-route-roleId="@Model.Role.Id">Remove</a>
+                                        <a asp-action="Removerole" asp-route-userId="@t.Id" asp-route-roleId="@Model.Role.Id">Remove</a>
                                     }
                                 </td>
                             </tr>

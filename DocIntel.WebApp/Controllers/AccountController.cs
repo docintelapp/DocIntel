@@ -19,9 +19,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -70,7 +69,7 @@ namespace DocIntel.WebApp.Controllers
 
         public AccountController(
             DocIntelContext context,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             SignInManager<AppUser> signInManager,
             ApplicationSettings configuration,
             ILogger<AccountController> logger,
@@ -834,10 +833,9 @@ namespace DocIntel.WebApp.Controllers
         ///     The profile picture of the user if it exists, a "Not Found"
         ///     response otherwise.
         /// </returns>
-        public IActionResult ProfilePicture(string userName)
+        public async Task<IActionResult> ProfilePicture(string userName)
         {
-            var user = _context.Users
-                .SingleOrDefault(x => x.UserName == userName);
+            var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
                 return NotFound();
 

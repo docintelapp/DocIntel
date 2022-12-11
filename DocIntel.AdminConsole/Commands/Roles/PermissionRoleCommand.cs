@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Authorization.Operations;
 using DocIntel.Core.Models;
-using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 
 using Microsoft.AspNetCore.Identity;
@@ -19,21 +19,21 @@ namespace DocIntel.AdminConsole.Commands.Roles
 {
     public class PermissionRoleCommand : RoleCommand<PermissionRoleCommand.Settings>
     {
-        private readonly IRoleRepository _roleRepository;
-
         public PermissionRoleCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            IRoleRepository roleRepository, ApplicationSettings applicationSettings) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            ApplicationSettings applicationSettings,
+            UserManager<AppUser> userManager,
+            AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
-            _roleRepository = roleRepository;
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
             await base.ExecuteAsync(context, settings);
             
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             var roleName = GetField(settings, "Role", settings.Role);
@@ -43,7 +43,7 @@ namespace DocIntel.AdminConsole.Commands.Roles
                 return 1;
             }
 
-            if (!await _roleRepository.Exists(ambientContext, roleName))
+            if (await _roleManager.FindByNameAsync(roleName) == null)
             {
                 AnsiConsole.Render(new Markup($"[red]The role '{roleName}' was not found.[/]"));
                 return 1;
@@ -100,14 +100,8 @@ namespace DocIntel.AdminConsole.Commands.Roles
                 permissions = AnsiConsole.Prompt(multi).ToHashSet();
             }
 
-            var role = await _roleRepository.GetByNameAsync(ambientContext, roleName);
-
-            // Ensure that we only add viable permissions
-            permissions.IntersectWith(possiblePermissions);
-            role.Permissions = permissions.ToArray();
-
-            _context.Roles.Update(role);
-            await _context.SaveChangesAsync();
+            var role = await _roleManager.FindByNameAsync(roleName);
+            await _roleManager.SetPermissionAsync(role, permissions.ToArray());
 
             return 0;
         }

@@ -6,8 +6,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
+using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -27,10 +29,11 @@ namespace DocIntel.AdminConsole.Commands.Observables
         protected readonly SynapseClient _synapseClient;
 
         public ImportWhitelistCommand(DocIntelContext context,
-            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, 
-            ApplicationSettings applicationSettings, 
-            ILogger<ExtractObservableCommand> logger, SynapseClient synapseClient) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
+            ApplicationSettings applicationSettings,
+            ILogger<ExtractObservableCommand> logger, SynapseClient synapseClient, UserManager<AppUser> userManager,
+            AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
             _logger = logger;
             _synapseClient = synapseClient;
@@ -38,7 +41,8 @@ namespace DocIntel.AdminConsole.Commands.Observables
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
-            if (!TryGetAmbientContext(out var ambientContext))
+            AmbientContext ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             await _synapseClient.LoginAsync();
@@ -119,7 +123,7 @@ namespace DocIntel.AdminConsole.Commands.Observables
                     return 1;
                 }
 
-                var user = GetAutomationUser();
+                var user = await GetAutomationUserAsync();
                 if (user == null)
                     return 1;
                 
@@ -128,16 +132,7 @@ namespace DocIntel.AdminConsole.Commands.Observables
             return 0;
         }
         
-        private AppUser GetAutomationUser()
-        {
-            var automationUser =
-                _context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _applicationSettings.AutomationAccount);
-            if (automationUser == null)
-                AnsiConsole.Render(
-                    new Markup($"[red]The user '{_applicationSettings.AutomationAccount}' was not found.[/]"));
-
-            return automationUser;
-        }
+        
 
         public class Settings : DocIntelCommandSettings
         {

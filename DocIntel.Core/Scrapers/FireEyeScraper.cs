@@ -71,7 +71,7 @@ namespace DocIntel.Core.Scrapers
             {
                 var client = new FireEyeAPI(ApiKey, SecretKey,
                     proxy: new WebProxy("http://" + _settings.Proxy + "/", true, new[] {_settings.NoProxy}));
-                var context = GetContext();
+                var context = await GetContextAsync();
                 var match = Regex.Match(message.URL, @"https://intelligence.fireeye.com/reports/(.+)");
                 if (match.Success)
                 {

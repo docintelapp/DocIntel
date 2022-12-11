@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
@@ -45,7 +45,7 @@ namespace DocIntel.WebApp.Controllers
 
         public HomeController(DocIntelContext context,
             ApplicationSettings configuration,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             IAuthorizationService authorizationService,
             IDocumentRepository documentRepository, ITagRepository tagRepository, ISourceRepository sourceRepository)
             : base(context,

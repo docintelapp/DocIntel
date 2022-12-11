@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -14,21 +15,20 @@ namespace DocIntel.AdminConsole.Commands.Roles
 {
     public class AddRoleCommand : RoleCommand<AddRoleCommand.Settings>
     {
-        private readonly IRoleRepository _roleRepository;
-
         public AddRoleCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            IRoleRepository roleRepository, ApplicationSettings applicationSettings) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            ApplicationSettings applicationSettings, UserManager<AppUser> userManager,
+            AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
-            _roleRepository = roleRepository;
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
             await base.ExecuteAsync(context, settings);
             
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             var roleName = GetField(settings, "Role name", default);
@@ -47,14 +47,14 @@ namespace DocIntel.AdminConsole.Commands.Roles
                 Description = description
             };
 
-            if (await _roleRepository.Exists(ambientContext, roleName))
+            if (await _roleManager.FindByNameAsync(roleName) != null)
             {
                 AnsiConsole.Render(new Markup($"[darkorange]Role '{roleName}' already exists.[/]\n"));
                 return 0;
             }
             
-            var result = await _roleRepository.AddAsync(ambientContext, role);
-            if (result != null)
+            var result = await _roleManager.CreateAsync(role);
+            if (result.Succeeded)
             {
                 AnsiConsole.Render(new Markup($"[green]Role {roleName} successfully created.[/]\n"));
                 await _context.SaveChangesAsync();

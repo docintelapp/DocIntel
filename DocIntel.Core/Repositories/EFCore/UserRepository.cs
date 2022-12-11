@@ -226,69 +226,6 @@ namespace DocIntel.Core.Repositories.EFCore
         }
 
         /// <summary>
-        ///     Adds the specified role to the specified user in the database. The
-        ///     relationship between the two is represented as a
-        ///     <see
-        ///         cref="DocIntel.Core.Models.AppUserRole" />
-        ///     .
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="role">The role</param>
-        /// <returns>
-        ///     <c>true</c> if the role was successfully added, <c>false</c>
-        ///     otherwise.
-        /// </returns>
-        public async Task AddRole(AmbientContext ambientContext, AppUser user,
-            AppRole role)
-        {
-            var retreivedUser = await ambientContext.DatabaseContext.Users.FindAsync(user.Id);
-            if (retreivedUser == null)
-                throw new NotFoundEntityException();
-
-            var retreivedRole = await ambientContext.DatabaseContext.Roles.FindAsync(role.Id);
-            if (retreivedRole == null)
-                throw new NotFoundEntityException();
-
-            // var claims = await _userClaimsPrincipalFactory.CreateAsync(requestingUser);
-            if (!await _appAuthorizationService.CanAddUserRole(ambientContext.Claims, retreivedUser, retreivedRole))
-                throw new UnauthorizedOperationException();
-
-            await ambientContext.DatabaseContext.UserRoles.AddAsync(new AppUserRole
-            {
-                UserId = user.Id,
-                RoleId = role.Id
-            });
-        }
-
-        /// <summary>
-        ///     Removes the specified role from the specified user.
-        /// </summary>
-        /// <param name="user">The user</param>
-        /// <param name="role">The role</param>
-        /// <returns>
-        ///     <c>true</c> if the role was successfully removed, <c>false</c>
-        ///     otherwise.
-        /// </returns>
-        public async Task RemoveRole(AmbientContext ambientContext, AppUser user, AppRole role)
-        {
-            var retreivedUser = await ambientContext.DatabaseContext.Users.FindAsync(user.Id);
-            if (retreivedUser == null)
-                throw new NotFoundEntityException();
-
-            var retreivedRole = await ambientContext.DatabaseContext.Roles.FindAsync(role.Id);
-            if (retreivedRole == null)
-                throw new NotFoundEntityException();
-
-            // var claims = await _userClaimsPrincipalFactory.CreateAsync(requestingUser);
-            if (!await _appAuthorizationService.CanAddUserRole(ambientContext.Claims, retreivedUser, retreivedRole))
-                throw new UnauthorizedOperationException();
-
-            var entities = ambientContext.DatabaseContext.UserRoles
-                .AsQueryable().Where(_ => (_.UserId == user.Id) & (_.RoleId == role.Id));
-            ambientContext.DatabaseContext.UserRoles.RemoveRange(entities);
-        }
-
-        /// <summary>
         ///     Returns whether a user matching the specified username exists in
         ///     the database.
         /// </summary>

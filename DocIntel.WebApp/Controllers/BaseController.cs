@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
@@ -37,10 +37,10 @@ namespace DocIntel.WebApp.Controllers
         protected readonly IAuthorizationService _authorizationService;
         protected readonly ApplicationSettings _configuration;
         protected readonly DocIntelContext _context;
-        protected readonly UserManager<AppUser> _userManager;
+        protected readonly AppUserManager _userManager;
 
         public BaseController(DocIntelContext context,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             ApplicationSettings configuration,
             IAuthorizationService authorizationService)
         {

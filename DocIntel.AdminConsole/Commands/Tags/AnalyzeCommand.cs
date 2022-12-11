@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -32,8 +33,9 @@ namespace DocIntel.AdminConsole.Commands.Tags
             ITagRepository tagRepository,
             ITagFacetRepository facetRepository,
             IDocumentRepository documentRepository,
-            IContentExtractionUtility contentExtractionUtility) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            IContentExtractionUtility contentExtractionUtility, UserManager<AppUser> userManager,
+            AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
             _logger = logger;
             _tagRepository = tagRepository;
@@ -44,7 +46,8 @@ namespace DocIntel.AdminConsole.Commands.Tags
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             var doc = await _documentRepository.GetAsync(ambientContext, (Guid)settings.DocumentId, new [] {"DocumentTags", "Files"});

@@ -53,7 +53,7 @@ namespace DocIntel.Core.Authorization.Handlers
             OperationAuthorizationRequirement requirement,
             object resource)
         {
-            if (context.User.HasClaim("Permission", requirement.Name))
+            if (context.User.HasClaim(DocIntelConstants.ClaimPermissionType, requirement.Name))
                 context.Succeed(requirement);
 
             return Task.CompletedTask;

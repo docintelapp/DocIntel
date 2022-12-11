@@ -23,178 +23,142 @@ using DocIntel.Core.Authorization;
 using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
-
-using MassTransit;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-
 using DocIntel.Core.Scrapers;
 using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
+using MassTransit;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
-namespace DocIntel.Services.Scraper
+namespace DocIntel.Services.Scraper;
+
+public class ScraperConsumer :
+    DynamicContextConsumer,
+    IConsumer<URLSubmittedMessage>
 {
-    public class ScraperConsumer :
-        DynamicContextConsumer,
-        IConsumer<URLSubmittedMessage>
+    private readonly IDocumentRepository _documentRepository;
+    private readonly ILogger _logger;
+    private readonly IScraperRepository _scraperRepository;
+
+    public ScraperConsumer(IDocumentRepository documentRepository,
+        IServiceProvider serviceProvider,
+        ILogger<ScraperConsumer> logger,
+        IScraperRepository scraperRepository,
+        ApplicationSettings appSettings,
+        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
+        UserManager<AppUser> userManager)
+        : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
     {
-        private readonly IDocumentRepository _documentRepository;
-        private readonly IScraperRepository _scraperRepository;
-        private readonly ILogger _logger;
+        _documentRepository = documentRepository;
+        _logger = logger;
+        _scraperRepository = scraperRepository;
+    }
 
-        public ScraperConsumer(IDocumentRepository documentRepository,
-            IServiceProvider serviceProvider,
-            ILogger<ScraperConsumer> logger,
-            IScraperRepository scraperRepository, 
-            ApplicationSettings appSettings,
-            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory)
-            : base(appSettings, serviceProvider, userClaimsPrincipalFactory)
-        {
-            _documentRepository = documentRepository;
-            _logger = logger;
-            _scraperRepository = scraperRepository;
-        }
+    public async Task Consume(ConsumeContext<URLSubmittedMessage> c)
+    {
+        _logger.LogDebug($"Received a new message: {c.Message.SubmissionId}");
+        var urlSubmittedMessage = c.Message;
+        await Scrape(urlSubmittedMessage);
+    }
 
-        public async Task ConsumeBacklogAsync()
+    public async Task ConsumeBacklogAsync()
+    {
+        var context = await GetAmbientContext();
+        while (await _documentRepository.GetSubmittedDocuments(context,
+                       _ => _.Include(__ => __.Classification)
+                           .Include(__ => __.ReleasableTo)
+                           .Include(__ => __.EyesOnly)
+                           .Where(__ => __.Status == SubmissionStatus.Submitted))
+                   .CountAsync() > 0)
         {
-            var context = await GetAmbientContext();
-            while (await _documentRepository.GetSubmittedDocuments(context,
+            var submitted = await _documentRepository.GetSubmittedDocuments(context,
                     _ => _.Include(__ => __.Classification)
                         .Include(__ => __.ReleasableTo)
                         .Include(__ => __.EyesOnly)
-                        .Where(__ => __.Status == SubmissionStatus.Submitted))
-                .CountAsync() > 0)
-            {
-                var submitted = await _documentRepository.GetSubmittedDocuments(context,
-                        _ => _.Include(__ => __.Classification)
-                            .Include(__ => __.ReleasableTo)
-                            .Include(__ => __.EyesOnly)
-                            .Where(__ => __.Status == SubmissionStatus.Submitted)
-                            .OrderByDescending(__ => __.SubmissionDate))
-                    .FirstOrDefaultAsync();
-                _logger.LogTrace($"ConsumeBacklogAsync {submitted.URL}");
-                var result = await Scrape(submitted);
-            }
+                        .Where(__ => __.Status == SubmissionStatus.Submitted)
+                        .OrderByDescending(__ => __.SubmissionDate))
+                .FirstOrDefaultAsync();
+            _logger.LogTrace($"ConsumeBacklogAsync {submitted.URL}");
+            var result = await Scrape(submitted);
         }
-/*
-        private AmbientContext GetContext(string registeredBy = null)
+    }
+
+    private async Task Scrape(URLSubmittedMessage urlSubmittedMessage)
+    {
+        var context = await GetAmbientContext();
+        var submission = await _documentRepository.GetSubmittedDocument(context,
+            urlSubmittedMessage.SubmissionId,
+            _ => _.Include(__ => __.Classification).Include(__ => __.ReleasableTo).Include(__ => __.EyesOnly));
+        await Scrape(submission);
+    }
+
+    private async Task<bool> Scrape(SubmittedDocument submission)
+    {
+        submission.IngestionDate = DateTime.UtcNow;
+
+        var context = await GetAmbientContext();
+        _logger.LogDebug($"Scrape: {submission.URL}");
+        var exists = await _documentRepository.GetAllAsync(context,
+                _ => _.Where(__ =>
+                    (__.SourceUrl == submission.URL) | __.Files.Any(___ => ___.SourceUrl == submission.URL)))
+            .ToArrayAsync();
+
+        // If we have an existing document with a priority higher, we can skip the scraper.
+        if (exists.Any(_ =>
+                _.MetaData != null && (_.MetaData.Value<int?>("ScraperPriority") ?? -1) >= submission.Priority))
         {
-            var userClaimsPrincipalFactory =
-                (IUserClaimsPrincipalFactory<AppUser>) _serviceProvider.GetService(
-                    typeof(IUserClaimsPrincipalFactory<AppUser>));
-            var options =
-                (DbContextOptions<DocIntelContext>) _serviceProvider.GetService(
-                    typeof(DbContextOptions<DocIntelContext>));
-            var context = new DocIntelContext(options,
-                (ILogger<DocIntelContext>) _serviceProvider.GetService(typeof(ILogger<DocIntelContext>)));
-
-            var automationUser = !string.IsNullOrEmpty(registeredBy)
-                ? context.Users.AsNoTracking().FirstOrDefault(_ => _.Id == registeredBy)
-                : context.Users.AsNoTracking().FirstOrDefault(_ => _.UserName == _appSettings.AutomationAccount);
-            
-            if (automationUser == null)
-                throw new InvalidOperationException("Could not find user to run consumer");
-
-            if (userClaimsPrincipalFactory != null)
-            {
-                var claims = userClaimsPrincipalFactory.CreateAsync(automationUser).Result;
-                return new AmbientContext {
-                    DatabaseContext = context,
-                    Claims = claims,
-                    CurrentUser = automationUser
-                };
-            }
-
-            throw new InvalidOperationException(
-                "Could not create instance of `IUserClaimsPrincipalFactory<AppUser>`");
+            _documentRepository.DeleteSubmittedDocument(context, submission.SubmittedDocumentId,
+                SubmissionStatus.Duplicate);
+            await context.DatabaseContext.SaveChangesAsync();
+            return true;
         }
-*/
-        public async Task Consume(ConsumeContext<URLSubmittedMessage> c)
+
+        var scraped = false;
+        var scrapers = await _scraperRepository.GetAllAsync(context,
+                _ => _.Where(__ => __.Enabled))
+            .ToArrayAsync();
+        foreach (var scraper in scrapers.OrderBy(_ => _.Position))
         {
-            _logger.LogDebug($"Received a new message: {c.Message.SubmissionId}");
-            var urlSubmittedMessage = c.Message;
-            await Scrape(urlSubmittedMessage);
-        }
+            if (scraped)
+                break;
 
-        private async Task Scrape(URLSubmittedMessage urlSubmittedMessage)
-        {   
-            var context = await GetAmbientContext();
-            var submission = await _documentRepository.GetSubmittedDocument(context, 
-                urlSubmittedMessage.SubmissionId,
-                _ => _.Include(__ => __.Classification).Include(__ => __.ReleasableTo).Include(__ => __.EyesOnly));
-            await Scrape(submission);
-        }
-
-        private async Task<bool> Scrape(SubmittedDocument submission)
-        {  
-            submission.IngestionDate = DateTime.UtcNow;
-            
-            var context = await GetAmbientContext();
-            _logger.LogDebug($"Scrape: {submission.URL}");
-            var exists = await _documentRepository.GetAllAsync(context,
-                    _ => _.Where(__ =>
-                        __.SourceUrl == submission.URL | __.Files.Any(___ => ___.SourceUrl == submission.URL)))
-                .ToArrayAsync();
-            
-            // If we have an existing document with a priority higher, we can skip the scraper.
-            if (exists.Any(_ => _.MetaData != null && (_.MetaData.Value<int?>("ScraperPriority") ?? -1) >= submission.Priority)) {
-                _documentRepository.DeleteSubmittedDocument(context, submission.SubmittedDocumentId, SubmissionStatus.Duplicate);
-                await context.DatabaseContext.SaveChangesAsync();
-                return true;
-            }
-
-            bool scraped = false;
-            var scrapers = await _scraperRepository.GetAllAsync(context,
-                    _ => _.Where(__ => __.Enabled))
-                .ToArrayAsync();
-            foreach (var scraper in scrapers.OrderBy(_ => _.Position))
-            {
-                if (scraped)
-                    break;
-                
-                var instance = await ScraperFactory.CreateScraper(scraper, _serviceProvider, context);
-                foreach (var pattern in instance.Patterns)
-                {
-                    if (Regex.IsMatch(submission.URL, pattern))
+            var instance = await ScraperFactory.CreateScraper(scraper, _serviceProvider, context);
+            foreach (var pattern in instance.Patterns)
+                if (Regex.IsMatch(submission.URL, pattern))
+                    try
                     {
-                        try
+                        if (!await instance.Scrape(submission))
                         {
-                            if (!await instance.Scrape(submission))
-                            {
-                                scraped = true;
-                                break;
-                            }
-
-                        } catch (Exception e)
-                        {
-                            do
-                            {
-                                _logger.LogDebug(
-                                    $"Could not scrape content: {e.GetType().FullName}({e.Message})\n{e?.StackTrace}");
-                            } while ((e = e.InnerException) != null);
+                            scraped = true;
+                            break;
                         }
                     }
-                }
-            }
-
-            if (scraped)
-            {
-            
-                _logger.LogDebug(
-                    $"Submitted URL '{submission.URL}' was successfully scraped.");
-                _documentRepository.DeleteSubmittedDocument(context, submission.SubmittedDocumentId);
-                await context.DatabaseContext.SaveChangesAsync();
-            }
-            else
-            {
-                _logger.LogDebug(
-                    $"Submitted URL '{submission.URL}' could not be scraped.");
-                submission.Status = SubmissionStatus.Error;
-                await context.DatabaseContext.SaveChangesAsync();
-            }
-
-            return scraped;
+                    catch (Exception e)
+                    {
+                        do
+                        {
+                            _logger.LogDebug(
+                                $"Could not scrape content: {e.GetType().FullName}({e.Message})\n{e?.StackTrace}");
+                        } while ((e = e.InnerException) != null);
+                    }
         }
+
+        if (scraped)
+        {
+            _logger.LogDebug(
+                $"Submitted URL '{submission.URL}' was successfully scraped.");
+            _documentRepository.DeleteSubmittedDocument(context, submission.SubmittedDocumentId);
+            await context.DatabaseContext.SaveChangesAsync();
+        }
+        else
+        {
+            _logger.LogDebug(
+                $"Submitted URL '{submission.URL}' could not be scraped.");
+            submission.Status = SubmissionStatus.Error;
+            await context.DatabaseContext.SaveChangesAsync();
+        }
+
+        return scraped;
     }
 }

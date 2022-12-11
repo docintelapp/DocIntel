@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
@@ -63,7 +63,7 @@ namespace DocIntel.WebApp.Controllers
             ILogger<DocumentController> logger,
             IDocumentSearchEngine searchEngine,
             ApplicationSettings configuration,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             ITagRepository tagRepository,
             IDocumentRepository documentRepository,
             IAuthorizationService authorizationService,

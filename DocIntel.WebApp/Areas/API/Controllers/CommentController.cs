@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Bogus;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -30,7 +31,6 @@ using DocIntel.WebApp.Areas.API.Models;
 using DocIntel.WebApp.Helpers;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
@@ -66,7 +66,7 @@ public class CommentController : DocIntelAPIControllerBase
     private readonly ILogger<CommentController> _logger;
     private readonly IMapper _mapper;
 
-    public CommentController(UserManager<AppUser> userManager,
+    public CommentController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<CommentController> logger,
         IHttpContextAccessor accessor,

@@ -21,7 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -81,7 +81,7 @@ public class FacetController : DocIntelAPIControllerBase
     private readonly IMapper _mapper;
     private readonly IFacetSearchService _facetSearchEngine;
 
-    public FacetController(UserManager<AppUser> userManager,
+    public FacetController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<FacetController> logger,
         IHttpContextAccessor accessor,

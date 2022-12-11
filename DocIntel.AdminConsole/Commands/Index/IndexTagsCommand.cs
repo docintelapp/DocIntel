@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -26,8 +27,9 @@ namespace DocIntel.AdminConsole.Commands.Index
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             ApplicationSettings applicationSettings,
             ITagIndexingUtility tagIndexingUtility,
-            ITagRepository tagRepository, ILogger<IndexTagsCommand> logger) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            ITagRepository tagRepository, ILogger<IndexTagsCommand> logger, UserManager<AppUser> userManager,
+            AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
             _tagIndexingUtility = tagIndexingUtility;
             _tagRepository = tagRepository;
@@ -38,7 +40,8 @@ namespace DocIntel.AdminConsole.Commands.Index
         {
             await base.ExecuteAsync(context, settings);
             
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             if (settings.Clear)

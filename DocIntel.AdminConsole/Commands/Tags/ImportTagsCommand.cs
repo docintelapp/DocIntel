@@ -28,7 +28,7 @@ namespace DocIntel.AdminConsole.Commands.Tags
 
         public ImportTagsCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, ApplicationSettings applicationSettings, ILogger<ExtractObservableCommand> logger, ITagRepository tagRepository, ITagFacetRepository facetRepository) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
             _logger = logger;
             _tagRepository = tagRepository;
@@ -37,7 +37,8 @@ namespace DocIntel.AdminConsole.Commands.Tags
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
             var tu = new TagUtility(_tagRepository, _facetRepository);
 

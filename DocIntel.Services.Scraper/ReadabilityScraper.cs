@@ -73,7 +73,7 @@ namespace DocIntel.Services.Scraper
                 .Build();
 
             _logger.LogDebug("Readability Scraper for " + message.URL);
-            var context = GetContext(message.SubmitterId);
+            var context = await GetContextAsync(message.SubmitterId);
             var uri = new Uri(message.URL);
             var host = uri.Host;
 

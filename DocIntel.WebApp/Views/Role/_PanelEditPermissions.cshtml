@@ -1,9 +1,13 @@
-@using Microsoft.AspNetCore.Html
-@using System.ComponentModel
 @using DocIntel.Core.Authorization.Operations
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using System.ComponentModel
+
 @model AppRole
 
 @{
+    var currentPermissions = (List<string>)ViewBag.Permissions;
+
     Func<Type, IHtmlContent> showPermissions = @<text>
                                                    @{
                                                        var customAttributes = item.GetCustomAttributes(typeof(DisplayNameAttribute), true);
@@ -27,9 +31,9 @@
                                                                <label class="form-check-label">
                                                                    <input class="form-check-input" type="checkbox" value="@value"
                                                                           id="@value"
-                                                                          name="permissions" @(Model.Permissions.Contains(value) ? "checked" : "")>
+                                                                          name="permissions" @(currentPermissions.Contains(value) ? "checked" : "")>
 
-                                                                   <text>@prop.GetValue(null)</text>
+                                                                   <text>@value</text>
                                                                </label>
                                                            </div>
                                                        }
@@ -41,7 +45,7 @@
                                                                <label class="form-check-label">
                                                                    <input class="form-check-input" type="checkbox" value="@value"
                                                                           id="@value"
-                                                                          name="permissions" @(Model.Permissions.Contains(value) ? "checked" : "")>
+                                                                          name="permissions" @(currentPermissions.Contains(value) ? "checked" : "")>
 
                                                                    @if (displayNameAttribute.Length > 0)
                                                                    {
@@ -49,7 +53,7 @@
                                                                    }
                                                                    else
                                                                    {
-                                                                       <text>@prop.GetValue(null)</text>
+                                                                       <text>@value</text>
                                                                    }
                                                                </label>
                                                            </div>
@@ -68,7 +72,6 @@
         </div>
         <div class="panel-container show">
             <div class="panel-content">
-
                 @showPermissions(typeof(UserOperationsConstants))
                 @showPermissions(typeof(RoleOperationsConstants))
                 @showPermissions(typeof(DocumentOperationsConstants))

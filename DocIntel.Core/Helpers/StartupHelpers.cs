@@ -160,7 +160,6 @@ namespace DocIntel.Core.Helpers
         /// <param name="services">The service collection</param>
         public static void RegisterRepositories(IServiceCollection services)
         {
-            services.AddScoped<IRoleRepository, RoleEFRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISourceRepository, SourceEFRepository>();
             services.AddScoped<ICommentRepository, CommentEFRepository>();

@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -16,43 +17,41 @@ namespace DocIntel.AdminConsole.Commands.Users
 {
     public class RoleUserCommand : UserCommand<RoleUserCommand.Settings>
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IRoleRepository _roleRepository;
-
         public RoleUserCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            IUserRepository userRepository, ApplicationSettings applicationSettings, IRoleRepository roleRepository) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            ApplicationSettings applicationSettings,
+            UserManager<AppUser> userManager, 
+            AppRoleManager roleManager) 
+            : base(context,
+                userClaimsPrincipalFactory, 
+                applicationSettings, 
+                userManager, 
+                roleManager)
         {
-            _userRepository = userRepository;
-            _roleRepository = roleRepository;
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
             await base.ExecuteAsync(context, settings);
             
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             var userName = GetUserName(settings);
-            var user = await _userRepository.GetByUserName(ambientContext, userName);
+            var user = await _userManager.FindByNameAsync(userName);
 
             var roleName = settings.Role;
-            var role = await _roleRepository.GetByNameAsync(ambientContext, roleName, new string[] { "UserRoles" });
+            var role = await _roleManager.FindByNameAsync(roleName);
 
             if (user != null && role != null)
             {
-                if (role.UserRoles == null || role.UserRoles.All(_ => _.UserId != user.Id))
-                {
-                    await _roleRepository.AddUserRoleAsync(ambientContext, user.Id, role.Id);
-                    await ambientContext.DatabaseContext.SaveChangesAsync();
+                    await _userManager.AddToRoleAsync(user, role.Name);
                     AnsiConsole.Render(new Markup($"[green]User '{userName}' has now role '{roleName}'.[/]\n"));
-                }
-                else
-                {
-                    AnsiConsole.Render(new Markup($"[darkorange]User '{userName}' already belong to role '{roleName}'.[/]\n"));
-                }
+            }
+            else
+            {   
+                AnsiConsole.Render(new Markup($"[red]Could not find user '{userName}' or role '{roleName}'.[/]\n"));
             }
 
             return 0;

@@ -16,8 +16,8 @@
                                                        var properties = item.GetProperties();
                                                        var fields = item.GetFields().Where(f => f.IsPublic);
                                                    }
-                                                   @if (properties.Any(_ => Model.Role.Permissions.Contains(_.GetValue(null)))
-                                                        | fields.Any(_ => Model.Role.Permissions.Contains(_.GetValue(null))))
+                                                   @if (properties.Any(_ => Model.Permissions.Contains(_.GetValue(null)))
+                                                        | fields.Any(_ => Model.Permissions.Contains(_.GetValue(null))))
                                                    {
                                                        <div class="mb-2 mt-0 border-bottom pb-2">
                                                            <strong>@name</strong>
@@ -28,7 +28,7 @@
                                                            {
                                                                var value = prop.GetValue(null);
                                                                var displayNameAttribute = prop.GetCustomAttributes(typeof(DisplayNameAttribute), true);
-                                                               @if (Model.Role.Permissions.Contains(value))
+                                                               @if (Model.Permissions.Contains(value))
                                                                {
                                                                    <li>
                                                                        @if (displayNameAttribute.Length > 0)
@@ -37,7 +37,7 @@
                                                                        }
                                                                        else
                                                                        {
-                                                                           <text>@prop.GetValue(null)</text>
+                                                                           <text>@value</text>
                                                                        }
                                                                    </li>
                                                                }
@@ -46,7 +46,7 @@
                                                            {
                                                                var value = prop.GetValue(null);
                                                                var displayNameAttribute = prop.GetCustomAttributes(typeof(DisplayNameAttribute), true);
-                                                               @if (Model.Role.Permissions.Contains(value))
+                                                               @if (Model.Permissions.Contains(value))
                                                                {
                                                                    <li>
                                                                        @if (displayNameAttribute.Length > 0)
@@ -55,7 +55,7 @@
                                                                        }
                                                                        else
                                                                        {
-                                                                           <text>@prop.GetValue(null)</text>
+                                                                           <text>@value</text>
                                                                        }
                                                                    </li>
                                                                }
@@ -77,7 +77,7 @@
             </h2>
         </div>
         <div class="panel-container show">
-            <div class="panel-content pb-0">
+            <div class="panel-content pb-0">            
                 @showPermissions(typeof(UserOperationsConstants))
                 @showPermissions(typeof(RoleOperationsConstants))
                 @showPermissions(typeof(DocumentOperationsConstants))

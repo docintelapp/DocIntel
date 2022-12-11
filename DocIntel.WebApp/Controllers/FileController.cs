@@ -22,7 +22,7 @@ using System.Linq;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
@@ -55,7 +55,7 @@ namespace DocIntel.WebApp.Controllers
             ILogger<FileController> logger,
             ApplicationSettings configuration,
             IAppAuthorizationService appAuthorizationService,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             IAuthorizationService authorizationService,
             IDocumentRepository documentRepository,
             IHttpContextAccessor accessor,

@@ -339,11 +339,6 @@ namespace DocIntel.WebApp.Areas.API
                 {
                     _.PreCondition(_ => _.Description != null);
                     _.MapFrom(_ => _.Description);
-                })
-                .ForMember(_ => _.Permissions, _ =>
-                {
-                    _.PreCondition(_ => _.Permissions != null);
-                    _.MapFrom(_ => _.Permissions);
                 });
 
             CreateMap<AppRole, APIRole>();

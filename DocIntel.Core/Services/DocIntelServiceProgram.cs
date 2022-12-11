@@ -133,6 +133,8 @@ namespace DocIntel.Core.Services
 
             serviceCollection.AddTransient<MailKitEmailSender>();
             
+            serviceCollection.AddScoped<AppRoleManager, AppRoleManager>();
+                
             var authenticationMethod = configuration.GetValue<string>("AuthenticationMethod");
             if (authenticationMethod != null && authenticationMethod.ToUpper() == "LDAP")
             {

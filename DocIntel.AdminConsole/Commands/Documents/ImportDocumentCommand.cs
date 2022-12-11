@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Models;
@@ -29,8 +30,10 @@ public class ImportDocumentCommand : DocIntelCommand<ImportDocumentCommand.Setti
     public ImportDocumentCommand(DocIntelContext context,
         AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
         ApplicationSettings applicationSettings,
-        ILogger<ImportDocumentCommand> logger, IThumbnailUtility utility, IDocumentRepository documentRepository, IClassificationRepository classificationRepository, ISourceRepository sourceRepository) : base(context,
-        userClaimsPrincipalFactory, applicationSettings)
+        ILogger<ImportDocumentCommand> logger, IThumbnailUtility utility, IDocumentRepository documentRepository,
+        IClassificationRepository classificationRepository, ISourceRepository sourceRepository,
+        UserManager<AppUser> userManager, AppRoleManager roleManager) : base(context,
+        userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
     {
         _logger = logger;
         _utility = utility;
@@ -41,7 +44,8 @@ public class ImportDocumentCommand : DocIntelCommand<ImportDocumentCommand.Setti
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
-        if (!TryGetAmbientContext(out var ambientContext))
+        var ambientContext = await TryGetAmbientContext();
+        if (ambientContext == null)
             return 1;
 
         try

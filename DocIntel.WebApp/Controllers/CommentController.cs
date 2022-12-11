@@ -17,7 +17,7 @@
 
 using System;
 using System.Threading.Tasks;
-
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -47,7 +47,7 @@ namespace DocIntel.WebApp.Controllers
         public CommentController(DocIntelContext context,
             ILogger<CommentController> logger,
             ApplicationSettings configuration,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             IAuthorizationService authorizationService,
             ICommentRepository commentRepository,
             IDocumentRepository documentRepository,

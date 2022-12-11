@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -25,14 +26,15 @@ namespace DocIntel.AdminConsole.Commands.Observables
         private readonly ISynapseRepository _observablesRepository;
 
         public ExtractObservableCommand(DocIntelContext context,
-            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, 
-            ApplicationSettings applicationSettings, 
-            IObservablesUtility observablesUtility, 
-            IContentExtractionUtility contentExtractionUtility, 
-            IDocumentRepository documentRepository, 
-            ILogger<ExtractObservableCommand> logger, 
-            ISynapseRepository observablesRepository) : base(context,
-            userClaimsPrincipalFactory, applicationSettings)
+            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
+            ApplicationSettings applicationSettings,
+            IObservablesUtility observablesUtility,
+            IContentExtractionUtility contentExtractionUtility,
+            IDocumentRepository documentRepository,
+            ILogger<ExtractObservableCommand> logger,
+            ISynapseRepository observablesRepository, UserManager<AppUser> userManager,
+            AppRoleManager roleManager) : base(context,
+            userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
             _observablesUtility = observablesUtility;
             _contentExtractionUtility = contentExtractionUtility;
@@ -43,7 +45,8 @@ namespace DocIntel.AdminConsole.Commands.Observables
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
-            if (!TryGetAmbientContext(out var ambientContext))
+            var ambientContext = await TryGetAmbientContext();
+            if (ambientContext == null)
                 return 1;
 
             var document = await _documentRepository.GetAsync(ambientContext, settings.DocumentId, new [] { "Files" });

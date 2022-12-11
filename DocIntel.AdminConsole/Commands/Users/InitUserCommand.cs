@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Authorization.Operations;
 using DocIntel.Core.Models;
@@ -23,8 +24,8 @@ namespace DocIntel.AdminConsole.Commands.Users
         public InitUserCommand(DocIntelContext context,
             UserManager<AppUser> userManager,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            ApplicationSettings appSettings)
-            : base(context, userClaimsPrincipalFactory, appSettings)
+            ApplicationSettings appSettings, AppRoleManager roleManager)
+            : base(context, userClaimsPrincipalFactory, appSettings, userManager, roleManager)
         {
             _userManager = userManager;
         }
@@ -40,7 +41,7 @@ namespace DocIntel.AdminConsole.Commands.Users
                 userName = _applicationSettings.AutomationAccount;
             }
             
-            if (_context.Users.Any(_ => _.NormalizedUserName == userName.ToUpper()))
+            if (await _userManager.FindByNameAsync(userName) != null)
             {
                 AnsiConsole.Render(new Markup($"[red]User '{userName}' already exists.[/]\n"));
                 return 0;
@@ -67,7 +68,7 @@ namespace DocIntel.AdminConsole.Commands.Users
                     AnsiConsole.Render(new Markup("- " + error.Description.EscapeMarkup()));
             }
 
-            user = _context.Users.Single(_ => _.UserName == userName);
+            user = await _userManager.FindByNameAsync(userName);
             var type = typeof(IOperationConstants);
             var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
@@ -83,14 +84,19 @@ namespace DocIntel.AdminConsole.Commands.Users
             {
                 role = new AppRole
                 {
-                    Name = "Administrator", NormalizedName = "ADMINISTRATOR",
-                    PermissionList = string.Join(",", permissions)
+                    Name = "Administrator"
                 };
+                var r = await _roleManager.CreateAsync(role);
+                if (r.Succeeded)
+                {
+                    await _roleManager.SetPermissionAsync(role, permissions.ToArray());
+                }
+                
                 AnsiConsole.Render(new Markup($"Creating role '{role.Name.EscapeMarkup()}' with all permissions.\n"));
 
-                _context.Add((object) role);   
             }
-            _context.Add(new AppUserRole {User = user, Role = role});
+
+            await _userManager.AddToRoleAsync(user, role.Name);
             AnsiConsole.Render(
                 new Markup($"Assigning role '{role.Name.EscapeMarkup()}' to user '{userName.EscapeMarkup()}'.\n"));
             await _context.SaveChangesAsync();

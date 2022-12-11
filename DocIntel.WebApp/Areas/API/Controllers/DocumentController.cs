@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AutoMapper;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -86,7 +87,7 @@ public class DocumentController : DocIntelAPIControllerBase
     private readonly ISynapseRepository _synapseRepository;
     private readonly ITagRepository _tagRepository;
 
-    public DocumentController(UserManager<AppUser> userManager,
+    public DocumentController(AppUserManager userManager,
         DocIntelContext context,
         IDocumentRepository documentRepository,
         ILogger<DocumentController> logger,

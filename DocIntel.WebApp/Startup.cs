@@ -149,10 +149,12 @@ namespace DocIntel.WebApp
                 Console.WriteLine("Uses native authentication");
                 services.AddTransient<SignInManager<AppUser>, AppSignInManager>();
                 services.AddTransient<UserManager<AppUser>, AppUserManager>();
+                services.AddTransient<RoleManager<AppRole>, AppRoleManager>();
 
                 services.AddIdentity<AppUser, AppRole>()
                     .AddSignInManager<AppSignInManager>()
                     .AddUserManager<AppUserManager>()
+                    .AddRoleManager<AppRoleManager>()
                     .AddEntityFrameworkStores<DocIntelContext>()
                     .AddDefaultTokenProviders();
             }
@@ -185,8 +187,8 @@ namespace DocIntel.WebApp
                 });
 
             services.AddAuthorization(options => { options.DefaultPolicy = policy; });
-
             services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
+            services.AddScoped<UserClaimsPrincipalFactory<AppUser, AppRole>, AppUserClaimsPrincipalFactory>();
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DocIntelContext>(options =>
