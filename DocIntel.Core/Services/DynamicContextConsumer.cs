@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -19,7 +20,6 @@ public class DynamicContextConsumer
     protected readonly IServiceProvider _serviceProvider;
     private readonly AppUserClaimsPrincipalFactory _userClaimsPrincipalFactory;
     private readonly ILogger<DynamicContextConsumer> _logger;
-    private readonly UserManager<AppUser> _userManager;
 
     public DynamicContextConsumer(ApplicationSettings appSettings,
         IServiceProvider serviceProvider,
@@ -28,7 +28,6 @@ public class DynamicContextConsumer
         _appSettings = appSettings;
         _serviceProvider = serviceProvider;
         _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
-        _userManager = userManager;
         _logger = serviceProvider.GetRequiredService<ILogger<DynamicContextConsumer>>();
     }
 
@@ -39,10 +38,11 @@ public class DynamicContextConsumer
         DocIntelContext dbContext = null;
         try
         {
-            var dbContextOptions = ServiceProviderServiceExtensions.GetRequiredService<DbContextOptions<DocIntelContext>>(_serviceProvider);
-            var dbContextLogger = ServiceProviderServiceExtensions.GetRequiredService<ILogger<DocIntelContext>>(_serviceProvider);
+            var dbContextOptions = _serviceProvider.GetRequiredService<DbContextOptions<DocIntelContext>>();
+            var dbContextLogger = _serviceProvider.GetRequiredService<ILogger<DocIntelContext>>();
+            var userManager = _serviceProvider.GetRequiredService<AppUserManager>();
             dbContext = new DocIntelContext(dbContextOptions, dbContextLogger);
-            var automationUser = await _userManager.FindByNameAsync(_appSettings.AutomationAccount);
+            var automationUser = await userManager.FindByNameAsync(_appSettings.AutomationAccount);
             
             if (automationUser == null)
                 throw new ArgumentNullException($"User '{_appSettings.AutomationAccount}' was not found.");

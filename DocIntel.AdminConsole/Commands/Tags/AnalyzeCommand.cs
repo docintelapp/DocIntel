@@ -25,6 +25,7 @@ namespace DocIntel.AdminConsole.Commands.Tags
         private readonly ITagFacetRepository _facetRepository;
         private readonly IDocumentRepository _documentRepository;
         private readonly IContentExtractionUtility _contentExtractionUtility;
+        private readonly ILogger<TagFacetFeatureExtractor> _loggerExtractor;
 
         public AnalyzeTagsCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
@@ -34,7 +35,7 @@ namespace DocIntel.AdminConsole.Commands.Tags
             ITagFacetRepository facetRepository,
             IDocumentRepository documentRepository,
             IContentExtractionUtility contentExtractionUtility, UserManager<AppUser> userManager,
-            AppRoleManager roleManager) : base(context,
+            AppRoleManager roleManager, ILogger<TagFacetFeatureExtractor> loggerExtractor) : base(context,
             userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
             _logger = logger;
@@ -42,6 +43,7 @@ namespace DocIntel.AdminConsole.Commands.Tags
             _facetRepository = facetRepository;
             _documentRepository = documentRepository;
             _contentExtractionUtility = contentExtractionUtility;
+            _loggerExtractor = loggerExtractor;
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -62,7 +64,7 @@ namespace DocIntel.AdminConsole.Commands.Tags
 
                 foreach (var facet in facets)
                 {
-                    var extractor = new TagFacetFeatureExtractor(facet);
+                    var extractor = new TagFacetFeatureExtractor(facet, _loggerExtractor); 
                     var patternMatches = extractor.Extract(text);
 
                     if (!string.IsNullOrEmpty(facet.TagNormalization))

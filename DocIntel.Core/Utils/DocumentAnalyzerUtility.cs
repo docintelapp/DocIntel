@@ -24,12 +24,14 @@ public class DocumentAnalyzerUtility
     private readonly IDocumentRepository _documentRepository;
     private readonly ITagFacetRepository _facetRepository;
     private readonly ILogger<DocumentAnalyzerUtility> _logger;
+    private readonly ILogger<TagFacetFeatureExtractor> _loggerExtractor;
     private readonly IObservablesUtility _observablesUtility;
     private readonly ISolrOperations<IndexedDocument> _solr;
     private readonly TagUtility _tagUtility;
     private readonly ISynapseRepository _observablesRepository;
 
     public DocumentAnalyzerUtility(ILogger<DocumentAnalyzerUtility> logger,
+        ILogger<TagFacetFeatureExtractor> loggerExtractor,
         IDocumentRepository documentRepository,
         ApplicationSettings appSettings, 
         ISolrOperations<IndexedDocument> solr,
@@ -39,6 +41,7 @@ public class DocumentAnalyzerUtility
         ITagFacetRepository facetRepository)
     {
         _logger = logger;
+        _loggerExtractor = loggerExtractor;
         _documentRepository = documentRepository;
         _appSettings = appSettings;
         _solr = solr;
@@ -127,6 +130,10 @@ public class DocumentAnalyzerUtility
                         _logger.LogError(e.ToString());
                     }
                 }
+                else
+                {
+                    _logger.LogWarning($"Could not find file '{filename}' for document {document.DocumentId}");
+                }
             }
 
             if (document.DocumentDate == DateTime.MinValue)
@@ -191,25 +198,41 @@ public class DocumentAnalyzerUtility
 
         foreach (var facet in facets)
         {
-            var extractor = new TagFacetFeatureExtractor(facet);
-            var patternMatches = extractor.Extract(response.Content);
+            _logger.LogTrace($"Checking for tags in facet '{facet.Title}'");
+            var extractor = new TagFacetFeatureExtractor(facet, _loggerExtractor);
+            var patternMatches = extractor.Extract(response.Content).ToList();
 
             if (patternMatches.Any())
+            {
                 _logger.LogDebug($"Detected tags in '{facet.Title}': " + string.Join(",", patternMatches));
 
-            var tags = _tagUtility
-                .GetOrCreateTags(ambientContext, patternMatches.Where(match => !string.IsNullOrEmpty(match)), tagCache, facetCache);
-            
-            foreach (var tag in tags)
-            {   
-                if (!document.DocumentTags.Any(_ =>
-                        _.DocumentId == document.DocumentId && _.TagId == tag.TagId))
-                    document.DocumentTags.Add(new DocumentTag
+                try
+                {
+                    var tags = _tagUtility
+                        .GetOrCreateTags(ambientContext, patternMatches
+                                .Where(match => !string.IsNullOrEmpty(match))
+                                .Select(_ => facet.Prefix+":"+_), tagCache,
+                            facetCache);
+
+                    _logger.LogDebug($"Detected tags: " + string.Join(",", tags.Select(_ => _.TagId)));
+                    
+                    foreach (var tag in tags)
                     {
-                        DocumentId = document.DocumentId,
-                        TagId = tag.TagId
-                    });
+                        if (!document.DocumentTags.Any(_ =>
+                                _.DocumentId == document.DocumentId && _.TagId == tag.TagId))
+                            document.DocumentTags.Add(new DocumentTag
+                            {
+                                DocumentId = document.DocumentId,
+                                TagId = tag.TagId
+                            });
+                    }
+                } 
+                catch (Exception e)
+                {
+                    _logger.LogError(e.Message);
+                }
             }
+             
         }
     }
 }
