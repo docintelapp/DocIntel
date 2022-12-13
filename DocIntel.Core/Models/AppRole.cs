@@ -32,7 +32,7 @@ namespace DocIntel.Core.Models
         /// <summary>
         ///     Initializes a new role.
         /// </summary>
-        public AppRole()
+        public AppRole() : base()
         {
         }
 

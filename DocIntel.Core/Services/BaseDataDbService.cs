@@ -70,11 +70,8 @@ public class BaseDataDbService : IStartupServiceToRunSequentially
                 permissions.Add(i);
             foreach (var i in types.SelectMany(t => t.GetProperties().Select(x => (string) x.GetValue(null))))
                 permissions.Add(i);
-                
-            role = new AppRole
-            {
-                Name = "Administrator"
-            };
+
+            role = new AppRole("Administrator");
             var result = await roleManager.CreateAsync(role);
             if (result.Succeeded)
             {

@@ -41,9 +41,8 @@ namespace DocIntel.AdminConsole.Commands.Roles
 
             var description = GetField(settings, "Description", settings.Description);
 
-            var role = new AppRole
+            var role = new AppRole(roleName)
             {
-                Name = roleName,
                 Description = description
             };
 

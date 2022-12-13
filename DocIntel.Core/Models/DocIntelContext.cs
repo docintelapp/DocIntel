@@ -171,7 +171,16 @@ namespace DocIntel.Core.Models
             modelBuilder.Entity<Document>().HasOne(_ => _.Thumbnail).WithOne(_ => _.DocumentThumbnail).OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Document>().HasMany(_ => _.Files).WithOne(_ => _.Document);
             
-
+            modelBuilder
+                .Entity<AppRole>()
+                .Property(e => e.Id)
+                .ValueGeneratedOnAdd();
+            
+            modelBuilder
+                .Entity<AppUser>()
+                .Property(e => e.Id)
+                .ValueGeneratedOnAdd();
+            
             modelBuilder.Entity<AppRole>().HasOne<AppUser>(u => u.CreatedBy);
             modelBuilder.Entity<AppRole>().HasOne<AppUser>(u => u.LastModifiedBy);
         }
