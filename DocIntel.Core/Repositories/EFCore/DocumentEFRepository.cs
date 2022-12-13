@@ -49,8 +49,6 @@ namespace DocIntel.Core.Repositories.EFCore
 {
     public class DocumentEFRepository : DefaultEFRepository<Document>, IDocumentRepository
     {
-        private readonly IAppAuthorizationService _appAuthorizationService;
-        private readonly IPublishEndpoint _busClient;
         private readonly ApplicationSettings _configuration;
 
         private readonly ILogger<DocumentEFRepository> _logger;

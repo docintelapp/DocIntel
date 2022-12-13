@@ -40,8 +40,6 @@ namespace DocIntel.Core.Repositories.EFCore
 {
     public class TagEFRepository :DefaultEFRepository<Tag>, ITagRepository
     {
-        private readonly IAppAuthorizationService _appAuthorizationService;
-        private readonly IPublishEndpoint _busClient;
         private HtmlSanitizer _sanitizer;
 
         public TagEFRepository(
