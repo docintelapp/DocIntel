@@ -40,7 +40,7 @@ namespace DocIntel.Services.Thumbnailer
                 .ConfigureLogging(ConfigureLogging)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<ThumbnailerMessageConsumer>();
+                    services.AddScoped<ThumbnailerMessageConsumer>();
                     services.AddHostedService<ThumbnailHostedService>();
                     services.AddHostedService<ThumbnailerTimedConsumer>();
                     ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, true);

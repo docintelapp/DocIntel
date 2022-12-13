@@ -37,7 +37,7 @@ namespace DocIntel.Services.SourceIndexer
                 .ConfigureLogging(ConfigureLogging)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<SourceIndexerMessageConsumer>();
+                    services.AddScoped<SourceIndexerMessageConsumer>();
                     services.AddHostedService<SourceIndexerHostedService>();
                     services.AddHostedService<SourceIndexerTimedConsumer>();
                     ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, true);

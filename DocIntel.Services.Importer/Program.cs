@@ -40,7 +40,7 @@ namespace DocIntel.Services.Importer
                 .ConfigureLogging(ConfigureLogging)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<Runner>();
+                    services.AddScoped<Runner>();
                     services.AddHostedService<ImporterHostedService>();
                     ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, runHostedServices: true);
                 })

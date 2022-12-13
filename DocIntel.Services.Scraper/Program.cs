@@ -40,7 +40,7 @@ namespace DocIntel.Services.Scraper
                 .ConfigureLogging(ConfigureLogging)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<ScraperConsumer>();
+                    services.AddScoped<ScraperConsumer>();
                     services.AddHostedService<ScraperHostedService>();
                     ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, true);
                 })

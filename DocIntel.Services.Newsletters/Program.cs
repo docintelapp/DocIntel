@@ -38,7 +38,7 @@ namespace DocIntel.Services.Newsletters
                 .ConfigureLogging(ConfigureLogging)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<NewsletterSender>();
+                    services.AddScoped<NewsletterSender>();
                     services.AddHostedService<EmailNotificationHostedService>();
                     ConfigureService(hostContext, services, runHostedServices: true);
                 })
