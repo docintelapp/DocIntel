@@ -1,12 +1,12 @@
 if [ -z $1 ]; then 
   echo "Usage:";
-  echo "./push-docker-images.sh $MAJOR $MINOR";
+  echo "./build-docker-images.sh $MAJOR $MINOR";
   exit 1;
 fi
 
 if [ -z $2 ]; then 
   echo "Usage:";
-  echo "./push-docker-images.sh $MAJOR $MINOR";
+  echo "./build-docker-images.sh $MAJOR $MINOR";
   exit 1;
 fi
 
