@@ -49,20 +49,7 @@ namespace DocIntel.Core.Repositories.EFCore
             _sanitizer.AllowedSchemes.Add("data");
         }
 
-        protected string UpdateSourceURL(AmbientContext ambientContext, T data, Func<T,string> mapTitle, Func<string,Func<T, bool>> sameURL)
-        {
-            var url = ComputeURL(mapTitle(data));
-            Console.WriteLine("Computed URL: " + url);
-            int i = 1;
-            while (_tableSelector(ambientContext).Any(sameURL(url)))
-            {
-                url = ComputeURL(mapTitle(data), i++);
-                Console.WriteLine("Computed URL: " + url);
-            }
-            return url;
-        }
-
-        private static string ComputeURL(string str, int i = 0)
+        protected static string GenerateSlug(string str, int i = 0)
         {
             return Regex.Replace(Regex.Replace(str, @"[^A-Za-z0-9_\.~]+", "-"), "-{2,}", "-")
                 .ToLowerInvariant().Trim('-') + (i > 0 ? "-"+i : "") ;

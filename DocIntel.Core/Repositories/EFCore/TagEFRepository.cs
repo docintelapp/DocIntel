@@ -38,7 +38,7 @@ using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
 namespace DocIntel.Core.Repositories.EFCore
 {
-    public class TagEFRepository : ITagRepository
+    public class TagEFRepository :DefaultEFRepository<Tag>, ITagRepository
     {
         private readonly IAppAuthorizationService _appAuthorizationService;
         private readonly IPublishEndpoint _busClient;
@@ -47,9 +47,8 @@ namespace DocIntel.Core.Repositories.EFCore
         public TagEFRepository(
             IPublishEndpoint busClient,
             IAppAuthorizationService appAuthorizationService)
+            : base(_ => _.DatabaseContext.Tags, busClient, appAuthorizationService)
         {
-            _busClient = busClient;
-            _appAuthorizationService = appAuthorizationService;
             
             _sanitizer = new HtmlSanitizer();
             _sanitizer.AllowedSchemes.Add("data");
@@ -68,8 +67,7 @@ namespace DocIntel.Core.Repositories.EFCore
 
                 tag.Description = _sanitizer.Sanitize(tag.Description);
                 
-                tag.URL = Regex.Replace(Regex.Replace(tag.Label, @"[^A-Za-z0-9_\.~]+", "-"), "-{2,}", "-")
-                    .ToLowerInvariant().Trim('-');
+                tag.URL = GenerateSlug(ambientContext, tag);
 
                 var tagNormalization = ambientContext.DatabaseContext.Facets
                     .SingleOrDefault(_ => _.FacetId == tag.FacetId)?.TagNormalization;
@@ -112,8 +110,8 @@ namespace DocIntel.Core.Repositories.EFCore
                 if (ambientContext.CurrentUser != null) tag.LastModifiedById = ambientContext.CurrentUser.Id;
 
                 tag.Description = _sanitizer.Sanitize(tag.Description);
-                tag.URL = Regex.Replace(Regex.Replace(tag.Label, @"[^A-Za-z0-9_\.~]+", "-"), "-{2,}", "-")
-                    .ToLowerInvariant().Trim('-');
+                if (ambientContext.DatabaseContext.Entry(tag).Property(_ => _.Label).IsModified)
+                    tag.URL = GenerateSlug(ambientContext, tag);
 
                 if (!string.IsNullOrEmpty(tag.Facet.TagNormalization))
                 {
@@ -605,6 +603,29 @@ namespace DocIntel.Core.Repositories.EFCore
                 validationContext,
                 modelErrors);
             return isValid;
+        }
+        
+        private string GenerateSlug(AmbientContext context, Tag document)
+        {
+            var slug = GenerateSlug(document.Label, 0);
+            if (slug == document.URL) return slug;
+
+            var regexSlug = "^" + Regex.Escape(slug) + "(-[0-9]+)?$";
+            var maxSlug = context.DatabaseContext.Documents
+                .Where(_ => _.Title == document.Label & Regex.IsMatch(_.URL, regexSlug))
+                .Select(_ => new { URL = _.URL, Length = _.URL.Length })
+                .OrderByDescending(_ => _.Length).ThenByDescending(_ => _.URL)
+                .FirstOrDefault();
+            if (maxSlug == null)
+                return slug;
+            else {
+                var lastPart = maxSlug.URL.Split('-').Last();
+                if (Int64.TryParse(lastPart, out long result)) {
+                    return maxSlug.URL.Substring(0, maxSlug.Length - lastPart.Length - 1) + "-" + (result+1);
+                } else {
+                    return maxSlug.URL + "-1";
+                }
+            }
         }
     }
 }

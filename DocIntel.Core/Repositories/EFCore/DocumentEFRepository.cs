@@ -47,7 +47,7 @@ using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
 namespace DocIntel.Core.Repositories.EFCore
 {
-    public class DocumentEFRepository : IDocumentRepository
+    public class DocumentEFRepository : DefaultEFRepository<Document>, IDocumentRepository
     {
         private readonly IAppAuthorizationService _appAuthorizationService;
         private readonly IPublishEndpoint _busClient;
@@ -62,9 +62,8 @@ namespace DocIntel.Core.Repositories.EFCore
             ApplicationSettings configuration,
             ILogger<DocumentEFRepository> logger,
             ApplicationSettings settings)
+            : base(_ => _.DatabaseContext.Documents, busClient, appAuthorizationService)
         {
-            _busClient = busClient;
-            _appAuthorizationService = appAuthorizationService;
             _sha256Calculator = SHA256.Create();
             _configuration = configuration;
             _logger = logger;
@@ -82,7 +81,7 @@ namespace DocIntel.Core.Repositories.EFCore
 
             var now = DateTime.UtcNow;
 
-            var url = GenerateDocumentURL(context, document);
+            var url = GenerateDocumentSlug(context, document);
             document.URL = url;
             
             if (IsValid(context, document, out var modelErrors))
@@ -122,25 +121,24 @@ namespace DocIntel.Core.Repositories.EFCore
             throw new InvalidArgumentException(modelErrors);
         }
 
-        private static string GenerateDocumentURL(AmbientContext context, Document document)
+        private string GenerateDocumentSlug(AmbientContext context, Document document)
         {
-            string url;
-            int i = 0;
-            do
-            {
-                url = GenerateDocumentUrl(document, i);
-                i++;
-            } while (context.DatabaseContext.Documents.Any(_ =>
-                (document.DocumentId == default || _.DocumentId != document.DocumentId) && _.URL == url));
+            var slug = GenerateSlug(document.Title, 0);
+            if (slug == document.URL) return slug;
 
-            return url;
-        }
+            var regexSlug = "^" + Regex.Escape(slug) + "(-[0-9]+)?$";
+            var maxSlug = context.DatabaseContext.Documents
+                .Where(_ => _.Title == document.Title & Regex.IsMatch(_.URL, regexSlug))
+                .Select(_ => new { URL = _.URL, Length = _.URL.Length })
+                .OrderByDescending(_ => _.Length).ThenByDescending(_ => _.URL)
+                .FirstOrDefault();
+            if (maxSlug == null)
+                return slug;
+            var lastPart = maxSlug.URL.Split('-').Last();
+            if (!Int64.TryParse(lastPart, out long result))
+                return maxSlug.URL + "-1";
 
-        private static string GenerateDocumentUrl(Document document, int i = 0)
-        {
-            var url = Regex.Replace(Regex.Replace(document.Title, @"[^A-Za-z0-9_\.~]+", "-"), "-{2,}", "-")
-                .ToLowerInvariant().Trim('-') + (i == 0 ? "" : ("-" + i));
-            return url;
+            return maxSlug.URL.Substring(0, maxSlug.Length - lastPart.Length - 1) + "-" + (result + 1);
         }
 
         public async Task<Document> UpdateStatusAsync(AmbientContext context, Guid documentId, DocumentStatus status)
@@ -188,7 +186,8 @@ namespace DocIntel.Core.Repositories.EFCore
             if (!await _appAuthorizationService.CanEditDocument(context.Claims, retrievedDocument))
                 throw new UnauthorizedOperationException();
 
-            document.URL = GenerateDocumentURL(context, document);
+            if (context.DatabaseContext.Entry(document).Property(_ => _.Title).IsModified)
+                document.URL = GenerateDocumentSlug(context, document);
             
             if (IsValid(context, document, out var modelErrors))
             {
@@ -945,15 +944,13 @@ namespace DocIntel.Core.Repositories.EFCore
 
         public int GetSequence(AmbientContext context, DateTime documentDate)
         {
-            var queryables = context.DatabaseContext.Documents
-                .AsQueryable()
-                .Where(_ => (_.RegistrationDate.Year == documentDate.Year)
-                            & (_.RegistrationDate.Month == documentDate.Month));
-
-            var max = 1;
-            if (queryables.Any()) max = queryables.Max(_ => _.SequenceId) + 1;
-
-            return max;
+            try {
+                return context.DatabaseContext.Documents.Where(_ => (_.RegistrationDate.Year == documentDate.Year)
+                                                       & (_.RegistrationDate.Month == documentDate.Month))
+                                                   .Max(_ => _.SequenceId + 1);
+            } catch (InvalidOperationException) {
+                return 1;
+            }
         }
 
         public string GetReference(DateTime documentDate, int sequenceId)

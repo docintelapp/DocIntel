@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using DocIntel.Core.Authorization;
@@ -64,7 +65,7 @@ namespace DocIntel.Core.Repositories.EFCore
                     source.LastModifiedById = ambientContext.CurrentUser.Id;
                 }
 
-                source.URL = UpdateSourceURL(ambientContext, source, _ => _.Title, url => data => data.URL == url);
+                source.URL = GenerateSlug(ambientContext, source);
 
                 var trackingEntity = await _tableSelector(ambientContext).AddAsync(source);
                 PublishMessage(ambientContext, new SourceCreatedMessage
@@ -95,7 +96,8 @@ namespace DocIntel.Core.Repositories.EFCore
                 if (ambientContext.CurrentUser != null) source.LastModifiedById = ambientContext.CurrentUser.Id;
 
                 source.Description = _sanitizer.Sanitize(source.Description);
-                source.URL = UpdateSourceURL(ambientContext, source, _ => _.Title, url => data => data.SourceId != source.SourceId & data.URL == url);
+                if (ambientContext.DatabaseContext.Entry(source).Property(_ => _.Title).IsModified)
+                    source.URL = GenerateSlug(ambientContext, source);
 
                 var trackingEntity = ambientContext.DatabaseContext.Update(source);
                 PublishMessage(ambientContext, new SourceUpdatedMessage
@@ -512,5 +514,29 @@ namespace DocIntel.Core.Repositories.EFCore
 
             return documents;
         }
+        
+        private string GenerateSlug(AmbientContext context, Source document)
+        {
+            var slug = GenerateSlug(document.Title, 0);
+            if (slug == document.URL) return slug;
+
+            var regexSlug = "^" + Regex.Escape(slug) + "(-[0-9]+)?$";
+            var maxSlug = context.DatabaseContext.Documents
+                .Where(_ => _.Title == document.Title & Regex.IsMatch(_.URL, regexSlug))
+                .Select(_ => new { URL = _.URL, Length = _.URL.Length })
+                .OrderByDescending(_ => _.Length).ThenByDescending(_ => _.URL)
+                .FirstOrDefault();
+            if (maxSlug == null)
+                return slug;
+            else {
+                var lastPart = maxSlug.URL.Split('-').Last();
+                if (Int64.TryParse(lastPart, out long result)) {
+                    return maxSlug.URL.Substring(0, maxSlug.Length - lastPart.Length - 1) + "-" + (result+1);
+                } else {
+                    return maxSlug.URL + "-1";
+                }
+            }
+        }
+
     }
 }
