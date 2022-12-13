@@ -49,7 +49,7 @@
                         }
                         @foreach (var tag in Model.Tags)
                         {
-                            <a class="badge badge-pill @tag.BackgroundColor"
+                            <a class="badge badge-pill @tag.BackgroundColor" asp-controller="Tag"
                                asp-action="Details" asp-route-label="@tag.TagId">
                                 @tag.Label
                             </a>
