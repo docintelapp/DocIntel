@@ -38,8 +38,6 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
     public async Task StartAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Timed Hosted Service running.");
-        await DoWork(null);
-        
         var fromMinutes = TimeSpan.FromMinutes(_appSettings.Schedule.AnalyzerFrequencyCheck);
         _timer = new Timer(async _ => await DoWork(_), null, fromMinutes, fromMinutes);
     }

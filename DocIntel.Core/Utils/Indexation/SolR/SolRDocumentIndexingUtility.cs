@@ -117,6 +117,10 @@ namespace DocIntel.Core.Utils.Indexation.SolR
                     });
                     fileContents.Add(response.Content);
                 }
+                else
+                {
+                    _logger.LogWarning("File {filename} for document {document.DocumentId} could not be found.");
+                }
             }
 
             return fileContents;

@@ -48,169 +48,168 @@ public class DocumentAnalyzerUtility
         _facetRepository = facetRepository;
     }
     public async Task Analyze(Guid documentId, AmbientContext ambientContext)
+    {   
+        try
         {
-            
-            try
-            {
-                var document =
-                    await _documentRepository.GetAsync(ambientContext, documentId, new[]
-                    {
-                        nameof(Document.Classification),
-                        nameof(Document.ReleasableTo),
-                        nameof(Document.EyesOnly),
-                        nameof(Document.Files),
-                        nameof(Document.DocumentTags),
-                        nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag),
-                        nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag) + "." + nameof(Tag.Facet)
-                    });
-                
-                var tagCache = new HashSet<Tag>();
-                var facetCache = new HashSet<TagFacet>();
-                
-                var doExtractObservables = true;
-                if (document.MetaData != default && document.MetaData.ContainsKey("ExtractObservables"))
-                    if (document.MetaData["ExtractObservables"]?.ToString()?.ToLower() == "false")
-                        doExtractObservables = false;
-
-                foreach (var file in document.Files.Where(_ =>
-                    (_.MimeType == "application/pdf") | _.MimeType.StartsWith("text/")))
+            var document =
+                await _documentRepository.GetAsync(ambientContext, documentId, new[]
                 {
-                    var filename = Path.Combine(_appSettings.DocFolder, file.Filepath);
-                    if (File.Exists(filename))
+                    nameof(Document.Classification),
+                    nameof(Document.ReleasableTo),
+                    nameof(Document.EyesOnly),
+                    nameof(Document.Files),
+                    nameof(Document.DocumentTags),
+                    nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag),
+                    nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag) + "." + nameof(Tag.Facet)
+                });
+            
+            var tagCache = new HashSet<Tag>();
+            var facetCache = new HashSet<TagFacet>();
+            
+            var doExtractObservables = true;
+            if (document.MetaData != default && document.MetaData.ContainsKey("ExtractObservables"))
+                if (document.MetaData["ExtractObservables"]?.ToString()?.ToLower() == "false")
+                    doExtractObservables = false;
+
+            foreach (var file in document.Files.Where(_ =>
+                (_.MimeType == "application/pdf") | _.MimeType.StartsWith("text/")))
+            {
+                var filename = Path.Combine(_appSettings.DocFolder, file.Filepath);
+                if (File.Exists(filename))
+                {
+                    try
                     {
-                        try
+                        await using var f = File.OpenRead(filename);
+                        var response = await _solr.ExtractAsync(new ExtractParameters(f, document.DocumentId.ToString())
                         {
-                            await using var f = File.OpenRead(filename);
-                            var response = await _solr.ExtractAsync(new ExtractParameters(f, document.DocumentId.ToString())
+                            ExtractOnly = true,
+                            ExtractFormat = ExtractFormat.Text,
+                            StreamType = file.MimeType
+                        });
+
+                        var metadata = response.Metadata.ToDictionary(_ => _.FieldName, _ => _.Value);
+                        var title = ExtractTitle(metadata);
+
+                        var date = ExtractDate(metadata);
+                        if (date == DateTime.MinValue)
+                            date = DateTime.UtcNow;
+
+                        await DetectAutoExtractFacet(response, ambientContext, document, tagCache, facetCache);
+
+                        if (doExtractObservables)
+                        {
+                            try
                             {
-                                ExtractOnly = true,
-                                ExtractFormat = ExtractFormat.Text,
-                                StreamType = file.MimeType
-                            });
-
-                            var metadata = response.Metadata.ToDictionary(_ => _.FieldName, _ => _.Value);
-                            var title = ExtractTitle(metadata);
-
-                            var date = ExtractDate(metadata);
-                            if (date == DateTime.MinValue)
-                                date = DateTime.UtcNow;
-
-                            await DetectAutoExtractFacet(response, ambientContext, document, tagCache, facetCache);
-
-                            if (doExtractObservables)
-                            {
-                                try
-                                {
-                                    var view = await _observablesRepository.CreateView(document);
-                                    var fileObservables = await _observablesUtility.ExtractDataAsync(document, file, response.Content).ToListAsync();
-                                    await _observablesUtility.AnnotateAsync(document, file, fileObservables);
-                                    await _observablesRepository.Add(fileObservables, document, file, view);
-                                }
-                                catch (SynapseException e)
-                                {
-                                    _logger.LogError($"Could not extract observable in file '{file.FileId}' on document '{document.DocumentId}': {e.Message}");
-                                }
-                                catch (SynapseError e)
-                                {
-                                    _logger.LogError($"Could not extract observable in file '{file.FileId}' on document '{document.DocumentId}': {e.Message}");
-                                }
+                                var view = await _observablesRepository.CreateView(document);
+                                var fileObservables = await _observablesUtility.ExtractDataAsync(document, file, response.Content).ToListAsync();
+                                await _observablesUtility.AnnotateAsync(document, file, fileObservables);
+                                await _observablesRepository.Add(fileObservables, document, file, view);
                             }
-
-                            if (string.IsNullOrEmpty(document.Title) & !string.IsNullOrEmpty(title))
-                                document.Title = title;
-
-                            if (file.DocumentDate == DateTime.MinValue)
-                                file.DocumentDate = date;
+                            catch (SynapseException e)
+                            {
+                                _logger.LogError($"Could not extract observable in file '{file.FileId}' on document '{document.DocumentId}': {e.Message}");
+                            }
+                            catch (SynapseError e)
+                            {
+                                _logger.LogError($"Could not extract observable in file '{file.FileId}' on document '{document.DocumentId}': {e.Message}");
+                            }
                         }
-                        catch (SolrNet.Exceptions.SolrConnectionException e)
-                        {
-                            _logger.LogError($"Document {document.DocumentId} could not be analyzed due to an error with SolR: {e.Url}");
-                            _logger.LogError(e.ToString());
-                        }
+
+                        if (string.IsNullOrEmpty(document.Title) & !string.IsNullOrEmpty(title))
+                            document.Title = title;
+
+                        if (file.DocumentDate == DateTime.MinValue)
+                            file.DocumentDate = date;
+                    }
+                    catch (SolrNet.Exceptions.SolrConnectionException e)
+                    {
+                        _logger.LogError($"Document {document.DocumentId} could not be analyzed due to an error with SolR: {e.Url}");
+                        _logger.LogError(e.ToString());
                     }
                 }
-
-                if (document.DocumentDate == DateTime.MinValue)
-                {
-                    var ddate = document.Files?.Min(_ => _.DocumentDate) ?? DateTime.MinValue;
-                    if (ddate == DateTime.MinValue)
-                        ddate = DateTime.UtcNow;
-                    document.DocumentDate = ddate;
-                }
-
-                if (document.Status == DocumentStatus.Submitted)
-                    document.Status = DocumentStatus.Analyzed;
-
-                _logger.LogDebug($"Status of document '{document.DocumentId}' is '{document.Status}'.");
-                ambientContext.DatabaseContext.Update(document);
-
-                await ambientContext.DatabaseContext.SaveChangesAsync();
-                
-                // TODO Use structured logging
-                _logger.LogInformation($"Document {document.Reference} ({document.DocumentId}) successfully analyzed.");
             }
-            catch (Exception e)
+
+            if (document.DocumentDate == DateTime.MinValue)
             {
-                _logger.LogError($"Document {documentId} could not be analyzed ({e.GetType()} {e.Message}).");
-                _logger.LogError(e.StackTrace);
-                _logger.LogError(e.InnerException?.Message);
+                var ddate = document.Files?.Min(_ => _.DocumentDate) ?? DateTime.MinValue;
+                if (ddate == DateTime.MinValue)
+                    ddate = DateTime.UtcNow;
+                document.DocumentDate = ddate;
             }
+
+            if (document.Status == DocumentStatus.Submitted)
+                document.Status = DocumentStatus.Analyzed;
+
+            _logger.LogDebug($"Status of document '{document.DocumentId}' is '{document.Status}'.");
+            ambientContext.DatabaseContext.Update(document);
+
+            await ambientContext.DatabaseContext.SaveChangesAsync();
+            
+            // TODO Use structured logging
+            _logger.LogInformation($"Document {document.Reference} ({document.DocumentId}) successfully analyzed.");
         }
-
-        private static DateTime ExtractDate(Dictionary<string, string> metadata)
+        catch (Exception e)
         {
-            var date = DateTime.MinValue;
-            var dateFields = new[]
-                {"dcterms:created", "meta:creation-date", "created", "Creation-Date", "pdf:docinfo:created"};
-            foreach (var df in dateFields)
-                if (metadata.ContainsKey(df) && !string.IsNullOrEmpty(metadata[df]))
-                    if (DateTime.TryParseExact(metadata[df], "yyyy-MM-ddThh:mm:ssZ", CultureInfo.InvariantCulture,
-                        DateTimeStyles.AssumeUniversal, out date))
-                        break;
-
-            return date;
+            _logger.LogError($"Document {documentId} could not be analyzed ({e.GetType()} {e.Message}).");
+            _logger.LogError(e.StackTrace);
+            _logger.LogError(e.InnerException?.Message);
         }
+    }
 
-        private static string ExtractTitle(Dictionary<string, string> metadata)
-        {
-            var title = "";
-            var titleFields = new[] {"dc:title", "title"};
-            foreach (var df in titleFields)
-                if (metadata.ContainsKey(df) && !string.IsNullOrEmpty(metadata[df]))
-                {
-                    title = metadata[df];
+    private static DateTime ExtractDate(Dictionary<string, string> metadata)
+    {
+        var date = DateTime.MinValue;
+        var dateFields = new[]
+            {"dcterms:created", "meta:creation-date", "created", "Creation-Date", "pdf:docinfo:created"};
+        foreach (var df in dateFields)
+            if (metadata.ContainsKey(df) && !string.IsNullOrEmpty(metadata[df]))
+                if (DateTime.TryParseExact(metadata[df], "yyyy-MM-ddThh:mm:ssZ", CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal, out date))
                     break;
-                }
 
-            return title;
-        }
+        return date;
+    }
 
-        private async Task DetectAutoExtractFacet(ExtractResponse response, AmbientContext ambientContext,
-            Document document, HashSet<Tag> tagCache, HashSet<TagFacet> facetCache)
-        {
-            var facets = await _facetRepository.GetAllAsync(ambientContext, new FacetQuery(), new string[] { "Tags" }).ToListAsync();
-
-            foreach (var facet in facets)
+    private static string ExtractTitle(Dictionary<string, string> metadata)
+    {
+        var title = "";
+        var titleFields = new[] {"dc:title", "title"};
+        foreach (var df in titleFields)
+            if (metadata.ContainsKey(df) && !string.IsNullOrEmpty(metadata[df]))
             {
-                var extractor = new TagFacetFeatureExtractor(facet);
-                var patternMatches = extractor.Extract(response.Content);
+                title = metadata[df];
+                break;
+            }
 
-                if (patternMatches.Any())
-                    _logger.LogDebug($"Detected tags in '{facet.Title}': " + string.Join(",", patternMatches));
+        return title;
+    }
 
-                var tags = _tagUtility
-                    .GetOrCreateTags(ambientContext, patternMatches.Where(match => !string.IsNullOrEmpty(match)), tagCache, facetCache);
-                
-                foreach (var tag in tags)
-                {   
-                    if (!document.DocumentTags.Any(_ =>
-                            _.DocumentId == document.DocumentId && _.TagId == tag.TagId))
-                        document.DocumentTags.Add(new DocumentTag
-                        {
-                            DocumentId = document.DocumentId,
-                            TagId = tag.TagId
-                        });
-                }
+    private async Task DetectAutoExtractFacet(ExtractResponse response, AmbientContext ambientContext,
+        Document document, HashSet<Tag> tagCache, HashSet<TagFacet> facetCache)
+    {
+        var facets = await _facetRepository.GetAllAsync(ambientContext, new FacetQuery(), new string[] { "Tags" }).ToListAsync();
+
+        foreach (var facet in facets)
+        {
+            var extractor = new TagFacetFeatureExtractor(facet);
+            var patternMatches = extractor.Extract(response.Content);
+
+            if (patternMatches.Any())
+                _logger.LogDebug($"Detected tags in '{facet.Title}': " + string.Join(",", patternMatches));
+
+            var tags = _tagUtility
+                .GetOrCreateTags(ambientContext, patternMatches.Where(match => !string.IsNullOrEmpty(match)), tagCache, facetCache);
+            
+            foreach (var tag in tags)
+            {   
+                if (!document.DocumentTags.Any(_ =>
+                        _.DocumentId == document.DocumentId && _.TagId == tag.TagId))
+                    document.DocumentTags.Add(new DocumentTag
+                    {
+                        DocumentId = document.DocumentId,
+                        TagId = tag.TagId
+                    });
             }
         }
+    }
 }
