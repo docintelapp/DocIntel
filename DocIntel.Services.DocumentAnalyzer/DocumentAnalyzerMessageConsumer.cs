@@ -32,9 +32,9 @@ using Microsoft.Extensions.Logging;
 namespace DocIntel.Services.DocumentAnalyzer
 {
     public class DocumentAnalyzerMessageConsumer : DynamicContextConsumer, 
-        IConsumer<DocumentCreatedMessage>, 
+        IConsumer<DocumentCreatedMessage>/*, 
         IConsumer<FileCreatedMessage>, 
-        IConsumer<FileUpdatedMessage>
+        IConsumer<FileUpdatedMessage>*/
     {
         private readonly ILogger<DocumentAnalyzerMessageConsumer> _logger;
         private readonly DocumentAnalyzerUtility _documentAnalyzerUtility;
@@ -77,6 +77,7 @@ namespace DocIntel.Services.DocumentAnalyzer
             await _documentAnalyzerUtility.Analyze(documentId, ambientContext);
         }
 
+        /*
         public async Task Consume(ConsumeContext<FileCreatedMessage> context)
         {
             _logger.LogDebug("FileCreatedMessage: {0}", context.Message.FileId);
@@ -116,5 +117,6 @@ namespace DocIntel.Services.DocumentAnalyzer
             
             ambientContext.Dispose();
         }
+        */
     }
 }
