@@ -131,8 +131,7 @@ namespace DocIntel.WebApp.Controllers
                     null,
                     LogEvent.Formatter);
 
-                ViewBag.AllUsers = _userRepository.GetAllAsync(AmbientContext).ToEnumerable()
-                    .Except(group.Members.Select(_ => _.User), _ => _.Id);
+                ViewBag.AllUsers = _userManager.Users.Except(group.Members.Select(_ => _.User), _ => _.Id).ToList();
 
                 return View(group);
             }

@@ -14,6 +14,12 @@
             {
                 <span class="badge @Model.Document.Classification.Color mr-1">
                     @Model.Document.Classification.Abbreviation
+                    @if (Model.Document.ReleasableTo != null && Model.Document.ReleasableTo.Any()) {
+                        <text>// REL TO @(string.Join(",", Model.Document.ReleasableTo.Select(g => g.Name)))</text>
+                    }
+                    @if (Model.Document.EyesOnly != null && Model.Document.EyesOnly.Any()) {
+                        <text>// @(string.Join(",", Model.Document.EyesOnly.Select(g => g.Name))) EYES ONLY</text>
+                    }
                 </span>
             }
             @if (!string.IsNullOrEmpty(Model.TitleExcerpt))

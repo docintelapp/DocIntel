@@ -284,27 +284,32 @@ namespace DocIntel.Core.Utils.Search.Documents
                 : "")
             );
 
-            // If a user is not member of the default groups, the documents must be releasable to the user.
-            // A document might be released to extra groups
-            if (user.Memberships.Any())
+            var relToQuery = new List<string>();
+            if (user.Memberships != null && user.Memberships.Any())
             {
-                string membershipQuery;
-                
-                // User is member of some default groups
-                if (defaultGroup.Length > 0 && !user.Memberships.Any(_ => defaultGroup?.Contains(_.GroupId) ?? true))
-                    membershipQuery = "(*:* " + SolRHelper<IndexedDocument>.GetSolRName(_ => _.EyesOnly) +
-                                      ":[* TO *]) AND ";
-                else // User is not member of any default group
-                    membershipQuery = "(*:* NOT " + SolRHelper<IndexedDocument>.GetSolRName(_ => _.EyesOnly) +
-                                      ":[* TO *]) OR ";
-
-                membershipQuery += "(" +
-                                   string.Join(" OR ", user.Memberships.Select(_ => SolRHelper<IndexedDocument>.GetSolRName(_ => _.ReleasableTo) + ":"  + _.GroupId))
-                                   + ")";
-                _logger.LogDebug("Membership FacetQuery: " + membershipQuery);
-                facetQueries.Add(membershipQuery);
+                relToQuery.AddRange(
+                    user.Memberships.Select(membership => 
+                        SolRHelper<IndexedDocument>.GetSolRName(document => document.ReleasableTo) + ":"  + membership.GroupId)
+                );
+                // EYES ONLY implies that it is REL TO
+                relToQuery.AddRange(
+                    user.Memberships.Select(membership => 
+                        SolRHelper<IndexedDocument>.GetSolRName(document => document.EyesOnly) + ":"  + membership.GroupId)
+                );
             }
             
+            if (defaultGroup.Length == 0 || user.Memberships != null && user.Memberships.Any(_ => defaultGroup.Contains(_.GroupId)))
+            {
+                // If there are default groups and you are member of a default one, you can view all documents
+                relToQuery.Add("*:*");
+            }
+
+            _logger.LogDebug("Membership FacetQuery: " + string.Join(" OR ", relToQuery));
+            if (relToQuery.Any())
+                facetQueries.Add($"({string.Join(") OR (", relToQuery)})");
+            else 
+                facetQueries.Add($"-*:*"); // Match no document
+
             if (query.SelectedRegistrants != null && query.SelectedRegistrants.Any())
                 facetQueries.Add(
                     string.Join(" OR ",

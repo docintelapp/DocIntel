@@ -104,7 +104,7 @@
                     </table>
 
                     @if (ViewBag.AllUsers != null 
-                         && ViewBag.AllUsers.Length > 0
+                         && ViewBag.AllUsers.Count>0
                          && (await AuthorizationService.AuthorizeAsync(User, null, GroupOperations.AddGroupMember)).Succeeded)
                     {
                         <form asp-action="AddMember">

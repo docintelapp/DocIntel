@@ -24,17 +24,22 @@ using DocIntel.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Core.Authorization.Handlers
 {
     public class DocumentAuthorizationHandler : CustomAuthorizationHandler<Document>
     {
+        private readonly DocIntelContext _dbContext;
+
         public DocumentAuthorizationHandler(
+            DocIntelContext dbContext,
             SignInManager<AppUser> signInManager,
             UserManager<AppUser> userManager,
             ILogger<DocumentAuthorizationHandler> logger) : base(signInManager, userManager, logger)
         {
+            _dbContext = dbContext;
         }
 
         protected override Task HandleRequirementAsync(
@@ -72,15 +77,28 @@ namespace DocIntel.Core.Authorization.Handlers
 
             // Bot needs to access documents for indexing for example
             // TODO Investigate if '!= default' is the best way to check, use pattern?
-            if (context.User.Claims.All(_ => _.Type != "Bot") & (resource.ReleasableTo != default) &&
-                resource.ReleasableTo.Any())
+            if (context.User.Claims.All(_ => _.Type != "Bot"))
             {
-                _logger.LogTrace("Evaluating ReleasableTo");
-                var relTo = resource.ReleasableTo.Select(_ => _.GroupId).ToHashSet();
-                if (!context.User.Claims.Any(_ => _.Type == "Group" && relTo.Contains(Guid.Parse(_.Value))))
+                // TODO That should be in the user claim to avoid querying the database at every evaluation
+                var defaultGroups = _dbContext.Groups.Where(_ => _.Default).Select(_ => _.GroupId).ToArray();
+                if (defaultGroups.Length > 0 && !context.User.Claims.Any(_ => _.Type == "Group" && defaultGroups.Contains(Guid.Parse(_.Value))))
                 {
-                    _logger.LogWarning("User has no rel to");
-                    context.Fail();
+                    if ((resource.ReleasableTo != default && resource.ReleasableTo.Any())
+                        || (resource.EyesOnly != default && resource.EyesOnly.Any()))
+                    {
+                        _logger.LogTrace("Evaluating ReleasableTo");
+                        var relTo = resource.ReleasableTo.Select(_ => _.GroupId)
+                            .Union(resource.EyesOnly.Select(_ => _.GroupId)).ToHashSet();
+                        if (!context.User.Claims.Any(_ => _.Type == "Group" && relTo.Contains(Guid.Parse(_.Value))))
+                        {
+                            _logger.LogWarning("User has no rel to");
+                            context.Fail();
+                        }
+                    }
+                    else
+                    {
+                        context.Fail();
+                    }
                 }
             }
 

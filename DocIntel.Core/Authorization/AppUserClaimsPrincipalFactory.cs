@@ -95,7 +95,6 @@ namespace DocIntel.Core.Authorization
                     claimsIdentity.AddClaim(new Claim("Bot", user.Bot.ToString()));
 
                 // TODO Replace by using claims in user, as it should be :-)
-                /*
                 var groups = context.Members.AsNoTracking().Include(_ => _.Group)
                     .Where(x => x.UserId == user.Id)
                     .Select(_ => _.Group).ToList();
@@ -104,7 +103,6 @@ namespace DocIntel.Core.Authorization
                     claimsIdentity.AddClaim(new Claim("Group", @group.GroupId.ToString()));
                     AddParentGroup(context, claimsIdentity, @group);
                 }
-                */
             }
         }
     }
