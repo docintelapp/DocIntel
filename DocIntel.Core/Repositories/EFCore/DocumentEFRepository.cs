@@ -194,39 +194,43 @@ namespace DocIntel.Core.Repositories.EFCore
                     .Where(_ => _.DocumentId == document.DocumentId)
                     .Select(_ => _.Tag)
                     .ToHashSet();
+                
+                Tag[] tagsToAdd = new Tag[] {};
+                Tag[] tagsToRemove = new Tag[] {};
+                if (tags != null) {
+                    tagsToAdd = tags.Except(currentTags, _ => _.TagId).ToArray();
+                    tagsToRemove = currentTags.Except(tags, _ => _.TagId).ToArray();
 
-                var tagsToAdd = tags.Except(currentTags, _ => _.TagId).ToArray();
-                var tagsToRemove = currentTags.Except(tags, _ => _.TagId).ToArray();
+                    if (tagsToRemove.Any())
+                    {
+                        var hashset = tagsToRemove.Select(_ => _.TagId).ToArray();
+                        context.DatabaseContext.DocumentTag.RemoveRange(
+                            from dt in context.DatabaseContext.DocumentTag.AsQueryable()
+                            where (dt.DocumentId == document.DocumentId) & hashset.Contains(dt.TagId)
+                            select dt);
+                        
+                        // TODO Do NOT introduce dependencies between the repositories
+                        // foreach (var t in tagsToRemove)
+                        //    _observableRepository.DeleteRelationshipForTag(document.DocumentId, t.TagId);
 
-                if (tagsToRemove.Any())
-                {
-                    var hashset = tagsToRemove.Select(_ => _.TagId).ToArray();
-                    context.DatabaseContext.DocumentTag.RemoveRange(
-                        from dt in context.DatabaseContext.DocumentTag.AsQueryable()
-                        where (dt.DocumentId == document.DocumentId) & hashset.Contains(dt.TagId)
-                        select dt);
-                    
-                    // TODO Do NOT introduce dependencies between the repositories
-                    // foreach (var t in tagsToRemove)
-                    //    _observableRepository.DeleteRelationshipForTag(document.DocumentId, t.TagId);
+                    }
 
-                }
-
-                if (tagsToAdd.Any())
-                {
-                    var hashset = tagsToAdd.Select(_ => _.TagId).ToArray();
-                    foreach (var tagToAdd in hashset)
-                        if (!context.DatabaseContext.DocumentTag.Any(_ => _.DocumentId == document.DocumentId
-                                                                          && _.TagId == tagToAdd))
-                        {
-                            context.DatabaseContext.DocumentTag.Add(new DocumentTag
+                    if (tagsToAdd.Any())
+                    {
+                        var hashset = tagsToAdd.Select(_ => _.TagId).ToArray();
+                        foreach (var tagToAdd in hashset)
+                            if (!context.DatabaseContext.DocumentTag.Any(_ => _.DocumentId == document.DocumentId
+                                                                              && _.TagId == tagToAdd))
                             {
-                                DocumentId = document.DocumentId,
-                                TagId = tagToAdd
-                            });
-                        }
+                                context.DatabaseContext.DocumentTag.Add(new DocumentTag
+                                {
+                                    DocumentId = document.DocumentId,
+                                    TagId = tagToAdd
+                                });
+                            }
+                    }
                 }
-
+                
                 document.ReleasableTo = releasableTo;
                 document.EyesOnly = eyesOnly;
                 
