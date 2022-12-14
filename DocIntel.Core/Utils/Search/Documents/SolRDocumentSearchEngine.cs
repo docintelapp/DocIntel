@@ -288,16 +288,21 @@ namespace DocIntel.Core.Utils.Search.Documents
             // A document might be released to extra groups
             if (user.Memberships.Any())
             {
-                facetQueries.Add(
-                    (
-                        !user.Memberships.Any(_ => defaultGroup?.Contains(_.GroupId) ?? true)
-                            ? "(*:* " + SolRHelper<IndexedDocument>.GetSolRName(_ => _.EyesOnly) + ":[* TO *]) AND "
-                            : "(*:* NOT " + SolRHelper<IndexedDocument>.GetSolRName(_ => _.EyesOnly) + ":[* TO *]) OR "
-                    )
-                    + "(" +
-                    string.Join(" OR ", user.Memberships.Select(_ => SolRHelper<IndexedDocument>.GetSolRName(_ => _.ReleasableTo) + ":"  + _.GroupId))
-                    + ")"
-                );
+                string membershipQuery;
+                
+                // User is member of some default groups
+                if (defaultGroup.Length > 0 && !user.Memberships.Any(_ => defaultGroup?.Contains(_.GroupId) ?? true))
+                    membershipQuery = "(*:* " + SolRHelper<IndexedDocument>.GetSolRName(_ => _.EyesOnly) +
+                                      ":[* TO *]) AND ";
+                else // User is not member of any default group
+                    membershipQuery = "(*:* NOT " + SolRHelper<IndexedDocument>.GetSolRName(_ => _.EyesOnly) +
+                                      ":[* TO *]) OR ";
+
+                membershipQuery += "(" +
+                                   string.Join(" OR ", user.Memberships.Select(_ => SolRHelper<IndexedDocument>.GetSolRName(_ => _.ReleasableTo) + ":"  + _.GroupId))
+                                   + ")";
+                _logger.LogDebug("Membership FacetQuery: " + membershipQuery);
+                facetQueries.Add(membershipQuery);
             }
             
             if (query.SelectedRegistrants != null && query.SelectedRegistrants.Any())
