@@ -187,6 +187,8 @@ namespace DocIntel.WebApp.Controllers
                 return Unauthorized();
             }
 
+            ViewBag.Permissions = new List<string>();
+            
             return View(new AppRole(""));
         }
 
@@ -210,7 +212,6 @@ namespace DocIntel.WebApp.Controllers
                         LastModifiedById = currentUser.Id
                     };
 
-                    await _roleManager.CreateAsync(role);
                     var roleOperation = await _roleManager.CreateAsync(role);
                     if (roleOperation.Succeeded)
                     {
