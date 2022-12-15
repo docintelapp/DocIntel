@@ -95,6 +95,22 @@ namespace DocIntel.Core.Utils.Search.Documents
                 // Ensure that page is always at least 1
                 query.Page = Math.Max(query.Page, 1);
 
+                var extraParams = new List<KeyValuePair<string,string>>
+                {
+                    new("qf", weights),
+                    new("defType", "edismax"),
+                    new("hl.fragsize", "250"),
+                    new("hl.simple.pre", "<span class='bg-warning-50'>"),
+                    new("hl.simple.post", "</span>"),
+                    new("bf", "recip(ms(NOW,registration_date),3.16e-11,1,1))")
+                };
+
+                foreach (var fq in facetQuery)
+                {
+                    extraParams.Add(new KeyValuePair<string, string>("fq", fq));
+                }
+                
+                
                 var results = _solr.Query(q, new QueryOptions
                 {
                     StartOrCursor = new StartOrCursor.Start((query.Page - 1) * query.PageSize),
@@ -121,16 +137,7 @@ namespace DocIntel.Core.Utils.Search.Documents
                         }
                     },
                     OrderBy = sortOrder,
-                    ExtraParams = new Dictionary<string, string>
-                    {
-                        {"qf", weights},
-                        {"fq", facetQuery},
-                        {"defType", "edismax"},
-                        {"hl.fragsize", "250"},
-                        {"hl.simple.pre", "<span class='bg-warning-50'>"},
-                        {"hl.simple.post", "</span>"},
-                        {"bf", "recip(ms(NOW,registration_date),3.16e-11,1,1)"}
-                    }
+                    ExtraParams = extraParams
                 });
 
                 var sr = new SearchResults();
@@ -163,7 +170,7 @@ namespace DocIntel.Core.Utils.Search.Documents
                 var hvrs = new Dictionary<string, HierarchicalVerticalResult<Guid, Guid>>();
                 foreach (var facet in results.FacetFields[SolRHelper<IndexedDocument>.GetSolRName(_ => _.TagsId)])
                 {
-                    _logger.LogDebug(facet.Key);
+                    _logger.LogTrace(facet.Key);
                     var prefix = facet.Key;
                     var label = "";
                     if (facet.Key.Contains("/"))
@@ -241,7 +248,7 @@ namespace DocIntel.Core.Utils.Search.Documents
             return new string[] { };
         }
 
-        private string BuildFacetQuery(AppUser user, DocumentSearchQuery query, Guid[] defaultGroup)
+        private List<string> BuildFacetQuery(AppUser user, DocumentSearchQuery query, Guid[] defaultGroup)
         {
             var facetQueries = new List<string>();
             
@@ -317,10 +324,7 @@ namespace DocIntel.Core.Utils.Search.Documents
                             SolRHelper<IndexedDocument>.GetSolRName(_ => _.RegisteredById) + ":" + _.Id))
                 );
             
-            var facetQuery = "";
-            if (facetQueries.Any())
-                facetQuery = "(" + string.Join(") AND (", facetQueries) + ")";
-            return facetQuery;
+            return facetQueries;
         }
     }
 }

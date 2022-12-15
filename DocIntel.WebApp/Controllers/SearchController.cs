@@ -174,7 +174,6 @@ namespace DocIntel.WebApp.Controllers
                     try
                     {
                         var async = await _tagRepository.GetAsync(AmbientContext, y.Value, new []{"Facet"});
-                        _logger.LogDebug("Got: " + async.Facet.Title + "/" + async.Label);
                         tagsInFacet.Add(new VerticalResult<Tag>(
                             async,
                             y.Count
