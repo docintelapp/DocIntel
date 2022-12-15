@@ -102,7 +102,7 @@ namespace DocIntel.Core.Utils.Search.Documents
                     new("hl.fragsize", "250"),
                     new("hl.simple.pre", "<span class='bg-warning-50'>"),
                     new("hl.simple.post", "</span>"),
-                    new("bf", "recip(ms(NOW,registration_date),3.16e-11,1,1))")
+                    new("bf", "recip(ms(NOW,registration_date),3.16e-11,1,1)")
                 };
 
                 foreach (var fq in facetQuery)
@@ -110,6 +110,9 @@ namespace DocIntel.Core.Utils.Search.Documents
                     extraParams.Add(new KeyValuePair<string, string>("fq", fq));
                 }
                 
+                foreach(var a in extraParams) { 
+                    _logger.LogDebug(a.Key +  " => " + a.Value);
+                }
                 
                 var results = _solr.Query(q, new QueryOptions
                 {
