@@ -21,8 +21,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Models;
-using DocIntel.Core.Repositories;
-using DocIntel.Core.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -67,7 +65,7 @@ namespace DocIntel.Core.Authorization
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error in AppUserClaimsPrincipalFactory");
+                Console.WriteLine("Error in AppUserClaimsPrincipalFactory: {0}", e.Message);
             }
             return principal;
         }
@@ -86,7 +84,7 @@ namespace DocIntel.Core.Authorization
         }
 
 
-        private async Task PopulateClaims(DocIntelContext context, ClaimsIdentity claimsIdentity, AppUser user)
+        private Task PopulateClaims(DocIntelContext context, ClaimsIdentity claimsIdentity, AppUser user)
         {
             if (claimsIdentity != null)
             {
@@ -104,6 +102,8 @@ namespace DocIntel.Core.Authorization
                     AddParentGroup(context, claimsIdentity, @group);
                 }
             }
+
+            return Task.CompletedTask;
         }
     }
 }

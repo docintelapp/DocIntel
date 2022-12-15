@@ -40,16 +40,11 @@ namespace DocIntel.Core.Repositories.EFCore
 {
     public class TagEFRepository :DefaultEFRepository<Tag>, ITagRepository
     {
-        private HtmlSanitizer _sanitizer;
-
         public TagEFRepository(
             IPublishEndpoint busClient,
             IAppAuthorizationService appAuthorizationService)
             : base(_ => _.DatabaseContext.Tags, busClient, appAuthorizationService)
         {
-            
-            _sanitizer = new HtmlSanitizer();
-            _sanitizer.AllowedSchemes.Add("data");
         }
 
         public async Task<Tag> CreateAsync(
