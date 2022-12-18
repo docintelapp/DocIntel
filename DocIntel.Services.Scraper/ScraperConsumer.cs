@@ -29,6 +29,7 @@ using DocIntel.Core.Settings;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Services.Scraper;
@@ -64,7 +65,9 @@ public class ScraperConsumer :
 
     public async Task ConsumeBacklogAsync()
     {
-        var context = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var context = await GetAmbientContext(scope.ServiceProvider);
+
         while (await _documentRepository.GetSubmittedDocuments(context,
                        _ => _.Include(__ => __.Classification)
                            .Include(__ => __.ReleasableTo)
@@ -86,7 +89,9 @@ public class ScraperConsumer :
 
     private async Task Scrape(URLSubmittedMessage urlSubmittedMessage)
     {
-        var context = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var context = await GetAmbientContext(scope.ServiceProvider);
+
         var submission = await _documentRepository.GetSubmittedDocument(context,
             urlSubmittedMessage.SubmissionId,
             _ => _.Include(__ => __.Classification).Include(__ => __.ReleasableTo).Include(__ => __.EyesOnly));
@@ -97,7 +102,9 @@ public class ScraperConsumer :
     {
         submission.IngestionDate = DateTime.UtcNow;
 
-        var context = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var context = await GetAmbientContext(scope.ServiceProvider);
+
         _logger.LogDebug($"Scrape: {submission.URL}");
         var exists = await _documentRepository.GetAllAsync(context,
                 _ => _.Where(__ =>

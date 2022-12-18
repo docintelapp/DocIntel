@@ -43,6 +43,7 @@ namespace DocIntel.Core.Utils.Search.Documents
             ISolrOperations<IndexedDocument> solr,
             ILogger<SolRDocumentSearchEngine> logger, 
             ApplicationSettings settings)
+            
         {
             _solr = solr;
             _logger = logger;

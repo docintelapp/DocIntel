@@ -12,6 +12,7 @@ using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -45,7 +46,7 @@ public class TagFacetIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
 
     public Task StartAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Timed Hosted Service running.");
+        _logger.LogInformation($"TagFacetIndexerTimedConsumer is started and will check indexing every {_appSettings.Schedule.IndexingFrequencyCheck} minutes");
 
         var fromMinutes = TimeSpan.FromMinutes(_appSettings.Schedule.IndexingFrequencyCheck);
         _timer = new Timer(DoWork, null, fromMinutes, fromMinutes);
@@ -55,24 +56,36 @@ public class TagFacetIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
 
     public Task StopAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Timed Hosted Service is stopping.");
-
+        _logger.LogInformation("TagFacetIndexerTimedConsumer is stopping");
         _timer?.Change(Timeout.Infinite, 0);
-
         return Task.CompletedTask;
     }
 
     private async void DoWork(object? state)
     {
         var count = Interlocked.Increment(ref executionCount);
-        _logger.LogInformation(
-            "Timed Hosted Service is working. Count: {Count}", count);
+        _logger.LogInformation($"TagFacetIndexerTimedConsumer executes (Count: {count})");
 
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        if (_appSettings == null || _appSettings.Schedule == null
+                                 || _appSettings.Schedule.MaxIndexingDelay <= 0) {
+            _logger.LogWarning(
+                "TagFacetIndexerTimedConsumer failed to run due to incorrect configuration");
+            return;
+        }
+
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
+        if (ambientContext == null || _facetRepository == null)
+        {
+            _logger.LogWarning(
+                "TagFacetIndexerTimedConsumer failed to run as it cannot access the database");
+            return;
+        } 
+        
         var listAsync = await _facetRepository.GetAllAsync(ambientContext,
                 _ => _.Where(__ => __.LastIndexDate == DateTime.MinValue 
                                    || __.LastIndexDate == DateTime.MaxValue 
-                                   || __.Tags.Max(___ => ___.ModificationDate) - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)
+                                   || (__.Tags.Any() && __.Tags.Max(___ => ___.ModificationDate) - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay))
                                    || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)))
             .ToListAsync();
 
@@ -81,15 +94,13 @@ public class TagFacetIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
             {
                 _indexingUtility.Update(facet);
                 facet.LastIndexDate = DateTime.UtcNow;
-                await ambientContext.DatabaseContext.SaveChangesAsync();
-                _logger.LogInformation("Index updated for the tag {0}", facet.FacetId);
             }
             catch (UnauthorizedOperationException)
             {
                 _logger.Log(LogLevel.Warning,
                     TagIndexerMessageConsumer.Unauthorized,
                     new LogEvent(
-                            $"User '{ambientContext.CurrentUser.UserName}' attempted to retrieve tag without legitimate rights.")
+                            $"User '{ambientContext.CurrentUser.UserName}' attempted to retrieve tag without legitimate rights")
                         .AddUser(ambientContext.CurrentUser)
                         .AddProperty("tag.id", facet.FacetId),
                     null,
@@ -100,7 +111,7 @@ public class TagFacetIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
                 _logger.Log(LogLevel.Warning,
                     TagIndexerMessageConsumer.EntityNotFound,
                     new LogEvent(
-                            $"User '{ambientContext.CurrentUser.UserName}' attempted to retrieve a non-existing tag.")
+                            $"User '{ambientContext.CurrentUser.UserName}' attempted to retrieve a non-existing tag")
                         .AddUser(ambientContext.CurrentUser)
                         .AddProperty("tag.id", facet.FacetId),
                     null,
@@ -119,6 +130,7 @@ public class TagFacetIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
                     LogEvent.Formatter);
                 _logger.LogDebug(e.StackTrace);
             }
-        await ambientContext.DatabaseContext.SaveChangesAsync();
+        await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
+        _logger.LogInformation($"TagFacetIndexerTimedConsumer successfully executed");
     }
 }

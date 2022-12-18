@@ -18,7 +18,6 @@ public class DynamicContextConsumer
 {
     protected readonly ApplicationSettings _appSettings;
     protected readonly IServiceProvider _serviceProvider;
-    private readonly AppUserClaimsPrincipalFactory _userClaimsPrincipalFactory;
     private readonly ILogger<DynamicContextConsumer> _logger;
 
     public DynamicContextConsumer(ApplicationSettings appSettings,
@@ -27,42 +26,39 @@ public class DynamicContextConsumer
     {
         _appSettings = appSettings;
         _serviceProvider = serviceProvider;
-        _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
         _logger = serviceProvider.GetRequiredService<ILogger<DynamicContextConsumer>>();
     }
 
-
-    protected async Task<AmbientContext> GetAmbientContext()
+    protected async Task<AmbientContext> GetAmbientContext(IServiceProvider scopeServiceProvider)
     {
         // TODO Refactor. Split up due to a weird bug with DbContext multi-threading
         DocIntelContext dbContext = null;
         try
         {
-            var dbContextOptions = _serviceProvider.GetRequiredService<DbContextOptions<DocIntelContext>>();
-            var dbContextLogger = _serviceProvider.GetRequiredService<ILogger<DocIntelContext>>();
-            var userManager = _serviceProvider.GetRequiredService<AppUserManager>();
+            var dbContextOptions = scopeServiceProvider.GetRequiredService<DbContextOptions<DocIntelContext>>();
+            var dbContextLogger = scopeServiceProvider.GetRequiredService<ILogger<DocIntelContext>>();
+            var userManager = scopeServiceProvider.GetRequiredService<AppUserManager>();
+            var userClaimsPrincipalFactory = scopeServiceProvider.GetRequiredService<AppUserClaimsPrincipalFactory>();
+            
             dbContext = new DocIntelContext(dbContextOptions, dbContextLogger);
             var automationUser = await userManager.FindByNameAsync(_appSettings.AutomationAccount);
             
             if (automationUser == null)
                 throw new ArgumentNullException($"User '{_appSettings.AutomationAccount}' was not found.");
         
-            var claims = await _userClaimsPrincipalFactory.CreateAsync(automationUser);
+            var claims = await userClaimsPrincipalFactory.CreateAsync(automationUser);
             
-            if (dbContext != null && claims != null && automationUser != null)
+            var ambientContext = new AmbientContext
             {
-                var ambientContext = new AmbientContext
-                {
-                    DatabaseContext = dbContext,
-                    Claims = claims,
-                    CurrentUser = automationUser
-                };
-                return ambientContext;
-            }
+                DatabaseContext = dbContext,
+                Claims = claims,
+                CurrentUser = automationUser
+            };
+            return ambientContext;
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            _logger.LogError("ERROR in DynamicContextConsumer.GetAmbientContext: " + e.Message + "\n" + e.StackTrace);
         }
         return null;
     }

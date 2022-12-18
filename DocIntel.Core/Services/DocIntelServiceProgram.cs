@@ -207,7 +207,7 @@ namespace DocIntel.Core.Services
                 {
                     options.UseNpgsql(connectionString,
                         x => x.MigrationsAssembly("DocIntel.Core"));
-                }, contextLifetime: ServiceLifetime.Transient);
+                });
 
             var lockFolder = appSettings.LockFolder;
             if (string.IsNullOrEmpty(lockFolder))

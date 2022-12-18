@@ -36,7 +36,8 @@ namespace DocIntel.Services.TagIndexer
 
         protected override Task Run(CancellationToken cancellationToken)
         {
-            var runner = _serviceProvider.GetService<TagFacetIndexerMessageConsumer>();
+            using IServiceScope scope = _serviceProvider.CreateScope();
+            var runner = scope.ServiceProvider.GetService<TagFacetIndexerMessageConsumer>();
             if (runner == null)
                 throw new InvalidOperationException("Could not create instance of 'TagIndexer'");
             return Task.Delay(Timeout.Infinite, cancellationToken);

@@ -40,11 +40,14 @@ namespace DocIntel.Services.TagIndexer
                 .ConfigureLogging(ConfigureLogging)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<TagIndexerMessageConsumer>();
+                    services.AddScoped<TagIndexerMessageConsumer>();
+                    
                     services.AddHostedService<TagIndexerHostedService>();
                     services.AddHostedService<TagIndexerTimedConsumer>();
-                    services.AddHostedService<FacetIndexerHostedService>();
-                    services.AddHostedService<TagFacetIndexerTimedConsumer>();
+                    
+                    //services.AddHostedService<FacetIndexerHostedService>();
+                    //services.AddHostedService<TagFacetIndexerTimedConsumer>();
+                    
                     ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, runHostedServices: true);
                 })
                 .UseNLog();

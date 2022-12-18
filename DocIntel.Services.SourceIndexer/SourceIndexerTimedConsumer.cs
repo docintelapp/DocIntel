@@ -12,6 +12,7 @@ using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -68,7 +69,8 @@ public class SourceIndexerTimedConsumer : DynamicContextConsumer, IHostedService
         _logger.LogInformation(
             "Timed Hosted Service is working. Count: {Count}", count);
 
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var listAsync = await _sourceRepository.GetAllAsync(ambientContext,
                 _ => _.Include(__ => __.Documents)
                     .Where(__ => __.LastIndexDate == DateTime.MinValue 

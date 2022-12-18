@@ -13,6 +13,7 @@ using DocIntel.Core.Utils.Indexation;
 using DocIntel.Core.Utils.Thumbnail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -68,7 +69,8 @@ public class ThumbnailerTimedConsumer : DynamicContextConsumer, IHostedService, 
         _logger.LogInformation(
             "Timed Hosted Service is working. Count: {Count}", count);
 
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var listAsync = await _documentRepository.GetAllAsync(ambientContext,
                 _ => _.Include(__ => __.Files).Where(__ => __.ThumbnailId == null))
             .ToListAsync();

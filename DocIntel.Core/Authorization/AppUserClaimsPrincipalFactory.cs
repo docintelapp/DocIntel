@@ -83,7 +83,6 @@ namespace DocIntel.Core.Authorization
             }
         }
 
-
         private Task PopulateClaims(DocIntelContext context, ClaimsIdentity claimsIdentity, AppUser user)
         {
             if (claimsIdentity != null)
@@ -93,8 +92,8 @@ namespace DocIntel.Core.Authorization
                     claimsIdentity.AddClaim(new Claim("Bot", user.Bot.ToString()));
 
                 // TODO Replace by using claims in user, as it should be :-)
-                var groups = context.Members.AsNoTracking().Include(_ => _.Group)
-                    .Where(x => x.UserId == user.Id)
+                var groups = context.Users.Where(x => x.Id == user.Id)
+                    .SelectMany(_ => _.Memberships)
                     .Select(_ => _.Group).ToList();
                 foreach (var group in groups)
                 {

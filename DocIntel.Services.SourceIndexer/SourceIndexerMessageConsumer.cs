@@ -28,6 +28,7 @@ using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Services.SourceIndexer;
@@ -60,26 +61,30 @@ public class SourceIndexerMessageConsumer :
 
     public async Task Consume(ConsumeContext<SourceCreatedMessage> context)
     {
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         await AddToIndex(context.Message.SourceId, ambientContext);
     }
 
     public async Task Consume(ConsumeContext<SourceMergedMessage> context)
     {
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         await UpdateIndex(context.Message.PrimarySourceId, ambientContext);
         RemoveFromIndex(context.Message.SecondarySourceId, ambientContext);
     }
 
     public async Task Consume(ConsumeContext<SourceRemovedMessage> context)
     {
-        var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         RemoveFromIndex(context.Message.SourceId, ambientContext);
     }
 
     public async Task Consume(ConsumeContext<SourceUpdatedMessage> context)
     {
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         await UpdateIndex(context.Message.SourceId, ambientContext);
     }
 

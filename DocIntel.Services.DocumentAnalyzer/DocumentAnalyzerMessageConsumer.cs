@@ -27,6 +27,7 @@ using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Services.DocumentAnalyzer
@@ -56,8 +57,7 @@ namespace DocIntel.Services.DocumentAnalyzer
         public async Task Consume(ConsumeContext<DocumentCreatedMessage> context)
         {
             _logger.LogDebug("DocumentCreatedMessage: {0}", context.Message.DocumentId);
-            var ambientContext = await GetAmbientContext();
-
+            
             try
             {
                 await Analyze(context.Message.DocumentId);
@@ -67,13 +67,12 @@ namespace DocIntel.Services.DocumentAnalyzer
                 _logger.LogError($"Document {context.Message.DocumentId} could not be analyzed ({e.Message}).");
                 _logger.LogError(e.StackTrace);
             }
-            
-            ambientContext.Dispose();
         }
 
         private async Task Analyze(Guid documentId)
         {
-            using var ambientContext = await GetAmbientContext();
+            using var scope = _serviceProvider.CreateScope();
+            using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
             await _documentAnalyzerUtility.Analyze(documentId, ambientContext);
         }
 

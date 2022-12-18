@@ -103,13 +103,18 @@ public class TagIndexerMessageConsumer :
     {
         try
         {
+            using var scope = _serviceProvider.CreateScope();
             _logger.LogDebug("FacetTagUpdatedMessage: {0}", context.Message.FacetTagId);
-            var ambientContext = await GetAmbientContext();
+            var ambientContext = await GetAmbientContext(scope.ServiceProvider);
             var tags = await _tagRepository
                 .GetAllAsync(ambientContext, new TagQuery { FacetId = context.Message.FacetTagId })
                 .Select(_ => _.TagId).ToListAsync();
-            ambientContext.Dispose();
-            foreach (var tagId in tags) await UpdateIndex(tagId);
+            foreach (var tag in tags)
+            {
+                // Parallelizing would have been great, but it caused "Too Many Clients" errors
+                await UpdateIndex(tag);
+            }
+            await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
         }
         catch (Exception e)
         {
@@ -173,7 +178,8 @@ public class TagIndexerMessageConsumer :
 
     private async Task RemoveFromIndex(Guid tagId)
     {
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         try
         {
             _indexingUtility.Remove(tagId);
@@ -200,7 +206,8 @@ public class TagIndexerMessageConsumer :
 
     private async Task AddToIndex(Guid tagId)
     {
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         try
         {
             var tag = await _tagRepository.GetAsync(ambientContext,
@@ -212,7 +219,7 @@ public class TagIndexerMessageConsumer :
                 });
             _indexingUtility.Add(tag);
             tag.LastIndexDate = DateTime.UtcNow;
-            await ambientContext.DatabaseContext.SaveChangesAsync();
+            await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
             _logger.LogInformation("Index updated for the tag {0}", tag.TagId);
         }
         catch (UnauthorizedOperationException)
@@ -255,10 +262,11 @@ public class TagIndexerMessageConsumer :
             ambientContext.Dispose();
         }
     }
-
+   
     private async Task UpdateIndex(Guid tagId)
-    {
-        using var ambientContext = await GetAmbientContext();
+    {   
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         try
         {
             var tag = await _tagRepository.GetAsync(ambientContext,
@@ -268,10 +276,8 @@ public class TagIndexerMessageConsumer :
                     nameof(Tag.Facet),
                     "Documents", "Documents.Document"
                 });
-            _indexingUtility.Update(tag);
-            tag.LastIndexDate = DateTime.UtcNow;
-            await ambientContext.DatabaseContext.SaveChangesAsync();
-            _logger.LogInformation("Index updated for the tag {0}", tag.TagId);
+            await UpdateIndex(tag);
+            await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
         }
         catch (UnauthorizedOperationException)
         {
@@ -312,6 +318,14 @@ public class TagIndexerMessageConsumer :
         {
             ambientContext.Dispose();
         }
+    }
+
+    private async Task UpdateIndex(Tag tag)
+    {
+            _indexingUtility.Update(tag);
+            tag.LastIndexDate = DateTime.UtcNow;
+            _logger.LogInformation("Index updated for the tag {0} ({1})", tag.TagId, tag.FriendlyName);
+        
     }
 
 }

@@ -93,6 +93,16 @@ namespace DocIntel.Core.Models
 
             return result;
         }
+        
+        public async Task<int> SaveChangesAsyncWithoutNotification(CancellationToken cancellationToken = default)
+        {
+            var saveTask = await base.SaveChangesAsync(cancellationToken);
+            _logger.LogTrace("SaveChangesAsync return status: {0}", saveTask);
+
+            OnSaveCompleteTasks = new ConcurrentBag<Func<Task>>();
+
+            return saveTask;
+        }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

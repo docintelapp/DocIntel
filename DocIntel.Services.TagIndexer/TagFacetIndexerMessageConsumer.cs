@@ -112,11 +112,6 @@ public class TagFacetIndexerMessageConsumer :
         try
         {
             _logger.LogDebug("FacetTagUpdatedMessage: {0}", context.Message.FacetTagId);
-            var ambientContext = await GetAmbientContext();
-            var tags = await _tagRepository
-                .GetAllAsync(ambientContext, new TagQuery { FacetId = context.Message.FacetTagId })
-                .Select(_ => _.TagId).ToListAsync();
-            ambientContext.Dispose();
             await UpdateFacetIndex(context.Message.FacetTagId);
         }
         catch (Exception e)
@@ -127,7 +122,9 @@ public class TagFacetIndexerMessageConsumer :
 
     private async Task RemoveFromFacetIndex(Guid facetId)
     {
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         try
         {
             _facetIndexingUtility.Remove(facetId);
@@ -154,14 +151,15 @@ public class TagFacetIndexerMessageConsumer :
 
     private async Task AddToFacetIndex(Guid facetId)
     {
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         try
         {
-            var facet = await _facetRepository.GetAsync(ambientContext,
-                facetId);
+            var facet = await _facetRepository.GetAsync(ambientContext, facetId);
             _facetIndexingUtility.Add(facet);
             facet.LastIndexDate = DateTime.UtcNow;
-            await ambientContext.DatabaseContext.SaveChangesAsync();
+            await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
             _logger.LogInformation("Index updated for the facet {0}", facet.FacetId);
         }
         catch (UnauthorizedOperationException)
@@ -207,15 +205,15 @@ public class TagFacetIndexerMessageConsumer :
 
     private async Task UpdateFacetIndex(Guid facetId)
     {
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         try
         {
-            var facet = await _facetRepository.GetAsync(ambientContext,
-                facetId);
+            var facet = await _facetRepository.GetAsync(ambientContext, facetId);
             _facetIndexingUtility.Update(facet);
             facet.LastIndexDate = DateTime.UtcNow;
-            await ambientContext.DatabaseContext.SaveChangesAsync();
-            _logger.LogInformation("Index updated for the facet {0}", facet.FacetId);
+            await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
+            _logger.LogInformation("Index updated for the facet {0} ({1})", facet.FacetId, facet.Prefix);
         }
         catch (UnauthorizedOperationException)
         {

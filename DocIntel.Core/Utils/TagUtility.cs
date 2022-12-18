@@ -119,11 +119,7 @@ namespace DocIntel.Core.Utils
                     FacetId = facet.FacetId
                 });
             }
-            else
-            {
-                await _tagRepository.UpdateAsync(ambientContext, retrievedTag);
-            }
-
+            
             cache.Add(retrievedTag);
             return retrievedTag;
         }
@@ -140,12 +136,8 @@ namespace DocIntel.Core.Utils
             {
                 Prefix = prefix
             }).SingleOrDefaultAsync();
-            
-            if (retrievedFacet != null)
-            {
-                await _facetRepository.UpdateAsync(ambientContext, retrievedFacet);
-            }
-            else
+
+            if (retrievedFacet == null)
             {
                 retrievedFacet = await _facetRepository.AddAsync(ambientContext, new TagFacet
                 {

@@ -78,7 +78,8 @@ public class DocumentIndexerMessageConsumer :
 
     public async Task Consume(ConsumeContext<CommentCreatedMessage> context)
     {
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var documentId = ambientContext.DatabaseContext.Comments
             .AsQueryable()
             .SingleOrDefault(_ => _.CommentId == context.Message.CommentId)
@@ -88,7 +89,8 @@ public class DocumentIndexerMessageConsumer :
 
     public async Task Consume(ConsumeContext<CommentRemovedMessage> context)
     {
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var documentId = ambientContext.DatabaseContext.Comments
             .AsQueryable()
             .SingleOrDefault(_ => _.CommentId == context.Message.CommentId)
@@ -98,7 +100,8 @@ public class DocumentIndexerMessageConsumer :
 
     public async Task Consume(ConsumeContext<CommentUpdatedMessage> context)
     {
-        using var ambientContext = await GetAmbientContext();
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var documentId = ambientContext.DatabaseContext.Comments
             .AsQueryable()
             .SingleOrDefault(_ => _.CommentId == context.Message.CommentId)
@@ -116,7 +119,9 @@ public class DocumentIndexerMessageConsumer :
     public async Task Consume(ConsumeContext<DocumentCreatedMessage> context)
     {
         _logger.LogDebug("DocumentCreatedMessage: {0}", context.Message.DocumentId);
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         await AddToIndex(context.Message.DocumentId, ambientContext);
     }
 
@@ -124,28 +129,36 @@ public class DocumentIndexerMessageConsumer :
     {
         _logger.LogDebug("DocumentIndexMessage: {0}", context.Message.DocumentId);
 
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         await UpdateIndex(context.Message.DocumentId, ambientContext);
     }
 
     public async Task Consume(ConsumeContext<DocumentRemovedMessage> context)
     {
         _logger.LogDebug("DocumentRemovedMessage: {0}", context.Message.DocumentId);
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         RemoveFromIndex(context.Message.DocumentId, ambientContext);
     }
 
     public async Task Consume(ConsumeContext<DocumentUpdatedMessage> context)
     {
         _logger.LogDebug("DocumentUpdatedMessage: {0}", context.Message.DocumentId);
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         await UpdateIndex(context.Message.DocumentId, ambientContext);
     }
 
     public async Task Consume(ConsumeContext<SourceMergedMessage> context)
     {
         var documentIds = context.Message.Documents.ToArray();
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var documents = ambientContext.DatabaseContext.DocumentTag
             .AsQueryable()
             .Where(_ => documentIds.Contains(_.TagId))
@@ -160,7 +173,9 @@ public class DocumentIndexerMessageConsumer :
     {
         var documentIds = context.Message.Documents.ToArray();
 
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var documents = ambientContext.DatabaseContext.DocumentTag
             .AsQueryable()
             .Where(_ => documentIds.Contains(_.TagId))
@@ -175,7 +190,9 @@ public class DocumentIndexerMessageConsumer :
     {
         _logger.LogDebug("SourceUpdatedMessage: {0}", context.Message.SourceId);
 
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var documents = ambientContext.DatabaseContext.Documents
             .AsQueryable()
             .Where(_ => _.SourceId == context.Message.SourceId)
@@ -191,7 +208,9 @@ public class DocumentIndexerMessageConsumer :
         _logger.LogDebug("TagMergedMessage: {0}", context.Message.RetainedTagId);
 
         var documentIds = context.Message.Documents.ToArray();
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var documents = ambientContext.DatabaseContext.DocumentTag
             .AsQueryable()
             .Where(_ => documentIds.Contains(_.TagId))
@@ -207,7 +226,9 @@ public class DocumentIndexerMessageConsumer :
         _logger.LogDebug("TagRemovedMessage: {0}", context.Message.TagId);
 
         var documentIds = context.Message.Documents.ToArray();
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var documents = ambientContext.DatabaseContext.DocumentTag
             .AsQueryable()
             .Where(_ => documentIds.Contains(_.TagId))
@@ -222,7 +243,9 @@ public class DocumentIndexerMessageConsumer :
     {
         _logger.LogDebug("TagUpdatedMessage: {0}", context.Message.TagId);
 
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         var documents = ambientContext.DatabaseContext.DocumentTag
             .AsQueryable()
             .Where(_ => _.TagId == context.Message.TagId)

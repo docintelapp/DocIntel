@@ -13,6 +13,7 @@ using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -69,7 +70,9 @@ public class DocumentIndexerTimedConsumer : DynamicContextConsumer, IHostedServi
         _logger.LogInformation(
             "Timed Hosted Service is working. Count: {Count}", count);
         HashSet<Guid> processed = new HashSet<Guid>();
-        using var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
         while (await GetAllAsync(ambientContext, processed).CountAsync() > 0)
         {
             var document = await GetAllAsync(ambientContext, processed).OrderByDescending(__ => __.DocumentDate).FirstAsync();

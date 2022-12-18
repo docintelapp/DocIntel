@@ -32,6 +32,7 @@ using Ganss.Xss;
 using MassTransit;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
 namespace DocIntel.Core.Repositories.EFCore
@@ -41,13 +42,15 @@ namespace DocIntel.Core.Repositories.EFCore
         private readonly IAppAuthorizationService _appAuthorizationService;
         private readonly IPublishEndpoint _busClient;
         private HtmlSanitizer _sanitizer;
+        private ILogger<TagFacetEFRepository> _logger;
 
         public TagFacetEFRepository(IPublishEndpoint busClient,
-            IAppAuthorizationService appAuthorizationService)
+            IAppAuthorizationService appAuthorizationService, ILogger<TagFacetEFRepository> logger)
         {
             _busClient = busClient;
             _appAuthorizationService = appAuthorizationService;
-            
+            _logger = logger;
+
             _sanitizer = new HtmlSanitizer();
             _sanitizer.AllowedSchemes.Add("data");
         }
@@ -81,12 +84,15 @@ namespace DocIntel.Core.Repositories.EFCore
                 var trackingEntity = await ambientContext.DatabaseContext.AddAsync(tagFacet);
 
                 ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
-                    () => _busClient.Publish(new FacetCreatedMessage
+                    () =>
                     {
-                        FacetTagId = trackingEntity.Entity.FacetId,
-                        UserId = ambientContext.CurrentUser.Id
-                    })
-                );
+                        _logger.LogDebug("Sending FacetCreatedMessage message");
+                        return _busClient.Publish(new FacetCreatedMessage
+                        {
+                            FacetTagId = trackingEntity.Entity.FacetId,
+                            UserId = ambientContext.CurrentUser.Id
+                        });
+                    });
 
                 return trackingEntity.Entity;
             }
@@ -125,12 +131,15 @@ namespace DocIntel.Core.Repositories.EFCore
                 var trackingEntity = ambientContext.DatabaseContext.Update(tagFacet);
 
                 ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
-                    () => _busClient.Publish(new FacetUpdatedMessage
+                    () =>
                     {
-                        FacetTagId = trackingEntity.Entity.FacetId,
-                        UserId = ambientContext.CurrentUser.Id
-                    })
-                );
+                        _logger.LogDebug("Sending FacetUpdatedMessage message");
+                        return _busClient.Publish(new FacetUpdatedMessage
+                        {
+                            FacetTagId = trackingEntity.Entity.FacetId,
+                            UserId = ambientContext.CurrentUser.Id
+                        });
+                    });
 
                 return trackingEntity.Entity;
             }
@@ -153,12 +162,16 @@ namespace DocIntel.Core.Repositories.EFCore
             var trackingEntity = ambientContext.DatabaseContext.Remove(facet);
             if (trackingEntity.Entity != null)
                 ambientContext.DatabaseContext.OnSaveCompleteTasks.Add(
-                    () => _busClient.Publish(new FacetRemovedMessage
+                    () =>
                     {
-                        FacetTagId = trackingEntity.Entity.FacetId,
-                        UserId = ambientContext.CurrentUser.Id,
-                        Tags = tags
-                    }));
+                        _logger.LogDebug("Sending FacetRemovedMessage message");
+                        return _busClient.Publish(new FacetRemovedMessage
+                        {
+                            FacetTagId = trackingEntity.Entity.FacetId,
+                            UserId = ambientContext.CurrentUser.Id,
+                            Tags = tags
+                        });
+                    });
 
             return trackingEntity.Entity;
         }

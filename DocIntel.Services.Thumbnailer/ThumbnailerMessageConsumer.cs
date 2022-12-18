@@ -76,7 +76,8 @@ namespace DocIntel.Services.Thumbnailer
 
         private async Task Thumbnail(Guid documentId)
         {
-            using var ambientContext = await GetAmbientContext();
+            using var scope = _serviceProvider.CreateScope();
+            using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
             try
             {
                 var document =

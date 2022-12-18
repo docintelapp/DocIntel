@@ -9,6 +9,7 @@ using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -48,7 +49,9 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
         _logger.LogInformation(
             "Timed Hosted Service is working. Count: {Count}", count);
         
-        var ambientContext = await GetAmbientContext();
+        
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
             
         while (await _documentRepository.GetAllAsync(ambientContext,
                    _ => _.Where(__ => __.Status == DocumentStatus.Submitted)).CountAsync() > 0)

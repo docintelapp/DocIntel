@@ -12,6 +12,7 @@ using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -45,7 +46,7 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
 
     public Task StartAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Timed Hosted Service running.");
+        _logger.LogInformation($"TagIndexerTimedConsumer is started and will check indexing every {_appSettings.Schedule.IndexingFrequencyCheck} minutes");
 
         var fromMinutes = TimeSpan.FromMinutes(_appSettings.Schedule.IndexingFrequencyCheck);
         _timer = new Timer(DoWork, null, fromMinutes, fromMinutes);
@@ -55,25 +56,38 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
 
     public Task StopAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Timed Hosted Service is stopping.");
-
+        _logger.LogInformation("TagIndexerTimedConsumer is stopping");
         _timer?.Change(Timeout.Infinite, 0);
-
         return Task.CompletedTask;
     }
 
     private async void DoWork(object? state)
     {
+        using IServiceScope scope = _serviceProvider.CreateScope();
+        
         var count = Interlocked.Increment(ref executionCount);
-        _logger.LogInformation(
-            "Timed Hosted Service is working. Count: {Count}", count);
+        _logger.LogInformation($"TagIndexerTimedConsumer executes (Count: {count})");
+        
+        if (_appSettings == null || _appSettings.Schedule == null
+                                 || _appSettings.Schedule.MaxIndexingDelay <= 0) {
+            _logger.LogWarning(
+                "TagIndexerTimedConsumer failed to run due to incorrect configuration");
+            return;
+        }
 
-        using var ambientContext = await GetAmbientContext();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
+        if (ambientContext == null || _tagRepository == null)
+        {
+            _logger.LogWarning(
+                "TagIndexerTimedConsumer failed to run as it cannot access the database");
+            return;
+        } 
+        
         var listAsync = await _tagRepository.GetAllAsync(ambientContext,
                 _ => _.Include(__ => __.Facet).Include(__ => __.Documents).ThenInclude(__ => __.Document)
                     .Where(__ => __.LastIndexDate == DateTime.MinValue 
                                  || __.LastIndexDate == DateTime.MaxValue 
-                                 || __.Documents.Max(___ => ___.Document.DocumentDate) - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)
+                                 || (__.Documents.Any() && __.Documents.Max(___ => ___.Document.DocumentDate) - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay))
                                  || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)))
             .ToListAsync();
 
@@ -82,15 +96,13 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
             {
                 _indexingUtility.Update(tag);
                 tag.LastIndexDate = DateTime.UtcNow;
-                await ambientContext.DatabaseContext.SaveChangesAsync();
-                _logger.LogInformation("Index updated for the tag {0}", tag.TagId);
             }
             catch (UnauthorizedOperationException)
             {
                 _logger.Log(LogLevel.Warning,
                     TagIndexerMessageConsumer.Unauthorized,
                     new LogEvent(
-                            $"User '{ambientContext.CurrentUser.UserName}' attempted to retrieve tag without legitimate rights.")
+                            $"User '{ambientContext.CurrentUser.UserName}' attempted to retrieve tag without legitimate rights")
                         .AddUser(ambientContext.CurrentUser)
                         .AddProperty("tag.id", tag.TagId),
                     null,
@@ -120,6 +132,8 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
                     LogEvent.Formatter);
                 _logger.LogDebug(e.StackTrace);
             }
-        await ambientContext.DatabaseContext.SaveChangesAsync();
+
+        await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
+        _logger.LogInformation($"TagIndexerTimedConsumer successfully executed");
     }
 }
