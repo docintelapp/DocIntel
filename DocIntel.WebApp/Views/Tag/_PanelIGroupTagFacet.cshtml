@@ -28,9 +28,7 @@
             @foreach (var tag in Model)
             {
                 <a class="badge badge-pill @tag.Tag.BackgroundColor"
-                   asp-action="Details" asp-route-label="@tag.Tag.TagId">
-                    @tag.Tag.Label
-                </a>
+                   asp-action="Details" asp-route-label="@tag.Tag.TagId">@tag.Tag.Label</a>
             }
         </div>
     </div>
