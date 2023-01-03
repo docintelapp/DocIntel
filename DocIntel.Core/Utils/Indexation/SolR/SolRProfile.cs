@@ -30,8 +30,7 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         {
             CreateMap<Document, IndexedDocument>()
                 .ForMember(_ => _.Tags, _ => _.MapFrom(_ => _.DocumentTags.Select(__ => __.Tag.FriendlyName)))
-                .ForMember(_ => _.TagsId,
-                    _ => _.MapFrom(_ => _.DocumentTags.Select(__ => __.Tag.Facet.FacetId + "/" + __.Tag.TagId)))
+                .ForMember(_ => _.TagsId, _ => _.MapFrom(_ => _.DocumentTags.Select(__ => __.Tag.TagId)))
                 .ForMember(_ => _.Reliability, _ => _.MapFrom(_ => _.Source.Reliability))
                 .ForMember(_ => _.Comments, _ => _.MapFrom(_ => _.Comments.Select(__ => __.Body)))
                 .ForMember(_ => _.Classification, _ => _.MapFrom(_ => _.Classification != null ? _.Classification.ClassificationId : default(Guid)))

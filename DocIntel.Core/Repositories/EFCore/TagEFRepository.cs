@@ -559,6 +559,9 @@ namespace DocIntel.Core.Repositories.EFCore
             IQueryable<Tag> tags,
             TagQuery query)
         {
+            if (query.Ids != null && query.Ids.Any())
+                tags = tags.Where(_ => query.Ids.Contains(_.TagId)).AsQueryable();
+            
             if (query.Label != null)
                 tags = tags.Where(_ => _.Label.ToUpper() == query.Label.ToUpper()).AsQueryable();
 

@@ -15,10 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
+
 namespace DocIntel.Core.Repositories.Query
 {
     public class UserQuery
     {
+        public string[] Ids { get; set; }
         public int Page { get; set; } = 0;
         public int Limit { get; set; } = 10;
     }

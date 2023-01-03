@@ -25,6 +25,7 @@ using DocIntel.Core.Exceptions;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
+using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Search.Documents;
 using DocIntel.WebApp.ViewModels.SearchViewModel;
@@ -135,11 +136,17 @@ namespace DocIntel.WebApp.Controllers
             var results = _documentSearchEngine.FacetSearch(currentUser, query, defaultGroups);
 
             var resultsDocuments = new List<DocumentSearchResult>();
+            
+            _logger.LogInformation("Retreive documents");
+            var documents = await _documentRepository.GetAllAsync(AmbientContext, new DocumentQuery()
+            {
+                DocumentIds = results.Hits.Select(x => x.DocumentId).ToArray()
+            }, new[] {"DocumentTags", "DocumentTags.Tag", "DocumentTags.Tag.Facet"}).ToDictionaryAsync(_ => _.DocumentId);
+            
             foreach (var hit in results.Hits)
                 try
                 {
-                    var document = await _documentRepository.GetAsync(AmbientContext, hit.DocumentId,
-                        new[] {"DocumentTags", "DocumentTags.Tag", "DocumentTags.Tag.Facet"});
+                    var document = documents[hit.DocumentId];
                     resultsDocuments.Add(new DocumentSearchResult
                     {
                         Document = document,
@@ -161,65 +168,31 @@ namespace DocIntel.WebApp.Controllers
 
             var totalHits = results.TotalHits;
 
-            // Get the tags            
-            var resultTags =
-                new List<TagGroupViewModel>(); // results.FacetTags.ToAsyncEnumerable().SelectAwait(async x => {
-            foreach (var x in results.FacetTags)
+            _logger.LogInformation("Retreive tags");
+            var tagIds = results.FacetTags.Select<KeyValuePair<string,int>, Guid?>(_ =>
             {
-                // _logger.LogDebug("Facet Tag:" + x.Value);
-                var tagsInFacet = new List<VerticalResult<Tag>>();
-                foreach (var y in x.Elements)
+                if (Guid.TryParse(_.Key, out var id))
                 {
-                    // _logger.LogDebug("Tag:" + y.Value);
-                    try
-                    {
-                        var async = await _tagRepository.GetAsync(AmbientContext, y.Value, new []{"Facet"});
-                        tagsInFacet.Add(new VerticalResult<Tag>(
-                            async,
-                            y.Count
-                        ));
-                    }
-                    catch (UnauthorizedOperationException)
-                    {
-                        // TODO Use structured logging
-                        _logger.LogWarning("unauthorized tag " + y.Value);
-                    }
-                    catch (NotFoundEntityException)
-                    {
-                        // TODO Use structured logging
-                        _logger.LogWarning("not found tag " + y.Value);
-                    }
+                    return id;
                 }
+                _logger.LogDebug($"Cannot parse Id '{_.Key}'");
+                return null;
+            }).Where(_ => _ != null).OfType<Guid>().ToArray();
+            
+            // Get the tags            
+            var databaseTags = await _tagRepository.GetAllAsync(AmbientContext,
+                new TagQuery() { Ids = tagIds },
+                new []{"Facet"}
+            ).ToListAsync();
 
-                try
-                {
-                    var facet = await _facetRepository.GetAsync(AmbientContext, x.Value);
-                    resultTags.Add(new TagGroupViewModel
-                    {
-                        Title = facet?.Title,
-                        Priority = string.IsNullOrEmpty(facet?.Prefix) ? 0 : 1,
-                        Tags = tagsInFacet,
-                        Count = x.Count
-                    });
-                }
-                catch (UnauthorizedOperationException)
-                {
-                    // TODO Use structured logging
-                    _logger.LogWarning("unauthorized facet " + x.Value);
-                }
-                catch (NotFoundEntityException)
-                {
-                    // TODO Use structured logging
-                    _logger.LogWarning("not found facet " + x.Value);
-                }
-            }
-
+            _logger.LogInformation("Retreive classifications");
+            var classDict = await _classificationRepository.GetAllAsync(AmbientContext).ToDictionaryAsync(_ => _.ClassificationId);
             var classificationVR = new List<VerticalResult<Classification>>();
             foreach (var r in results.Classifications)
                 try
                 {
                     classificationVR.Add(new VerticalResult<Classification>(
-                        await _classificationRepository.GetAsync(AmbientContext, r.Value), r.Count
+                        classDict[r.Value], r.Count
                     ));
                 }
                 catch (UnauthorizedOperationException)
@@ -233,12 +206,17 @@ namespace DocIntel.WebApp.Controllers
 
             var reliabilitiesVR = results.Reliabilities;
 
+            _logger.LogInformation("Retreive sources");
+            var sourceIds = results.Sources.Select(r => r.Value).ToArray();
+            var sourceDict = await _sourceRepository.GetAllAsync(AmbientContext, 
+                    _ => _.Where(s => sourceIds.Contains(s.SourceId))
+                    ).ToDictionaryAsync(_ => _.SourceId);
             var sourcesVR = new List<VerticalResult<Source>>();
             foreach (var r in results.Sources)
                 try
                 {
                     sourcesVR.Add(new VerticalResult<Source>(
-                        await _sourceRepository.GetAsync(AmbientContext, r.Value), r.Count
+                        sourceDict[r.Value], r.Count
                     ));
                 }
                 catch (UnauthorizedOperationException)
@@ -250,12 +228,16 @@ namespace DocIntel.WebApp.Controllers
                     // TODO Use structured logging
                 }
 
+            _logger.LogInformation("Retreive users");
+            var userIds = results.FacetRegistrants.Select(r => r.Value).ToArray();
+            var userDict = await _userRepository.GetAllAsync(AmbientContext, new UserQuery() { Ids = userIds })
+                .ToDictionaryAsync(_ => _.Id);
             var registrantsVR = new List<VerticalResult<AppUser>>();
             foreach (var r in results.FacetRegistrants)
                 try
                 {
                     registrantsVR.Add(new VerticalResult<AppUser>(
-                        await _userRepository.GetById(AmbientContext, r.Value), r.Count
+                        userDict[r.Value], r.Count
                     ));
                 }
                 catch (UnauthorizedOperationException)
@@ -284,23 +266,24 @@ namespace DocIntel.WebApp.Controllers
             var taskSelectedRegistrants = registrants.Select(_ => _userManager.FindByIdAsync(_));
             var selectedRegistrants = await Task.WhenAll(taskSelectedRegistrants);
 
+            _logger.LogInformation("Should be done");
             return View(new SearchIndexViewModel
             {
                 SearchTerm = searchTerm,
 
                 SearchResultDocuments = resultsDocuments,
 
-                Tags = resultTags.OrderByDescending(_ => _.Priority).ThenBy(_ => _.Title),
-                SelectedTags = _context.Tags.AsQueryable().Where(_ => tags.Any(t => t == _.TagId)),
+                Tags = databaseTags.GroupBy(_ => _.Facet),
+                SelectedTags = _context.Tags.Where(_ => tags.Contains(_.TagId)).ToList(),
 
                 Registrants = registrantsVR,
                 SelectedRegistrants = selectedRegistrants,
 
                 Classifications = classificationVR,
-                SelectedClassifications = _context.Classifications.AsQueryable().Where(_ => classifications.Any(__ => __ == _.ClassificationId)),
+                SelectedClassifications = _context.Classifications.Where(_ => classifications.Contains(_.ClassificationId)).ToList(),
 
                 Sources = sourcesVR,
-                SelectedSources = _context.Sources.AsQueryable().Where(_ => sources.Any(__ => __ == _.SourceId)),
+                SelectedSources = _context.Sources.Where(_ => sources.Contains(_.SourceId)).ToList(),
 
                 Reliabilities = reliabilitiesVR,
                 SelectedReliabilities = reliabilities,
@@ -318,7 +301,7 @@ namespace DocIntel.WebApp.Controllers
                 FacetLimit = facetLimit,
                 PageSize = defaultPageSize,
 
-                DidYouMean = string.Join(" ", didYouMeanTerms)
+                // DidYouMean = string.Join(" ", didYouMeanTerms)
             });
         }
 

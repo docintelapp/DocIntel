@@ -32,5 +32,6 @@ namespace DocIntel.Core.Repositories.Query
 
         public int Page { get; set; } = 0;
         public int Limit { get; set; } = 10;
+        public Guid[] Ids { get; set; }
     }
 }

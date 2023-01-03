@@ -363,6 +363,9 @@ namespace DocIntel.Core.Repositories.EFCore
             if (query == null)
                 return users;
 
+            if (query.Ids != null && query.Ids.Any())
+                users = users.AsQueryable().Where(_ => query.Ids.Contains(_.Id));
+            
             if (query.Page > 1 && query.Limit > 0)
                 users = users.Skip((query.Page - 1) * query.Limit);
 

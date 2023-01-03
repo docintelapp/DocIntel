@@ -54,7 +54,6 @@ namespace DocIntel.Core.Utils.Search.Documents
         {
             TotalHits = 0;
             Hits = new List<SearchHit>();
-            FacetTags = new List<HierarchicalVerticalResult<Guid, Guid>>();
             FacetRegistrants = new List<VerticalResult<string>>();
             Classifications = new List<VerticalResult<Guid>>();
             Sources = new List<VerticalResult<Guid>>();
@@ -64,7 +63,7 @@ namespace DocIntel.Core.Utils.Search.Documents
         public long TotalHits { get; internal set; }
         public List<SearchHit> Hits { get; internal set; }
 
-        public List<HierarchicalVerticalResult<Guid, Guid>> FacetTags { get; internal set; }
+        public ICollection<KeyValuePair<string, int>> FacetTags { get; internal set; }
 
         public List<VerticalResult<Guid>> Classifications { get; internal set; }
 

@@ -31,33 +31,43 @@
 
             <p class="mb-4">
                 <a asp-action="Index" asp-controller="Search" class="badge badge-pill badge-success mr-2">Clear search</a>
-                @if (Model.SelectedTags.Any()
-                     | Model.SelectedRegistrants.Any()
-                     | Model.SelectedSources.Any()
-                     | Model.SelectedReliabilities.Any()
-                     | Model.SelectedClassifications.Any())
+                @if ((Model.SelectedTags != null && Model.SelectedTags.Any())
+                     | (Model.SelectedRegistrants != null && Model.SelectedRegistrants.Any())
+                     | (Model.SelectedSources != null && Model.SelectedSources.Any())
+                     | (Model.SelectedReliabilities != null && Model.SelectedReliabilities.Any())
+                     | (Model.SelectedClassifications != null && Model.SelectedClassifications.Any()))
                 {
                     <span class="fw-500">Selected filters:</span>
-                    @foreach (var tag in Model.SelectedTags)
-                    {
-                        <span class="badge badge-pill @tag.BackgroundColor">@tag.Label</span>
+                    @if (Model.SelectedTags != null) {
+                        @foreach (var tag in Model.SelectedTags)
+                        {
+                            <span class="badge badge-pill @tag.BackgroundColor">@tag.Label</span>
+                        }
                     }
-                    @foreach (var c in Model.SelectedRegistrants)
-                    {
-                        <span class="badge badge-pill badge-secondary">Registered by @c.FriendlyName</span>
+                    @if (Model.SelectedRegistrants != null) {
+                        @foreach (var c in Model.SelectedRegistrants)
+                        {
+                            <span class="badge badge-pill badge-secondary">Registered by @c.FriendlyName</span>
+                        }
                     }
-                    @foreach (var c in Model.SelectedSources)
-                    {
-                        <span class="badge badge-pill badge-secondary">@c.Title</span>
+                    @if (Model.SelectedSources != null) {
+                        @foreach (var c in Model.SelectedSources)
+                        {
+                            <span class="badge badge-pill badge-secondary">@c.Title</span>
+                        }
                     }
-                    @foreach (var c in Model.SelectedReliabilities)
-                    {
-                        var attribute = typeof(SourceReliability).GetMember(c.ToString()).FirstOrDefault()?.GetCustomAttribute<DisplayAttribute>();
-                        <span class="badge badge-pill badge-secondary">@(attribute?.Name ?? c.ToString())</span>
+                    @if (Model.SelectedReliabilities != null) {
+                        @foreach (var c in Model.SelectedReliabilities)
+                        {
+                            var attribute = typeof(SourceReliability).GetMember(c.ToString()).FirstOrDefault()?.GetCustomAttribute<DisplayAttribute>();
+                            <span class="badge badge-pill badge-secondary">@(attribute?.Name ?? c.ToString())</span>
+                        }
                     }
-                    @foreach (var c in Model.SelectedClassifications)
-                    {
-                        <span class="badge badge-pill @c.Color">@c.Title</span>
+                    @if (Model.SelectedClassifications != null) {
+                        @foreach (var c in Model.SelectedClassifications)
+                        {
+                            <span class="badge badge-pill @c.Color">@c.Title</span>
+                        }
                     }
                 }
                 <a asp-action="Help" asp-controller="Search">Help</a>

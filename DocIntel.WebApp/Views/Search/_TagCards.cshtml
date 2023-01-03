@@ -5,33 +5,33 @@
 {
     @foreach (var t in Model.Tags)
     {
-        if (t.Tags.Any())
+        if (t.Any())
         {
-            var catId = Regex.Replace(t?.Title ?? "none", @"[^A-Za-z0-9]", "_");
-            var selected = t.Tags.Any(x => Model.SelectedTags.Any(_ => _.Label == x.Value.Label));
+            var catId = Regex.Replace(t?.Key.Title ?? "none", @"[^A-Za-z0-9]", "_");
+            var selected = t.Any(x => Model.SelectedTags != null && Model.SelectedTags.Any(_ => _.Label == x.Label));
             <div class="card">
                 <div class="card-header">
                     <a href="javascript:void(0);" class="card-title fs-md @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#@("collapse" + catId)" aria-expanded="false">
-                        @t.Title
+                        @t.Key.Title
                         @if(selected)
                         {
                             <span class="ml-auto">
-                                <span class="badge badge-light">@t.Tags.Count(x => Model.SelectedTags.Any(_ => _.Label == x.Value.Label)) selected</span>
+                                <span class="badge badge-light">@t.Count(x => Model.SelectedTags != null && Model.SelectedTags.Any(_ => _.Label == x.Label)) selected</span>
                             </span>   
                         }
                     </a>
                 </div>
                 <div id="@("collapse" + catId)" class="@(!selected ? "collapse" : "")" aria-labelledby="@("heading" + catId)" data-parent="#accordion_tags">
                     <div class="card-body">
-                        @foreach (var item in t.Tags.Where(_ => _.Value != null).OrderByDescending(_ => _.Count))
+                        @foreach (var item in t.OrderBy(_ => _.Label))
                         {
-                            var label = item.Value.Label;
+                            var label = item.Label;
                             <div class="custom-control custom-checkbox mb-1">
-                                <input type="checkbox" class="custom-control-input auto-submit" id="tag-@item.Value.TagId"
-                                       checked="@Model.SelectedTags.Any(_ => _.Label == item.Value.Label)"
-                                       name="tags" value="@item.Value.TagId">
-                                <label class="custom-control-label" for="tag-@item.Value.TagId" style="max-width: 80%">
-                                    <span title="@item.Count @Html.Pluralize("document", item.Count)" class="badge badge-pill text-truncate @item.Value.BackgroundColor" style="max-width: 100%">
+                                <input type="checkbox" class="custom-control-input auto-submit" id="tag-@item.TagId"
+                                       checked="@(Model.SelectedTags != null && Model.SelectedTags.Any(_ => _.Label == item.Label))"
+                                       name="tags" value="@item.TagId">
+                                <label class="custom-control-label" for="tag-@item.TagId" style="max-width: 80%">
+                                    <span class="badge badge-pill text-truncate @item.BackgroundColor" style="max-width: 100%">
                                         @label
                                     </span>
                                 </label>

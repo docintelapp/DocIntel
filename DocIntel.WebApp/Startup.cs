@@ -199,7 +199,7 @@ namespace DocIntel.WebApp
                     {
                         x.SetPostgresVersion(9, 5);
                         x.MigrationsAssembly("DocIntel.Core");
-                        x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                        x.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
                     });
             });
             

@@ -31,7 +31,7 @@ namespace DocIntel.Core.Authorization.Handlers
 {
     public class DocumentAuthorizationHandler : CustomAuthorizationHandler<Document>
     {
-        private readonly DocIntelContext _dbContext;
+        private readonly Guid[] defaultGroups;
 
         public DocumentAuthorizationHandler(
             DocIntelContext dbContext,
@@ -39,7 +39,7 @@ namespace DocIntel.Core.Authorization.Handlers
             UserManager<AppUser> userManager,
             ILogger<DocumentAuthorizationHandler> logger) : base(signInManager, userManager, logger)
         {
-            _dbContext = dbContext;
+            defaultGroups = dbContext.Groups.Where(_ => _.Default).Select(_ => _.GroupId).ToArray();
         }
 
         protected override Task HandleRequirementAsync(
@@ -79,8 +79,6 @@ namespace DocIntel.Core.Authorization.Handlers
             // TODO Investigate if '!= default' is the best way to check, use pattern?
             if (context.User.Claims.All(_ => _.Type != "Bot"))
             {
-                // TODO That should be in the user claim to avoid querying the database at every evaluation
-                var defaultGroups = _dbContext.Groups.Where(_ => _.Default).Select(_ => _.GroupId).ToArray();
                 if (defaultGroups.Length > 0 && !context.User.Claims.Any(_ => _.Type == "Group" && defaultGroups.Contains(Guid.Parse(_.Value))))
                 {
                     if ((resource.ReleasableTo != default && resource.ReleasableTo.Any())

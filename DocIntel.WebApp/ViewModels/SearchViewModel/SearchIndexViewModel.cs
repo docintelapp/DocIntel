@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using DocIntel.Core.Models;
 using DocIntel.Core.Utils.Search.Documents;
 using DocIntel.WebApp.ViewModels.Shared;
@@ -42,7 +42,7 @@ namespace DocIntel.WebApp.ViewModels.SearchViewModel
 
         public IEnumerable<DocumentSearchResult> SearchResultDocuments { get; set; }
 
-        public IEnumerable<TagGroupViewModel> Tags { get; set; }
+        public IEnumerable<IGrouping<TagFacet, Tag>> Tags { get; set; }
         public IEnumerable<Tag> SelectedTags { get; set; }
 
         public IEnumerable<VerticalResult<Classification>> Classifications { get; set; }

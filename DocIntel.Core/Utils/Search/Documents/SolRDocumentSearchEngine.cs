@@ -171,7 +171,7 @@ namespace DocIntel.Core.Utils.Search.Documents
                     sr.Hits.Add(item);
                 }
 
-                var hvrs = new Dictionary<string, HierarchicalVerticalResult<Guid, Guid>>();
+                /*var hvrs = new Dictionary<string, HierarchicalVerticalResult<Guid, Guid>>();
                 foreach (var facet in results.FacetFields[SolRHelper<IndexedDocument>.GetSolRName(_ => _.TagsId)])
                 {
                     _logger.LogTrace(facet.Key);
@@ -198,9 +198,9 @@ namespace DocIntel.Core.Utils.Search.Documents
 
                         hvrs[prefix].Elements.Add(new VerticalResult<Guid>(Guid.Parse(label), facet.Value));
                     }
-                }
+                }*/
 
-                sr.FacetTags = hvrs.Values.ToList();
+                sr.FacetTags = results.FacetFields[SolRHelper<IndexedDocument>.GetSolRName(_ => _.TagsId)];
 
                 var facetRegistrants = new List<VerticalResult<string>>();
                 foreach (var facet in results.FacetFields[

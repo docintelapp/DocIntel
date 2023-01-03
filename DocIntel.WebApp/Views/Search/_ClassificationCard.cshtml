@@ -2,7 +2,7 @@
 
 @if (Model.Classifications.Any())
 {
-    var selected = Model.SelectedClassifications.Any();
+    var selected = Model.SelectedClassifications != null && Model.SelectedClassifications.Any();
     <div class="card">
         <div class="card-header">
             <a href="javascript:void(0);" class="card-title fs-md @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#collapseClassifications" aria-expanded="false">
@@ -10,7 +10,7 @@
                 @if (selected)
                 {
                     <span class="ml-auto">
-                        <span class="badge badge-light">@Model.SelectedClassifications.Count() selected</span>
+                        <span class="badge badge-light">@(Model.SelectedClassifications?.Count() ?? 0) selected</span>
                     </span>   
                 }
             </a>
@@ -21,7 +21,7 @@
                 {
                     <div class="custom-control custom-checkbox mb-1">
                         <input type="checkbox" class="custom-control-input auto-submit" id="Classification-@item.Value.ClassificationId"
-                               checked="@Model.SelectedClassifications.Any(_ => _.ClassificationId == item.Value.ClassificationId)"
+                               checked="@(Model.SelectedClassifications != null && Model.SelectedClassifications.Any(_ => _.ClassificationId == item.Value.ClassificationId))"
                                name="classifications" value="@item.Value.ClassificationId">
                         <label class="custom-control-label" for="Classification-@item.Value.ClassificationId">
                             @item.Value.Title
