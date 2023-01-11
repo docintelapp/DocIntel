@@ -48,6 +48,7 @@ namespace DocIntel.Core.Repositories.Query
         public string URL { get; set; }
         public string ExternalReference { get; set; }
         public Guid? SourceId { get; set; }
+        public Guid[] SourceIds { get; set; }
         
         public DateTime ModifiedAfter { get; set; }
         public DateTime ModifiedBefore { get; set; }

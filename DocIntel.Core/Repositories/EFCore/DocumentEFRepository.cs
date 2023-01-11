@@ -797,6 +797,9 @@ namespace DocIntel.Core.Repositories.EFCore
             if (query.SourceId != null)
                 documents = documents.Where(_ => _.SourceId == query.SourceId).AsQueryable();
 
+            if (query.SourceIds != null && query.SourceIds.Any())
+                documents = documents.Where(_ => _.SourceId != null && query.SourceIds.Contains((Guid)_.SourceId)).AsQueryable();
+                
             if (!string.IsNullOrEmpty(query.SourceUrl))
             {
                 documents = documents.Where(_ => _.SourceUrl == query.SourceUrl || _.Files.Any(__ => __.SourceUrl == query.SourceUrl)).AsQueryable();
