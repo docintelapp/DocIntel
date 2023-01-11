@@ -201,7 +201,8 @@ namespace DocIntel.Services.Scraper
                     SourceId = source.SourceId,
                     Status = DocumentStatus.Submitted,
                     ClassificationId = _classificationRepository.GetDefault(context).ClassificationId,
-                    DocumentDate = message.SubmissionDate
+                    DocumentDate = message.SubmissionDate,
+                    SourceUrl = message.URL
                 };
                 var trackingD = await _documentRepository.AddAsync(context, d, new Tag[] { });
                 _logger.LogTrace("Document created...");

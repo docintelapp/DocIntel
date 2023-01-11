@@ -58,9 +58,16 @@ public class ScraperConsumer :
 
     public async Task Consume(ConsumeContext<URLSubmittedMessage> c)
     {
-        _logger.LogDebug($"Received a new message: {c.Message.SubmissionId}");
-        var urlSubmittedMessage = c.Message;
-        await Scrape(urlSubmittedMessage);
+        try
+        {
+            _logger.LogDebug($"Received a new message: {c.Message.SubmissionId}");
+            var urlSubmittedMessage = c.Message;
+            await Scrape(urlSubmittedMessage);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, $"Could not process message: {c.Message.SubmissionId}");
+        }
     }
 
     public async Task ConsumeBacklogAsync()
@@ -82,8 +89,15 @@ public class ScraperConsumer :
                         .Where(__ => __.Status == SubmissionStatus.Submitted)
                         .OrderByDescending(__ => __.SubmissionDate))
                 .FirstOrDefaultAsync();
-            _logger.LogTrace($"ConsumeBacklogAsync {submitted.URL}");
-            var result = await Scrape(submitted);
+            try
+            {
+                _logger.LogTrace($"ConsumeBacklogAsync {submitted.URL}");
+                var result = await Scrape(submitted);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Could not process URL: {submitted.URL}");
+            }
         }
     }
 

@@ -175,6 +175,9 @@ namespace DocIntel.Core.Scrapers
 
             document.Status = scraper.SkipInbox ? DocumentStatus.Registered : DocumentStatus.Submitted;
 
+            if (string.IsNullOrWhiteSpace(document.SourceUrl))
+                document.SourceUrl = submission.URL;
+
             var tagInstances = tags == null ? Enumerable.Empty<Tag>() : _tagUtility.GetOrCreateTags(context, tags);
             return await _documentRepository.AddAsync(context, document, tagInstances.ToArray());
         }
