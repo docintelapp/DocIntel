@@ -223,4 +223,27 @@ hxxp://193[.]56[.]29[.]123:8888/access.php?order=golc_finish&cmn=[Victim_HostNam
         Assert.That(observables, Does.Not.Contains(InetUrl.Parse("http://193.56.29.123:8888/access.php)")));
     }
     
+    [Test]
+    public async Task TestUrlExtractedWithComma()
+    {
+        // Issue 37 - https://github.com/docintelapp/DocIntel/issues/37
+        
+        using var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.SetMinimumLevel(LogLevel.Trace);
+            builder.AddConsole(options => options.DisableColors = true);
+        });
+
+        var logger = loggerFactory.CreateLogger<RegexUrlExtractor>();
+        
+        var test = @"https://www.example.com/hello,world.html";
+        
+        var extractor = new RegexUrlExtractor(logger);
+        var observables = await extractor.Extract(test).ToListAsync();
+        
+        Assert.That(observables.Count, Is.EqualTo(1));
+
+        Assert.That(observables, Contains.Item(InetUrl.Parse("https://www.example.com/hello,world.html")));
+    }
+    
 }
