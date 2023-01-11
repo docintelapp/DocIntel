@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
-
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Core.Scrapers
@@ -65,6 +65,12 @@ namespace DocIntel.Core.Scrapers
                     var importerAttribute = p.GetCustomAttribute<ScraperAttribute>();
                     return p.IsClass & (importerAttribute != null) && importerAttribute.Identifier == referenceClass;
                 });
+            
+            if (type == null)
+            {
+                throw new ArgumentNullException(
+                    $"Could not find scraper for {referenceClass}");
+            }
 
             return CreateScraper(null, type, serviceProvider, context);
         }
@@ -89,7 +95,6 @@ namespace DocIntel.Core.Scrapers
         public static Task<IScraper> CreateScraper(Scraper scraper, Type type, IServiceProvider serviceProvider,
             AmbientContext context)
         {
-            // TODO Use CreateInstance with dependency injection
             var instance = (IScraper) Activator.CreateInstance(type, scraper, serviceProvider);
 
             FillProperties(_ => _?.ToString(), type, scraper, instance);

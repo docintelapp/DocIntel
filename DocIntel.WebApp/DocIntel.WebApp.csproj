@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DocIntel.Core\DocIntel.Core.csproj" />
+    <ProjectReference Include="..\DocIntel.Services.Scraper\DocIntel.Services.Scraper.csproj" />
   </ItemGroup>
 
   <ItemGroup>
