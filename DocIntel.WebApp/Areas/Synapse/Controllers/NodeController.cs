@@ -1,21 +1,20 @@
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Settings;
-using DocIntel.Core.Utils.Observables.CustomObjects;
 using DocIntel.Core.Utils.Search.Documents;
 using DocIntel.WebApp.Areas.Synapse.Views.Node;
 using DocIntel.WebApp.Controllers;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Synsharp;
-using Synsharp.Attribute;
+using Microsoft.Extensions.Logging;
+using Synsharp.Telepath;
+using Synsharp.Telepath.Helpers;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.WebApp.Areas.Synapse.Controllers;
 
@@ -23,43 +22,45 @@ namespace DocIntel.WebApp.Areas.Synapse.Controllers;
 [Route("Synapse/Node")]
 public class NodeController : BaseController
 {
-    private readonly SynapseClient _synapseClient;
+    private readonly TelepathClient _synapseClient;
     private readonly IDocumentRepository _documentRepository;
+    private readonly NodeHelper _nodeHelper;
 
-    public NodeController(DocIntelContext context, 
+    public NodeController(DocIntelContext context,
         AppUserManager userManager,
         ApplicationSettings configuration,
         IAuthorizationService authorizationService,
-        SynapseClient synapseClient,
-        IDocumentRepository documentRepository) : base(context,
+        TelepathClient synapseClient,
+        IDocumentRepository documentRepository, ILoggerFactory loggerFactor) : base(context,
         userManager,
         configuration,
         authorizationService)
     {
         _synapseClient = synapseClient;
+        _nodeHelper = new NodeHelper(_synapseClient, loggerFactor.CreateLogger<NodeHelper>());
         _documentRepository = documentRepository;
     }
     
     [HttpGet("Details/{iden}")]
     public async Task<IActionResult> Details(string iden, int page = 0)
     {
-        var synapseObject = await _synapseClient.Nodes.GetAsync<SynapseObject>(iden);
-        if (synapseObject == null) return NotFound();
-        
-        var synapseType = synapseObject.GetType();
-        var synapseFormAttribute = synapseType.GetCustomAttribute<SynapseFormAttribute>();
-        if (synapseFormAttribute == null) return NotFound();
-        
-        var docIds = (await _synapseClient.StormAsync<DIDocumentSynapseObject>("<(refs)- _di:document",
-                    new ApiStormQueryOpts()
+        var SynapseNode = await _nodeHelper.GetAsync(iden, new StormOps() { Repr = true });
+        if (SynapseNode == null) return NotFound();
+
+        var proxy = await _synapseClient.GetProxyAsync();
+        var docIds = (await proxy.Storm("<(refs)- _di:document",
+                    new StormOps
                     {
                         Idens = new[]
                         {
                             iden
-                        }
+                        }, 
+                        Repr = true
                     })
                 .ToListAsync())
-            .Select(_ => Guid.Parse(_.Value))
+            .OfType<SynapseNode>()
+            .Where(_ => _.Form == "_di:document")
+            .Select(_ => (Guid) Guid.Parse(_.Valu))
             .ToArray();
         
         DocumentQuery query = new()
@@ -82,7 +83,7 @@ public class NodeController : BaseController
         
         var viewModel = new NodeDetailsViewModel
         {
-            Root = synapseObject,
+            Root = SynapseNode,
             ReferencingDocs = await docs,
             ReferencingDocsCount = docIds.Length,
             Page = page,

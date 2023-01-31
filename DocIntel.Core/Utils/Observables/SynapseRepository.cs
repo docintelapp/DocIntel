@@ -1,83 +1,96 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DocIntel.Core.Models;
-using DocIntel.Core.Utils.Observables.CustomObjects;
 using Microsoft.Extensions.Logging;
-using Synsharp;
+using Synsharp.Telepath;
+using Synsharp.Telepath.Helpers;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.Core.Utils.Observables;
 
 public class SynapseRepository : ISynapseRepository
 {
-    private readonly SynapseClient _client;
-    private bool _connected = false;
+    private readonly TelepathClient _client;
     private readonly ILogger<SynapseRepository> _logger;
+    
+    private readonly NodeHelper _nodeHelper;
+    private readonly ViewHelper _viewHelper;
 
-    public SynapseRepository(SynapseClient client, ILogger<SynapseRepository> logger)
+    public SynapseRepository(TelepathClient client, ILoggerFactory loggerFactory)
     {
         _client = client;
-        _logger = logger;
+        _nodeHelper = new NodeHelper(_client, loggerFactory.CreateLogger<NodeHelper>());
+        _viewHelper = new ViewHelper(_client, loggerFactory.CreateLogger<ViewHelper>());
+        _logger = loggerFactory.CreateLogger<SynapseRepository>();
     }
 
-    public Task<SynapseObject> Add(SynapseObject synapseObject)
+    public Task<SynapseNode> Add(SynapseNode synapseNode)
     {
-        return _client.Nodes.Add(synapseObject);
+        return _nodeHelper.AddAsync(synapseNode);
     }
 
-    public async Task Add(IEnumerable<SynapseObject> observables, Document document, DocumentFile file,
+    public async Task Add(IEnumerable<SynapseNode> observables, Document document,
         SynapseView view = null)
     {
-        await ensureLoggedIn();
-        var doc = (await _client.StormAsync<DIDocumentSynapseObject>(
-            $"[ _di:document={Synsharp.StringHelpers.Escape(document.DocumentId.ToString())} ]",
-            new ApiStormQueryOpts() { View = view?.Iden })
-            .ToListAsync()).FirstOrDefault();
-
-        var synapseObject = observables.Where(_ => !_.Tags.Contains("_di.workflow.ignore")).ToList();
         
-        await _client.Nodes.Add(synapseObject, view?.Iden).ToListAsync();
-        await _client.Nodes.AddLightEdge(synapseObject.Select(_ => new SynapseLightEdge(doc, _, "refs")), view?.Iden);
-    }
-    
-    public async Task Add(SynapseObject synapseObject, Document document, SynapseView view = null)
-    {
-        await ensureLoggedIn();
-        var doc = (await _client.StormAsync<DIDocumentSynapseObject>(
-                $"[ _di:document={Synsharp.StringHelpers.Escape(document.DocumentId.ToString())} ]",
-                new ApiStormQueryOpts() { View = view?.Iden })
-            .ToListAsync()).FirstOrDefault();
+        var stormOps = new StormOps() { View = view?.Iden, Repr = true };
 
-        await _client.Nodes.Add(synapseObject, view?.Iden);
-        await _client.Nodes.AddLightEdge(new SynapseLightEdge(doc, synapseObject, "refs"), view?.Iden);
-    }
-    
-    public async Task Remove(string iden, Document document, SynapseView view = null)
-    {
-        await ensureLoggedIn();
-        var doc = (await _client.StormAsync<DIDocumentSynapseObject>(
-                $"[ _di:document={Synsharp.StringHelpers.Escape(document.DocumentId.ToString())} ]",
-                new ApiStormQueryOpts() { View = view?.Iden })
-            .ToListAsync()).FirstOrDefault();
-
-        var node = await _client.Nodes.GetAsync<SynapseObject>(iden, view?.Iden);
-        if (node != null)
+        var docNode = new SynapseNode()
         {
-            await _client.Nodes.RemoveLightEdge(new SynapseLightEdge(doc, node, "refs"), view?.Iden);   
+            Form = "_di:document",
+            Valu = document.DocumentId.ToString()
+        };
+        docNode = await _nodeHelper.AddAsync(docNode, stormOps);
+        _logger.LogDebug($"Adding node {docNode.Form}={docNode.Valu} to {stormOps.View ?? ""}");
+        
+        var nodes = observables.Where(_ => !_.Tags.ContainsKey("_di.workflow.ignore")).ToList();
+
+        if (nodes.Any())
+        {
+            SynapseNode[] addedNodes = await _nodeHelper.AddAsync(nodes, stormOps).ToArrayAsync();
+            _logger.LogDebug($"Idens: {string.Join(",", addedNodes.Select(_ => _.Iden).ToArray())}");
+            _logger.LogDebug($"Reprs: {string.Join(",", addedNodes.Select(_ => _.Repr).ToArray())}");
+            var connected = await _nodeHelper.AddLightEdgeAsync(addedNodes, "refs", docNode, stormOps).ToListAsync();
+            _logger.LogDebug($"Got {string.Join(",", connected.Select(_ => _.Iden).ToArray())}");
+            _logger.LogDebug($"Got {string.Join(",", connected.Select(_ => _.Repr).ToArray())}");
+        }
+        else
+        {
+            _logger.LogDebug("No observables to add");
         }
     }
-
-    public async Task RemoveRefs(Guid documentId)
+    
+    public Task Add(SynapseNode synapseNode, Document document, SynapseView view = null)
     {
+        return Add(new[] { synapseNode }, document, view);
+    }
+    
+    public async Task Remove(Guid documentId, SynapseView view = null)
+    {   
+        var stormOps = new StormOps() { View = view?.Iden, Repr = true };
+
+        var docNode = new SynapseNode()
+        {
+            Form = "_di:document",
+            Valu = documentId
+        };
+        await _nodeHelper.DeleteAsync(docNode, stormOps);
+    }
+
+    public async Task RemoveRefs(Guid documentId, SynapseView view = null)
+    {
+        var stormOps = new StormOps() { View = view?.Iden, Repr = true };
         // TOOO Does not really delete the observables, just the link.
         // TODO What needs to be deleted? Because an observable might linked or edited manually.
-        await ensureLoggedIn();
-        var doc = (await _client.StormAsync<DIDocumentSynapseObject>(
-                $" _di:document={Synsharp.StringHelpers.Escape(documentId.ToString())} | delnode")
-            .ToListAsync());
+        
+        var docNode = new SynapseNode()
+        {
+            Form = "_di:document",
+            Valu = documentId.ToString()
+        };
+        await _nodeHelper.DeleteAsync(docNode, stormOps);
     }
 
     private string GetViewName(Document document) => "document-" + document.DocumentId.ToString();
@@ -85,95 +98,103 @@ public class SynapseRepository : ISynapseRepository
     public async Task<SynapseView> CreateView(Document document)
     {
         var name = GetViewName(document);
-        var view = (await _client.View.List()).FirstOrDefault(_ => _.Name == name);
+        var view = ((await _viewHelper.List()) ?? Array.Empty<SynapseView>()).FirstOrDefault(_ => _.Name == name);
         
         if (view != null)
             return view;
-        return await _client.View.Fork("", name);
+        return await _viewHelper.Fork("", name);
     }
     public async Task RemoveView(Document document)
     {
         var name = GetViewName(document);
-        var view = (await _client.View.List()).FirstOrDefault(_ => _.Name == name);
+        var view = ((await _viewHelper.List()) ?? Array.Empty<SynapseView>()).FirstOrDefault(_ => _.Name == name);
         
         if (view != null)
-            await _client.View.Delete(view.Iden);
+            await _viewHelper.Delete(view.Iden);
     }
 
-    public IAsyncEnumerable<SynapseObject> GetObservables(Document document, bool unmerged = false, bool includeIgnore = true)
+    public async IAsyncEnumerable<SynapseNode> GetObservables(Document document, bool unmerged = false, bool includeIgnore = true)
     {
-        var view = GetView(document, unmerged);
+        var view = await GetViewAsync(document, unmerged);
         var filter = "";
         if (!includeIgnore)
             filter = " -#_di.workflow.ignore ";
-        return _client.StormAsync<SynapseObject>(
-            $"_di:document={Synsharp.StringHelpers.Escape(document.DocumentId.ToString())} -(refs)> * {filter}", 
-            new ApiStormQueryOpts() { View = view?.Iden });
+        
+        var stormOps = new StormOps
+        {
+            View = view?.Iden, 
+            Repr = true,
+            Vars = new Dictionary<string, dynamic> { { "documentId", document.DocumentId.ToString() } }
+        };
+
+        var proxy = await _client.GetProxyAsync();
+        await foreach (var element in proxy.Storm($"_di:document=$documentId -(refs)> * {filter}", stormOps).OfType<SynapseNode>())
+            yield return element;
     }
 
-    private SynapseView GetView(Document document, bool unmerged = false)
+    private async Task<SynapseView> GetViewAsync(Document document, bool unmerged = false)
     {
-        string viewName = unmerged ? GetViewName(document) : null;
-        var view = _client.View.List().Result.FirstOrDefault(_ => _.Name == viewName);
+        var viewName = unmerged ? GetViewName(document) : null;
+        var view = (await _viewHelper.List() ?? Array.Empty<SynapseView>()).FirstOrDefault(_ => _.Name == viewName);
         return view;
     }
 
     public async Task Remove(Document document, string iden, bool unmerged = false, bool softDelete = false)
     {
-        var view = GetView(document, unmerged);
+        var view = await GetViewAsync(document, unmerged);
+        var stormOps = new StormOps() { View = view?.Iden, Repr = true };
         
-        var doc = (await _client.StormAsync<DIDocumentSynapseObject>(
-                $"[ _di:document={Synsharp.StringHelpers.Escape(document.DocumentId.ToString())} ]",
-                new ApiStormQueryOpts() { View = view?.Iden })
-            .ToListAsync()).FirstOrDefault();
+        var docNode = new SynapseNode()
+        {
+            Form = "_di:document",
+            Valu = document.DocumentId.ToString()
+        };
+        docNode = await _nodeHelper.AddAsync(docNode, stormOps);
 
-        var obs = await _client.Nodes.GetAsync<SynapseObject>(iden, view?.Iden);
-        if (doc != null && obs != null) 
-            await _client.Nodes.RemoveLightEdge(doc, obs, "refs", view?.Iden);
+        if (docNode != null) 
+            await _nodeHelper.RemoveLightEdgeAsync(new []{iden}, "refs", docNode, stormOps);
         if (!softDelete)
-            await _client.Nodes.Remove(iden, view?.Iden);
+            await _nodeHelper.DeleteAsync(iden, stormOps);
     }
 
     public async Task AddTag(Document document, string iden, string tagName, bool unmerged = false)
     {
-        var view = GetView(document, unmerged);
-        await ensureLoggedIn();
-        await _client.Nodes.AddTag(iden, tagName, view?.Iden);
+        var view = await GetViewAsync(document, unmerged);
+        var stormOps = new StormOps() { View = view?.Iden, Repr = true };
+        
+        await _nodeHelper.AddTag(iden, tagName, stormOps);
     }
 
     public async Task RemoveTag(Document document, string iden, string tagName, bool unmerged = false)
     {
-        var view = GetView(document, unmerged);
-        await ensureLoggedIn();
-        await _client.Nodes.RemoveTag(iden, tagName, view?.Iden);
+        var view = await GetViewAsync(document, unmerged);
+        var stormOps = new StormOps() { View = view?.Iden, Repr = true };
+        
+        await _nodeHelper.RemoveTag(iden, tagName, stormOps);
     }
 
-    public Task<SynapseObject> GetObservableByIden(string iden)
+    public async Task<SynapseNode> GetObservableByIden(string iden)
     {
-        return _client.Nodes.GetAsync<SynapseObject>(iden);
+        var stormOps = new StormOps() { Repr = true };
+        return await _nodeHelper.GetAsync(iden, stormOps);
     }
 
-    public Task<T> GetObservableByIden<T>(Document document, string iden, bool unmerged = false)
+    public async Task<SynapseNode> GetObservableByIden(Document document, string iden, bool unmerged = false)
     {
-        var view = GetView(document, unmerged);
-        return _client.Nodes.GetAsync<T>(iden, view?.Iden);
-    }
-
-    public IAsyncEnumerable<T> GetBySecondary<T>(Document document, string property, string coreValue, bool unmerged = false)
-    {
-        var view = GetView(document, unmerged);
-        return _client.Nodes.GetAsyncByProperty<T>(new Dictionary<string, string>() { {property, coreValue}}, view?.Iden);
+        var view = await GetViewAsync(document, unmerged);
+        var stormOps = new StormOps() { View = view?.Iden, Repr = true };
+        return await _nodeHelper.GetAsync(iden, stormOps);
     }
 
     public async Task Merge(Document document, bool delete = true)
     {
-        var view = GetView(document, true);
+        var view = await GetViewAsync(document, true);
         if (view != null)
         {
             _logger.LogInformation("Document view merged");
-            await _client.View.Merge(view.Iden);
+            await _viewHelper.Merge(view.Iden);
             if (delete)
-                await _client.View.Delete(view.Iden);
+                await _viewHelper.Delete(view.Iden);
         }
         else
         {
@@ -181,17 +202,67 @@ public class SynapseRepository : ISynapseRepository
         }
     }
 
-    private async Task ensureLoggedIn()
+    public async Task RemoveRefDataWithProperty(Document document, string property, object value,
+        bool unmerged = false)
     {
-        if (!_connected)
+        var view = await GetViewAsync(document, unmerged);
+        var stormOps = new StormOps()
         {
-            await _client.LoginAsync("user", "password");
-            _connected = true;
-        }
+            View = view?.Iden,
+            Repr = true,
+            Vars = new Dictionary<string, dynamic>()
+            {
+                { "documentId", document.DocumentId },
+                { "property", property },
+                { "$value", value }
+            }
+        };
+        
+        var proxy = await _client.GetProxyAsync();
+        await proxy.Storm($"_di:document=$documentId -(refs)> * +property=$value | delnodes", stormOps).ToListAsync();
     }
 
-    public IAsyncEnumerable<T> GetAll<T>() where T: SynapseObject
+    public async Task<string[]> GetSimpleForms()
     {
-        return _client.Nodes.GetAllAsync<T>();
+        var stormOps = new StormOps();
+        var proxy = await _client.GetProxyAsync();
+        return (await proxy.Storm("syn:type:ctor = synapse.lib.types.Int "
+                          + "syn:type:ctor = synapse.lib.types.Str "
+                          + "syn:type:ctor = synapse.lib.types.Bool "
+                          + "syn:type:ctor = synapse.lib.types.Hex "
+                          + "syn:type:ctor = synapse.lib.types.HugeNum "
+                          + "syn:type:ctor = synapse.lib.types.Float "
+                          + "syn:type:ctor = synapse.lib.types.Loc "
+                          + "syn:type:ctor = synapse.lib.types.Taxon "
+                          + "syn:type:ctor = synapse.lib.types.Taxonomy "
+                          + "syn:type:ctor = synapse.lib.types.Velocity "
+                          + "syn:type:ctor = synapse.lib.types.Duration "
+                          + "syn:type:ctor = synapse.models.geospace.Area "
+                          + "syn:type:ctor = synapse.models.geospace.Dist " 
+                          + "syn:type:ctor = synapse.models.geospace.LatLong "
+                          + "syn:type:ctor = synapse.models.inet.Addr "
+                          + "syn:type:ctor = synapse.models.inet.Cidr4 "
+                          + "syn:type:ctor = synapse.models.inet.Cidr6 "
+                          + "syn:type:ctor = synapse.models.dns.DnsName "
+                          + "syn:type:ctor = synapse.models.inet.Email "
+                          + "syn:type:ctor = synapse.models.inet.Fqdn "
+                          + "syn:type:ctor = synapse.models.inet.IPv4 "
+                          + "syn:type:ctor = synapse.models.inet.IPv4Range "
+                          + "syn:type:ctor = synapse.models.inet.IPv6 "
+                          + "syn:type:ctor = synapse.models.inet.IPv6Range "
+                          + "syn:type:ctor = synapse.models.inet.Rfc2822Addr "
+                          + "syn:type:ctor = synapse.models.inet.Url "
+                          + "syn:type:ctor = synapse.models.infotech.Cpe23Str "
+                          + "syn:type:ctor = synapse.models.infotech.Cpe22Str "
+                          + "syn:type:ctor = synapse.models.infotech.SemVer "
+                          + "syn:type:ctor = synapse.models.telco.Imei "
+                          + "syn:type:ctor = synapse.models.telco.Imsi "
+                          + "syn:type:ctor = synapse.models.telco.Phone " 
+                          + " -> syn:form:type -:type^=_", stormOps)
+            .ToListAsync())
+            .OfType<SynapseNode>()
+            .Select(_ => (string) _?.Valu?.ToString() ?? null)
+            .Where(_ => _ != null)
+            .ToArray();
     }
 }

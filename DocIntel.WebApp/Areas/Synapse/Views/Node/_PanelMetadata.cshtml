@@ -1,5 +1,5 @@
 @using DocIntel.WebApp.Helpers
-@model Synsharp.SynapseObject
+@model Synsharp.Telepath.Messages.SynapseNode
 
 <div id="panel-registration-info" class="panel">
     <div class="panel-hdr">
@@ -13,12 +13,19 @@
     <div class="panel-container show">
         <div class="panel-content pb-2">
             <dl class="row mb-0">
+            @foreach (var prop in Model.Props.Where(kv => kv.Key.StartsWith(".")))
+            {
                 <dt class="col-sm-6">
-                    Created
+                    @prop.Key
                 </dt>
                 <dd class="col-sm-6">
-                    @Html.Timeago(Model.Created)
+                    @if (Model.Reprs != null && Model.Reprs.ContainsKey(prop.Key)) {
+                        <text>@(Model.Reprs[prop.Key] ?? "")</text>
+                    } else {
+                        <text>@prop.Value</text>
+                    }
                 </dd>
+            }
             </dl>
         </div>
     </div>

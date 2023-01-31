@@ -28,8 +28,6 @@ using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories.Query;
 using DotLiquid;
-using Ganss.Xss;
-
 using MassTransit;
 
 using Microsoft.EntityFrameworkCore;

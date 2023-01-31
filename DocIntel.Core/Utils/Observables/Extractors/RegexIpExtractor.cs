@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
-using Synsharp;
-using Synsharp.Forms;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.Core.Utils.Observables;
 
@@ -28,15 +26,18 @@ public class RegexIpExtractor : RegexExtractor
         ";
     
 #pragma warning disable CS1998
-    public override async IAsyncEnumerable<SynapseObject> Extract(string content)
+    public override async IAsyncEnumerable<SynapseNode> Extract(string content)
 #pragma warning restore CS1998
     {
         var options = DEFAULT_REGEX_OPTIONS | RegexOptions.Compiled;
         var matches = Regex.Matches(content, IPV4_REGEX, options);
         foreach (Match match in matches)
         {
-            var synapseObject = new InetIPv4();
-            synapseObject.SetValue(RefangIPv4(match.Groups[0].Value));
+            var synapseObject = new SynapseNode()
+            {
+                Form = "inet:ipv4",
+                Valu = RefangIPv4(match.Groups[0].Value)
+            };
             yield return synapseObject;
         }
 

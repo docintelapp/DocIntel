@@ -16,6 +16,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using AutoMapper;
@@ -26,6 +27,7 @@ using DocIntel.Core.Utils.Search.Tags;
 using DocIntel.WebApp.Areas.API.Models;
 using RazorLight.Extensions;
 using Synsharp;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.WebApp.Areas.API
 {
@@ -33,6 +35,12 @@ namespace DocIntel.WebApp.Areas.API
     {
         public APIProfile()
         {
+            CreateMap<ApiObservableDetails, SynapseNode>()
+                .ForMember(_ => _.Form, _ => _.MapFrom(__ => __.Type))
+                .ForMember(_ => _.Valu, _ => _.MapFrom(__ => __.Value))
+                .ForMember(_ => _.Tags, _ => _.MapFrom(__ => __.Tags.Select(t => new KeyValuePair<string,long?[]>(t, new long?[]{})).ToDictionary(kv => kv.Key, kv => kv.Value)))
+                .ForMember(_ => _.Props, _ => _.MapFrom(__ => __.Properties));
+            
             CreateMap<Importer, APIImporter>();
 
             ImportRuleSetProfile();
@@ -210,12 +218,12 @@ namespace DocIntel.WebApp.Areas.API
 
             SourceProfile();
 
-            CreateMap<SynapseObject, ApiObservableDetails>()
+            CreateMap<SynapseNode, ApiObservableDetails>()
                 .ForMember(_ => _.Iden, _ => _.MapFrom(__ => __.Iden))
-                .ForMember(_ => _.Type, _ => _.MapFrom(__ => __.GetType().ToSynapseType()))
-                .ForMember(_ => _.Value, _ => _.MapFrom(__ => __.GetCoreValue()))
-                .ForMember(_ => _.Tags, _ => _.MapFrom(__ => __.Tags))
-                .ForMember(_ => _.Properties, _ => _.MapFrom(__ => __.GetProperties()));
+                .ForMember(_ => _.Type, _ => _.MapFrom(__ => __.Form))
+                .ForMember(_ => _.Value, _ => _.MapFrom(__ => __.Valu))
+                .ForMember(_ => _.Tags, _ => _.MapFrom(__ => __.Tags.Keys.ToArray()))
+                .ForMember(_ => _.Properties, _ => _.MapFrom(__ => __.Props));
         }
 
         private void SourceProfile()

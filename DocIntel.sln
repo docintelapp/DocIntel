@@ -27,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocIntel.Integrations", "Do
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocIntel.Tests", "DocIntel.Tests\DocIntel.Tests.csproj", "{4CF6F7C0-EBF8-4387-ADEA-BD2D8C473DC0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synsharp", "synsharp\Synsharp\Synsharp.csproj", "{3C70BD50-AEB2-4DE8-A859-7E9A61A2BE82}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synsharp.Telepath", "synsharp\Synsharp.Telepath\Synsharp.Telepath.csproj", "{BC93C0DF-641B-4098-A6FE-00E00FD6D633}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,9 +107,9 @@ Global
 		{4CF6F7C0-EBF8-4387-ADEA-BD2D8C473DC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CF6F7C0-EBF8-4387-ADEA-BD2D8C473DC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CF6F7C0-EBF8-4387-ADEA-BD2D8C473DC0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3C70BD50-AEB2-4DE8-A859-7E9A61A2BE82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3C70BD50-AEB2-4DE8-A859-7E9A61A2BE82}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3C70BD50-AEB2-4DE8-A859-7E9A61A2BE82}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3C70BD50-AEB2-4DE8-A859-7E9A61A2BE82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC93C0DF-641B-4098-A6FE-00E00FD6D633}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC93C0DF-641B-4098-A6FE-00E00FD6D633}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC93C0DF-641B-4098-A6FE-00E00FD6D633}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC93C0DF-641B-4098-A6FE-00E00FD6D633}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

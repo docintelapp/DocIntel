@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Spectre.Console.Cli;
 using Synsharp;
+using Synsharp.Telepath.Helpers;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.AdminConsole.Commands.Observables
 {
@@ -57,7 +59,7 @@ namespace DocIntel.AdminConsole.Commands.Observables
                 view = await _observablesRepository.CreateView(document);
             }
             
-            var observables = new HashSet<SynapseObject>();
+            var observables = new HashSet<SynapseNode>();
             foreach (var file in document.Files)
             {
                 // Extract the content
@@ -71,13 +73,13 @@ namespace DocIntel.AdminConsole.Commands.Observables
 
                 if (settings.Save)
                 {
-                    await _observablesRepository.Add(fileObservables, document, file, view);
+                    await _observablesRepository.Add(fileObservables, document, view);
                 }
                 
                 foreach (var o in fileObservables) 
                 {
-                    if (o.Tags.Contains("_di.workflow.ignore")) continue;
-                    System.Console.WriteLine(o);
+                    if (o.Tags.ContainsKey("_di.workflow.ignore")) continue;
+                    System.Console.WriteLine($"{o.Form}={o.Valu}");
                 }
             }
             

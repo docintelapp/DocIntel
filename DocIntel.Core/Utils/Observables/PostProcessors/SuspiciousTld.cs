@@ -1,11 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using DocIntel.Core.Models;
-using Synsharp;
-using Synsharp.Forms;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.Core.Utils.Observables.PostProcessors;
 
@@ -166,19 +163,18 @@ public class SuspiciousTld : IPostProcessor
             "YOUTUBE", "YT", "YUN", "ZA", "ZAPPOS", "ZARA", "ZERO", "ZIP", "ZM", "ZONE", "ZUERICH", "ZW"
         };
         
-        public Task Process(IEnumerable<SynapseObject> objects)
+        public Task Process(IEnumerable<SynapseNode> objects)
         {
-            foreach (var o in objects)
+            foreach (var o in objects.Where(node => node.Form == "inet:fqdn"))
             {
-                if (o is InetFqdn fqdn)
-                    Process(fqdn);
+                Process(o);
             }
 
             return Task.CompletedTask;
         }
         
-        private InetFqdn Process(InetFqdn fqdn) {
-            var fqdnValue = (string)fqdn.Value;
+        private SynapseNode Process(SynapseNode fqdn) {
+            var fqdnValue = (string)fqdn.Valu;
             var hostTld = fqdnValue.Split('.').Last();
             
         // Filter out extracted domains that are more likely to generate false positive than true positive.
@@ -186,20 +182,20 @@ public class SuspiciousTld : IPostProcessor
         {
             // Manually review suspicious tld's such as common file extensions (e.g. zip, py, pf...)
             if (_TLDToReview.Contains(hostTld.ToUpper()))
-                fqdn.Tags.Add("_di.workflow.review");
+                fqdn.Tags.Add("_di.workflow.review", new long?[]{});
             
             // Manually review if the main hostname part shorter than 3 chars (too expensive)
             if (fqdnValue.Split('.')[fqdnValue.Split('.').Length - 2].Length < 3)
-                fqdn.Tags.Add("_di.workflow.review");
+                fqdn.Tags.Add("_di.workflow.review", new long?[]{});
             
             // Manually review the domain if there are too many dots (e.g. can be mobile app identifier)
             if (fqdnValue.Split('.').Length > 5)
-                fqdn.Tags.Add("_di.workflow.review");
+                fqdn.Tags.Add("_di.workflow.review", new long?[]{});
             
             // Manually review masked IP (e.g 111.111.xxx.xxx)
             var ipRangeMatch = Regex.Match(fqdnValue, @"^(?:[0-9xX]{1,3}\.){3}[0-9xX]{1,3}$");
             if (ipRangeMatch.Success)
-                fqdn.Tags.Add("_di.workflow.review");
+                fqdn.Tags.Add("_di.workflow.review", new long?[]{});
             
             // Manually review possible virus detection names
             // TODO Extract possible virus detection names
@@ -208,15 +204,15 @@ public class SuspiciousTld : IPostProcessor
                 RegexOptions.IgnoreCase);
             
             if (avMatch.Success)
-                fqdn.Tags.Add("_di.workflow.review");
+                fqdn.Tags.Add("_di.workflow.review", new long?[]{});
             
             // Manually review if the domain starts with -, probably a false positive
             if (fqdnValue.StartsWith('-'))
-                fqdn.Tags.Add("_di.workflow.review");
+                fqdn.Tags.Add("_di.workflow.review", new long?[]{});
         }
         else
         {
-            fqdn.Tags.Add("_di.workflow.review");
+            fqdn.Tags.Add("_di.workflow.review", new long?[]{});
         }
         
         return fqdn;

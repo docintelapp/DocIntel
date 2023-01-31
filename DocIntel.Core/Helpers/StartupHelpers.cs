@@ -39,7 +39,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using SolrNet;
 using SolrNet.Impl;
-using Synsharp;
+using Synsharp.Telepath;
 
 namespace DocIntel.Core.Helpers
 {
@@ -176,10 +176,13 @@ namespace DocIntel.Core.Helpers
         public static void RegisterSynapse(IServiceCollection services, ApplicationSettings applicationSettings)
         {
             services.AddSingleton(applicationSettings.Synapse);
-            services.AddScoped<SynapseClient>(provider =>
+            services.AddScoped<TelepathClient>(provider =>
             {
                 var settings = provider.GetRequiredService<SynapseSettings>();
-                return new SynapseClient(settings, provider);
+                var uri = new UriBuilder(settings.URL);
+                uri.UserName = settings.UserName;
+                uri.Password = settings.Password;
+                return new TelepathClient(uri.ToString());
             });
             services.AddScoped<ISynapseRepository, SynapseRepository>();
         }

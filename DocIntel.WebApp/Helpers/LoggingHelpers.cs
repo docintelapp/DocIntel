@@ -23,6 +23,7 @@ using DocIntel.Core.Models;
 
 using Microsoft.AspNetCore.Http;
 using Synsharp;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.WebApp.Helpers
 {
@@ -154,10 +155,11 @@ namespace DocIntel.WebApp.Helpers
             return logEvent;
         }
 
-        public static LogEvent AddObservable(this LogEvent logEvent, SynapseObject observable)
+        public static LogEvent AddObservable(this LogEvent logEvent, SynapseNode observable)
         {
             logEvent.AddProperty("observable.id", observable.Iden);
-            logEvent.AddProperty("observable.value", observable.GetCoreValue());
+            logEvent.AddProperty("observable.form", observable.Form);
+            logEvent.AddProperty("observable.value", observable.Valu);
             return logEvent;
         }
 

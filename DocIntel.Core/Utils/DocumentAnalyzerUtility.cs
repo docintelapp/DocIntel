@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
@@ -14,7 +13,6 @@ using DocIntel.Core.Utils.Indexation.SolR;
 using DocIntel.Core.Utils.Observables;
 using Microsoft.Extensions.Logging;
 using SolrNet;
-using Synsharp;
 
 namespace DocIntel.Core.Utils;
 
@@ -106,13 +104,10 @@ public class DocumentAnalyzerUtility
                                 var view = await _observablesRepository.CreateView(document);
                                 var fileObservables = await _observablesUtility.ExtractDataAsync(document, file, response.Content).ToListAsync();
                                 await _observablesUtility.AnnotateAsync(document, file, fileObservables);
-                                await _observablesRepository.Add(fileObservables, document, file, view);
+                                _logger.LogDebug($"Found {fileObservables.Count} observables");
+                                await _observablesRepository.Add(fileObservables, document, view);
                             }
-                            catch (SynapseException e)
-                            {
-                                _logger.LogError($"Could not extract observable in file '{file.FileId}' on document '{document.DocumentId}': {e.Message}");
-                            }
-                            catch (SynapseError e)
+                            catch (Exception e)
                             {
                                 _logger.LogError($"Could not extract observable in file '{file.FileId}' on document '{document.DocumentId}': {e.Message}");
                             }

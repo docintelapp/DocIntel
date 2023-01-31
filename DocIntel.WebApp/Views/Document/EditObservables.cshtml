@@ -1,6 +1,5 @@
 @using DocIntel.Core.Authorization.Operations
 @using Microsoft.AspNetCore.Mvc.TagHelpers
-@using Synsharp.Forms
 @model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentObservablesViewModel
 @{
     ViewData["Title"] = $"Edit {Model.Document.Title}";
@@ -37,16 +36,13 @@
                 <input type="hidden" name="DocumentId" value="@Model.Document.DocumentId" />
                 <div class="form-group">
                     <div class="input-group">
-                        <div class="input-group-prepend">
-                            <select class="custom-select" name="obsType">
-                                <option selected="">Choose...</option>
-                                <option value="inet:url">inet:url</option>
-                                <option value="inet:fqdn">inet:fqdn</option>
-                                <option value="inet:ipv4">inet:ipv4</option>
-                                <option value="inet:ipv6">inet:ipv6</option>
-                                <option value="hash:md5">hash:md5</option>
-                                <option value="hash:sha1">hash:sha1</option>
-                                <option value="hash:sha256">hash:sha256</option>
+                        <div class="input-group-prepend" style="width: 33%">
+                            <select class="custom-select select2" name="obsType" data-placeholder="Choose...">
+                                <option value=""></option>
+                                @foreach (var t in Model.AvailableTypes.OrderBy(_ => _))
+                                {
+                                    <option value="@t">@t</option>
+                                }
                             </select>
                         </div>
                         <input type="text" class="form-control" name="obsValue" />
@@ -68,18 +64,17 @@
             }
             
             @{
-                var groupedObservables = Model.Observables.GroupBy(_ => _.GetType())
-                    .OrderBy(_ => _.Key.FullName);
+                var groupedObservables = Model.Observables.GroupBy(_ => _.Form)
+                    .OrderBy(_ => _.Key);
             }
             
             <div class="alert alert-secondary" role="alert">
-                <p class="mb-1">There are @Model.Observables.Count() related observables:</p>
+                <p class="mb-1">There are @Model.Observables.Count() related structured data:</p>
                 <ul class="m-0 pl-3">
                     @foreach (var group in groupedObservables)
                     {
                         <li class="mb-1">
-                            @group.Count() @Html.Pluralize("observable", group.Count()) 
-                            <span class="ml-2"><code>@group.Key.ToDisplaySynsharp()</code></span>
+                            <span class="mr-2"><code>@group.Key</code></span> (@group.Count())
                         </li>
                     }
                 </ul>
@@ -94,8 +89,7 @@
                 <div class="panel">
                     <div class="panel-hdr">
                         <h2>
-                            @group.Count() @Html.Pluralize("observable", group.Count()) 
-                            <span class="ml-2"><code>@group.Key.ToDisplaySynsharp()</code></span>
+                            <span class="mr-2"><code>@group.Key</code></span> (@group.Count())
                         </h2>
                         
                         <div class="panel-toolbar">
@@ -118,11 +112,11 @@
                                 <thead class="thead-light">
                                 <tr>
                                     <th scope="col" style="width: 25%">Status</th>
-                                    <th scope="col" style="width: 75%">Observable</th>
+                                    <th scope="col" style="width: 75%">Value</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                @foreach (var item in group.OrderBy(_ => _.GetCoreValue()))
+                                @foreach (var item in group.OrderBy(_ => _.Repr))
                                 {
                                     <tr>
                                         <td style="width: 25%">
@@ -134,11 +128,21 @@
                                             </select>
                                         </td>
                                         <td style="width: 75%">
-                                            <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">@item.GetCoreValue()</p>
+                                            <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
+                                                @if (!string.IsNullOrEmpty(item.Repr))
+                                                {
+                                                    <text>@item.Repr</text>
+                                                }
+                                                else
+                                                {
+                                                    <text>@item.Valu</text>
+                                                }
+                                            </p>
                                             @if (item.Tags.Any())
                                             {
+                                                var prefixTree = new Synsharp.Telepath.TagTree(item.Tags.Keys.ToArray());
                                                 <p class="m-0">
-                                                    @foreach (var t in item.Tags)
+                                                    @foreach (var t in prefixTree)
                                                     {
                                                         <span class="@(t.StartsWith("_di")?"badge-primary":"badge-secondary") badge">@t</span>
                                                     }

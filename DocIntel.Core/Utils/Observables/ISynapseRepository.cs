@@ -2,27 +2,27 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DocIntel.Core.Models;
-using Synsharp;
-using Synsharp.Types;
+using Synsharp.Telepath.Helpers;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.Core.Utils.Observables;
 
 public interface ISynapseRepository
 {
-    Task<SynapseObject> Add(SynapseObject observable);
-    Task Add(IEnumerable<SynapseObject> observables, Document document, DocumentFile file, SynapseView view = null);
-    Task Add(SynapseObject synapseObject, Document document, SynapseView view = null);
-    Task RemoveRefs(Guid document);
-    Task Remove(string iden, Document document, SynapseView view = null);
+    Task<SynapseNode> Add(SynapseNode observable);
+    Task Add(IEnumerable<SynapseNode> observables, Document document, SynapseView view = null);
+    Task Add(SynapseNode synapseNode, Document document, SynapseView view = null);
+    Task Remove(Guid documentId, SynapseView view = null);
+    Task Remove(Document document, string iden, bool unmerged = false, bool softDelete = false);
     Task RemoveView(Document document);
     Task<SynapseView> CreateView(Document document);
-    IAsyncEnumerable<SynapseObject> GetObservables(Document document, bool unmerged = false, bool includeIgnore = true);
-    Task Remove(Document document, string iden, bool unmerged = false, bool softDelete = false);
+    IAsyncEnumerable<SynapseNode> GetObservables(Document document, bool unmerged = false, bool includeIgnore = true);
     Task AddTag(Document document, string iden, string tagName, bool unmerged = false);
     Task RemoveTag(Document document, string iden, string tagName, bool unmerged = false);
-    Task<SynapseObject> GetObservableByIden(string iden);
-    Task<T> GetObservableByIden<T>(Document document, string iden, bool unmerged = false);
-    IAsyncEnumerable<T> GetBySecondary<T>(Document document, string property, string coreValue, bool unmerged = false);
+    Task<SynapseNode> GetObservableByIden(string iden);
+    Task<SynapseNode> GetObservableByIden(Document document, string iden, bool unmerged = false);
     Task Merge(Document document, bool delete = true);
-    IAsyncEnumerable<T> GetAll<T>() where T : SynapseObject;
+    Task RemoveRefDataWithProperty(Document document, string property, object value,
+        bool unmerged = false);
+    Task<string[]> GetSimpleForms();
 }

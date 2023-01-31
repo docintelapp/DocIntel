@@ -7,7 +7,7 @@ using DocIntel.Core.Utils.Observables.Extractors;
 using DocIntel.Core.Utils.Observables.PostProcessors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Synsharp;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.Core.Utils.Observables;
 
@@ -28,9 +28,7 @@ public class DefaultObservableUtility : IObservablesUtility
         
     private static readonly List<Type> PostProcessors = new()
     {
-        typeof(IPRangePostProcessor),
-        typeof(SuspiciousTld),
-        typeof(TaggedFqdnInUrl)
+        typeof(SuspiciousTld)
     };
         
     private readonly List<IExtractor> _extractors;
@@ -47,7 +45,7 @@ public class DefaultObservableUtility : IObservablesUtility
         _postProcessors = PostProcessors.Select(_ => (IPostProcessor) serviceProvider.GetRequiredService(_)).ToList();
     }
 
-    public async IAsyncEnumerable<SynapseObject> ExtractDataAsync(Document document, DocumentFile file, string content)
+    public async IAsyncEnumerable<SynapseNode> ExtractDataAsync(Document document, DocumentFile file, string content)
     {
         _logger.LogDebug("Running observable text transforms");
         foreach (var transform in _transforms)
@@ -69,7 +67,7 @@ public class DefaultObservableUtility : IObservablesUtility
         }   
     }
 
-    public async Task AnnotateAsync(Document document, DocumentFile file, IEnumerable<SynapseObject> objects)
+    public async Task AnnotateAsync(Document document, DocumentFile file, IEnumerable<SynapseNode> objects)
     {
         _logger.LogDebug($"Running {_postProcessors.Count} post processor on extracted observables");
         foreach (var postProcessor in _postProcessors)

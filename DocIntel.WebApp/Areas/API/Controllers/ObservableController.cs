@@ -30,11 +30,10 @@ using DocIntel.Core.Utils.Observables;
 using DocIntel.WebApp.Areas.API.Models;
 using DocIntel.WebApp.Helpers;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
-using Synsharp;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.WebApp.Areas.API.Controllers;
 
@@ -217,7 +216,7 @@ public class ObservableController : DocIntelAPIControllerBase
     /// 
     /// 
     /// </remarks>
-    /// <param name="observableId">The observable to create</param>
+    /// <param name="observable">The observable to create</param>
     /// <returns>The created observable</returns>
     /// <response code="200">Returns the newly created observable</response>
     /// <response code="400">The provided data are invalid (e.g. empty title, non-existing parent observable, etc.)</response>
@@ -229,7 +228,7 @@ public class ObservableController : DocIntelAPIControllerBase
     [SwaggerOperation(
         OperationId = "Create"
     )]
-    public async Task<IActionResult> Create([FromBody] ApiObservableDetails observableId)
+    public async Task<IActionResult> Create([FromBody] ApiObservableDetails observable)
     {
         var currentUser = await GetCurrentUser();
 
@@ -237,52 +236,20 @@ public class ObservableController : DocIntelAPIControllerBase
         {
             if (ModelState.IsValid)
             {
-                SynapseObject observable;
-                switch (observableId.Type)
-                {
-                    case "inet:url":
-                        observable = Synsharp.Forms.InetUrl.Parse(observableId.Value);
-                        break;
-                    case "inet:fqdn":
-                        observable = Synsharp.Forms.InetFqdn.Parse(observableId.Value);
-                        break;
-                    case "inet:ipv4":
-                        observable = Synsharp.Forms.InetIPv4.Parse(observableId.Value);
-                        break;
-                    case "inet:ipv6":
-                        observable = Synsharp.Forms.InetIPv6.Parse(observableId.Value);
-                        break;
-                    case "inet:md5":
-                        observable = Synsharp.Forms.HashMD5.Parse(observableId.Value);
-                        break;
-                    case "inet:sha1":
-                        observable = Synsharp.Forms.HashSHA1.Parse(observableId.Value);
-                        break;
-                    case "inet:sha256":
-                        observable = Synsharp.Forms.HashSHA256.Parse(observableId.Value);
-                        break;
-                    default:
-                        return BadRequest();
-                }
-
-                foreach (var tag in observableId.Tags)
-                {
-                    observable.Tags.Add(tag);
-                }
-
-                observable = await _observableRepository.Add(observable);
+                var node = _mapper.Map<ApiObservableDetails, SynapseNode>(observable);
+                node = await _observableRepository.Add(node);
                 
                 _logger.Log(LogLevel.Information,
                     EventIDs.CreateObservableSuccess,
                     new LogEvent(
-                            $"User '{currentUser.UserName}' successfully created a new observable '{observableId.Value}' with id '{observable.Iden}'.")
+                            $"User '{currentUser.UserName}' successfully created a new observable '{observable.Value}' with id '{node.Iden}'.")
                         .AddUser(currentUser)
                         .AddHttpContext(_accessor.HttpContext)
-                        .AddObservable(observable),
+                        .AddObservable(node),
                     null,
                     LogEvent.Formatter);
 
-                return Ok(_mapper.Map<ApiObservableDetails>(observable));
+                return Ok(_mapper.Map<ApiObservableDetails>(node));
             }
 
             return BadRequest(ModelState);
@@ -292,7 +259,7 @@ public class ObservableController : DocIntelAPIControllerBase
             _logger.Log(LogLevel.Warning,
                 EventIDs.CreateObservableFailed,
                 new LogEvent(
-                        $"User '{currentUser.UserName}' attempted to create a new observable '{observableId.Value}' without legitimate rights.")
+                        $"User '{currentUser.UserName}' attempted to create a new observable '{observable.Value}' without legitimate rights.")
                     .AddUser(currentUser)
                     .AddHttpContext(_accessor.HttpContext),
                 null,
@@ -327,7 +294,7 @@ public class ObservableController : DocIntelAPIControllerBase
     /// layer if the document is registered, and to the layer to be reviewed if not.
     /// </remarks>
     /// <param name="documentId">The document identifier</param>
-    /// <param name="observableId">The observable to create</param>
+    /// <param name="observable">The observable to create</param>
     /// <returns>The created observable</returns>
     /// <response code="200">Returns the newly created observable</response>
     /// <response code="400">The provided data are invalid (e.g. empty value, unsupported type, etc.)</response>
@@ -340,7 +307,7 @@ public class ObservableController : DocIntelAPIControllerBase
         OperationId = "Reference",
         Tags = new [] { "Observable", "Document" }
     )]
-    public async Task<IActionResult> Reference([FromBody] ApiObservableDetails observableId, [FromRoute] Guid documentId)
+    public async Task<IActionResult> Reference([FromBody] ApiObservableDetails observable, [FromRoute] Guid documentId)
     {
         var currentUser = await GetCurrentUser();
 
@@ -350,61 +317,29 @@ public class ObservableController : DocIntelAPIControllerBase
             
             if (ModelState.IsValid)
             {
-                SynapseObject observable;
-                switch (observableId.Type)
-                {
-                    case "inet:url":
-                        observable = Synsharp.Forms.InetUrl.Parse(observableId.Value);
-                        break;
-                    case "inet:fqdn":
-                        observable = Synsharp.Forms.InetFqdn.Parse(observableId.Value);
-                        break;
-                    case "inet:ipv4":
-                        observable = Synsharp.Forms.InetIPv4.Parse(observableId.Value);
-                        break;
-                    case "inet:ipv6":
-                        observable = Synsharp.Forms.InetIPv6.Parse(observableId.Value);
-                        break;
-                    case "inet:md5":
-                        observable = Synsharp.Forms.HashMD5.Parse(observableId.Value);
-                        break;
-                    case "inet:sha1":
-                        observable = Synsharp.Forms.HashSHA1.Parse(observableId.Value);
-                        break;
-                    case "inet:sha256":
-                        observable = Synsharp.Forms.HashSHA256.Parse(observableId.Value);
-                        break;
-                    default:
-                        return BadRequest();
-                }
-
-                foreach (var tag in observableId.Tags)
-                {
-                    observable.Tags.Add(tag);
-                }
-
-                observable = await _observableRepository.Add(observable);
+                var node = _mapper.Map<ApiObservableDetails, SynapseNode>(observable);
+                node = await _observableRepository.Add(node);
                 if (document.Status != DocumentStatus.Registered)
                 {
                     var view = await _observableRepository.CreateView(document);
-                    await _observableRepository.Add(observable, document, view);   
+                    await _observableRepository.Add(node, document, view);   
                 }
                 else
                 {
-                    await _observableRepository.Add(observable, document);   
+                    await _observableRepository.Add(node, document);   
                 }
                 
                 _logger.Log(LogLevel.Information,
                     EventIDs.CreateObservableSuccess,
                     new LogEvent(
-                            $"User '{currentUser.UserName}' successfully created a new observable '{observableId.Value}' with id '{observable.Iden}'.")
+                            $"User '{currentUser.UserName}' successfully created a new observable '{observable.Value}' with id '{node.Iden}'.")
                         .AddUser(currentUser)
                         .AddHttpContext(_accessor.HttpContext)
-                        .AddObservable(observable),
+                        .AddObservable(node),
                     null,
                     LogEvent.Formatter);
 
-                return Ok(_mapper.Map<ApiObservableDetails>(observable));
+                return Ok(_mapper.Map<ApiObservableDetails>(node));
             }
 
             return BadRequest(ModelState);
@@ -414,7 +349,7 @@ public class ObservableController : DocIntelAPIControllerBase
             _logger.Log(LogLevel.Warning,
                 EventIDs.CreateObservableFailed,
                 new LogEvent(
-                        $"User '{currentUser.UserName}' attempted to create a new observable '{observableId.Value}' without legitimate rights.")
+                        $"User '{currentUser.UserName}' attempted to create a new observable '{observable.Value}' without legitimate rights.")
                     .AddUser(currentUser)
                     .AddHttpContext(_accessor.HttpContext),
                 null,
@@ -472,12 +407,11 @@ public class ObservableController : DocIntelAPIControllerBase
             {
                 if (document.Status != DocumentStatus.Registered)
                 {
-                    var view = await _observableRepository.CreateView(document);
-                    await _observableRepository.Remove(observableId, document, view);   
+                    await _observableRepository.Remove(document, observableId, true);   
                 }
                 else
                 {
-                    await _observableRepository.Remove(observableId, document);   
+                    await _observableRepository.Remove(document, observableId);   
                 }
                 
                 _logger.Log(LogLevel.Information,

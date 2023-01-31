@@ -48,7 +48,7 @@ using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 using Synsharp;
-using Synsharp.Forms;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.WebApp.Controllers
 {
@@ -281,6 +281,7 @@ namespace DocIntel.WebApp.Controllers
 
                 var viewModel = new DocumentDetailsViewModel
                 {
+                    AvailableTypes = await _synapseRepository.GetSimpleForms(),
                     Document = document,
                     Observables = await _synapseRepository.GetObservables(document, false, false).ToListAsync(),
                     Subscribed = await _documentRepository.IsSubscribedAsync(AmbientContext, document.DocumentId),
@@ -920,9 +921,12 @@ namespace DocIntel.WebApp.Controllers
                 if (document.Status != DocumentStatus.Registered)
                     return NotFound();
 
+                var availableTypes = await _synapseRepository.GetSimpleForms();
+                
                 await SetupViewBag(currentUser, document);
                 return View(new DocumentObservablesViewModel
                 {
+                    AvailableTypes = availableTypes,
                     Observables = await _synapseRepository.GetObservables(document).ToListAsync(),
                     Document = document
                 });
@@ -991,7 +995,7 @@ namespace DocIntel.WebApp.Controllers
         }
 
         [HttpPost("AddObservable")]
-        public async Task<IActionResult> AddObservable(Guid documentId, string obsType, string obsValue)
+        public async Task<IActionResult> AddObservable(Guid documentId, string obsType, string obsValue, string returnUrl = null)
         {
             var currentUser = await GetCurrentUser();
             if (!await _appAuthorizationService.CanEditDocument(User, null))
@@ -1011,48 +1015,24 @@ namespace DocIntel.WebApp.Controllers
             if (string.IsNullOrWhiteSpace(obsType))
                 return RedirectToAction(nameof(EditObservables), new {id = document.DocumentId});
             
-            if (!new[] { "inet:url", "inet:fqdn", "inet:ipv4", "inet:ipv6", "hash:md5", "hash:sha1", "hash:sha256" }
-                    .Contains(obsType))
+            var availableTypes = await _synapseRepository.GetSimpleForms();
+            if (!availableTypes.Contains(obsType))
                 return NotFound();
 
             try
             {
-                SynapseObject ob = null;
-                if (obsType == "inet:url")
-                {
-                    ob = new InetUrl(obsValue);
-                } else if (obsType == "inet:fqdn")
-                {
-                    ob = new InetFqdn(obsValue);
-                } else if (obsType == "inet:ipv4")
-                {
-                    ob = new InetIPv4(obsValue);
-                } else if (obsType == "inet:ipv6")
-                {
-                    ob = new InetIPv6(obsValue);
-                } else if (obsType == "hash:md5")
-                {
-                    ob = HashMD5.Parse(obsValue);
-                } else if (obsType == "hash:sha1")
-                {
-                    ob = HashSHA1.Parse(obsValue);
-                } else if (obsType == "hash:sha256")
-                {
-                    ob = HashSHA256.Parse(obsValue);
-                }
+                var ob = new SynapseNode() { Form = obsType, Valu = obsValue };
                 
                 if (ob != null)
-                    await _synapseRepository.Add(new[]{ob}, document, null, null);
+                    await _synapseRepository.Add(new[]{ob}, document, null);
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
             }
 
-            if (ModelState.IsValid)
-            {
-                return RedirectToAction(nameof(EditObservables), new {id = document.DocumentId});
-            }
+            if (!string.IsNullOrEmpty(returnUrl))
+                return Redirect(returnUrl);
 
             return RedirectToAction(nameof(EditObservables), new {id = document.DocumentId});
         }
@@ -1102,19 +1082,19 @@ namespace DocIntel.WebApp.Controllers
                     } else if (status == "ignore-domain")
                     {
                         _logger.LogDebug($"Ignore-domain {iden}");
-                        var url = await _synapseRepository.GetObservableByIden<InetUrl>(document, iden, true);
-                        if (url != null)
+                        var url = await _synapseRepository.GetObservableByIden(document, iden, true);
+                        if (url != null && url.Form == "inet:url")
                         {
                             // Add the FQDN with the proper tag globally
-                            var fqdn = new InetFqdn(url.FQDN);
-                            fqdn.Tags.Add("_di.workflow.ignore");
+                            var fqdn = new SynapseNode() { Form = "inet:fqdn", Valu = url.Props[":fqdn"] };
+                            fqdn.Tags.Add("_di.workflow.ignore", new long?[] {});
                             await _synapseRepository.Add(fqdn);
 
-                            var urls = await _synapseRepository.GetBySecondary<InetUrl>(document, "fqdn", url.FQDN, true).ToListAsync();
-                            foreach (var u in urls)
-                            {
-                                await _synapseRepository.Remove(document, iden, true);
-                            }
+                            await _synapseRepository.RemoveRefDataWithProperty(document, "fqdn", url.Props[":fqdn"], true);
+                        } else if (url != null && url.Form == "inet:fqdn")
+                        {
+                            await _synapseRepository.AddTag(document, iden, "_di.workflow.ignore", false);
+                            await _synapseRepository.RemoveRefDataWithProperty(document, "fqdn", url.Valu, true).ToListAsync();
                         }
                     }
 
@@ -1181,26 +1161,28 @@ namespace DocIntel.WebApp.Controllers
                     {
                         _logger.LogDebug($"Remove {iden}");
                         await _synapseRepository.Remove(document, iden, true);
+                        
                     } else if (status == "ignore-always")
                     {
                         _logger.LogDebug($"Add _di.workflow.ignore to {iden}");
                         await _synapseRepository.AddTag(document, iden, "_di.workflow.ignore", false);
+                        
                     } else if (status == "ignore-domain")
                     {
                         _logger.LogDebug($"Ignore-domain {iden}");
-                        var url = await _synapseRepository.GetObservableByIden<InetUrl>(document, iden, true);
-                        if (url != null)
+                        var url = await _synapseRepository.GetObservableByIden(document, iden, true);
+                        if (url != null && url.Form == "inet:url")
                         {
                             // Add the FQDN with the proper tag globally
-                            var fqdn = new InetFqdn(url.FQDN);
-                            fqdn.Tags.Add("_di.workflow.ignore");
+                            var fqdn = new SynapseNode() { Form = "inet:fqdn", Valu = url.Props[":fqdn"] };
+                            fqdn.Tags.Add("_di.workflow.ignore", new long?[] {});
                             await _synapseRepository.Add(fqdn);
 
-                            var urls = await _synapseRepository.GetBySecondary<InetUrl>(document, "fqdn", url.FQDN, true).ToListAsync();
-                            foreach (var u in urls)
-                            {
-                                await _synapseRepository.Remove(document, iden, true);
-                            }
+                            await _synapseRepository.RemoveRefDataWithProperty(document, "fqdn", url.Props[":fqdn"], true);
+                        } else if (url != null && url.Form == "inet:fqdn")
+                        {
+                            await _synapseRepository.AddTag(document, iden, "_di.workflow.ignore", false);
+                            await _synapseRepository.RemoveRefDataWithProperty(document, "fqdn", url.Valu, true).ToListAsync();
                         }
                     }
 
@@ -1385,7 +1367,7 @@ namespace DocIntel.WebApp.Controllers
                 var currentUser = await GetCurrentUser();
                 await _documentRepository.RemoveAsync(AmbientContext, submittedDocument.DocumentId);
                 await _context.SaveChangesAsync();
-                await _synapseRepository.RemoveRefs(submittedDocument.DocumentId);
+                await _synapseRepository.Remove(submittedDocument.DocumentId);
                 return RedirectToAction(nameof(Index));
             }
             catch (UnauthorizedOperationException)

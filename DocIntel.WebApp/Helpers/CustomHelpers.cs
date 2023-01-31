@@ -41,56 +41,12 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
 
 using Pluralize.NET.Core;
-using Synsharp;
-using Synsharp.Attribute;
-using Synsharp.Forms;
 using TimeZoneConverter;
 
 namespace DocIntel.WebApp.Helpers
 {
     public static class CustomHelpers
     {
-        public static IHtmlContent ToDisplaySynsharp(this Type t)
-        {
-            if (t.IsSubclassOf(typeof(Synsharp.SynapseObject)))
-            {
-                var form = t.GetCustomAttribute<SynapseFormAttribute>();
-                if (form == null)
-                    return new HtmlString(t.FullName);
-                
-                return new HtmlString(form.Name);
-            }
-            
-            return new HtmlString(t.FullName);
-        }
-
-        public static IHtmlContent DisplaySynapse(this IHtmlHelper htmlHelper,
-            SynapseObject obj)
-        {
-            if (obj is InetFqdn fqdn)
-                return new HtmlString(fqdn.Value.ToString()); 
-                
-            if (obj is InetIPv4 ipv4)
-                return new HtmlString(ipv4.Value.ToString()); 
-            
-            if (obj is InetIPv6 ipv6)
-                return new HtmlString(ipv6.Value.ToString()); 
-            
-            if (obj is HashSHA256 sha256)
-                return new HtmlString(sha256.Value.ToString()); 
-            
-            if (obj is HashSHA1 sha1)
-                return new HtmlString(sha1.Value.ToString()); 
-            
-            if (obj is HashMD5 md5)
-                return new HtmlString(md5.Value.ToString()); 
-            
-            if (obj is InetUrl url)
-                return new HtmlString(url.Value.ToString()); 
-            
-            return new HtmlString(obj.ToString());
-        }
-    
         // TODO Check and see if necessary or cannot be inlined
         public static IHtmlContent SanitizeAndMap(this IHtmlHelper htmlHelper,
             string text)

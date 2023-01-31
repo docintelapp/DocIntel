@@ -75,7 +75,7 @@
     <Folder Include="Areas\Synapse\Views\Shared" />
   </ItemGroup>
   <ItemGroup>
-    <_ContentIncludedByDefault Remove="Views\Shared\DisplayTemplates\SynapseObject.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Shared\DisplayTemplates\SynapseNode.cshtml" />
     <_ContentIncludedByDefault Remove="Views\Shared\DisplayTemplates\Tag.cshtml" />
   </ItemGroup>
 

@@ -23,8 +23,6 @@ using System.Threading.Tasks;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Core.Scrapers
 {

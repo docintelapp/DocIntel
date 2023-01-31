@@ -16,12 +16,12 @@
 */
 
 using System.Collections.Generic;
-using Synsharp;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.Core.Utils.Observables
 {
     public interface IExtractor
     {
-        IAsyncEnumerable<SynapseObject> Extract(string content);
+        IAsyncEnumerable<SynapseNode> Extract(string content);
     }
 }

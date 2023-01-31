@@ -23,7 +23,6 @@ using System.Linq;
 using AutoMapper;
 
 using DocIntel.Core.Models;
-using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Observables;
 using Microsoft.Extensions.Logging;
@@ -55,7 +54,9 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             _logger.LogDebug("Add " + document.DocumentId);
             var indexedDocument = _mapper.Map<IndexedDocument>(document);
             indexedDocument.FileContents = ExtractFileContent(document);
-            indexedDocument.Observables = (_observableRepository.GetObservables(document).ToListAsync().Result).Select(_ => _.GetCoreValue());
+            indexedDocument.Observables = 
+                (_observableRepository.GetObservables(document).ToListAsync().Result)
+                .Select(_ => (string) (_.Repr ?? _.Valu?.ToString()));
             _solr.Add(indexedDocument, new AddParameters()
             {
                 CommitWithin = _settings.Schedule.CommitWithin,
@@ -85,7 +86,9 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             _logger.LogDebug("Update " + document.DocumentId);
             var indexedDocument = _mapper.Map<IndexedDocument>(document);
             indexedDocument.FileContents = ExtractFileContent(document);
-            indexedDocument.Observables = _observableRepository.GetObservables(document).ToListAsync().Result.Select(_ => _.GetCoreValue());
+            indexedDocument.Observables =
+                (_observableRepository.GetObservables(document).ToListAsync().Result)
+                .Select(_ => (string) (_.Repr ?? _.Valu?.ToString()));
             _solr.Add(indexedDocument, new AddParameters()
             {
                 CommitWithin = _settings.Schedule.CommitWithin,

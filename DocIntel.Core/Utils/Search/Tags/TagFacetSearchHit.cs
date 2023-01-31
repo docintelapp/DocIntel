@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using DocIntel.Core.Utils.Indexation.SolR;
 
 namespace DocIntel.Core.Utils.Search.Tags

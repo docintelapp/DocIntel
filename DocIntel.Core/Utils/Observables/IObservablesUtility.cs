@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DocIntel.Core.Models;
-using Synsharp;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.Core.Utils.Observables
 {
@@ -31,7 +31,7 @@ namespace DocIntel.Core.Utils.Observables
         /// <param name="file">The source file</param>
         /// <param name="content">The text content of the file</param>
         /// <returns>The objects contained in the text</returns>
-        IAsyncEnumerable<SynapseObject> ExtractDataAsync(Document document, DocumentFile file, string content);
+        IAsyncEnumerable<SynapseNode> ExtractDataAsync(Document document, DocumentFile file, string content);
 
         /// <summary>
         /// Annotate the synapse objects with tags.
@@ -41,6 +41,6 @@ namespace DocIntel.Core.Utils.Observables
         /// <param name="document">The source document</param>
         /// <param name="file">The source file</param>
         /// <param name="objects">The objects</param>
-        Task AnnotateAsync(Document document, DocumentFile file, IEnumerable<SynapseObject> objects);
+        Task AnnotateAsync(Document document, DocumentFile file, IEnumerable<SynapseNode> objects);
     }
 }

@@ -15,19 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
-
+using System.Threading.Tasks;
 using DocIntel.Core.Models;
-
-using Microsoft.AspNetCore.Mvc;
-using Synsharp;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.WebApp.ViewModels.DocumentViewModel
 {
     public class DocumentObservablesViewModel
     {
-        public IList<SynapseObject> Observables { get; set; }
+        public IList<SynapseNode> Observables { get; set; }
         public Document Document { get; set; }
+        public string[] AvailableTypes { get; set; }
     }
 }

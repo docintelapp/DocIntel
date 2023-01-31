@@ -6,8 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Synsharp;
-using Synsharp.Forms;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.Core.Utils.Observables.Extractors;
 
@@ -115,7 +114,7 @@ public class RegexUrlExtractor : RegexExtractor
         )" + END_PUNCTUATION + @"(?=[\s""<>^`'{|}]|$)";
 
 #pragma warning disable CS1998
-    public override async IAsyncEnumerable<SynapseObject> Extract(string content)
+    public override async IAsyncEnumerable<SynapseNode> Extract(string content)
 #pragma warning restore CS1998
     {
         var uris = new HashSet<Uri>();
@@ -150,8 +149,11 @@ public class RegexUrlExtractor : RegexExtractor
         _logger.LogDebug($"Extracted {uris.Count} urls.");
         foreach (var uri in uris)
         {
-            var synapseObject = new InetUrl();
-            synapseObject.SetValue(uri);
+            var synapseObject = new SynapseNode()
+            {
+                Form = "inet:url",
+                Valu = uri.ToString()
+            };
             yield return synapseObject;
         }
     }

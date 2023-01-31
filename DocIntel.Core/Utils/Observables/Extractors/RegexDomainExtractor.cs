@@ -6,8 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Synsharp;
-using Synsharp.Forms;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.Core.Utils.Observables;
 
@@ -48,7 +47,7 @@ public class RegexDomainExtractor : RegexExtractor
             ";
 
 #pragma warning disable CS1998
-    public override async IAsyncEnumerable<SynapseObject> Extract(string content)
+    public override async IAsyncEnumerable<SynapseNode> Extract(string content)
 #pragma warning restore CS1998
     {       
         // Only extract domains that are followed by a whitespace elements
@@ -73,8 +72,11 @@ public class RegexDomainExtractor : RegexExtractor
             if (!_TLD.Contains(tld)) 
                 continue;
             
-            var synapseObject = new InetFqdn();
-            synapseObject.SetValue(domain);
+            var synapseObject = new SynapseNode()
+            {
+                Form = "inet:fqdn",
+                Valu = domain
+            };
             yield return synapseObject;
         }
     }

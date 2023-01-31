@@ -2,21 +2,22 @@
 @model DocIntel.WebApp.Areas.Synapse.Views.Node.NodeDetailsViewModel
 
 @{
-    var coreValue = Model.Root.GetCoreValue();
+    var coreValue = !string.IsNullOrEmpty(Model.Root.Repr) ? Model.Root.Repr : Model.Root.Valu;
     
-    ViewBag.Title = $"[{Model.Root.GetType().ToDisplaySynsharp()}] {coreValue}";
+    ViewBag.Title = $"[{Model.Root.Form}] {coreValue}";
     Layout = "_Layout";
 }
 
 
 <div class="subheader">
     <h1 class="subheader-title">
-        <span class="badge badge-primary">@Model.Root.GetType().ToDisplaySynsharp()</span> @coreValue
+        <span class="badge badge-primary mr-2">@Model.Root.Form</span> @coreValue
     </h1>
 </div>
 
 <div class="row">
     <div class="col-9">
+        @await Html.PartialAsync("_PanelNodeProperties", Model, new ViewDataDictionary(ViewData))
         @await Html.PartialAsync("_PanelDocumentList", Model, new ViewDataDictionary(ViewData))
     </div>
     <div class="col-3">

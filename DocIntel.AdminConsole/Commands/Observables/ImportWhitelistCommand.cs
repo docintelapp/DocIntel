@@ -12,31 +12,33 @@ using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using Synsharp;
-using Synsharp.Forms;
+using Synsharp.Telepath;
+using Synsharp.Telepath.Helpers;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.AdminConsole.Commands.Observables
 {
     public class ImportWhitelistCommand : DocIntelCommand<ImportWhitelistCommand.Settings>
     {
         private readonly ILogger<ExtractObservableCommand> _logger;
-        protected readonly SynapseClient _synapseClient;
+        protected readonly TelepathClient _synapseClient;
+        private readonly NodeHelper _nodeHelper;
 
         public ImportWhitelistCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             ApplicationSettings applicationSettings,
-            ILogger<ExtractObservableCommand> logger, SynapseClient synapseClient, UserManager<AppUser> userManager,
+            LoggerFactory loggerFactory, TelepathClient synapseClient, UserManager<AppUser> userManager,
             AppRoleManager roleManager) : base(context,
             userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<ExtractObservableCommand>();
             _synapseClient = synapseClient;
+            _nodeHelper = new NodeHelper(_synapseClient, loggerFactory.CreateLogger<NodeHelper>());
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -45,7 +47,6 @@ namespace DocIntel.AdminConsole.Commands.Observables
             if (ambientContext == null)
                 return 1;
 
-            await _synapseClient.LoginAsync();
 
             if (settings.Source == Settings.WhitelistSource.MISP)
             {
@@ -71,10 +72,10 @@ namespace DocIntel.AdminConsole.Commands.Observables
 
                         var valueType = p["type"].Value<string>().ToLower();
 
-                        var objects = new List<SynapseObject>();
+                        var objects = new List<SynapseNode>();
                         foreach (var item in p["list"].ToArray())
                         {
-                            SynapseObject o = null;
+                            SynapseNode o = null;
                             if (valueType == "cidr")
                             {
                                 IPNetwork network;
@@ -83,36 +84,36 @@ namespace DocIntel.AdminConsole.Commands.Observables
                                     if (network.Total > 1)
                                     {
                                         if (network.AddressFamily == AddressFamily.InterNetwork)
-                                            o = new InetCidr4(network);
+                                            o = new SynapseNode() { Form = "inet:cidr4", Valu = network.ToString() };
                                         
                                         if (network.AddressFamily == AddressFamily.InterNetworkV6)
-                                            o = new InetCidr6(network);
+                                            o = new SynapseNode() { Form = "inet:cidr6", Valu = network.ToString() };
                                     }
                                     else
                                     {
                                         if (network.AddressFamily == AddressFamily.InterNetwork)
-                                            o = new InetIPv4(network.Network);
+                                            o = new SynapseNode() { Form = "inet:ipv4", Valu = network.Network.ToString() };
                                         
                                         if (network.AddressFamily == AddressFamily.InterNetworkV6)
-                                            o = new InetIPv6(network.Network);
+                                            o = new SynapseNode() { Form = "inet:ipv6", Valu = network.Network.ToString() };
                                     }
                                 }
                             }
                             else if (valueType == "hostname")
                             {
-                                o = new InetFqdn(item.Value<string>());
+                                o = new SynapseNode() { Form = "inet:fqdn", Valu = item.Value<string>() };
                             }
                             else if (valueType == "string" & p["matching_attributes"]?.ToArray().Select(_ => _.Value<string>()).Contains("hostname") ?? false)
                             {
-                                o = new InetFqdn(item.Value<string>());
+                                o = new SynapseNode() { Form = "inet:fqdn", Valu = item.Value<string>() };
                             }
 
                             if (o != null)
                             {
-                                o.Tags.Add(tag);
+                                o.Tags.Add(tag, new long?[] {});
                                 if (settings.Ignore)
-                                    o.Tags.Add("_di.workflow.ignore");
-                                await _synapseClient.Nodes.Add(o);
+                                    o.Tags.Add("_di.workflow.ignore", System.Array.Empty<long?>());
+                                await _nodeHelper.AddAsync(o);
                             }
                         }
                     }

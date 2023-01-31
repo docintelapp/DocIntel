@@ -1,6 +1,5 @@
 @using DocIntel.Core.Authorization.Operations
 @using Microsoft.AspNetCore.Mvc.TagHelpers
-@using Synsharp.Forms
 @model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentObservablesViewModel
 @{
     ViewData["Title"] = $"Review observbles for '{Model.Document.Title}'";
@@ -45,8 +44,8 @@
             }
             
             @{
-                var groupedObservables = Model.Observables.GroupBy(_ => _.GetType())
-                    .OrderBy(_ => _.Key.FullName);
+                var groupedObservables = Model.Observables.GroupBy(_ => _.Form)
+                    .OrderBy(_ => _.Key);
             }
             
             <div class="alert alert-secondary" role="alert">
@@ -56,7 +55,7 @@
                     {
                         <li class="mb-1">
                             @group.Count() @Html.Pluralize("observable", group.Count()) 
-                            <span class="ml-2"><code>@group.Key.ToDisplaySynsharp()</code></span>
+                            <span class="ml-2"><code>@group.Key</code></span>
                         </li>
                     }
                 </ul>
@@ -72,7 +71,7 @@
                     <div class="panel-hdr">
                         <h2>
                             @group.Count() @Html.Pluralize("observable", group.Count()) 
-                            <span class="ml-2"><code>@group.Key.ToDisplaySynsharp()</code></span>
+                            <span class="ml-2"><code>@group.Key</code></span>
                         </h2>
                         
                         <div class="panel-toolbar">
@@ -99,29 +98,29 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                @foreach (var item in group.OrderBy(_ => _.GetCoreValue()))
+                                @foreach (var item in group.OrderBy(_ => _.Repr))
                                 {
                                     <tr>
                                         <td style="width: 25%">
                                             <input type="hidden" value="@item.Iden" name="observables[]" />
                                             <select class="status" style="width: 100%" name="status[]">
-                                                <option value="add" selected="@(item.Tags.Contains("_di.workflow.ignore") ? null : "selected")">Add</option>
-                                                <option value="ignore-once" selected="@(item.Tags.Contains("_di.workflow.ignore") ? "selected" : null)">Ignore once</option>
+                                                <option value="add" selected="@(item.Tags.ContainsKey("_di.workflow.ignore") ? null : "selected")">Add</option>
+                                                <option value="ignore-once" selected="@(item.Tags.ContainsKey("_di.workflow.ignore") ? "selected" : null)">Ignore once</option>
                                                 <option value="ignore-always">Ignore always</option>
-                                                @if (item is InetUrl)
+                                                @if (item.Form == "inet:url" | item.Form == "inet:fqdn")
                                                 {
                                                     <option value="ignore-domain">Ignore domain</option>
                                                 }
                                             </select>
                                         </td>
                                         <td style="width: 75%">
-                                            <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">@item.GetCoreValue()</p>
+                                            <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">@item.Repr</p>
                                             @if (item.Tags.Any())
                                             {
                                                 <p class="m-0">
                                                     @foreach (var t in item.Tags)
                                                     {
-                                                        <span class="@(t.StartsWith("_di")?"badge-primary":"badge-secondary") badge">@t</span>
+                                                        <span class="@(t.Key.StartsWith("_di")?"badge-primary":"badge-secondary") badge">@t.Key</span>
                                                     }
                                                 </p>
                                             }

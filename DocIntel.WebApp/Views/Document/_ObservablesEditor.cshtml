@@ -1,7 +1,5 @@
-@using AngleSharp.Common
 @using Microsoft.AspNetCore.Mvc.TagHelpers
-@using Synsharp.Forms
-@model IEnumerable<Synsharp.SynapseObject>
+@model IEnumerable<Synsharp.Telepath.Messages.SynapseNode>
 @{
     Layout = null;
 }
@@ -29,21 +27,20 @@
                     <option>Add</option>
                     <option>Ignore once</option>
                     <option>Ignore always</option>
-                    @if (item is InetUrl)
+                    @if (item.Form == "inet:url" || item.Form == "inet:fqdn")
                     {
                         <option>Ignore domain</option>
                     }
                 </select>
             </td>
-            <!-- <td style="width: 10%"><code>@item.GetType().ToDisplaySynsharp()</code></td> -->
             <td style="width: 75%">
-                <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">@item.GetCoreValue()</p>
+                <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">@item.Repr</p>
                 @if (item.Tags.Any())
                 {
                     <p class="m-0">
                     @foreach (var t in item.Tags)
                     {
-                        <span class="@(t.StartsWith("_di")?"badge-primary":"badge-secondary") badge">@t</span>
+                        <span class="@(t.Key.StartsWith("_di")?"badge-primary":"badge-secondary") badge">@t.Key</span>
                     }
                     </p>
                 }

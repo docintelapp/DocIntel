@@ -1,8 +1,6 @@
 using DocIntel.Core.Utils.Observables;
 using DocIntel.Core.Utils.Observables.Extractors;
 using Microsoft.Extensions.Logging;
-using Synsharp;
-using Synsharp.Forms;
 
 namespace DocIntel.Tests;
 
@@ -95,24 +93,24 @@ public class TestExtractObservable
         
         Assert.That(observables.Count, Is.EqualTo(18));
         
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("188.166.61.146"))); 
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("172.107.231.236")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("193.29.57.161")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("136.244.100.127")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("217.69.10.104")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("92.38.178.246")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("172.105.94.67")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("5.188.93.132"))); 
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("5.189.222.33")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("5.183.103.122")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("5.188.108.228")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("45.128.132.6"))); 
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("92.223.105.246"))); 
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("5.183.101.21"))); 
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("5.183.101.114")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("45.128.135.15")));
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("5.188.108.22"))); 
-        Assert.That(observables, Contains.Item(InetIPv4.Parse("70.34.201.16")));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "188.166.61.146")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "172.107.231.236"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "193.29.57.161"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "136.244.100.127"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "217.69.10.104"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "92.38.178.246"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "172.105.94.67"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.188.93.132")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.189.222.33"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.183.103.122"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.188.108.228"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "45.128.132.6")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "92.223.105.246")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.183.101.21")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.183.101.114"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "45.128.135.15"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.188.108.22")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "70.34.201.16"));
     }
     
     [Test]
@@ -140,7 +138,7 @@ public class TestExtractObservable
         
         Assert.That(observables.Count, Is.EqualTo(1));
 
-        Assert.That(observables, Contains.Item(InetUrl.Parse("http://mb.glbaitech.com/mboard.dll")));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://mb.glbaitech.com/mboard.dll"));
     }
     
     [Test]
@@ -168,7 +166,7 @@ public class TestExtractObservable
         
         Assert.That(observables.Count, Is.EqualTo(1));
 
-        Assert.That(observables, Contains.Item(InetUrl.Parse("http://mb.glbaitech.com/mboard.dll")));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://mb.glbaitech.com/mboard.dll"));
     }
     
     [Test]
@@ -195,10 +193,10 @@ hxxp://193[.]56[.]29[.]123:8888/access.php?order=golc_finish&cmn=[Victim_HostNam
         Assert.That(observables.Count, Is.EqualTo(4));
 
         // We have to settle here for less ideal extraction with the last ]
-        Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php?order=GetPubkey&cmn=[Victim_HostName")));
-        Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php?order=golc_key_add&cmn=[Victim_HostName]&type=1")));
-        Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php?order=golc_key_add&cmn=[Victim_HostName]&type=2")));
-        Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php?order=golc_finish&cmn=[Victim_HostName]&")));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php?order=GetPubkey&cmn=[Victim_HostName"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php?order=golc_key_add&cmn=[Victim_HostName]&type=1"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php?order=golc_key_add&cmn=[Victim_HostName]&type=2"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php?order=golc_finish&cmn=[Victim_HostName]&"));
     }
     
     [Test]
@@ -219,8 +217,8 @@ hxxp://193[.]56[.]29[.]123:8888/access.php?order=golc_finish&cmn=[Victim_HostNam
         
         Assert.That(observables.Count, Is.EqualTo(1));
 
-        Assert.That(observables, Contains.Item(InetUrl.Parse("http://193.56.29.123:8888/access.php")));
-        Assert.That(observables, Does.Not.Contains(InetUrl.Parse("http://193.56.29.123:8888/access.php)")));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php"));
+        Assert.That(!observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php)"));
     }
     
     [Test]
@@ -243,7 +241,7 @@ hxxp://193[.]56[.]29[.]123:8888/access.php?order=golc_finish&cmn=[Victim_HostNam
         
         Assert.That(observables.Count, Is.EqualTo(1));
 
-        Assert.That(observables, Contains.Item(InetUrl.Parse("https://www.example.com/hello,world.html")));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "https://www.example.com/hello,world.html"));
     }
     
 }

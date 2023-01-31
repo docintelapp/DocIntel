@@ -1,0 +1,51 @@
+@using DocIntel.WebApp.Helpers
+@model DocIntel.WebApp.Areas.Synapse.Views.Node.NodeDetailsViewModel
+
+@{
+    var Display = new Func<object, string>(o =>
+    {
+        if (o == default)
+            return "(null)";
+        
+        if (o is object[] arr)
+        {
+            return $"({string.Join(",", arr.Select(item => item.ToString()))})";
+
+        } else if (o is object)
+        {
+            return o.ToString();
+        }
+        
+        return "N.A.";
+    });
+}
+
+@if (Model.Root.Props.Any(kv => !kv.Key.StartsWith(".")))
+{
+    <div id="panel-documents" class="panel">
+        <div class="panel-hdr">
+            <h2>
+                Properties
+            </h2>
+        </div>
+        <div class="panel-container show">
+            <div class="panel-content">
+                <dl class="row mb-0">
+                @foreach (var prop in Model.Root.Props.Where(kv => !kv.Key.StartsWith(".")))
+                {
+                    <dt class="col-sm-6">
+                        @prop.Key
+                    </dt>
+                    <dd class="col-sm-6">
+                        @if (Model.Root.Reprs != null && Model.Root.Reprs.ContainsKey(prop.Key)) {
+                            <text>@Display(Model.Root.Reprs[prop.Key])</text>
+                        } else {
+                            <text>@Display(prop.Value)</text>
+                        }
+                    </dd>
+                }
+                </dl>
+            </div>
+        </div>
+    </div>
+}

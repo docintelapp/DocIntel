@@ -1,10 +1,9 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RunMethodsSequentially;
-using Synsharp;
+using Synsharp.Telepath;
 
 namespace DocIntel.Core.Services;
 
@@ -15,18 +14,23 @@ public class InstallSynapseCustomObjects : IStartupServiceToRunSequentially
         var logger = scopedServices
             .GetRequiredService<ILogger<InstallSynapseCustomObjects>>();
             
-        var synapseClient = scopedServices.GetRequiredService<SynapseClient>();
+        var synapseClient = scopedServices.GetRequiredService<TelepathClient>();
 
         if (logger != null) logger.LogDebug("Install custom type in Synapse");
 
-        if (await synapseClient.StormAsync<SynapseObject>("syn:form=_di:document").CountAsync() == 0)
+        var proxy = await synapseClient.GetProxyAsync();
+        if (logger != null) logger.LogDebug("Connected to Synapse");
+        
+        if (await proxy.Count("syn:form=_di:document") == 0)
         {
             // Add the custom type to synapse
             var command = @"$typeinfo = $lib.dict()
                 $forminfo = $lib.dict(doc=""DocIntel Document"") 
-                $lib.model.ext.addForm(_di:document, str, $typeinfo, $forminfo)";   
-            await synapseClient!.StormCallAsync(command);
+                $lib.model.ext.addForm(_di:document, str, $typeinfo, $forminfo)";
+            await proxy.CallStormAsync(command);
         }
+        
+        if (logger != null) logger.LogDebug("Custom type in Synapse installed");
     }
 
     public int OrderNum { get; }

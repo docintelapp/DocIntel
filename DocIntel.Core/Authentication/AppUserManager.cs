@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using DocIntel.Core.Authorization;
-using DocIntel.Core.Exceptions;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
 using Microsoft.AspNetCore.Identity;

@@ -919,7 +919,7 @@ public class DocumentController : DocIntelAPIControllerBase
         try
         {
             var trackingEntity = await _documentRepository.RemoveAsync(AmbientContext, documentId);
-            await _synapseRepository.RemoveRefs(documentId);
+            await _synapseRepository.Remove(documentId);
             await _context.SaveChangesAsync();
 
             _logger.Log(LogLevel.Information,

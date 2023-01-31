@@ -6,7 +6,7 @@
     <div id="panel-content" class="panel">
         <div class="panel-hdr border-faded border-top-0 border-right-0 border-left-0 shadow-0">
             <h2>
-                Observables
+                Structured Data
             </h2>
             <div class="panel-toolbar">
                 <button class= "btn btn-pills btn-panel waves-effect waves-themed" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
@@ -28,16 +28,50 @@
                             @foreach (var item in Model.Observables.OrderBy(_ => _.GetType().ToString()))
                             {
                                 <tr>
-                                    <td>@item.GetType().ToDisplaySynsharp()</td>
+                                    <td>@item.Form</td>
                                     <td>
                                         <a asp-area="Synapse" asp-controller="Node" asp-action="Details" asp-route-id="@item.Iden">
-                                            @item.GetCoreValue()
+                                            @if (!string.IsNullOrEmpty((item.Repr)))
+                                            {
+                                                <text>@item.Repr</text>
+                                            } else
+                                            {
+                                                <text>@item.Valu</text>
+                                            }
                                         </a>
                                     </td>
                                 </tr>
                             }
                             </tbody>
                         </table>                        
+                    </div>
+                </div>
+                <div class="row no-gutters mt-3">
+                    <div class="col-12">
+                        <form asp-action="AddObservable" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="DocumentId" value="@Model.Document.DocumentId" />
+                            <input type="hidden" name="ReturnUrl" value="@Url.Action("Details", "Document", new { url = Model.Document.URL })" />
+                            <div class="form-group m-0">
+                                <div class="input-group">
+                                    <div class="input-group-prepend" style="width: 33%">
+                                        <select class="custom-select select2" name="obsType" data-placeholder="Choose...">
+                                            <option value=""></option>
+                                            @foreach (var t in Model.AvailableTypes.OrderBy(_ => _))
+                                            {
+                                                <option value="@t">@t</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <input type="text" class="form-control" name="obsValue" />
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary waves-effect waves-themed btn-iconified" type="submit"
+                                                action="@Url.Action("AddObservable")" method="post" enctype="multipart/form-data">
+                                            <i class="fal fa-plus"></i> Quick Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

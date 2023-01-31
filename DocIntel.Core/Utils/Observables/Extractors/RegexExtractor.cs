@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-using Synsharp;
+using Synsharp.Telepath.Messages;
 
 namespace DocIntel.Core.Utils.Observables;
 
@@ -58,5 +58,5 @@ public abstract class RegexExtractor : IExtractor
         sb.Replace("\u30fb", ".");
     }
 
-    public abstract IAsyncEnumerable<SynapseObject> Extract(string content);
+    public abstract IAsyncEnumerable<SynapseNode> Extract(string content);
 }

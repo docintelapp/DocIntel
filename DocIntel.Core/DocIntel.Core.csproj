@@ -76,7 +76,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DocIntel.Integrations\DocIntel.Integrations.csproj" />
-    <ProjectReference Include="..\synsharp\Synsharp\Synsharp.csproj" />
+    <ProjectReference Include="..\synsharp\Synsharp.Telepath\Synsharp.Telepath.csproj" />
   </ItemGroup>
 
   <ItemGroup>
