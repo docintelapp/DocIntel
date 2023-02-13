@@ -49,7 +49,7 @@
             }
             
             <div class="alert alert-secondary" role="alert">
-                <p class="mb-1">We identified @Model.Observables.Count() observables:</p>
+                <p class="mb-1">We identified @Model.Observables.Count() structured data:</p>
                 <ul class="m-0 pl-3">
                     @foreach (var group in groupedObservables)
                     {
@@ -70,8 +70,7 @@
                 <div class="panel">
                     <div class="panel-hdr">
                         <h2>
-                            @group.Count() @Html.Pluralize("observable", group.Count()) 
-                            <span class="ml-2"><code>@group.Key</code></span>
+                            <span class="mr-2"><code>@group.Key</code></span> (@group.Count())
                         </h2>
                         
                         <div class="panel-toolbar">
@@ -94,7 +93,7 @@
                                 <thead class="thead-light">
                                 <tr>
                                     <th scope="col" style="width: 25%">Status</th>
-                                    <th scope="col" style="width: 75%">Observable</th>
+                                    <th scope="col" style="width: 75%">Value</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -114,13 +113,23 @@
                                             </select>
                                         </td>
                                         <td style="width: 75%">
-                                            <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">@item.Repr</p>
+                                            <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
+                                                @if (!string.IsNullOrEmpty(item.Repr))
+                                                {
+                                                    <text>@item.Repr</text>
+                                                }
+                                                else
+                                                {
+                                                    <text>@item.Valu</text>
+                                                }
+                                            </p>
                                             @if (item.Tags.Any())
                                             {
+                                                var prefixTree = new Synsharp.Telepath.TagTree(item.Tags.Keys.ToArray());
                                                 <p class="m-0">
-                                                    @foreach (var t in item.Tags)
+                                                    @foreach (var t in prefixTree)
                                                     {
-                                                        <span class="@(t.Key.StartsWith("_di")?"badge-primary":"badge-secondary") badge">@t.Key</span>
+                                                        <span class="@(t.StartsWith("_di")?"badge-primary":"badge-secondary") badge">@t</span>
                                                     }
                                                 </p>
                                             }

@@ -24,25 +24,25 @@ using DocIntel.Core.Importers;
 using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
+using DocIntel.Core.Repositories.EFCore;
+using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 
 using MassTransit;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Services.Importer
 {
-    public class Runner
+    public class Runner : DynamicContextConsumer
     {
-        private readonly ApplicationSettings _appSettings;
         private readonly IPublishEndpoint _busClient;
         private readonly ILogger<DocIntelContext> _contextLogger;
         private readonly IIncomingFeedRepository _feedRepository;
         private readonly ILogger<Runner> _logger;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly AppUserClaimsPrincipalFactory _userClaimsPrincipalFactory;
         private readonly UserManager<AppUser> _userManager;
 
         public Runner(IIncomingFeedRepository feedRepository,
@@ -50,15 +50,13 @@ namespace DocIntel.Services.Importer
             ILogger<DocIntelContext> contextLogger,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             IServiceProvider serviceProvider, IPublishEndpoint busClient,
-            ApplicationSettings appSettings, UserManager<AppUser> userManager)
+            ApplicationSettings appSettings, UserManager<AppUser> userManager) 
+            : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
         {
             _feedRepository = feedRepository;
             _contextLogger = contextLogger;
-            _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
             _logger = logger;
-            _serviceProvider = serviceProvider;
             _busClient = busClient;
-            _appSettings = appSettings;
             _userManager = userManager;
         }
 
@@ -89,92 +87,101 @@ namespace DocIntel.Services.Importer
                     typeof(DbContextOptions<DocIntelContext>));
             var documentRepository = (IDocumentRepository) _serviceProvider.GetService(typeof(IDocumentRepository));
             if (documentRepository == null) throw new ArgumentNullException(nameof(documentRepository));
-            var context = new DocIntelContext(options, _contextLogger);
 
-            var automationUser = await _userManager.FindByNameAsync(_appSettings.AutomationAccount);
-            if (automationUser == null)
-                return;
+            using var feedScope = _serviceProvider.CreateScope();
+            using var feedContext = await GetAmbientContext(feedScope.ServiceProvider);
 
-            var claims = await _userClaimsPrincipalFactory.CreateAsync(automationUser);
-            var ambientContext = new AmbientContext
-            {
-                DatabaseContext = context,
-                Claims = claims,
-                CurrentUser = automationUser
-            };
-
-            var feeds = await _feedRepository.GetAllAsync(ambientContext,
+            var feeds = await _feedRepository.GetAllAsync(feedContext,
                 importer => importer.Where(i => i.Status == ImporterStatus.Enabled).Include(i => i.Classification)
                     .Include(i => i.ReleasableTo).Include(i => i.EyesOnly)).ToArrayAsync();
 
             foreach (var feed in feeds)
             {
-                var now = DateTime.UtcNow;
-                if (feed.LastCollection == null || now - feed.LastCollection > feed.CollectionDelay)
+                await CollectFeed(feed, feedContext);
+            }
+        }
+
+        private async Task CollectFeed(Core.Models.Importer feed, AmbientContext feedContext)
+        {
+            using var importerScope = _serviceProvider.CreateScope();
+            using var importerContext = await GetAmbientContext(importerScope.ServiceProvider);
+
+            var now = DateTime.UtcNow;
+            if (feed.LastCollection == null || now - feed.LastCollection > feed.CollectionDelay)
+            {
+                _logger.LogDebug($"Collecting from {feed.Name} importer...");
+                var importer = await ImporterFactory.CreateImporter(feed, _serviceProvider, importerContext);
+                if (importer != null)
                 {
-                    _logger.LogDebug($"Collecting from {feed.Name} importer...");
-                    var importer = await ImporterFactory.CreateImporter(feed, _serviceProvider, ambientContext);
-                    if (importer != null)
+                    await foreach (var message in importer.PullAsync(feed.LastCollection, feed.Limit))
                     {
-                        await foreach (var message in importer.PullAsync(feed.LastCollection, feed.Limit))
-                        {
-                            var previousSubmissions =
-                                documentRepository.GetSubmittedDocuments(ambientContext,
-                                    _ => _.Where(__ => __.URL == message.URL));
-
-                            if (!await previousSubmissions.AnyAsync())
-                            {
-                                _logger.LogDebug($"Sending message for URL: {message.URL}");
-                                message.SubmitterId = feed.FetchingUserId;
-                                message.SubmissionDate = DateTime.UtcNow;
-                                message.ImporterId = feed.ImporterId;
-                                message.Priority = feed.Priority;
-                                message.OverrideClassification = feed.OverrideClassification;
-                                message.OverrideReleasableTo = feed.OverrideReleasableTo;
-                                message.OverrideEyesOnly = feed.OverrideEyesOnly;
-
-                                if (feed.OverrideClassification)
-                                {
-                                    _logger.LogDebug("ReleasableTo: " +
-                                                     string.Join(", ", feed.ReleasableTo.Select(_ => _.Name)));
-                                    _logger.LogDebug(
-                                        "EyesOnly: " + string.Join(", ", feed.EyesOnly.Select(_ => _.Name)));
-                                    message.Classification = feed.Classification;
-                                }
-
-                                if (feed.OverrideReleasableTo) message.ReleasableTo = feed.ReleasableTo;
-
-                                if (feed.OverrideEyesOnly) message.EyesOnly = feed.EyesOnly;
-
-                                var submittedDocument =
-                                    await documentRepository.SubmitDocument(ambientContext, message);
-                                await _busClient.Publish(new URLSubmittedMessage
-                                    {SubmissionId = submittedDocument.SubmittedDocumentId});
-                            }
-                            else
-                            {
-                                _logger.LogDebug($"Already known... {message.URL}");
-                            }
-                        }
-
-                        feed.LastCollection = now;
-                        await ambientContext.DatabaseContext.SaveChangesAsync();
-                        _logger.LogDebug($"Collecting from {feed.Name} importer...done");
+                        await CollectItem(feed, message);
                     }
-                    else
-                    {
-                        feed.Status = ImporterStatus.Error;
-                        _logger.LogDebug($"Collecting from {feed.Name} importer failed.");
-                    }
+
+                    feed.LastCollection = now;
+                    _logger.LogDebug($"Collecting from {feed.Name} importer...done");
                 }
                 else
                 {
-                    _logger.LogDebug(
-                        $"Skip {feed.Name} importer (next import in {feed.CollectionDelay - (now - feed.LastCollection)})");
+                    feed.Status = ImporterStatus.Error;
+                    _logger.LogDebug($"Collecting from {feed.Name} importer failed.");
                 }
             }
+            else
+            {
+                _logger.LogDebug(
+                    $"Skip {feed.Name} importer (next import in {feed.CollectionDelay - (now - feed.LastCollection)})");
+            }
+            
+            await feedContext.DatabaseContext.SaveChangesAsync();
+        }
 
-            await context.SaveChangesAsync();
+        private async Task CollectItem(Core.Models.Importer feed, SubmittedDocument message)
+        {
+            using var messageScope = _serviceProvider.CreateScope();
+            using var messageContext = await GetAmbientContext(messageScope.ServiceProvider);
+
+            var documentRepository = _serviceProvider.GetRequiredService<IDocumentRepository>();
+            
+            var previousSubmissions =
+                documentRepository.GetSubmittedDocuments(messageContext,
+                    _ => _.Where(__ => __.URL == message.URL));
+
+            if (!await previousSubmissions.AnyAsync())
+            {
+                _logger.LogDebug($"Sending message for URL: {message.URL}");
+                message.SubmitterId = feed.FetchingUserId;
+                message.SubmissionDate = DateTime.UtcNow;
+                message.ImporterId = feed.ImporterId;
+                message.Priority = feed.Priority;
+                message.OverrideClassification = feed.OverrideClassification;
+                message.OverrideReleasableTo = feed.OverrideReleasableTo;
+                message.OverrideEyesOnly = feed.OverrideEyesOnly;
+
+                if (feed.OverrideClassification)
+                {
+                    _logger.LogDebug("ReleasableTo: " +
+                                     string.Join(", ", feed.ReleasableTo.Select(_ => _.Name)));
+                    _logger.LogDebug(
+                        "EyesOnly: " + string.Join(", ", feed.EyesOnly.Select(_ => _.Name)));
+                    message.Classification = feed.Classification;
+                }
+
+                if (feed.OverrideReleasableTo) message.ReleasableTo = feed.ReleasableTo;
+
+                if (feed.OverrideEyesOnly) message.EyesOnly = feed.EyesOnly;
+
+                var submittedDocument =
+                    await documentRepository.SubmitDocument(messageContext, message);
+
+                await messageContext.DatabaseContext.SaveChangesAsync();
+                await _busClient.Publish(new URLSubmittedMessage
+                    { SubmissionId = submittedDocument.SubmittedDocumentId });
+            }
+            else
+            {
+                _logger.LogDebug($"Already known... {message.URL}");
+            }
         }
     }
 }

@@ -59,6 +59,7 @@ public class DocumentAnalyzerUtility
                     nameof(Document.ReleasableTo),
                     nameof(Document.EyesOnly),
                     nameof(Document.Files),
+                    nameof(Document.Source),
                     nameof(Document.DocumentTags),
                     nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag),
                     nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag) + "." + nameof(Tag.Facet)
@@ -71,6 +72,16 @@ public class DocumentAnalyzerUtility
             if (document.MetaData != default && document.MetaData.ContainsKey("ExtractObservables"))
                 if (document.MetaData["ExtractObservables"]?.ToString()?.ToLower() == "false")
                     doExtractObservables = false;
+            
+            // Check if source requires no extraction
+            if (document.Source != null)
+            {
+                if (document.Source.MetaData != default && document.Source.MetaData.ContainsKey("extract_structured_data"))
+                    if (document.Source.MetaData["extract_structured_data"]?.ToString()?.ToLower() == "false") {
+                        _logger.LogDebug("Skip extraction of strucutred data to source setting");
+                        doExtractObservables = false;
+                    }
+            }
 
             foreach (var file in document.Files.Where(_ =>
                 (_.MimeType == "application/pdf") | _.MimeType.StartsWith("text/")))
@@ -140,8 +151,22 @@ public class DocumentAnalyzerUtility
             }
 
             if (document.Status == DocumentStatus.Submitted)
+            {
                 document.Status = DocumentStatus.Analyzed;
+                // Check if auto-register is enabled for the source
+                if (document.Source != null)
+                {
+                    if (document.Source.MetaData != default && document.Source.MetaData.ContainsKey("auto_register"))
+                        if (document.Source.MetaData["auto_register"]?.ToString()?.ToLower() == "true")
+                        {
+                            _logger.LogDebug("Skip inbox due to source setting");
+                            await _observablesRepository.Merge(document);
+                            document.Status = DocumentStatus.Registered;   
+                        }
+                }   
+            }
 
+            
             _logger.LogDebug($"Status of document '{document.DocumentId}' is '{document.Status}'.");
             ambientContext.DatabaseContext.Update(document);
 

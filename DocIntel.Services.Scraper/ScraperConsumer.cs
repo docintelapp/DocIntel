@@ -61,12 +61,11 @@ public class ScraperConsumer :
         try
         {
             _logger.LogDebug($"Received a new message: {c.Message.SubmissionId}");
-            var urlSubmittedMessage = c.Message;
-            await Scrape(urlSubmittedMessage);
+            await Scrape(c.Message);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"Could not process message: {c.Message.SubmissionId}");
+            _logger.LogError(e, $"Could not process message: {c.Message.SubmissionId} ({e.Message}):\n{e.StackTrace}");
         }
     }
 
@@ -106,10 +105,17 @@ public class ScraperConsumer :
         using var scope = _serviceProvider.CreateScope();
         using var context = await GetAmbientContext(scope.ServiceProvider);
 
-        var submission = await _documentRepository.GetSubmittedDocument(context,
-            urlSubmittedMessage.SubmissionId,
-            _ => _.Include(__ => __.Classification).Include(__ => __.ReleasableTo).Include(__ => __.EyesOnly));
-        await Scrape(submission);
+        var submission = context.DatabaseContext.SubmittedDocuments
+                .Include(__ => __.Classification).Include(__ => __.ReleasableTo).Include(__ => __.EyesOnly)
+                .SingleOrDefault(_ => _.SubmittedDocumentId == urlSubmittedMessage.SubmissionId);
+        if (submission != null)
+        {
+            await Scrape(submission);
+        }
+        else
+        {
+            _logger.LogError($"Could not find SubmittedDocumentId {urlSubmittedMessage.SubmissionId}");
+        }
     }
 
     private async Task<bool> Scrape(SubmittedDocument submission)

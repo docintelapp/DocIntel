@@ -779,8 +779,6 @@ namespace DocIntel.Core.Repositories.EFCore
 
             return Task.FromResult(queryable.SingleOrDefault(_ => _.SubmittedDocumentId == submissionId));
         }
-
-        
         
         private IQueryable<Document> BuildQuery(IQueryable<Document> databaseContextDocuments, Func<IQueryable<Document>, IQueryable<Document>> query)
         {
@@ -925,7 +923,6 @@ namespace DocIntel.Core.Repositories.EFCore
                     Document = docWithFileSameHash.First().Document
                 };
             }
-            */
 
             var docs = context.DatabaseContext.Files.Include(_ => _.Document).AsQueryable()
                 .Where(_ => _.DocumentId != file.DocumentId && _.SourceUrl == file.SourceUrl);
@@ -935,6 +932,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 {
                     ExistingReference = docs.First().Document.Reference
                 };
+            */
 
             return isValid;
         }

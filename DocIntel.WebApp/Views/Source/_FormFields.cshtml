@@ -127,6 +127,41 @@
 <div id="panel-basic" class="panel">
     <div class="panel-hdr">
         <h2>
+            Structured Data 
+            <span class="fw-300">
+                <i>Extraction</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+            <div class="form-group">
+                <input type="hidden" name="MetaData[2].Key" value="extract_structured_data"/>
+                <div class="custom-control custom-switch">
+                    @if (Model.MetaData != null 
+                         && (!Model.MetaData.ContainsKey("extract_structured_data") || Model.MetaData.Value<bool>("extract_structured_data")))
+                    {
+                        <input checked="checked" class="custom-control-input"
+                               id="MetaData[2].Value" name="MetaData[2].Value"
+                               type="checkbox" value="true"/>
+                    }
+                    else
+                    {
+                        <input class="custom-control-input"
+                               id="MetaData[2].Value" name="MetaData[2].Value"
+                               type="checkbox" value="true"/>
+                    }
+                    <label for="MetaData[2].Value" class="custom-control-label">Extract Structured Data</label>
+                </div>
+                <input type="hidden" name="MetaData[2].Value" value="false"/>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="panel-basic" class="panel">
+    <div class="panel-hdr">
+        <h2>
             Syndication
             <span class="fw-300">
                 <i>Information</i>
@@ -144,20 +179,38 @@
                 <input type="hidden" name="MetaData[1].Key" value="rss_keywords"/>
                 <label for="MetaData[1].Value" class="control-label">RSS Keywords</label>
                 <input type="text" name="MetaData[1].Value" id="MetaData[1].Value" class="form-control"/>
+                <small class="form-text text-muted">
+                    DocIntel will only scrape articles that contains these comma-separated keywords if any is specified.
+                </small>
             </div>
             <div class="form-group">
-                <div class="form-check form-switch">
+                <div class="custom-control custom-switch">
                     <input type="hidden" name="MetaData[0].Key" value="rss_enabled"/>
                     @if (Model.MetaData != null && Model.MetaData.ContainsKey("rss_enabled") && Model.MetaData.Value<bool>("rss_enabled"))
                     {
-                        <input class="form-check-input" type="checkbox" id="MetaData[0].Value" value="true" name="MetaData[0].Value" checked="checked">
+                        <input class="custom-control-input" type="checkbox" id="MetaData[0].Value" value="true" name="MetaData[0].Value" checked="checked">
                     }
                     else
                     {
-                        <input class="form-check-input" type="checkbox" id="MetaData[0].Value" value="true" name="MetaData[0].Value">
+                        <input class="custom-control-input" type="checkbox" id="MetaData[0].Value" value="true" name="MetaData[0].Value">
                     }
                     <input type="hidden" value="false" name="MetaData[0].Value" />
-                    <label class="form-check-label" for="rss_enabled">Scrape RSS feed?</label>
+                    <label class="custom-control-label" for="MetaData[0].Value">Scrape RSS feed?</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="custom-control custom-switch">
+                    <input type="hidden" name="MetaData[3].Key" value="auto_register"/>
+                    @if (Model.MetaData != null && Model.MetaData.ContainsKey("auto_register") && Model.MetaData.Value<bool>("auto_register"))
+                    {
+                        <input class="custom-control-input" type="checkbox" id="MetaData[3].Value" value="true" name="MetaData[3].Value" checked="checked">
+                    }
+                    else
+                    {
+                        <input class="custom-control-input" type="checkbox" id="MetaData[3].Value" value="true" name="MetaData[3].Value">
+                    }
+                    <input type="hidden" value="false" name="MetaData[3].Value" />
+                    <label class="custom-control-label" for="MetaData[3].Value">Automatically register ingested documents</label>
                 </div>
             </div>
         </div>
