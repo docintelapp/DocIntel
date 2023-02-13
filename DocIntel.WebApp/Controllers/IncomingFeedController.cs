@@ -289,6 +289,7 @@ namespace DocIntel.WebApp.Controllers
                     incomingFeed.OverrideReleasableTo = submittedImporter.OverrideReleasableTo;
                     incomingFeed.OverrideEyesOnly = submittedImporter.OverrideEyesOnly;
                     incomingFeed.ClassificationId = submittedImporter.ClassificationId;
+                    incomingFeed.SourceId = submittedImporter.SourceId;
 
                     var filteredRelTo = await _groupRepository
                         .GetAllAsync(AmbientContext, new GroupQuery {Id = releasableTo}).ToListAsync();
@@ -374,7 +375,7 @@ namespace DocIntel.WebApp.Controllers
                 var incomingFeed = await _incomingFeedRepository.GetAsync(
                     AmbientContext,
                     id,
-                    __ => __.Include(_ => _.Classification).Include(_ => _.ReleasableTo).Include(_ => _.EyesOnly));
+                    __ => __.Include(_ => _.Classification).Include(_ => _.Source).Include(_ => _.ReleasableTo).Include(_ => _.EyesOnly));
 
                 if (incomingFeed.Settings != null) ViewData["settings"] = incomingFeed.Settings.ToString();
 
@@ -499,6 +500,7 @@ namespace DocIntel.WebApp.Controllers
                         incomingFeed.OverrideReleasableTo = submittedImporter.OverrideReleasableTo;
                         incomingFeed.OverrideEyesOnly = submittedImporter.OverrideEyesOnly;
                         incomingFeed.ClassificationId = submittedImporter.ClassificationId;
+                        incomingFeed.SourceId = submittedImporter.SourceId;
 
                         var filteredRelTo = await _groupRepository
                             .GetAllAsync(AmbientContext, new GroupQuery {Id = releasableTo}).ToListAsync();

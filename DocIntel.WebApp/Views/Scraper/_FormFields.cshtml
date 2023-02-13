@@ -34,7 +34,7 @@
 </div>
 
 <div class="form-group">
-    <label asp-for="SourceId" class="control-label"></label>
+    <label asp-for="SourceId" class="control-label">Source</label>
     <select data-tags="@(canCreateSources ? "true" : "false")" data-placeholder="Select a source" class="autocomplete-source form-control" name="SourceId">
         @if (Model.SourceId != null)
         {

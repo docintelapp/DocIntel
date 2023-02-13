@@ -77,6 +77,8 @@ namespace DocIntel.Core.Models
         public ICollection<Group> ReleasableTo { get; set; }
         public bool OverrideEyesOnly { get; set; }
         public ICollection<Group> EyesOnly { get; set; }
+        public Guid? SourceId { get; set; }
+        public Source Source { get; set; }
     }
 
     public enum ImporterStatus

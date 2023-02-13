@@ -94,7 +94,13 @@ namespace DocIntel.Core.Scrapers
             if (email != Email)
                 return true;
 
-            await ImportEmail(context, uid, message);
+            Source source = null;
+            if (message.SourceId != null)
+            {
+                source = await _sourceRepository.GetAsync(context, (Guid)message.SourceId);
+            }
+            
+            await ImportEmail(context, uid, message, source);
             _logger.LogDebug("save");
 
             _documentRepository.DeleteSubmittedDocument(context, message.SubmittedDocumentId);
@@ -102,7 +108,8 @@ namespace DocIntel.Core.Scrapers
             return false;
         }
 
-        private async Task ImportEmail(AmbientContext context, string uid, SubmittedDocument submittedDocument)
+        private async Task ImportEmail(AmbientContext context, string uid, SubmittedDocument submittedDocument,
+            Source source)
         {
             if (!string.IsNullOrEmpty(Host) && !string.IsNullOrEmpty(Username))
                 using (var client = new ImapClient())
@@ -132,6 +139,12 @@ namespace DocIntel.Core.Scrapers
                             Status = DocumentStatus.Submitted,
                             DocumentDate = item.Date.UtcDateTime
                         };
+
+                        if (source != null)
+                        {
+                            document.Source = source;
+                        }
+                        
                         document = await AddAsync(_scraper, context, document, submittedDocument);
 
                         var allFilesKnown = true;
