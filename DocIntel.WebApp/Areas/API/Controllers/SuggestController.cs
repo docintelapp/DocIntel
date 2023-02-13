@@ -84,21 +84,23 @@ public class SuggestController : DocIntelAPIControllerBase
     /// Suggest tags
     /// </summary>
     /// <param name="searchTerm">The search term</param>
-    /// <returns>The tags matching the search</returns>
+    /// <param name="facetPrefix">The prefix of the facet to search in</param>
+    /// <returns>The tags matching the search and the facet if specified</returns>
     /// <response code="200">Returns the tags</response>
     /// <response code="401">Action is not authorized</response>
     [HttpGet("Tag")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApiSourceDetails>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [Produces("application/json")]
-    public async Task<IActionResult> SuggestTag([FromQuery] string searchTerm = "")
+    public async Task<IActionResult> SuggestTag([FromQuery] string searchTerm = "", [FromQuery] string facetPrefix = "")
     {
         var currentUser = await GetCurrentUser();
-
+        _logger.LogDebug("SuggestTag:" + facetPrefix);
         try
         {
             var results = _tagSearchEngine.Suggest(new TagSearchQuery
             {
+                FacetPrefix = facetPrefix,
                 SearchTerms = searchTerm
             });
 

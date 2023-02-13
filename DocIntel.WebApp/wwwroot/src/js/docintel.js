@@ -169,7 +169,7 @@ export function autocompleteColors() {
 export function autocompleteTags() {
     console.log("🦛 Installing autocomplete for tags ...");
     
-    $(".autocomplete-tag").each(function(index) {
+    $(".autocomplete-tag").each(function(index, item) {
         $(this).select2({
             placeholder: 'Search for a tag',
             tokenSeparators: [','],
@@ -181,12 +181,17 @@ export function autocompleteTags() {
                     data: function(params)
                     {
                         return {
+                            facetPrefix: item.dataset.facet,
                             searchTerm: params.term
                         };
                     },
                     processResults: function (tags) {
                         var data = $.map(tags, function (tag) {
-                            tag.id = tag.friendly_name;
+                            if (item.dataset.idValue === "true") {
+                                tag.id = tag.tag_id;
+                            } else {
+                                tag.id = tag.friendly_name;
+                            }
                             return tag;
                         });
                         return {

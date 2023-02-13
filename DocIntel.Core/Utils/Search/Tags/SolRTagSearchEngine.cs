@@ -70,7 +70,24 @@ namespace DocIntel.Core.Utils.Search.Tags
                 _logger.LogDebug("Weights: " + weights);
                 _logger.LogDebug("Page: " + query.Page);
                 _logger.LogDebug("Page: " + query.PageSize);
+                
+                var extraParams = new List<KeyValuePair<string,string>>
+                {
+                    new ("qf", weights),
+                    new ("defType", "edismax"),
+                    new ("hl.fragsize", "250"),
+                    new ("hl.simple.pre", "<span class='bg-warning-50'>"),
+                    new ("hl.simple.post", "</span>"),
+                    new("bf", "recip(ms(NOW,last_doc_update),3.16e-11,1,1)")
+                };
 
+                var facetQuery = BuildFacetQuery(query);
+                foreach (var fq in facetQuery)
+                {
+                    _logger.LogDebug("fq:" + fq);
+                    extraParams.Add(new KeyValuePair<string, string>("fq", fq));
+                }
+                
                 var results = _solr.Query(q, new QueryOptions
                 {
                     StartOrCursor = new StartOrCursor.Start((query.Page - 1) * query.PageSize),
@@ -84,14 +101,7 @@ namespace DocIntel.Core.Utils.Search.Tags
                             SolRHelper<IndexedTag>.GetSolRName(_ => _.Description)
                         }
                     },
-                    ExtraParams = new Dictionary<string, string>
-                    {
-                        {"qf", weights},
-                        {"defType", "edismax"},
-                        {"hl.fragsize", "250"},
-                        {"hl.simple.pre", "<span class='bg-warning-50'>"},
-                        {"hl.simple.post", "</span>"}
-                    }
+                    ExtraParams = extraParams
                 });
 
                 _logger.LogDebug($"Found {results.NumFound} tags(s) vs {results.Count}.");
@@ -134,6 +144,18 @@ namespace DocIntel.Core.Utils.Search.Tags
             }
         }
 
+        private List<string> BuildFacetQuery(TagSearchQuery query)
+        {
+            var facetQueries = new List<string>();
+            
+            if (!string.IsNullOrEmpty(query.FacetPrefix))
+                facetQueries.Add(
+                    SolRHelper<IndexedTag>.GetSolRName(_ => _.FacetPrefix) + ":" + query.FacetPrefix
+                );
+
+            return facetQueries;
+        }
+
         public TagSearchResults Suggest(TagSearchQuery query)
         {
             try
@@ -149,8 +171,23 @@ namespace DocIntel.Core.Utils.Search.Tags
                     q = SolrQuery.All;
                     _logger.LogDebug("Query all");
                 }
+                
+                var extraParams = new List<KeyValuePair<string,string>>
+                {
+                    new("bf", "recip(ms(NOW,last_doc_update),3.16e-11,1,1)")
+                };
 
-                var queryOptions = new QueryOptions();
+                var facetQuery = BuildFacetQuery(query);
+                foreach (var fq in facetQuery)
+                {
+                    _logger.LogDebug("fq:" + fq);
+                    extraParams.Add(new KeyValuePair<string, string>("fq", fq));
+                }
+                
+                var queryOptions = new QueryOptions()
+                {
+                    ExtraParams = extraParams
+                };
                 queryOptions.RequestHandler = new RequestHandlerParameters("/suggest");
                 
                 var results = _solr.Query(q, queryOptions);

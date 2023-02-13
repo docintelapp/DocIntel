@@ -23,6 +23,12 @@
                 </div>
                 <div id="@("collapse" + catId)" class="@(!selected ? "collapse" : "")" aria-labelledby="@("heading" + catId)" data-parent="#accordion_tags">
                     <div class="card-body">
+<div class="form-group">
+    <select data-placeholder="Select a tag"
+            data-tags="false" data-facet="@t.Key.Prefix" data-id-value="true"
+            class="autocomplete-tag form-control auto-submit" name="tags">
+    </select>
+</div>
                         @foreach (var item in t.OrderBy(_ => _.Label))
                         {
                             var label = item.Label;
