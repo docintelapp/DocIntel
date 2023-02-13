@@ -173,13 +173,15 @@ namespace DocIntel.WebApp.Controllers
                     var query = new DocumentQuery
                     {
                         TagIds = new[] {tag.TagId},
-                        Page = page,
-                        Limit = 10,
-                        OrderBy = SortCriteria.DocumentDate
+                        OrderBy = SortCriteria.DocumentDate,
+                        Limit = -1
                     };
 
                     var documentCount = await _documentRepository.CountAsync(AmbientContext, query);
-
+                    _logger.LogDebug("Document Count: " + documentCount);
+                    
+                    query.Limit = 10;
+                    query.Page = page;
                     var documents = _documentRepository.GetAllAsync(AmbientContext, query,
                         new[]
                         {
