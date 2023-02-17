@@ -164,7 +164,8 @@ namespace DocIntel.WebApp.Controllers
             _logger.LogInformation("Retreive documents");
             var documents = await _documentRepository.GetAllAsync(AmbientContext, new DocumentQuery()
             {
-                DocumentIds = results.Hits.Select(x => x.DocumentId).ToArray()
+                DocumentIds = results.Hits.Select(x => x.DocumentId).ToArray(),
+                Limit = -1
             }, new[] {"DocumentTags", "DocumentTags.Tag", "DocumentTags.Tag.Facet"}).ToDictionaryAsync(_ => _.DocumentId);
             
             foreach (var hit in results.Hits)
