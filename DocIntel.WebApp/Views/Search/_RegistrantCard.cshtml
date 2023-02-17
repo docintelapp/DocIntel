@@ -2,31 +2,31 @@
 
 @if (Model.Registrants.Any())
 {
-    var selected = Model.SelectedRegistrants.Any();
     <div class="card">
         <div class="card-header">
-            <a href="javascript:void(0);" class="card-title fs-md @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#collapseRegisteredBy" aria-expanded="false">
+            <a href="javascript:void(0);" class="card-title fs-md collapsed" data-toggle="collapse" data-target="#collapseRegisteredBy" aria-expanded="false">
                 Registered by
-                @if (selected)
-                {
-                    <span class="ml-auto">
-                        <span class="badge badge-light">@Model.SelectedRegistrants.Count() selected</span>
-                    </span>   
-                }
             </a>
         </div>
-        <div id="collapseRegisteredBy" class="@(!selected ? "collapse" : "")" aria-labelledby="headingRegisteredBy" data-parent="#accordion_meta">
+        <div id="collapseRegisteredBy" class="collapse" aria-labelledby="headingRegisteredBy" data-parent="#accordion_meta">
             <div class="card-body">
                 @foreach (var item in Model.Registrants)
                 {
-                    <div class="custom-control custom-checkbox mb-1">
-                        <input type="checkbox" class="custom-control-input auto-submit" id="registrant-@item.Value.UserName"
-                               checked="@Model.SelectedRegistrants.Any(_ => _.NormalizedUserName == item.Value.NormalizedUserName)"
-                               name="registrants" value="@item.Value.Id">
-                        <label class="custom-control-label" for="registrant-@item.Value.UserName">
-                            @item.Value.FriendlyName
-                        </label>
-                        <span class="text-muted float-right fs-xs">(@item.Count)</span>
+                    <div class="mb-1 d-flex tag-selection" 
+                         data-value-id="@item.Value.Id"
+                         data-value-name="@item.Value.FriendlyName" 
+                         data-default-filter-field="registered_by_id"
+                         data-default-filter="registrant"
+                         data-default-filter-name="Registered by">
+                        <div class="mr-2" style="white-space: nowrap;">
+                            <i class="fa fa-search-plus"></i>
+                            <i class="fa fa-search-minus"></i>
+                        </div>
+                        <div class=flex-grow-1>
+                            <span>
+                                @item.Value.FriendlyName
+                            </span>
+                        </div>
                     </div>
                 }
             </div>

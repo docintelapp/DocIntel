@@ -18,7 +18,7 @@ export function initApp() {
     $(document).on('select2:open', () => {
         document.querySelector('.select2-container--open .select2-search__field').focus();
     });
-
+    
     autocompleteFacet();
     autocompleteTags();
     autocompleteColors();
@@ -68,9 +68,191 @@ export function initApp() {
 
 export function initSearchPage(form_id) {
     var form = $(form_id);
-    form.find('.auto-submit').change(function(){
-        $('input[name="page"]').val(1);
+    var noFilterText = $('#search-filters').html();
+    var filters = {}
+    
+    $('#clear-all-filters').click(function() {
+       filters = {}
+       form.submit();
+    });
+
+    $('#save-default-search').click(function() {
+        console.log("TODO");
+        form.attr('action', $(this).data('form-action'));
+        console.log(form.action);
         form.submit();
+    });
+    
+    var dropDownMenu = function(filterId) {
+        return $('<div class="dropdown float-left mr-1" />')
+            .append($('<a href="#" class="px-1" data-toggle="dropdown"  />').html('&#8942;'))
+            .append($('<div class="dropdown-menu" />')
+                .append(
+                    $('<a class="dropdown-item py-1 px-3" href="javascript:void(0)">Delete</a>')
+                        .click(function() {
+                            delete filters[filterId];
+                            form.submit();
+                        })
+                )
+                .append($('<a class="dropdown-item py-1 px-3" href="javascript:void(0)">Invert</a>')
+                    .click(function() {
+                        filters[filterId].negate = !filters[filterId].negate;
+                        form.submit();
+                    }))
+            );
+    }
+    
+    var removeValue = function(filter, id) {
+        if (filters[filter] !== undefined) {
+            delete filters[filter]['values'][id];
+            if (Object.keys(filters[filter]['values']).length === 0) {
+                delete filters[filter];
+            }
+        }
+        form.submit();
+    }
+    
+    var displayFilters = function() {
+        var searchFilters = $('#search-filters');
+        searchFilters.empty();
+        if (Object.keys(filters).length === 0) {
+            searchFilters.append(noFilterText);
+        } else {
+            $.each(filters, function (index, filter) {
+                searchFilters.append(
+                    $('<div class="d-inline-block border py-1 px-2 mr-2 mb-2" />')
+                        .append(dropDownMenu(filter.id))
+                        .append($('<span />').text(filter.name))
+                        .append(filter.negate ? $('<span class="text-danger ml-2" />').text("NOT") : '')
+                        .append(Object.entries(filter.values).map(([k,val]) => 
+                            $('<a class="badge badge-pill badge-secondary ml-2" />')
+                                .addClass(val.color ? val.color : '')
+                                .text(val.name)
+                                .click(function() {
+                                    removeValue(filter.id, k);
+                                })
+                        ))
+                );
+            });
+        }
+    }
+
+    var selectedFilters = $("#selected-filters").val();
+    if (selectedFilters) {
+        var sf = JSON.parse(atob(selectedFilters));
+        $.each(sf, function (index, filter) {
+            console.log(filter);
+            filters[filter.Id] = {
+                'id': filter.Id,
+                'name': filter.Name,
+                'negate': filter.Negate,
+                'field': filter.Field,
+                'operator': filter.Operator,
+                'values': filter.Values.map((s) => {
+                    return {'id': s.Id, 'name': s.Name, 'color': s.Color};
+                })
+            }
+        });
+        displayFilters();
+    }
+    
+    $('.tag-selection .fa-search-plus').click(function(eventObject) {
+        var defaultFilter = $(this).parents('.tag-selection').data('default-filter');
+        var defaultFilterName = $(this).parents('.tag-selection').data('default-filter-name');
+        var field = $(this).parents('.tag-selection').data('default-filter-field');
+        if (filters[defaultFilter] === undefined) {
+            filters[defaultFilter] = {
+                'id': defaultFilter,
+                'name': defaultFilterName,
+                'negate': false,
+                'field': field,
+                'operator': 'oneof',
+                'values': {}
+            }
+        }
+
+        var valueId = $(this).parents('.tag-selection').data('value-id');
+        var valueName = $(this).parents('.tag-selection').data('value-name');
+        if (valueId !== undefined && valueName !== undefined) {
+            filters[defaultFilter]['values'][valueId] = { 'id': valueId, 'name': valueName };
+
+            var valueColor = $(this).parents('.tag-selection').data('value-color');
+            if (valueColor !== undefined) {
+                filters[defaultFilter]['values'][valueId].color = valueColor;
+            }
+        }
+
+        form.submit();
+    });
+    
+    $('.tag-selection .fa-search-minus').click(function(eventObject) {
+        var defaultFilter = '!' + $(this).parents('.tag-selection').data('default-filter');
+        var defaultFilterName = $(this).parents('.tag-selection').data('default-filter-name');
+        var field = $(this).parents('.tag-selection').data('default-filter-field');
+        if (filters[defaultFilter] === undefined) {
+            filters[defaultFilter] = {
+                'id': defaultFilter,
+                'name': defaultFilterName,
+                'negate': true,
+                'field': field,
+                'operator': 'oneof',
+                'values': {}
+            }
+        }
+
+        var valueId = $(this).parents('.tag-selection').data('value-id');
+        var valueName = $(this).parents('.tag-selection').data('value-name');
+        if (valueId !== undefined && valueName !== undefined) {
+            filters[defaultFilter]['values'][valueId] = { 'id': valueId, 'name': valueName };
+
+            var valueColor = $(this).parents('.tag-selection').data('value-color');
+            if (valueColor !== undefined) {
+                filters[defaultFilter]['values'][valueId].color = valueColor;
+            }
+        }
+        
+        form.submit();
+    });
+    
+    form.submit(function() {
+        console.log("Clear all filters");
+        $(this).children('input.filter-field').remove();
+        
+        console.log("Add all filters");
+        console.log(filters);
+        $.each(Object.values(filters), function (index, filter) {
+            form.append($('<input type="hidden" class="filter-field" />')
+                .attr('name', 'filters[' + index + '].id')
+                .val(filter.id));
+            form.append($('<input type="hidden" class="filter-field" />')
+                .attr('name', 'filters[' + index + '].name')
+                .val(filter.name));
+            form.append($('<input type="hidden" class="filter-field" />')
+                .attr('name', 'filters[' + index + '].negate')
+                .val(filter.negate));
+            form.append($('<input type="hidden" class="filter-field" />')
+                .attr('name', 'filters[' + index + '].field')
+                .val(filter.field));
+            form.append($('<input type="hidden" class="filter-field" />')
+                .attr('name', 'filters[' + index + '].operator')
+                .val(filter.operator));
+            
+            $.each(Object.values(filter.values), function(indexVal, val) {
+                form.append($('<input type="hidden" class="filter-field" />')
+                    .attr('name', 'filters[' + index + '].values['+indexVal+'].id')
+                    .val(val.id))
+                form.append($('<input type="hidden" class="filter-field" />')
+                    .attr('name', 'filters[' + index + '].values['+indexVal+'].name')
+                    .val(val.name))
+                if (val.color) {
+                    form.append($('<input type="hidden" class="filter-field" />')
+                        .attr('name', 'filters[' + index + '].values[' + indexVal + '].color')
+                        .val(val.color))
+                }
+            });
+        });
+        
+        return true;
     });
     
     form.find('.page-link-autosubmit').click(function() {

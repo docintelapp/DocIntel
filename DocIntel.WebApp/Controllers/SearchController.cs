@@ -34,6 +34,7 @@ using DocIntel.WebApp.ViewModels.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.WebApp.Controllers
@@ -51,6 +52,7 @@ namespace DocIntel.WebApp.Controllers
         private readonly ITagRepository _tagRepository;
         private readonly IUserRepository _userRepository;
         private readonly IGroupRepository _groupRepository;
+        private readonly ISavedSearchRepository _savedSearchRepository;
 
         public SearchController(DocIntelContext context,
             ILogger<SearchController> logger,
@@ -63,7 +65,7 @@ namespace DocIntel.WebApp.Controllers
             IUserRepository userRepository,
             ITagRepository tagRepository,
             ITagFacetRepository facetRepository,
-            IClassificationRepository classificationRepository, IGroupRepository groupRepository)
+            IClassificationRepository classificationRepository, IGroupRepository groupRepository, ISavedSearchRepository savedSearchRepository)
             : base(context,
                 userManager,
                 configuration,
@@ -78,6 +80,7 @@ namespace DocIntel.WebApp.Controllers
             _facetRepository = facetRepository;
             _classificationRepository = classificationRepository;
             _groupRepository = groupRepository;
+            _savedSearchRepository = savedSearchRepository;
         }
 
         public IActionResult Help()
@@ -85,19 +88,57 @@ namespace DocIntel.WebApp.Controllers
             return View();
         }
 
-        public async Task<ActionResult> Index(
-            string searchTerm = "",
-            SortCriteria sortCriteria = SortCriteria.Relevance,
-            Guid[] tags = null,
-            Guid[] sources = null,
-            string[] registrants = null,
-            Guid[] classifications = null,
-            SourceReliability[] reliabilities = null,
-            string factualScore = null,
-            int pageSize = 10,
-            int facetLimit = 20,
-            int page = 1)
+        public async Task<ActionResult> Index()
         {
+            var defaultUserSavedSearch = _savedSearchRepository.GetDefault(AmbientContext);
+            if (defaultUserSavedSearch != null)
+            {
+                var savedSearch = defaultUserSavedSearch.SavedSearch;
+                var parameters = BuildRouteValueDictionary(savedSearch);
+                return RedirectToAction("Search", parameters);
+            }
+
+            return RedirectToAction("Search");
+        }
+
+        private static RouteValueDictionary BuildRouteValueDictionary(SavedSearch savedSearch)
+        {
+            var parameters = new RouteValueDictionary();
+            parameters.Add("searchTerm", savedSearch.SearchTerm);
+            parameters.Add("sortCriteria", savedSearch.SortCriteria);
+            parameters.Add("pageSize", savedSearch.PageSize);
+
+            int index = 0;
+            foreach (var searchFilter in savedSearch.Filters)
+            {
+                parameters.Add($"filters[{index}].id", searchFilter.Id);
+                parameters.Add($"filters[{index}].name", searchFilter.Name);
+                parameters.Add($"filters[{index}].field", searchFilter.Field);
+                parameters.Add($"filters[{index}].negate", searchFilter.Negate);
+                parameters.Add($"filters[{index}].operator", searchFilter.Operator);
+                int indexValue = 0;
+                foreach (var value in searchFilter.Values)
+                {
+                    parameters.Add($"filters[{index}].values[{indexValue}].id", value.Id);
+                    parameters.Add($"filters[{index}].values[{indexValue}].name", value.Name);
+                    parameters.Add($"filters[{index}].values[{indexValue}].color", value.Color);
+                    indexValue++;
+                }
+
+                index++;
+            }
+
+            return parameters;
+        }
+
+        public async Task<ActionResult> Search(
+                string searchTerm = "",
+                SortCriteria sortCriteria = SortCriteria.Relevance,
+                SearchFilter[] filters = null,
+                int pageSize = 10,
+                int facetLimit = 20,
+                int page = 1)
+            {
             var currentUser = await GetCurrentUser();
             await AmbientContext.DatabaseContext.Entry(currentUser).Collection(u => u.Memberships).LoadAsync();
 
@@ -105,31 +146,14 @@ namespace DocIntel.WebApp.Controllers
             var defaultPageSize = Math.Min(pageSize, 50);
             searchTerm ??= "";
 
-            int factualScoresLow = -1, factualScoresHigh = 10;
-            if (!string.IsNullOrEmpty(factualScore))
-            {
-                var split = factualScore.Split(";", 2);
-                int.TryParse(split[0], out factualScoresLow);
-                int.TryParse(split[1], out factualScoresHigh);
-            }
-
             var query = new DocumentSearchQuery
             {
                 SearchTerms = searchTerm,
-                Tags = tags.ToAsyncEnumerable().SelectAwait(async _ => await _tagRepository.GetAsync(AmbientContext, _))
-                    .ToEnumerable(),
-                Sources = sources.ToAsyncEnumerable()
-                    .SelectAwait(async _ => await _sourceRepository.GetAsync(AmbientContext, _)).ToEnumerable(),
-                SelectedRegistrants = registrants.ToAsyncEnumerable()
-                    .SelectAwait(async _ => await _userRepository.GetById(AmbientContext, _)).ToEnumerable(),
-                SelectedClassifications = classifications.ToAsyncEnumerable()
-                    .SelectAwait(async _ => await _classificationRepository.GetAsync(AmbientContext, _)).ToEnumerable(),
+                Filters = filters,
                 FacetLimit = facetLimit,
                 Page = page,
                 PageSize = defaultPageSize,
-                SortCriteria = sortCriteria,
-                SourceReliability = reliabilities,
-                FactualScore = new Interval<int>(factualScoresLow, factualScoresHigh)
+                SortCriteria = sortCriteria
             };
 
             var defaultGroups = _groupRepository.GetDefaultGroups(AmbientContext).Select(g => g.GroupId).ToArray();
@@ -146,14 +170,17 @@ namespace DocIntel.WebApp.Controllers
             foreach (var hit in results.Hits)
                 try
                 {
-                    var document = documents[hit.DocumentId];
-                    resultsDocuments.Add(new DocumentSearchResult
+                    if (documents.ContainsKey(hit.DocumentId))
                     {
-                        Document = document,
-                        Excerpt = hit.Excerpt,
-                        TitleExcerpt = hit.TitleExcerpt,
-                        Position = hit.Position
-                    });
+                        var document = documents[hit.DocumentId];
+                        resultsDocuments.Add(new DocumentSearchResult
+                        {
+                            Document = document,
+                            Excerpt = hit.Excerpt,
+                            TitleExcerpt = hit.TitleExcerpt,
+                            Position = hit.Position
+                        });   
+                    }
                 }
                 catch (UnauthorizedOperationException)
                 {
@@ -251,7 +278,8 @@ namespace DocIntel.WebApp.Controllers
 
             watch.Stop();
 
-            var didYouMeanTerms = new List<string>();
+            /*
+             var didYouMeanTerms = new List<string>();
             var accuracy = 0.83f;
             foreach (var q in searchTerm.Split(" "))
                 if (!string.IsNullOrEmpty(q))
@@ -262,52 +290,69 @@ namespace DocIntel.WebApp.Controllers
                     else
                         didYouMeanTerms.Add(q);
                 }
+            */
 
-            var taskSelectedRegistrants = registrants.Select(_ => _userManager.FindByIdAsync(_));
-            var selectedRegistrants = await Task.WhenAll(taskSelectedRegistrants);
-
-            _logger.LogInformation("Should be done");
             return View(new SearchIndexViewModel
             {
                 SearchTerm = searchTerm,
-
                 SearchResultDocuments = resultsDocuments,
-
                 Tags = databaseTags.GroupBy(_ => _.Facet),
-                SelectedTags = _context.Tags.Where(_ => tags.Contains(_.TagId)).ToList(),
-
                 Registrants = registrantsVR,
-                SelectedRegistrants = selectedRegistrants,
-
                 Classifications = classificationVR,
-                SelectedClassifications = _context.Classifications.Where(_ => classifications.Contains(_.ClassificationId)).ToList(),
-
                 Sources = sourcesVR,
-                SelectedSources = _context.Sources.Where(_ => sources.Contains(_.SourceId)).ToList(),
-
                 Reliabilities = reliabilitiesVR,
-                SelectedReliabilities = reliabilities,
-
-                FactualScoreLow = factualScoresLow,
-                FactualScoresHigh = factualScoresHigh,
-
                 Elapsed = watch.Elapsed,
                 DocumentCount = totalHits,
                 Page = page,
                 PageCount = totalHits / defaultPageSize + (totalHits % defaultPageSize == 0 ? 0 : 1),
-
                 SortBy = sortCriteria,
-
                 FacetLimit = facetLimit,
                 PageSize = defaultPageSize,
-
-                // DidYouMean = string.Join(" ", didYouMeanTerms)
+                Filters = filters
             });
         }
 
         public ActionResult Suggest(string term, float accuracy)
         {
             return Json(_documentSearchEngine.SuggestSimilar(term, accuracy, false));
+        }
+
+        public async Task<ActionResult> SaveAsDefault(
+            string searchTerm = "",
+            SortCriteria sortCriteria = SortCriteria.Relevance,
+            IList<SearchFilter> filters = null,
+            int pageSize = 10,
+            int facetLimit = 20)
+        {
+            var userSavedSearch = _savedSearchRepository.GetDefault(AmbientContext);
+            if (userSavedSearch != null && !userSavedSearch.SavedSearch.Public)
+            {
+                _logger.LogDebug("Update default search for " + AmbientContext.CurrentUser.FriendlyName);
+                userSavedSearch.SavedSearch.SearchTerm = searchTerm;
+                userSavedSearch.SavedSearch.Filters = filters;
+                userSavedSearch.SavedSearch.SortCriteria = sortCriteria;
+                userSavedSearch.SavedSearch.PageSize = pageSize;
+                
+                await _savedSearchRepository.UpdateAsync(AmbientContext, userSavedSearch.SavedSearch);
+            }
+            else
+            {
+                _logger.LogDebug("Saved new default search for " + AmbientContext.CurrentUser.FriendlyName);
+                var savedSearch = new SavedSearch
+                {
+                    SearchTerm = searchTerm,
+                    Filters = filters,
+                    SortCriteria = sortCriteria,
+                    PageSize = pageSize
+                };
+
+                userSavedSearch = await _savedSearchRepository.SetDefault(AmbientContext, savedSearch);
+            }
+
+            await AmbientContext.DatabaseContext.SaveChangesAsync();
+            
+            var parameters = BuildRouteValueDictionary(userSavedSearch.SavedSearch);
+            return RedirectToAction("Search", parameters);
         }
     }
 }

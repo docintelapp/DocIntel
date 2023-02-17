@@ -255,35 +255,22 @@ namespace DocIntel.Core.Utils.Search.Documents
         private List<string> BuildFacetQuery(AppUser user, DocumentSearchQuery query, Guid[] defaultGroup)
         {
             var facetQueries = new List<string>();
-            
-            if (query.Sources != null && query.Sources.Any())
-                facetQueries.Add(
-                    string.Join(" OR ",
-                        query.Sources.Select(_ =>
-                            SolRHelper<IndexedDocument>.GetSolRName(_ => _.SourceId) + ":" + _.SourceId))
-                );
-            
-            if (query.SourceReliability != null && query.SourceReliability.Any())
-                facetQueries.Add(
-                    string.Join(" OR ",
-                        query.SourceReliability.Select(_ =>
-                            SolRHelper<IndexedDocument>.GetSolRName(_ => _.ReliabilityScore) + ":" + (int)_))
-                );
-            
-            if (query.Tags != null && query.Tags.Any())
-                facetQueries.Add("(" + string.Join(") AND (", query.Tags.GroupBy(_ => _.FacetId).Select(groupTag =>
-                    string.Join(" OR ",
-                        groupTag.Select(_ =>
-                            SolRHelper<IndexedDocument>.GetSolRName(_ => _.TagsId) + ":" + _.FacetId + "/" + _.TagId +
-                            ""))
-                )) + ")");
-            
-            if (query.SelectedClassifications != null && query.SelectedClassifications.Any())
-                facetQueries.Add(
-                    string.Join(" OR ",
-                        query.SelectedClassifications.Select(_ =>
-                            SolRHelper<IndexedDocument>.GetSolRName(_ => _.Classification) + ":" + _.ClassificationId))
-                );
+
+            if (query.Filters?.Any() ?? false)
+            {
+                foreach (var searchFilter in query.Filters)
+                {
+                    if (searchFilter.Operator == "oneof")
+                    {
+                        var facetQuery = string.Join(" OR ",
+                            searchFilter.Values.Select(_ => searchFilter.Field + ":" + _.Id));
+                        if (searchFilter.Negate)
+                            facetQuery = $"NOT ({facetQuery})";
+                        facetQueries.Add(facetQuery);
+                        _logger.LogDebug("Facet Query: " + facetQuery);
+                    }
+                }
+            }
             
             facetQueries.Add(
                 // No EYES ONLY specified.
@@ -321,13 +308,6 @@ namespace DocIntel.Core.Utils.Search.Documents
             else 
                 facetQueries.Add($"-*:*"); // Match no document
 
-            if (query.SelectedRegistrants != null && query.SelectedRegistrants.Any())
-                facetQueries.Add(
-                    string.Join(" OR ",
-                        query.SelectedRegistrants.Select(_ =>
-                            SolRHelper<IndexedDocument>.GetSolRName(_ => _.RegisteredById) + ":" + _.Id))
-                );
-            
             return facetQueries;
         }
     }

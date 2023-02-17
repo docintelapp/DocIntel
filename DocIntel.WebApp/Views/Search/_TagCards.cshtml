@@ -8,20 +8,13 @@
         if (t.Any())
         {
             var catId = Regex.Replace(t?.Key.Title ?? "none", @"[^A-Za-z0-9]", "_");
-            var selected = t.Any(x => Model.SelectedTags != null && Model.SelectedTags.Any(_ => _.Label == x.Label));
             <div class="card">
                 <div class="card-header">
-                    <a href="javascript:void(0);" class="card-title fs-md @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#@("collapse" + catId)" aria-expanded="false">
+                    <a href="javascript:void(0);" class="card-title fs-md collapsed" data-toggle="collapse" data-target="#@("collapse" + catId)" aria-expanded="false">
                         @t.Key.Title
-                        @if(selected)
-                        {
-                            <span class="ml-auto">
-                                <span class="badge badge-light">@t.Count(x => Model.SelectedTags != null && Model.SelectedTags.Any(_ => _.Label == x.Label)) selected</span>
-                            </span>   
-                        }
                     </a>
                 </div>
-                <div id="@("collapse" + catId)" class="@(!selected ? "collapse" : "")" aria-labelledby="@("heading" + catId)" data-parent="#accordion_tags">
+                <div id="@("collapse" + catId)" class="collapse" aria-labelledby="@("heading" + catId)" data-parent="#accordion_tags">
                     <div class="card-body">
 <div class="form-group">
     <select data-placeholder="Select a tag"
@@ -32,15 +25,22 @@
                         @foreach (var item in t.OrderBy(_ => _.Label))
                         {
                             var label = item.Label;
-                            <div class="custom-control custom-checkbox mb-1">
-                                <input type="checkbox" class="custom-control-input auto-submit" id="tag-@item.TagId"
-                                       checked="@(Model.SelectedTags != null && Model.SelectedTags.Any(_ => _.Label == item.Label))"
-                                       name="tags" value="@item.TagId">
-                                <label class="custom-control-label" for="tag-@item.TagId" style="max-width: 80%">
-                                    <span class="badge badge-pill text-truncate @item.BackgroundColor" style="max-width: 100%">
+                            <div class="mb-1 d-flex tag-selection" 
+                                 data-value-id="@item.TagId"
+                                 data-value-name="@item.Label"
+                                 data-value-color="@item.BackgroundColor" 
+                                 data-default-filter-field="tags_id"
+                                 data-default-filter="@item.Facet.FacetId"
+                                 data-default-filter-name="@item.Facet.Title">
+                                <div class="mr-2" style="white-space: nowrap;">
+                                    <i class="fa fa-search-plus"></i>
+                                    <i class="fa fa-search-minus"></i>
+                                </div>
+                                <div class=flex-grow-1>
+                                    <span class="badge badge-pill text-truncate @item.BackgroundColor" style="max-width: 90%">
                                         @label
                                     </span>
-                                </label>
+                                </div>
                             </div>
                         }
                     </div>

@@ -77,6 +77,9 @@ namespace DocIntel.Core.Models
         public DbSet<Classification> Classifications { get; set; }
         public DbSet<SubmittedDocument> SubmittedDocuments { get; set; }
 
+        public DbSet<SavedSearch> SavedSearches { get; set; }
+        public DbSet<UserSavedSearch> UserSavedSearches { get; set; }
+        
         public override int SaveChanges()
         {
             var result = base.SaveChanges();
@@ -193,6 +196,9 @@ namespace DocIntel.Core.Models
             
             modelBuilder.Entity<AppRole>().HasOne<AppUser>(u => u.CreatedBy);
             modelBuilder.Entity<AppRole>().HasOne<AppUser>(u => u.LastModifiedBy);
+            
+            modelBuilder.Entity<UserSavedSearch>()
+                .HasKey(t => new {t.UserId, t.SavedSearchId});
         }
     }
 }

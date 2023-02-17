@@ -2,31 +2,32 @@
 
 @if (Model.Classifications.Any())
 {
-    var selected = Model.SelectedClassifications != null && Model.SelectedClassifications.Any();
     <div class="card">
         <div class="card-header">
-            <a href="javascript:void(0);" class="card-title fs-md @(!selected ? "collapsed" : "")" data-toggle="collapse" data-target="#collapseClassifications" aria-expanded="false">
+            <a href="javascript:void(0);" class="card-title fs-md collapsed" data-toggle="collapse" data-target="#collapseClassifications" aria-expanded="false">
                 Classification
-                @if (selected)
-                {
-                    <span class="ml-auto">
-                        <span class="badge badge-light">@(Model.SelectedClassifications?.Count() ?? 0) selected</span>
-                    </span>   
-                }
             </a>
         </div>
-        <div id="collapseClassifications" class="@(!selected ? "collapse" : "")" aria-labelledby="headingClassifications" data-parent="#accordion_meta">
+        <div id="collapseClassifications" class="collapse" aria-labelledby="headingClassifications" data-parent="#accordion_meta">
             <div class="card-body">
                 @foreach (var item in Model.Classifications)
                 {
-                    <div class="custom-control custom-checkbox mb-1">
-                        <input type="checkbox" class="custom-control-input auto-submit" id="Classification-@item.Value.ClassificationId"
-                               checked="@(Model.SelectedClassifications != null && Model.SelectedClassifications.Any(_ => _.ClassificationId == item.Value.ClassificationId))"
-                               name="classifications" value="@item.Value.ClassificationId">
-                        <label class="custom-control-label" for="Classification-@item.Value.ClassificationId">
-                            @item.Value.Title
-                        </label>
-                        <span class="text-muted float-right fs-xs">(@item.Count)</span>
+                    <div class="mb-1 d-flex tag-selection" 
+                         data-value-id="@item.Value.ClassificationId"
+                         data-value-name="@item.Value.Title"
+                         data-value-color="@item.Value.Color" 
+                         data-default-filter-field="classification"
+                         data-default-filter="Classification"
+                         data-default-filter-name="Classification">
+                        <div class="mr-2" style="white-space: nowrap;">
+                            <i class="fa fa-search-plus"></i>
+                            <i class="fa fa-search-minus"></i>
+                        </div>
+                        <div class=flex-grow-1>
+                            <span>
+                                @item.Value.Title
+                            </span>
+                        </div>
                     </div>
                 }
             </div>

@@ -1,5 +1,5 @@
 /* DocIntel
- * Copyright (C) 2018-2021 Belgian Defense, Antoine Cailliau, Kevin Menten
+ * Copyright (C) 2018-2021 Belgian Defense, Antoine Cailliau
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -15,32 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-
-using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
 
-namespace DocIntel.Core.Utils.Search.Documents
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+
+namespace DocIntel.Core.Authorization.Handlers
 {
-    public class DocumentSearchQuery
+    public class SavedSearchAuthorizationHandler : CustomAuthorizationHandler<SavedSearch>
     {
-        public DocumentSearchQuery()
+        public SavedSearchAuthorizationHandler(
+            SignInManager<AppUser> signInManager,
+            UserManager<AppUser> userManager,
+            ILogger<SavedSearchAuthorizationHandler> logger) : base(signInManager, userManager, logger)
         {
-            Page = 1;
-            PageSize = 10;
-            FacetLimit = 25;
-            SortCriteria = SortCriteria.Relevance;
         }
-
-        public string SearchTerms { get; set; }
-
-        public SortCriteria SortCriteria { get; set; }
-
-        public int FacetLimit { get; set; }
-
-        public int Page { get; set; }
-
-        public int PageSize { get; set; }
-        public SearchFilter[] Filters { get; set; }
     }
 }

@@ -110,5 +110,10 @@ namespace DocIntel.Core.Authorization
         Task<bool> CanUpdateClassification(ClaimsPrincipal claims, Classification group);
         Task<bool> CanDeleteClassification(ClaimsPrincipal claims, Classification group);
         Task<bool> CanViewClassification(ClaimsPrincipal claims, Classification group);
+
+        Task<bool> CanAddSavedSearch(ClaimsPrincipal claims, SavedSearch savedSearch);
+        Task<bool> CanUpdateSavedSearch(ClaimsPrincipal claims, SavedSearch savedSearch);
+        Task<bool> CanDeleteSavedSearch(ClaimsPrincipal claims, SavedSearch savedSearch);
+        Task<bool> CanViewSavedSearch(ClaimsPrincipal claims, SavedSearch savedSearch);
     }
 }

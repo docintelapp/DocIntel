@@ -566,5 +566,33 @@ namespace DocIntel.Core.Authorization
             return isAuthorized.Succeeded;
         }
 
+
+        public async Task<bool> CanAddSavedSearch(ClaimsPrincipal claimsPrincipal, SavedSearch group)
+        {
+            var isAuthorized =
+                await _authorizationService.AuthorizeAsync(claimsPrincipal, group, SavedSearchOperations.Add);
+            return isAuthorized.Succeeded;
+        }
+
+        public async Task<bool> CanUpdateSavedSearch(ClaimsPrincipal claimsPrincipal, SavedSearch group)
+        {
+            var isAuthorized =
+                await _authorizationService.AuthorizeAsync(claimsPrincipal, group, SavedSearchOperations.Update);
+            return isAuthorized.Succeeded;
+        }
+        
+        public async Task<bool> CanDeleteSavedSearch(ClaimsPrincipal claimsPrincipal, SavedSearch group)
+        {
+            var isAuthorized =
+                await _authorizationService.AuthorizeAsync(claimsPrincipal, group, SavedSearchOperations.Delete);
+            return isAuthorized.Succeeded;
+        }
+        
+        public async Task<bool> CanViewSavedSearch(ClaimsPrincipal claimsPrincipal, SavedSearch group)
+        {
+            var isAuthorized =
+                await _authorizationService.AuthorizeAsync(claimsPrincipal, group, SavedSearchOperations.View);
+            return isAuthorized.Succeeded;
+        }
     }
 }

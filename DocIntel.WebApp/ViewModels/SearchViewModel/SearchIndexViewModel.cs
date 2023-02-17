@@ -43,17 +43,13 @@ namespace DocIntel.WebApp.ViewModels.SearchViewModel
         public IEnumerable<DocumentSearchResult> SearchResultDocuments { get; set; }
 
         public IEnumerable<IGrouping<TagFacet, Tag>> Tags { get; set; }
-        public IEnumerable<Tag> SelectedTags { get; set; }
 
         public IEnumerable<VerticalResult<Classification>> Classifications { get; set; }
-        public IEnumerable<Classification> SelectedClassifications { get; set; }
-
+        
         public IEnumerable<VerticalResult<Source>> Sources { get; set; }
-        public IEnumerable<Source> SelectedSources { get; set; }
-
+        
         public IEnumerable<VerticalResult<AppUser>> Registrants { get; set; }
-        public IEnumerable<AppUser> SelectedRegistrants { get; set; }
-
+        
         public long DocumentCount { get; set; }
 
         public TimeSpan Elapsed { get; set; }
@@ -69,8 +65,6 @@ namespace DocIntel.WebApp.ViewModels.SearchViewModel
         public int FacetLimit { get; set; }
         public string DidYouMean { get; internal set; }
         public List<VerticalResult<SourceReliability>> Reliabilities { get; internal set; }
-        public SourceReliability[] SelectedReliabilities { get; internal set; }
-        public int FactualScoreLow { get; internal set; }
-        public int FactualScoresHigh { get; internal set; }
+        public SearchFilter[] Filters { get; set; }
     }
 }

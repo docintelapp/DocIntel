@@ -1,6 +1,9 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @using System.Reflection
+@using System.Text
+@using DocIntel.Core.Authorization.Operations
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Newtonsoft.Json
 @model DocIntel.WebApp.ViewModels.SearchViewModel.SearchIndexViewModel
 
 @{
@@ -14,71 +17,60 @@
     }
     ViewData["Category1"] = "Documents";
     ViewData["SearchTerms"] = Model.SearchTerm;
+    
+    
+    var canSaveSearch = (await AuthorizationService.AuthorizeAsync(User, null, SavedSearchOperations.Add)).Succeeded;
 }
 
-<form asp-action="Index" asp-controller="Search" id="search-documents" method="GET" class="autosubmit-form">
+<form asp-action="Search" asp-controller="Search" id="search-documents" method="GET" class="autosubmit-form">
+    <input type="hidden" id="selected-filters" value="@(Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Model.Filters))))" />
     <div class="row">
         <div class="col-xl-9">
             <div class="input-group input-group-lg mb-2">
                 <input type="text" class="form-control" id="filter-icon"
                        aria-label="type 2 or more letters" placeholder="Search for anything..." value="@Model.SearchTerm" name="SearchTerm"/>
                 <div class="input-group-append">
-                    <button class= "btn btn-pills btn-primary hidden-sm-down waves-effect waves-themed" type="submit">
-                        <i class="fal fa-search mr-lg-2"></i><span class="hidden-md-down">Search documents</span>
+                    <button class="btn btn-pills btn-primary hidden-sm-down waves-effect waves-themed" type="submit">
+                        <i class="fal fa-search mr-lg-2"></i><span class="hidden-md-down">Search</span>
                     </button>
                 </div>
             </div>
 
-            <p class="mb-4">
-                <a asp-action="Index" asp-controller="Search" class="badge badge-pill badge-success mr-2">Clear search</a>
-                @if ((Model.SelectedTags != null && Model.SelectedTags.Any())
-                     | (Model.SelectedRegistrants != null && Model.SelectedRegistrants.Any())
-                     | (Model.SelectedSources != null && Model.SelectedSources.Any())
-                     | (Model.SelectedReliabilities != null && Model.SelectedReliabilities.Any())
-                     | (Model.SelectedClassifications != null && Model.SelectedClassifications.Any()))
-                {
-                    <span class="fw-500">Selected filters:</span>
-                    @if (Model.SelectedTags != null) {
-                        @foreach (var tag in Model.SelectedTags)
-                        {
-                            <span class="badge badge-pill @tag.BackgroundColor">@tag.Label</span>
-                        }
+            <div class="d-flex align-item-center">
+                <div class="py-1 mr-2 text-nowrap mb-2">
+                    <a asp-action="Help" asp-controller="Search">Help</a>
+                    @if (canSaveSearch) {
+                        <span class="text-muted mx-1">|</span>
+                        <div class="d-inline-block">
+                            <div class="dropdown">
+                                <a href="#" class="px-1" data-toggle="dropdown">
+                                    <i class="fal fa-xs fa-search"></i>
+                                </a>
+                                <div class="dropdown-menu">
+                                    @if (canSaveSearch)
+                                    {
+                                    <a class="dropdown-item py-1 px-3" id="save-default-search" data-form-action="@Url.Action("SaveAsDefault")">Save as default search</a>   
+                                    }
+                                </div>
+                            </div>
+                        </div>
                     }
-                    @if (Model.SelectedRegistrants != null) {
-                        @foreach (var c in Model.SelectedRegistrants)
-                        {
-                            <span class="badge badge-pill badge-secondary">Registered by @c.FriendlyName</span>
-                        }
-                    }
-                    @if (Model.SelectedSources != null) {
-                        @foreach (var c in Model.SelectedSources)
-                        {
-                            <span class="badge badge-pill badge-secondary">@c.Title</span>
-                        }
-                    }
-                    @if (Model.SelectedReliabilities != null) {
-                        @foreach (var c in Model.SelectedReliabilities)
-                        {
-                            var attribute = typeof(SourceReliability).GetMember(c.ToString()).FirstOrDefault()?.GetCustomAttribute<DisplayAttribute>();
-                            <span class="badge badge-pill badge-secondary">@(attribute?.Name ?? c.ToString())</span>
-                        }
-                    }
-                    @if (Model.SelectedClassifications != null) {
-                        @foreach (var c in Model.SelectedClassifications)
-                        {
-                            <span class="badge badge-pill @c.Color">@c.Title</span>
-                        }
-                    }
-                }
-                <a asp-action="Help" asp-controller="Search">Help</a>
-            </p>
-
-            @if (Model.DidYouMean != Model.SearchTerm)
-            {
-                <p>
-                    Did you mean? <a href="@Url.DidYouMean(Model.DidYouMean)">@Model.DidYouMean</a>
-                </p>
-            }
+                    <span class="text-muted mx-1">|</span>
+                    <div class="d-inline-block">
+                        <div class="dropdown">
+                            <a href="#" class="px-1" data-toggle="dropdown">
+                                <i class="fal fa-xs fa-filter"></i>
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item py-1 px-3" id="clear-all-filters">Clear all filters</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="search-filters" class="flex-grow-1">
+                    <em class="text-muted d-inline-block py-1 mr-2 mb-2" style="margin-top: 1px; margin-bottom: 1px">No filters selected</em>
+                </div>
+            </div>
 
             @await Html.PartialAsync("_SearchDocumentList", Model, new ViewDataDictionary(ViewData))
         </div>
