@@ -74,5 +74,8 @@ namespace DocIntel.Core.Models
         [Column(TypeName = "jsonb")] public JObject MetaData { get; set; }
 
         public string URL { get; set; }
+        
+        public ICollection<Importer> Importers { get; set; }
+        public ICollection<Scraper> Scrapers { get; set; }
     }
 }

@@ -63,8 +63,18 @@ namespace DocIntel.Services.Scraper
             _logger = (ILogger<ReadabilityScraper>) serviceProvider.GetService(typeof(ILogger<ReadabilityScraper>));
         }
 
+        public override Type GetSettingsType()
+        {
+            return (typeof(ReadabilitySettings));
+        }
+        
+        class ReadabilitySettings
+        {
+        }
+
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
+            var scraperSettings = _scraper.Settings.ToObject<ReadabilitySettings>();
             Init();
             
             _engine = new CustomRazorLightEngineBuilder()
@@ -170,7 +180,7 @@ namespace DocIntel.Services.Scraper
 
                 Source source;
 
-                if (message.SourceId != null)
+                if (message.OverrideSource & message.SourceId != null)
                 {
                     source = await _sourceRepository.GetAsync(context, (Guid)message.SourceId);
                 }

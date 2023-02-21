@@ -47,6 +47,8 @@ namespace DocIntel.Core.Models
         public bool OverrideReleasableTo { get; set; }
         public bool OverrideEyesOnly { get; set; }
         public Guid? SourceId { get; set; }
+        public bool OverrideSource { get; set; }
+        public bool SkipInbox { get; set; }
     }
 
     public enum SubmissionStatus

@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
+using DocIntel.Core.Helpers;
 using DocIntel.Core.Importers;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
@@ -53,6 +54,7 @@ namespace DocIntel.WebApp.Controllers
         private readonly IClassificationRepository _classificationRepository;
         private readonly IGroupRepository _groupRepository;
         private readonly IIncomingFeedRepository _incomingFeedRepository;
+        private readonly ITagRepository _tagRepository;
         private readonly ILogger _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly ApplicationSettings _settings;
@@ -66,7 +68,7 @@ namespace DocIntel.WebApp.Controllers
             IIncomingFeedRepository incomingFeedRepository,
             IHttpContextAccessor accessor, IServiceProvider serviceProvider,
             IClassificationRepository classificationRepository, ApplicationSettings settings,
-            IGroupRepository groupRepository)
+            IGroupRepository groupRepository, ITagRepository tagRepository)
             : base(context,
                 userManager,
                 configuration,
@@ -80,6 +82,7 @@ namespace DocIntel.WebApp.Controllers
             _classificationRepository = classificationRepository;
             _settings = settings;
             _groupRepository = groupRepository;
+            _tagRepository = tagRepository;
         }
 
         /// <summary>
@@ -143,7 +146,13 @@ namespace DocIntel.WebApp.Controllers
             {
                 var incomingFeed = await _incomingFeedRepository.GetAsync(
                     AmbientContext,
-                    id);
+                    id,
+                    _ => _.AsNoTracking()
+                        .Include(__ => __.Classification)
+                        .Include(__ => __.Source)
+                        .Include(__ => __.Tags).ThenInclude(__ => __.Facet)
+                        .Include(__ => __.ReleasableTo)
+                        .Include(__ => __.EyesOnly));
 
                 await InitializeViewBag(id, incomingFeed, currentUser);
 
@@ -265,10 +274,11 @@ namespace DocIntel.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
             [Bind(
-                "Status,CollectionDelay,FetchingUserId,Limit,OverrideClassification,OverrideReleasableTo,OverrideEyesOnly,ClassificationId")]
+                "Status,Name,Description,CollectionDelay,FetchingUserId,Limit,OverrideClassification,OverrideReleasableTo,OverrideEyesOnly,ClassificationId,SourceId,OverrideSource")]
             Importer submittedImporter,
             [Bind(Prefix = "releasableTo")] Guid[] releasableTo,
             [Bind(Prefix = "eyesOnly")] Guid[] eyesOnly,
+            [Bind(Prefix = "tags")] Guid[] tags,
             [Bind(Prefix = "Importer")] string importer)
         {
             var currentUser = await GetCurrentUser();
@@ -281,16 +291,23 @@ namespace DocIntel.WebApp.Controllers
                         await ImporterFactory.CreateImporter(Guid.Parse(importer), _serviceProvider, AmbientContext);
 
                     var incomingFeed = instance.Install();
+                    if (!string.IsNullOrEmpty(submittedImporter.Name))
+                        incomingFeed.Name = submittedImporter.Name;
+                    if (!string.IsNullOrEmpty(submittedImporter.Description))
+                        incomingFeed.Description = submittedImporter.Description;
                     incomingFeed.Status = submittedImporter.Status;
                     incomingFeed.CollectionDelay = submittedImporter.CollectionDelay;
                     incomingFeed.FetchingUserId = submittedImporter.FetchingUserId;
                     incomingFeed.Limit = submittedImporter.Limit;
+                    incomingFeed.SkipInbox = submittedImporter.SkipInbox;
                     incomingFeed.OverrideClassification = submittedImporter.OverrideClassification;
                     incomingFeed.OverrideReleasableTo = submittedImporter.OverrideReleasableTo;
                     incomingFeed.OverrideEyesOnly = submittedImporter.OverrideEyesOnly;
                     incomingFeed.ClassificationId = submittedImporter.ClassificationId;
+                    incomingFeed.OverrideSource = submittedImporter.OverrideSource;
                     incomingFeed.SourceId = submittedImporter.SourceId;
-
+                    await UpdateTags(tags, incomingFeed);
+                    
                     var filteredRelTo = await _groupRepository
                         .GetAllAsync(AmbientContext, new GroupQuery {Id = releasableTo}).ToListAsync();
                     var filteredEyes = await _groupRepository
@@ -314,9 +331,16 @@ namespace DocIntel.WebApp.Controllers
                         null,
                         LogEvent.Formatter);
 
+                    if (instance.HasSettings)
+                    {
+                        return RedirectToAction(
+                            nameof(Configure),
+                            new { id = incomingFeed.ImporterId });
+                    }
+
                     return RedirectToAction(
-                        nameof(Configure),
-                        new {id = incomingFeed.ImporterId});
+                        nameof(Details),
+                        new { id = incomingFeed.ImporterId });
                 }
 
                 return View(submittedImporter);
@@ -375,7 +399,12 @@ namespace DocIntel.WebApp.Controllers
                 var incomingFeed = await _incomingFeedRepository.GetAsync(
                     AmbientContext,
                     id,
-                    __ => __.Include(_ => _.Classification).Include(_ => _.Source).Include(_ => _.ReleasableTo).Include(_ => _.EyesOnly));
+                    __ => __.AsNoTracking()
+                        .Include(_ => _.Classification)
+                        .Include(_ => _.Source)
+                        .Include(_ => _.ReleasableTo)
+                        .Include(_ => _.EyesOnly)
+                        .Include(_ => _.Tags).ThenInclude(_ => _.Facet));
 
                 if (incomingFeed.Settings != null) ViewData["settings"] = incomingFeed.Settings.ToString();
 
@@ -425,30 +454,11 @@ namespace DocIntel.WebApp.Controllers
         private async Task InitializeViewBag(Guid id, Importer incomingFeed, AppUser currentUser)
         {
             var instance = await ImporterFactory.CreateImporter(incomingFeed, _serviceProvider, AmbientContext);
-            var stringProperties = instance.GetType().GetProperties()
-                .Where(property =>
-                {
-                    var attribute = property.GetCustomAttribute<ImporterSettingAttribute>();
-                    return ((property.PropertyType == typeof(string)) | (property.PropertyType == typeof(int)) |
-                            (property.PropertyType == typeof(bool))) & (attribute != null);
-                });
 
-            var dict = new List<FormField>();
-            foreach (var property in stringProperties)
-            {
-                var attribute = property.GetCustomAttribute<ImporterSettingAttribute>();
-                var attributeValue = attribute.DefaultValue;
-                if (incomingFeed.Settings != null)
-                    attributeValue = incomingFeed.Settings[attribute.Name]?.ToString() ?? attribute.DefaultValue;
-
-                dict.Add(new FormField
-                {
-                    DataType = property.PropertyType, Key = attribute.Name, Value = attributeValue,
-                    Type = attribute.Type, PossibleValue = attribute.PossibleValues
-                });
-            }
-
-            ViewBag.Settings = dict;
+            ViewBag.HasSettings = instance.HasSettings;
+            ViewBag.View = instance.GetSettingsView();
+            ViewBag.Schema = instance.GetSettingsSchema();
+            ViewBag.Settings = incomingFeed.Settings?.ToObject(instance.GetSettingsType());
 
             await InitializeViewBag(currentUser);
         }
@@ -472,35 +482,41 @@ namespace DocIntel.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             Guid id,
-            [Bind(
-                "ImporterId,Status,CollectionDelay,FetchingUserId,Limit,OverrideClassification,OverrideReleasableTo,OverrideEyesOnly,ClassificationId")]
-            Importer submittedImporter,
+            [FromForm] Importer submittedImporter,
             [Bind(Prefix = "releasableTo")] Guid[] releasableTo,
-            [Bind(Prefix = "eyesOnly")] Guid[] eyesOnly
+            [Bind(Prefix = "eyesOnly")] Guid[] eyesOnly,
+            [Bind(Prefix = "tags")] Guid[] tags
         )
         {
             var currentUser = await GetCurrentUser();
-
             try
             {
                 var incomingFeed = await _incomingFeedRepository.GetAsync(
                     AmbientContext,
                     submittedImporter.ImporterId,
-                    _ => _.Include(__ => __.ReleasableTo).Include(__ => __.EyesOnly));
+                    _ => _.Include(__ => __.Tags).ThenInclude(__ => __.Facet)
+                        .Include(__ => __.Classification)
+                        .Include(__ => __.ReleasableTo)
+                        .Include(__ => __.EyesOnly));
 
                 try
                 {
                     if (ModelState.IsValid)
                     {
+                        incomingFeed.Name = submittedImporter.Name;
+                        incomingFeed.Description = submittedImporter.Description;
                         incomingFeed.Status = submittedImporter.Status;
                         incomingFeed.CollectionDelay = submittedImporter.CollectionDelay;
                         incomingFeed.FetchingUserId = submittedImporter.FetchingUserId;
                         incomingFeed.Limit = submittedImporter.Limit;
+                        incomingFeed.SkipInbox = submittedImporter.SkipInbox;
                         incomingFeed.OverrideClassification = submittedImporter.OverrideClassification;
                         incomingFeed.OverrideReleasableTo = submittedImporter.OverrideReleasableTo;
                         incomingFeed.OverrideEyesOnly = submittedImporter.OverrideEyesOnly;
                         incomingFeed.ClassificationId = submittedImporter.ClassificationId;
+                        incomingFeed.OverrideSource = submittedImporter.OverrideSource;
                         incomingFeed.SourceId = submittedImporter.SourceId;
+                        await UpdateTags(tags, incomingFeed);
 
                         var filteredRelTo = await _groupRepository
                             .GetAllAsync(AmbientContext, new GroupQuery {Id = releasableTo}).ToListAsync();
@@ -583,6 +599,39 @@ namespace DocIntel.WebApp.Controllers
             }
         }
 
+        private async Task UpdateTags(Guid[] tags, Importer incomingFeed)
+        {
+            if (tags == null || !tags.Any())
+            {
+                _logger.LogDebug("Clear all tags");
+                incomingFeed.Tags?.Clear();
+                return;
+            }
+
+            var listAsync = await _tagRepository.GetAllAsync(AmbientContext, new TagQuery()
+            {
+                Ids = tags, Limit = -1
+            }).ToListAsync();
+            
+            var removedTags = incomingFeed.Tags?.Except(listAsync, _ => _.TagId).ToArray() ?? Enumerable.Empty<Tag>();
+            var newTags = listAsync?.Except(incomingFeed.Tags, _ => _.TagId).ToArray() ?? Enumerable.Empty<Tag>();
+            
+            if (incomingFeed.Tags == null)
+                incomingFeed.Tags = new List<Tag>();
+            
+            foreach (var newTag in newTags)
+            {
+                incomingFeed.Tags.Add(newTag);
+                _logger.LogTrace("Add '" + newTag.FriendlyName + "' tag to importer");
+            }
+
+            foreach (var removeTag in removedTags)
+            {
+                incomingFeed.Tags.Remove(removeTag);
+                _logger.LogTrace("Remove '" + removeTag.FriendlyName+ "' tag from importer");
+            }
+        }
+
         [HttpGet("IncomingFeed/Configure/{id}")]
         public async Task<IActionResult> Configure(Guid id)
         {
@@ -594,6 +643,10 @@ namespace DocIntel.WebApp.Controllers
                     id,
                     __ => __.Include(_ => _.Classification).Include(_ => _.ReleasableTo).Include(_ => _.EyesOnly));
 
+                var instance = await ImporterFactory.CreateImporter(incomingFeed, _serviceProvider, AmbientContext);
+                if (!instance.HasSettings)
+                    return RedirectToAction((nameof(Details)), new { id });
+                
                 _logger.Log(LogLevel.Information, EventIDs.EditIncomingFeedSuccessful,
                     new LogEvent(
                             $"User '{currentUser.UserName}' successfully requested the view to edit the incoming feed '{incomingFeed.Name}'.")
@@ -640,7 +693,7 @@ namespace DocIntel.WebApp.Controllers
         public async Task<IActionResult> Configure(
             Guid id,
             [Bind("ImporterId")] Importer submittedImporter,
-            [Bind("Settings")] Dictionary<string, string> settings
+            [FromForm(Name="Settings")] string settings
         )
         {
             var currentUser = await GetCurrentUser();
@@ -652,11 +705,15 @@ namespace DocIntel.WebApp.Controllers
                     submittedImporter.ImporterId,
                     _ => _.Include(__ => __.ReleasableTo).Include(__ => __.EyesOnly));
 
+                var instance = await ImporterFactory.CreateImporter(incomingFeed, _serviceProvider, AmbientContext);
+                if (!instance.HasSettings)
+                    return RedirectToAction((nameof(Details)), new { id });
+                
                 var json = JObject.Parse("{}");
                 if (settings != null)
                     try
                     {
-                        json = JObject.FromObject(settings);
+                        json = JObject.Parse(settings);
                     }
                     catch (JsonReaderException e)
                     {
@@ -675,10 +732,7 @@ namespace DocIntel.WebApp.Controllers
                 {
                     if (ModelState.IsValid)
                     {
-                        if (incomingFeed.Settings != null)
-                            incomingFeed.Settings.Merge(json);
-                        else
-                            incomingFeed.Settings = json;
+                        incomingFeed.Settings = json;
 
                         await _incomingFeedRepository.UpdateAsync(
                             AmbientContext,

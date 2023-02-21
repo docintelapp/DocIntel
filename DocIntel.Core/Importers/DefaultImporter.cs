@@ -23,10 +23,13 @@ using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
+using Json.Schema;
+using Json.Schema.Generation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using JsonSchema = Json.Schema.JsonSchema;
 
 namespace DocIntel.Core.Importers
 {
@@ -93,5 +96,26 @@ namespace DocIntel.Core.Importers
         }
 
         public abstract IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit);
+        
+        public JsonSchema GetSettingsSchema()
+        {
+            var generator = GetGenerator();
+            return generator.FromType(GetSettingsType()).Build();
+        }
+        
+        public abstract Type GetSettingsType();
+        public virtual string GetSettingsView()
+        {
+            return string.Empty;
+        }
+
+        public virtual bool HasSettings => false;
+
+        private JsonSchemaBuilder GetGenerator()
+        {
+            var generator = new JsonSchemaBuilder();
+            
+            return generator;
+        }
     }
 }

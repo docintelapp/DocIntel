@@ -36,6 +36,7 @@ namespace DocIntel.Core.Importers
 
         private readonly ILogger<ThreatConnectImporter> _logger;
         private readonly ApplicationSettings _settings;
+        public override bool HasSettings => true;
 
         public ThreatConnectImporter(IServiceProvider serviceProvider, Importer importer) : base(serviceProvider)
         {
@@ -44,23 +45,20 @@ namespace DocIntel.Core.Importers
             _settings = (ApplicationSettings) serviceProvider.GetService(typeof(ApplicationSettings));
             _importer = importer;
         }
-
-        [ImporterSetting("AccessId")] public string AccessId { get; set; }
-
-        [ImporterSetting("SecretKey")] public string SecretKey { get; set; }
-
-        [ImporterSetting("Owner")] public string Owner { get; set; }
+        
 
         public override async IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit)
         {
             _logger.LogDebug(
                 $"Pulling {GetType().FullName} from {lastPull?.ToString() ?? "(not date)"} but max {limit} documents.");
+            
+            var importSettings = _importer.Settings.ToObject<ThreatConnectSettings>();
 
-            if (!string.IsNullOrEmpty(AccessId) && !string.IsNullOrEmpty(SecretKey))
+            if (!string.IsNullOrEmpty(importSettings.AccessId) && !string.IsNullOrEmpty(importSettings.SecretKey))
             {
-                var client = new APIClient(AccessId, SecretKey,
+                var client = new APIClient(importSettings.AccessId, importSettings.SecretKey,
                     new WebProxy("http://" + _settings.Proxy + "/", true, new[] {_settings.NoProxy}));
-                var groupParameter = new GroupParameter {Owner = Owner, Limit = limit};
+                var groupParameter = new GroupParameter {Owner = importSettings.Owner, Limit = limit};
                 if (lastPull != null) groupParameter.DateAdded = ">" + lastPull?.ToString("yyyy-MM-dd");
 
                 var groups = await client.Groups.GetGroups(GroupType.Reports, groupParameter);
@@ -83,6 +81,18 @@ namespace DocIntel.Core.Importers
             {
                 _logger.LogDebug("Invalid AccessKey or SecretKey");
             }
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(ThreatConnectSettings));
+        }
+
+        class ThreatConnectSettings
+        {
+            public string AccessId { get; set; }
+            public string SecretKey { get; set; }
+            public string Owner { get; set; }
         }
     }
 }

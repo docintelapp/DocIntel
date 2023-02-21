@@ -50,7 +50,7 @@ namespace DocIntel.Core.Scrapers
         private readonly ILogger<MailboxScraper> _logger;
         private readonly Scraper _scraper;
         private readonly ApplicationSettings _settings;
-
+        public override bool HasSettings => true;
         public MailboxScraper(Scraper scraper, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _scraper = scraper;
@@ -58,32 +58,10 @@ namespace DocIntel.Core.Scrapers
             _settings = (ApplicationSettings) serviceProvider.GetService(typeof(ApplicationSettings));
         }
 
-        [ScraperSetting("Host")] public string Host { get; set; }
-
-        [ScraperSetting("Port", DefaultValue = "0")]
-        public int Port { get; set; }
-
-        [ScraperSetting("SSL", DefaultValue = "true")]
-        public bool SSL { get; set; }
-
-        [ScraperSetting("Email")] public string Email { get; set; }
-
-        [ScraperSetting("Username")] public string Username { get; set; }
-
-        [ScraperSetting("Password", Type = AttributeFieldType.Password)]
-        public string Password { get; set; }
-
-        [ScraperSetting("Mark as read", DefaultValue = "false")]
-        public bool MarkAsRead { get; set; }
-
-        [ScraperSetting("Move when processed", DefaultValue = "false")]
-        public bool MoveWhenProcessed { get; set; }
-
-        [ScraperSetting("Move To", DefaultValue = "")]
-        public string MoveFolder { get; set; }
-
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
+            var scraperSettings = _scraper.Settings.ToObject<MailboxSettings>();
+            
             Init();
             var context = await GetContextAsync();
             var match = Regex.Match(message.URL, @"imap://([A-Za-z@\.-_]+)/([a-zA-Z\.-_]+)/;uid=(.+)");
@@ -91,11 +69,11 @@ namespace DocIntel.Core.Scrapers
             var inbox = match.Groups[2].ToString();
             var uid = match.Groups[3].ToString();
 
-            if (email != Email)
+            if (email != scraperSettings.Email)
                 return true;
 
             Source source = null;
-            if (message.SourceId != null)
+            if (message.OverrideSource & message.SourceId != null)
             {
                 source = await _sourceRepository.GetAsync(context, (Guid)message.SourceId);
             }
@@ -111,15 +89,17 @@ namespace DocIntel.Core.Scrapers
         private async Task ImportEmail(AmbientContext context, string uid, SubmittedDocument submittedDocument,
             Source source)
         {
-            if (!string.IsNullOrEmpty(Host) && !string.IsNullOrEmpty(Username))
+            var scraperSettings = _scraper.Settings.ToObject<MailboxSettings>();
+            
+            if (!string.IsNullOrEmpty(scraperSettings.Host) && !string.IsNullOrEmpty(scraperSettings.Username))
                 using (var client = new ImapClient())
                 {
-                    if (SSL)
-                        await client.ConnectAsync(Host, Port, SecureSocketOptions.SslOnConnect);
+                    if (scraperSettings.SSL)
+                        await client.ConnectAsync(scraperSettings.Host, scraperSettings.Port, SecureSocketOptions.SslOnConnect);
                     else
-                        await client.ConnectAsync(Host, Port);
+                        await client.ConnectAsync(scraperSettings.Host, scraperSettings.Port);
 
-                    await client.AuthenticateAsync(Username, Password);
+                    await client.AuthenticateAsync(scraperSettings.Username, scraperSettings.Password);
                     _logger.LogDebug("Authenticated");
 
                     await client.Inbox.OpenAsync(FolderAccess.ReadWrite);
@@ -190,14 +170,14 @@ namespace DocIntel.Core.Scrapers
                         if (allFilesKnown) context.DatabaseContext.Entry(document).State = EntityState.Detached;
                     }
 
-                    if (MarkAsRead) await client.Inbox.AddFlagsAsync(uniqueIds, MessageFlags.Seen, true);
+                    if (scraperSettings.MarkAsRead) await client.Inbox.AddFlagsAsync(uniqueIds, MessageFlags.Seen, true);
 
-                    if (MoveWhenProcessed)
+                    if (scraperSettings.MoveWhenProcessed)
                     {
                         foreach (var folder in client.Inbox.GetSubfolders())
                             _logger.LogDebug("[folder] {0}", folder.FullName);
 
-                        var dest = await client.Inbox.GetSubfolderAsync(MoveFolder);
+                        var dest = await client.Inbox.GetSubfolderAsync(scraperSettings.MoveFolder);
                         await client.Inbox.MoveToAsync(uniqueIds, dest);
                     }
 
@@ -205,6 +185,24 @@ namespace DocIntel.Core.Scrapers
                 }
             else
                 _logger.LogDebug("Invalid AccessKey or SecretKey");
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(MailboxSettings));
+        }
+
+        public class MailboxSettings
+        {
+            public string Host { get; set; }
+            public int Port { get; set; }
+            public bool SSL { get; set; }
+            public string Email { get; set; }
+            public string Username { get; set; }
+            public string Password { get; set; }
+            public bool MarkAsRead { get; set; }
+            public bool MoveWhenProcessed { get; set; }
+            public string MoveFolder { get; set; }
         }
     }
 }

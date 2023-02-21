@@ -16,15 +16,19 @@
     @Html.AntiForgeryToken()
 
     <div class="row">
-        <div class="col-9">
-            <div id="panel-danger" class="panel">
-                <div class="panel-hdr bg-danger-900 bg-info-gradient">
-                    <h2>
-                        Are you sure you want to delete the importer '@Model.Name'?
-                    </h2>
-                </div>
-
-            </div>
+        <div class="col-12">
+            
+            <div class="alert bg-danger-400 text-white fade show" role="alert">
+                            <div class="d-flex align-items-center">
+                                <div class="alert-icon">
+                                    <i class="fal fa-exclamation-circle"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <span class="h5">Are you sure you want to delete the importer '@Model.Name'?</span>
+                                </div>
+                            </div>
+                        </div>
+            
         </div>
     </div>
 

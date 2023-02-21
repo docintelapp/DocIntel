@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DocIntel.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Newtonsoft.Json.Linq;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DocIntel.Core.Migrations
 {
     [DbContext(typeof(DocIntelContext))]
-    partial class DocIntelContextModelSnapshot : ModelSnapshot
+    [Migration("20230221162859_ImportersAndScrapersUpdates")]
+    partial class ImportersAndScrapersUpdates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

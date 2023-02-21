@@ -50,7 +50,7 @@ namespace DocIntel.Core.Scrapers
         private readonly ILogger<ThreatConnectScraper> _logger;
         private readonly Scraper _scraper;
         private readonly ApplicationSettings _settings;
-
+        public override bool HasSettings => true;
         public ThreatConnectScraper(Scraper scraper, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = (ILogger<ThreatConnectScraper>) serviceProvider.GetService(typeof(ILogger<ThreatConnectScraper>));
@@ -58,14 +58,9 @@ namespace DocIntel.Core.Scrapers
             _scraper = scraper;
         }
 
-        [ScraperSetting("AccessId")] public string AccessId { get; set; }
-
-        [ScraperSetting("SecretKey")] public string SecretKey { get; set; }
-
-        [ScraperSetting("Owner")] public string Owner { get; set; }
-
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
+            var scraperSettings = _scraper.Settings.ToObject<ThreatConnectSettings>();
             Init();
             var context = await GetContextAsync();
             var match = Regex.Match(message.URL,
@@ -73,9 +68,9 @@ namespace DocIntel.Core.Scrapers
             var endpoint = match.Groups[1].ToString();
             var articleGUID = match.Groups[4].ToString();
 
-            var client = new APIClient(AccessId, SecretKey,
+            var client = new APIClient(scraperSettings.AccessId, scraperSettings.SecretKey,
                 new WebProxy("http://" + _settings.Proxy + "/", true, new[] {_settings.NoProxy}));
-            var groupParameter = new GroupParameter {Owner = Owner};
+            var groupParameter = new GroupParameter {Owner = scraperSettings.Owner};
 
             if (endpoint == "report")
             {
@@ -291,6 +286,18 @@ namespace DocIntel.Core.Scrapers
 
             _documentRepository.DeleteSubmittedDocument(context, message.SubmittedDocumentId);
             await context.DatabaseContext.SaveChangesAsync();
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(ThreatConnectSettings));
+        }
+        
+        class ThreatConnectSettings
+        {
+            public string AccessId { get; set; }
+            public string SecretKey { get; set; }
+            public string Owner { get; set; }
         }
     }
 }

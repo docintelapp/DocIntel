@@ -1,0 +1,19 @@
+@model DocIntel.Core.Importers.FireEyeImporter.FireEyeSettings
+
+<div class="row mb-2">
+    <div class="col-6">
+        <strong>API Key</strong>
+    </div>
+    <div class="col-6">
+        @Model.ApiKey
+    </div>
+</div>
+
+<div class="row mb-2">
+    <div class="col-6">
+        <strong>Secret</strong>
+    </div>
+    <div class="col-6">
+        <span class="text-blur">@(new string('*', Model.SecretKey?.Length ?? 0))</span>
+    </div>
+</div>

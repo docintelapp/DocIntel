@@ -52,6 +52,8 @@ namespace DocIntel.Core.Scrapers
         private readonly Scraper _scraper;
         private readonly ApplicationSettings _settings;
 
+        public override bool HasSettings => true;
+        
         public FireEyeScraper(Scraper scraper, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _scraper = scraper;
@@ -59,17 +61,13 @@ namespace DocIntel.Core.Scrapers
             _settings = (ApplicationSettings) serviceProvider.GetService(typeof(ApplicationSettings));
         }
 
-        [ScraperSetting("ApiKey")] public string ApiKey { get; set; }
-
-        [ScraperSetting("SecretKey", Type = AttributeFieldType.Password)]
-        public string SecretKey { get; set; }
-
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
+            var scraperSettings = _scraper.Settings.ToObject<FireEyeSettings>();
             Init();
-            if (!string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(SecretKey))
+            if (!string.IsNullOrEmpty(scraperSettings.ApiKey) && !string.IsNullOrEmpty(scraperSettings.SecretKey))
             {
-                var client = new FireEyeAPI(ApiKey, SecretKey,
+                var client = new FireEyeAPI(scraperSettings.ApiKey, scraperSettings.SecretKey,
                     proxy: new WebProxy("http://" + _settings.Proxy + "/", true, new[] {_settings.NoProxy}));
                 var context = await GetContextAsync();
                 var match = Regex.Match(message.URL, @"https://intelligence.fireeye.com/reports/(.+)");
@@ -467,6 +465,17 @@ namespace DocIntel.Core.Scrapers
         {
             var audiences = jsonResult.Audience;
             foreach (var audience in audiences) tags.Add("audience:" + audience);
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(FireEyeSettings));
+        }
+        
+        class FireEyeSettings
+        {
+            public string ApiKey { get; set; }
+            public string SecretKey { get; set; }
         }
     }
 }

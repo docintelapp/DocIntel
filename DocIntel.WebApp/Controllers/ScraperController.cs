@@ -18,11 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
+using DocIntel.Core.Helpers;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
@@ -33,7 +33,6 @@ using DocIntel.WebApp.Helpers;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -53,9 +52,9 @@ namespace DocIntel.WebApp.Controllers
         private readonly IClassificationRepository _classificationRepository;
 
         private readonly IGroupRepository _groupRepository;
-        private readonly IImportRuleRepository _importRulesRepository;
         private readonly ILogger _logger;
         private readonly IScraperRepository _scraperRepository;
+        private readonly ITagRepository _tagRepository;
         private readonly IServiceProvider _serviceProvider;
 
         public ScraperController(IAppAuthorizationService appAuthorizationService,
@@ -67,7 +66,7 @@ namespace DocIntel.WebApp.Controllers
             IScraperRepository scraperRepository,
             IHttpContextAccessor accessor, IServiceProvider serviceProvider,
             IImportRuleRepository importRulesRepository, IGroupRepository groupRepository, ApplicationSettings setting,
-            IClassificationRepository classificationRepository)
+            IClassificationRepository classificationRepository, ITagRepository tagRepository)
             : base(context,
                 userManager,
                 configuration,
@@ -78,9 +77,9 @@ namespace DocIntel.WebApp.Controllers
             _scraperRepository = scraperRepository;
             _accessor = accessor;
             _serviceProvider = serviceProvider;
-            _importRulesRepository = importRulesRepository;
             _groupRepository = groupRepository;
             _classificationRepository = classificationRepository;
+            _tagRepository = tagRepository;
         }
 
         /// <summary>
@@ -146,7 +145,9 @@ namespace DocIntel.WebApp.Controllers
                 var scraper = await _scraperRepository.GetAsync(
                     AmbientContext,
                     id,
-                    _ => _.Include(__ => __.Classification)
+                    _ => _.AsNoTracking()
+                        .Include(__ => __.Classification)
+                        .Include(__ => __.Tags).ThenInclude(__ => __.Facet)
                         .Include(__ => __.ReleasableTo)
                         .Include(__ => __.EyesOnly)
                         .Include(__ => __.Source));
@@ -271,11 +272,10 @@ namespace DocIntel.WebApp.Controllers
         [HttpPost("Scraper/Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind(
-                "Name,Description,Enabled,ReferenceClass,SkipInbox,SourceId,Position,OverrideSource,OverrideClassification,OverrideReleasableTo,OverrideEyesOnly,ClassificationId")]
-            Scraper submittedScraper,
+            [FromForm] Scraper submittedScraper,
             [Bind(Prefix = "releasableTo")] Guid[] releasableTo,
             [Bind(Prefix = "eyesOnly")] Guid[] eyesOnly,
+            [Bind(Prefix = "tags")] Guid[] tags,
             [Bind(Prefix = "Scraper")] string scraperId)
         {
             var currentUser = await GetCurrentUser();
@@ -288,6 +288,10 @@ namespace DocIntel.WebApp.Controllers
                         await ScraperFactory.CreateScraper(Guid.Parse(scraperId), _serviceProvider, AmbientContext);
 
                     var scraper = instance.Install();
+                    if (!string.IsNullOrEmpty(submittedScraper.Name))
+                        scraper.Name = submittedScraper.Name;
+                    if (!string.IsNullOrEmpty(submittedScraper.Description))
+                        scraper.Description = submittedScraper.Description;
                     scraper.Enabled = submittedScraper.Enabled;
                     scraper.SkipInbox = submittedScraper.SkipInbox;
                     scraper.OverrideSource = submittedScraper.OverrideSource;
@@ -297,6 +301,7 @@ namespace DocIntel.WebApp.Controllers
                     scraper.OverrideReleasableTo = submittedScraper.OverrideReleasableTo;
                     scraper.OverrideEyesOnly = submittedScraper.OverrideEyesOnly;
                     scraper.ClassificationId = submittedScraper.ClassificationId;
+                    await UpdateTags(tags, scraper);
 
                     var filteredRelTo = await _groupRepository
                         .GetAllAsync(AmbientContext, new GroupQuery {Id = releasableTo}).ToListAsync();
@@ -322,9 +327,14 @@ namespace DocIntel.WebApp.Controllers
                         null,
                         LogEvent.Formatter);
 
-                    return RedirectToAction(
-                        nameof(Configure),
-                        new {id = scraper.ScraperId});
+                    if (instance.HasSettings)
+                        return RedirectToAction(
+                            nameof(Configure),
+                            new {id = scraper.ScraperId});
+                    else
+                        return RedirectToAction(
+                            nameof(Details),
+                            new {id = scraper.ScraperId});
                 }
 
                 return View(submittedScraper);
@@ -385,8 +395,12 @@ namespace DocIntel.WebApp.Controllers
                 var scraper = await _scraperRepository.GetAsync(
                     AmbientContext,
                     id,
-                    _ => _.Include(__ => __.Classification).Include(__ => __.ReleasableTo)
-                        .Include(__ => __.EyesOnly).Include(__ => __.Source));
+                    _ => _.AsNoTracking()
+                        .Include(__ => __.Classification)
+                        .Include(__ => __.Tags).ThenInclude(__ => __.Facet)
+                        .Include(__ => __.ReleasableTo)
+                        .Include(__ => __.EyesOnly)
+                        .Include(__ => __.Source));
 
                 if (scraper.Settings != null) ViewData["settings"] = scraper.Settings.ToString();
 
@@ -436,31 +450,11 @@ namespace DocIntel.WebApp.Controllers
 
         private async Task InitializeViewBag(Guid id, Scraper scraper, AppUser currentUser)
         {
-            await InitializeViewBag(currentUser);
-
             var instance = await ScraperFactory.CreateScraper(scraper.ReferenceClass, _serviceProvider, AmbientContext);
-            var stringProperties = instance.GetType().GetProperties()
-                .Where(property =>
-                {
-                    var attribute = property.GetCustomAttribute<ScraperSettingAttribute>();
-                    return attribute != null;
-                });
-
-            var dict = new List<FormField>();
-            foreach (var property in stringProperties)
-            {
-                var attribute = property.GetCustomAttribute<ScraperSettingAttribute>();
-                var attributeValue = attribute.DefaultValue;
-                if (scraper.Settings != null)
-                    attributeValue = scraper.Settings[attribute.Name]?.ToString() ?? attribute.DefaultValue;
-                dict.Add(new FormField
-                {
-                    DataType = property.PropertyType, Key = attribute.Name, Value = attributeValue,
-                    Type = attribute.Type, PossibleValue = attribute.PossibleValues
-                });
-            }
-
-            ViewBag.Settings = dict;
+            ViewBag.HasSettings = instance.HasSettings;
+            ViewBag.View = instance.GetSettingsView();
+            ViewBag.Schema = instance.GetSettingsSchema();
+            ViewBag.Settings = scraper.Settings?.ToObject(instance.GetSettingsType());
 
             await InitializeViewBag(currentUser);
         }
@@ -484,12 +478,11 @@ namespace DocIntel.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             Guid id,
-            [Bind(
-                "ScraperId,Name,Description,Enabled,ReferenceClass,SkipInbox,SourceId,Position,OverrideSource,OverrideClassification,OverrideReleasableTo,OverrideEyesOnly,ClassificationId")]
-            Scraper submittedScraper,
+            [FromForm] Scraper submittedScraper,
             [Bind(Prefix = "ImportRuleSet")] string importRuleSets,
             [Bind(Prefix = "releasableTo")] Guid[] releasableTo,
-            [Bind(Prefix = "eyesOnly")] Guid[] eyesOnly)
+            [Bind(Prefix = "eyesOnly")] Guid[] eyesOnly,
+            [Bind(Prefix = "tags")] Guid[] tags)
         {
             var currentUser = await GetCurrentUser();
 
@@ -499,6 +492,7 @@ namespace DocIntel.WebApp.Controllers
                     AmbientContext,
                     submittedScraper.ScraperId,
                     _ => _.Include(__ => __.Classification)
+                        .Include(__ => __.Tags).ThenInclude(__ => __.Facet)
                         .Include(__ => __.ReleasableTo)
                         .Include(__ => __.EyesOnly)
                         .Include(__ => __.Source));
@@ -507,6 +501,8 @@ namespace DocIntel.WebApp.Controllers
                 {
                     if (ModelState.IsValid)
                     {
+                        scraper.Name = submittedScraper.Name;
+                        scraper.Description = submittedScraper.Description;
                         scraper.Enabled = submittedScraper.Enabled;
                         scraper.SkipInbox = submittedScraper.SkipInbox;
                         scraper.OverrideSource = submittedScraper.OverrideSource;
@@ -516,6 +512,7 @@ namespace DocIntel.WebApp.Controllers
                         scraper.OverrideReleasableTo = submittedScraper.OverrideReleasableTo;
                         scraper.OverrideEyesOnly = submittedScraper.OverrideEyesOnly;
                         scraper.ClassificationId = submittedScraper.ClassificationId;
+                        await UpdateTags(tags, scraper);
 
                         var filteredRelTo = await _groupRepository
                             .GetAllAsync(AmbientContext, new GroupQuery {Id = releasableTo}).ToListAsync();
@@ -611,6 +608,10 @@ namespace DocIntel.WebApp.Controllers
                     id,
                     _ => _.Include(__ => __.Source));
 
+                var instance = await ScraperFactory.CreateScraper(scraper, _serviceProvider, AmbientContext);
+                if (!instance.HasSettings)
+                    return RedirectToAction((nameof(Details)), new { id });
+                
                 _logger.Log(LogLevel.Information,
                     EventIDs.EditScraperSuccessful,
                     new LogEvent(
@@ -658,7 +659,7 @@ namespace DocIntel.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Configure(
             Guid id,
-            [Bind(Prefix = "Settings")] Dictionary<string, string> settings)
+            [Bind(Prefix = "Settings")] string settings)
         {
             var currentUser = await GetCurrentUser();
 
@@ -668,11 +669,15 @@ namespace DocIntel.WebApp.Controllers
                     AmbientContext,
                     id, _ => _.Include(__ => __.Source));
 
+                var instance = await ScraperFactory.CreateScraper(scraper, _serviceProvider, AmbientContext);
+                if (!instance.HasSettings)
+                    return RedirectToAction((nameof(Details)), new { id });
+                
                 var json = JObject.Parse("{}");
                 if (settings != null)
                     try
                     {
-                        json = JObject.FromObject(settings);
+                        json = JObject.Parse(settings);
                     }
                     catch (JsonReaderException e)
                     {
@@ -867,6 +872,42 @@ namespace DocIntel.WebApp.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
+        }
+        
+        private async Task UpdateTags(Guid[] tags, Scraper scraper)
+        {
+            if (tags == null || !tags.Any())
+            {
+                _logger.LogDebug("Clear all tags");
+                scraper.Tags?.Clear();
+                return;
+            }
+
+            var listAsync = await _tagRepository.GetAllAsync(AmbientContext, new TagQuery()
+            {
+                Ids = tags, Limit = -1
+            }).ToListAsync();
+            
+            if (scraper.Tags == null) {
+                _logger.LogTrace("Set tags to '" + string.Join(", ", listAsync.Select(_ => _.FriendlyName)) + "' for scraper");
+                scraper.Tags = listAsync;
+                return;
+            }
+        
+            var removedTags = scraper.Tags.Except(listAsync, _ => _.TagId).ToArray();
+            var newTags = listAsync.Except(scraper.Tags, _ => _.TagId).ToArray();
+            
+            foreach (var newTag in newTags)
+            {
+                scraper.Tags.Add(newTag);
+                _logger.LogTrace("Add '" + newTag.FriendlyName + "' tag to scraper");
+            }
+
+            foreach (var removeTag in removedTags)
+            {
+                scraper.Tags.Remove(removeTag);
+                _logger.LogTrace("Remove '" + removeTag.FriendlyName+ "' tag from scraper");
+            }
         }
     }
 }

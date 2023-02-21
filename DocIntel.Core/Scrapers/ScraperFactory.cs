@@ -94,41 +94,7 @@ namespace DocIntel.Core.Scrapers
             AmbientContext context)
         {
             var instance = (IScraper) Activator.CreateInstance(type, scraper, serviceProvider);
-
-            FillProperties(_ => _?.ToString(), type, scraper, instance);
-            FillProperties(bool.Parse, type, scraper, instance);
-            FillProperties(int.Parse, type, scraper, instance);
-            FillProperties(double.Parse, type, scraper, instance);
-
             return Task.FromResult(instance);
-        }
-
-        private static void FillProperties<T>(Func<string, T> convert, Type importerType, Scraper importer,
-            IScraper instance)
-        {
-            var stringProperties = importerType.GetProperties()
-                .Where(property =>
-                {
-                    var attribute = property.GetCustomAttribute<ScraperSettingAttribute>();
-                    return (property.PropertyType == typeof(T)) & (attribute != null);
-                });
-
-            foreach (var property in stringProperties)
-            {
-                var attribute = property.GetCustomAttribute<ScraperSettingAttribute>();
-                var val = attribute.DefaultValue;
-                if (importer?.Settings != null && importer.Settings.ContainsKey(attribute.Name))
-                    val = importer.Settings[attribute.Name]?.ToString();
-                try
-                {
-                    property.SetValue(instance, !string.IsNullOrEmpty(val) ? convert(val) : default);
-                }
-                catch (FormatException e)
-                {
-                    Console.WriteLine(property.Name);
-                    Console.WriteLine("could not format " + e.StackTrace);
-                }
-            }
         }
     }
 }

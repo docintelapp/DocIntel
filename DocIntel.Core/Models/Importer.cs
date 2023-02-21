@@ -79,6 +79,10 @@ namespace DocIntel.Core.Models
         public ICollection<Group> EyesOnly { get; set; }
         public Guid? SourceId { get; set; }
         public Source Source { get; set; }
+        
+        public ICollection<Tag> Tags { get; set; }
+        public bool OverrideSource { get; set; }
+        public bool SkipInbox { get; set; }
     }
 
     public enum ImporterStatus
@@ -110,5 +114,7 @@ namespace DocIntel.Core.Models
         public ICollection<Group> EyesOnly { get; set; }
         public bool OverrideReleasableTo { get; set; }
         public bool OverrideEyesOnly { get; set; }
+        
+        public ICollection<Tag> Tags { get; set; }
     }
 }

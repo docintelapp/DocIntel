@@ -21,7 +21,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using DocIntel.Core.Models;
-
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Security;
@@ -44,55 +43,22 @@ namespace DocIntel.Core.Importers
             _logger = (ILogger<MailboxImporter>) serviceProvider.GetService(typeof(ILogger<MailboxImporter>));
         }
 
-        [ImporterSetting("Host")] 
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string Host { get; set; }
-
-        [ImporterSetting("Port", DefaultValue = "0")]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public int Port { get; set; }
-
-        [ImporterSetting("SSL", DefaultValue = "true")]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public bool SSL { get; set; }
-
-        [ImporterSetting("Email")]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string Email { get; set; }
-
-        [ImporterSetting("Username")]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string Username { get; set; }
-
-        [ImporterSetting("Password", Type = AttributeFieldType.Password)]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string Password { get; set; }
-
-        [ImporterSetting("SubjectRegex", Type = AttributeFieldType.Text)]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string SubjectRegex { get; set; }
-
         public override async IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit)
         {
             _logger.LogDebug(
                 $"Pulling {GetType().FullName} from {lastPull?.ToString() ?? "(not date)"} but max {limit} documents.");
-
-            if (!string.IsNullOrEmpty(Host) && !string.IsNullOrEmpty(Username))
+            
+            var importSettings = _importer.Settings.ToObject<MailboxSettings>();
+            
+            if (!string.IsNullOrEmpty(importSettings.Host) && !string.IsNullOrEmpty(importSettings.Username))
             {
                 using var client = new ImapClient(new ProtocolLogger("imap.log"));
-                if (SSL)
-                    await client.ConnectAsync(Host, Port, SecureSocketOptions.SslOnConnect);
+                if (importSettings.SSL)
+                    await client.ConnectAsync(importSettings.Host, importSettings.Port, SecureSocketOptions.SslOnConnect);
                 else
-                    await client.ConnectAsync(Host, Port);
+                    await client.ConnectAsync(importSettings.Host, importSettings.Port);
 
-                await client.AuthenticateAsync(Username, Password);
+                await client.AuthenticateAsync(importSettings.Username, importSettings.Password);
                 _logger.LogDebug("Authenticated");
 
                 await client.Inbox.OpenAsync(FolderAccess.ReadOnly);
@@ -109,10 +75,10 @@ namespace DocIntel.Core.Importers
                     if (!message.BodyParts.Any(x => x.IsAttachment && x.ContentType.MimeType == "application/pdf"))
                         continue;
 
-                    if (!Regex.Match(message.Subject, SubjectRegex).Success)
+                    if (!Regex.Match(message.Subject, importSettings.SubjectRegex).Success)
                         continue;
                     
-                    var uri = "imap://" + Email + "/" + client.Inbox.FullName + "/;uid=" + item.UniqueId;
+                    var uri = "imap://" + importSettings.Email + "/" + client.Inbox.FullName + "/;uid=" + item.UniqueId;
                     yield return new SubmittedDocument
                     {
                         Title = item.NormalizedSubject,
@@ -124,6 +90,22 @@ namespace DocIntel.Core.Importers
             }
             else
                 _logger.LogDebug("Invalid AccessKey or SecretKey");
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(MailboxSettings));
+        }
+
+        class MailboxSettings
+        {
+            public string Host { get; set; }
+            public int Port { get; set; }
+            public bool SSL { get; set; }
+            public string Email { get; set; }
+            public string Username { get; set; }
+            public string Password { get; set; }
+            public string SubjectRegex { get; set; }
         }
     }
 }

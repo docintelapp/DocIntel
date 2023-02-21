@@ -29,7 +29,7 @@
 
 <div class="row">
     <div class="col-12">
-        @if (Model != null)
+        @if (Model != null && Model.Any())
         {
             <div id="panel-source-info" class="panel">
                 <div class="panel-hdr">
@@ -54,7 +54,7 @@
                             <div class="row d-flex mb-3">
                                 <div class="col-8">
                                     <p class="mb-0">
-                                        <strong>@t.Name</strong>
+                                        <a asp-action="Details" asp-route-id="@t.ImporterId" >@t.Name</a>
                                         <span class="badge @badgeColor ml-1">@t.Status</span>
                                     </p>
                                     <p class="text-muted mb-0">@t.Description</p>
@@ -79,12 +79,6 @@
                                         </text>
                                     }
                                 </div>
-                                <div class="col-2 text-right">
-                                    <div class="btn-group btn-group-sm">
-                                        <a asp-action="Edit" asp-route-id="@t.ImporterId" class= "btn btn-pills btn-default waves-effect waves-themed">Edit</a>
-                                        <a asp-action="Uninstall" asp-route-id="@t.ImporterId" class= "btn btn-pills btn-default waves-effect waves-themed">Uninstall</a>
-                                    </div>
-                                </div>
                             </div>
                         }
                     </div>
@@ -93,9 +87,15 @@
         }
         else
         {
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">There is no plugins!</h5>
+            <div class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="text-center fs-xl m-3">
+                            <i class="fal fa-inbox-in fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            We found no importer.<br/>
+                            <small>Setup one or contact your administrator.</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         }

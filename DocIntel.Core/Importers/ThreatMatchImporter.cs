@@ -35,36 +35,30 @@ namespace DocIntel.Core.Importers
         private readonly ILogger<ThreatMatchImporter> _logger;
         private readonly Importer _importer;
         private readonly ApplicationSettings _settings;
-
-        [ImporterSetting("Username")]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string Username { get; set; }
+        public override bool HasSettings => true;
         
-        [ImporterSetting("APIKey", Type = AttributeFieldType.Password)]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string APIKey { get; set; }
-
         public ThreatMatchImporter(IServiceProvider serviceProvider, Importer importer) : base(serviceProvider)
         {
             _logger = (ILogger<ThreatMatchImporter>) serviceProvider.GetService(typeof(ILogger<ThreatMatchImporter>));
             _settings = (ApplicationSettings) serviceProvider.GetService(typeof(ApplicationSettings));
             _importer = importer;
         }
-#pragma warning disable CS1998
+        
         public override async IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit)
-#pragma warning restore CS1998
         {
             _logger.LogDebug(
                 $"Pulling {this.GetType().FullName} from {(lastPull?.ToString() ?? "(not date)")} but max {limit} documents.");
+
+            var importSettings = _importer.Settings.ToObject<ThreatMatchSettings>();
             
-            if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(APIKey))
+            if (!string.IsNullOrEmpty(importSettings.Username) && !string.IsNullOrEmpty(importSettings.APIKey))
             {
                 WebProxy webProxy = null;
                 if (!string.IsNullOrEmpty(_settings.Proxy))
                     webProxy = new WebProxy(_settings.Proxy, true, new[] {_settings.NoProxy});
-                var client = webProxy != null ? new APIClient(Username, APIKey, webProxy) : new APIClient(Username, APIKey);
+                var client = webProxy != null ? new APIClient(importSettings.Username, importSettings.APIKey, webProxy) 
+                    : new APIClient(importSettings.Username, importSettings.APIKey);
+                
                 var reports = client.Reports.GetReports(lastPull != null
                     ? new ReportFilter()
                     {
@@ -84,6 +78,17 @@ namespace DocIntel.Core.Importers
                     };
                 }
             }
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(ThreatMatchSettings));
+        }
+
+        class ThreatMatchSettings
+        {
+            public string Username { get; set; }
+            public string APIKey { get; set; }
         }
     }
 }

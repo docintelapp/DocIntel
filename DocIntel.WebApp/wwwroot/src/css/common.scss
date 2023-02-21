@@ -110,3 +110,12 @@
 .dt-buttons {
   margin-left: 1.5rem;
 }
+
+#editor_holder { 
+  .card-title {
+    display: none !important;
+  }
+  .card-body {
+    margin-top: 0 !important;  
+  }
+}

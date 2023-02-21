@@ -1,0 +1,37 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Scraper
+
+<div id="panel-basic" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Source
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+
+            <div class="form-group mb-2">
+                <div class="custom-control custom-switch">
+                    @Html.CheckBoxFor(_ => _.OverrideSource, new {@class = "custom-control-input"})
+                    <label class="custom-control-label" asp-for="OverrideSource">Override Source?</label>
+                </div>
+                @Html.HelpTextFor(_ => _.OverrideSource)
+                <span asp-validation-for="OverrideSource" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" style="padding-left: 2.46875rem">
+                <select data-placeholder="Select a source" class="autocomplete-source form-control" name="SourceId">
+                    @if (Model.SourceId != null)
+                    {
+                        <option selected="" value="@Model.SourceId">@(Model.Source?.Title ?? Model.SourceId.ToString())</option>
+                    }
+                </select>
+                <span asp-validation-for="SourceId" class="text-danger"></span>
+            </div>
+            
+        </div>
+    </div>
+</div>

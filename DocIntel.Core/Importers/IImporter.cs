@@ -19,6 +19,9 @@ using System;
 using System.Collections.Generic;
 
 using DocIntel.Core.Models;
+using Json.Schema;
+using Newtonsoft.Json.Schema;
+using JsonSchema = Json.Schema.JsonSchema;
 
 namespace DocIntel.Core.Importers
 {
@@ -28,5 +31,10 @@ namespace DocIntel.Core.Importers
         // TODO Check if install is still a required method
         Importer Install();
         IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit);
+
+        JsonSchema GetSettingsSchema();
+        Type GetSettingsType();
+        string GetSettingsView();
+        bool HasSettings { get; }
     }
 }

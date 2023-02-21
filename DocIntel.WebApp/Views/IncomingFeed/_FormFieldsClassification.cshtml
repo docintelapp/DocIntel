@@ -13,7 +13,7 @@
     <div class="panel-container show">
         <div class="panel-content">
 
-            <div class="form-group">
+            <div class="form-group mb-2">
                 <div class="custom-control custom-switch">
                     @Html.CheckBoxFor(_ => _.OverrideClassification, new {@class = "custom-control-input"})
                     <label class="custom-control-label" asp-for="OverrideClassification">Override Classification?</label>
@@ -22,8 +22,7 @@
                 <span asp-validation-for="OverrideClassification" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label asp-for="ClassificationId" class="control-label">Classification</label>
+            <div class="form-group" style="padding-left: 2.46875rem">
                 <select name="ClassificationId" class="form-control select2">
                     @foreach (var g in (IEnumerable<Classification>) ViewBag.AllClassifications)
                     {
@@ -40,7 +39,7 @@
                 <span asp-validation-for="ClassificationId" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-2">
                 <div class="custom-control custom-switch">
                     @Html.CheckBoxFor(_ => _.OverrideReleasableTo, new {@class = "custom-control-input"})
                     <label class="custom-control-label" asp-for="OverrideReleasableTo">Override ReleasableTo?</label>
@@ -49,8 +48,7 @@
                 <span asp-validation-for="OverrideReleasableTo" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Releasable To</label>
+            <div class="form-group" style="padding-left: 2.46875rem">
                 <select class="select2 form-control" name="releasableTo" multiple="multiple">
                     @foreach (var tag in (List<Group>) ViewBag.AllGroups)
                     {
@@ -66,7 +64,7 @@
                 </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-2">
                 <div class="custom-control custom-switch">
                     @Html.CheckBoxFor(_ => _.OverrideEyesOnly, new {@class = "custom-control-input"})
                     <label class="custom-control-label" asp-for="OverrideEyesOnly">Override Eyes Only?</label>
@@ -75,8 +73,7 @@
                 <span asp-validation-for="OverrideEyesOnly" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Eyes Only</label>
+            <div class="form-group" style="padding-left: 2.46875rem">
                 <select class="select2 form-control" name="eyesOnly" multiple="multiple">
                     @foreach (var tag in (List<Group>) ViewBag.AllGroups)
                     {

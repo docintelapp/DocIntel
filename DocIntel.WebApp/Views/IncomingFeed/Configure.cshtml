@@ -1,5 +1,8 @@
-﻿@using DocIntel.Core.Importers
-@using Microsoft.AspNetCore.Mvc.TagHelpers
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using System.Text
+@using Json.Schema
+@using Newtonsoft.Json
+@using JsonSerializer = System.Text.Json.JsonSerializer
 @model Importer
 
 @{
@@ -11,6 +14,7 @@
         <i class="fal fa-inbox-in subheader-icon"></i> @ViewData["Title"]
     </h1>
 </div>
+
 
 
 <div class="row">
@@ -36,57 +40,13 @@
         <form asp-action="Configure">
             @Html.AntiForgeryToken()
             <input asp-for="ImporterId" type="hidden"/>
+            <input asp-for="Settings" type="hidden"/>
 
-            <div id="panel-source-info" class="panel">
-                <div class="panel-container show">
-                    <div class="panel-content">
-                        @{ var i = 0; }
-                        @foreach (var setting in (List<FormField>) ViewBag.Settings)
-                        {
-                            <div class="form-group">
-                                <input type="hidden" name="Settings[@i].Key" value="@setting.Key"/>
-                                @if ((setting.DataType == typeof(bool)) & false)
-                                {
-                                    <div class="custom-control custom-switch">
-                                        @if (bool.Parse(setting.Value))
-                                        {
-                                            <input checked="checked" class="custom-control-input" id="Settings[@i].Value" name="Settings[@i].Value" type="checkbox" value="true"/>
-                                        }
-                                        else
-                                        {
-                                            <input class="custom-control-input" id="Settings[@i].Value" name="Settings[@i].Value" type="checkbox" value="true"/>
-                                        }
-                                        <label class="control-label">@setting.Key</label>
-                                    </div>
-                                }
-                                else if (setting.Type == AttributeFieldType.Text)
-                                {
-                                    <label class="control-label">@setting.Key</label>
-                                    <input type="text" name="Settings[@i].Value" class="form-control" value="@setting.Value"/>
-                                }
-                                else if (setting.Type == AttributeFieldType.Multiline)
-                                {
-                                    <label class="control-label">@setting.Key</label>
-                                    <textarea name="Settings[@i].Value" class="form-control">@setting.Value</textarea>
-                                }
-                                else if (setting.Type == AttributeFieldType.Password)
-                                {
-                                    <label class="control-label">@setting.Key</label>
-                                    <input type="password" name="Settings[@i].Value" class="form-control" value="@setting.Value"/>
-                                }
-                                else if (setting.Type == AttributeFieldType.Select)
-                                {
-                                    var elements = setting.PossibleValue.Select(_ => new SelectListItem {Value = _, Text = _, Selected = setting.Value == _});
-                                    <label class="control-label">@setting.Key</label>
-                                    <select asp-items="@elements" name="Settings[@i].Value" class="form-control">
-                                    </select>
-                                }
-                            </div>
-                            i++;
-                        }
-                    </div>
-                </div>
-            </div>
+            @{
+                var schema = JsonSerializer.Serialize((JsonSchema)ViewBag.Schema);
+            }
+            <div id='editor_holder' data-schema="@(Convert.ToBase64String(Encoding.UTF8.GetBytes(schema)))"
+                 data-startval="@(Model.Settings != null ? Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Model.Settings))) : "")"></div>
 
             <button type="submit" id="save-btn" class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified">
                 <i class="fal fa-save"></i> Save

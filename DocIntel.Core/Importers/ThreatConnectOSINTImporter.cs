@@ -39,6 +39,7 @@ namespace DocIntel.Core.Importers
 
         private readonly ILogger<ThreatConnectOSINTImporter> _logger;
         private readonly ApplicationSettings _settings;
+        public override bool HasSettings => true;
 
         public ThreatConnectOSINTImporter(IServiceProvider serviceProvider, Importer importer) : base(serviceProvider)
         {
@@ -48,57 +49,32 @@ namespace DocIntel.Core.Importers
             _importer = importer;
         }
 
-        [ImporterSetting("AccessId")]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string AccessId { get; set; }
-
-        [ImporterSetting("SecretKey", Type = AttributeFieldType.Password)]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string SecretKey { get; set; }
-
-        [ImporterSetting("Owner")]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string Owner { get; set; }
-
-        [ImporterSetting("Endpoint",
-            Type = AttributeFieldType.Select,
-            PossibleValues = new[] {"incidents"},
-            DefaultValue = "incidents")]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string Endpoint { get; set; }
-
-        [ImporterSetting("Blacklist", Type = AttributeFieldType.Multiline)]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string Blacklist { get; set; }
 
         public override async IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit)
         {
             _logger.LogDebug(
                 $"Pulling {GetType().FullName} from {lastPull?.ToString() ?? "(not date)"} but max {limit} documents.");
 
-            if (!string.IsNullOrEmpty(AccessId) && !string.IsNullOrEmpty(SecretKey))
+            var importSettings = _importer.Settings.ToObject<ThreatConnectSettings>();
+            
+            if (!string.IsNullOrEmpty(importSettings.AccessId) && !string.IsNullOrEmpty(importSettings.SecretKey))
             {
                 WebProxy webProxy = null;
                 if (!string.IsNullOrEmpty(_settings.Proxy))
                     webProxy = new WebProxy("http://" + _settings.Proxy + "/", true, new[] {_settings.NoProxy});
 
                 var client = webProxy != null
-                    ? new APIClient(AccessId, SecretKey, proxy: webProxy)
-                    : new APIClient(AccessId, SecretKey);
+                    ? new APIClient(importSettings.AccessId, importSettings.SecretKey, proxy: webProxy)
+                    : new APIClient(importSettings.AccessId, importSettings.SecretKey);
 
-                var groupParameter = new GroupParameter {Owner = Owner, Limit = 100};
+                var groupParameter = new GroupParameter {Owner = importSettings.Owner, Limit = 100};
                 if (lastPull != null)
                     groupParameter.DateAdded = ">" + ((DateTime) lastPull).ToString("yyyy-MM-dd");
                 else
                     groupParameter.DateAdded = ">" + DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd");
 
                 GroupType groupType;
-                if (Endpoint == "incidents")
+                if (importSettings.Endpoint == "incidents")
                     groupType = GroupType.Incidents;
                 else
                     yield break;
@@ -119,7 +95,7 @@ namespace DocIntel.Core.Importers
                     }
 
                     var blacklisted = false;
-                    foreach (var line in Blacklist.Split(new[] {Environment.NewLine},
+                    foreach (var line in importSettings.Blacklist.Split(new[] {Environment.NewLine},
                         StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                         if (Regex.Match(source, line).Success)
                         {
@@ -141,6 +117,20 @@ namespace DocIntel.Core.Importers
             {
                 _logger.LogDebug("Invalid AccessKey or SecretKey");
             }
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(ThreatConnectSettings));
+        }
+
+        class ThreatConnectSettings
+        {
+            public string AccessId { get; set; }
+            public string SecretKey { get; set; }
+            public string Owner { get; set; }
+            public string Endpoint { get; set; }
+            public string Blacklist { get; set; }
         }
     }
 }

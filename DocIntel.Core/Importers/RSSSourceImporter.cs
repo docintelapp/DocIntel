@@ -55,6 +55,8 @@ namespace DocIntel.Core.Importers
             _logger.LogDebug(
                 $"Pulling {GetType().FullName} from {lastPull?.ToString() ?? "(not date)"} but max {limit} documents.");
 
+            var importSettings = _importer.Settings.ToObject<RssSettings>();
+
             var context = await GetContextAsync();
             var sources = await _sourceRepository
                 .GetAllAsync(context, _ => _.Where(s => !string.IsNullOrEmpty(s.RSSFeed))).ToListAsync();
@@ -125,6 +127,7 @@ namespace DocIntel.Core.Importers
                                     Title = subject,
                                     Description = summary,
                                     URL = link.ToString(),
+                                    OverrideSource = true,
                                     SourceId = source.SourceId
                                 };
                             }
@@ -142,6 +145,15 @@ namespace DocIntel.Core.Importers
                 }
                 await context.DatabaseContext.SaveChangesAsync();
             }
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(RssSettings));
+        }
+
+        class RssSettings
+        {
         }
     }
 }

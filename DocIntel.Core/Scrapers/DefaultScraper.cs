@@ -27,6 +27,8 @@ using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
+using Json.Schema;
+using Json.Schema.Generation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -96,6 +98,8 @@ namespace DocIntel.Core.Scrapers
         }
 
         public abstract Task<bool> Scrape(SubmittedDocument message);
+
+        public virtual bool HasSettings => false;
 
         public IEnumerable<string> Patterns
         {
@@ -171,7 +175,7 @@ namespace DocIntel.Core.Scrapers
                 document.EyesOnly = await _groupRepository.GetAllAsync(context,
                     new GroupQuery {Id = submission.EyesOnly.Select(_ => _.GroupId).ToArray()}).ToListAsync();
 
-            document.Status = scraper.SkipInbox ? DocumentStatus.Registered : DocumentStatus.Submitted;
+            document.Status = (scraper.SkipInbox || submission.SkipInbox) ? DocumentStatus.Registered : DocumentStatus.Submitted;
 
             if (string.IsNullOrWhiteSpace(document.SourceUrl))
                 document.SourceUrl = submission.URL;
@@ -186,5 +190,23 @@ namespace DocIntel.Core.Scrapers
             return await _documentRepository.AddFile(context, documentFile, stream);
         }
 
+        public JsonSchema GetSettingsSchema()
+        {
+            var generator = GetGenerator();
+            return generator.FromType(GetSettingsType()).Build();
+        }
+        
+        public abstract Type GetSettingsType();
+        public virtual string GetSettingsView()
+        {
+            return string.Empty;
+        }
+
+        private JsonSchemaBuilder GetGenerator()
+        {
+            var generator = new JsonSchemaBuilder();
+            
+            return generator;
+        }
     }
 }

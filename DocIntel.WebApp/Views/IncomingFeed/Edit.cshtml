@@ -15,7 +15,7 @@
 
 
 <div class="row">
-    <div class="col-9">
+    <div class="col-12">
 
         @{
             var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
@@ -49,9 +49,12 @@
                 </div>
             </div>
 
+            @await Html.PartialAsync("_FormFieldsSource", Model, new ViewDataDictionary(ViewData))
+            
+            @await Html.PartialAsync("_FormFieldsTags", Model, new ViewDataDictionary(ViewData))
+            
             @await Html.PartialAsync("_FormFieldsClassification", Model, new ViewDataDictionary(ViewData))
-
-
+            
             <button type="submit" id="save-btn" class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified">
                 <i class="fal fa-save"></i> Save
             </button>

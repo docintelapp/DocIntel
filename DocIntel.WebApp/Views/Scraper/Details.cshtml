@@ -5,7 +5,8 @@
 
 @{
     ViewData["Title"] = $"{Model.Name}";
-    var canEdit = (await AuthorizationService.AuthorizeAsync(User, null, IncomingFeedOperations.Edit)).Succeeded;
+    var canEdit = (await AuthorizationService.AuthorizeAsync(User, null, ScraperOperations.Edit)).Succeeded;
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, ScraperOperations.Delete)).Succeeded;
 }
 
 <div class="subheader">
@@ -16,16 +17,19 @@
         <div class="btn-group">
             @if (canEdit)
             {
-                <a asp-action="Configure" asp-route-id="@Model.ScraperId"
-                   class= "btn btn-pills btn-primary waves-effect waves-themed">
-                    <i class="fal fa-sliders-h-square mr-1"></i> Configure
-                </a>
+                if (ViewBag.HasSettings)
+                {
+                    <a asp-action="Configure" asp-route-id="@Model.ScraperId"
+                       class= "btn btn-pills btn-primary waves-effect waves-themed">
+                        <i class="fal fa-sliders-h-square mr-1"></i> Configure
+                    </a>   
+                }
                 <a asp-action="Edit" asp-route-id="@Model.ScraperId"
                    class= "btn btn-pills btn-primary waves-effect waves-themed">
                     <i class="fal fa-edit mr-1"></i> Edit
                 </a>
             }
-            @if (canEdit)
+            @if (canDelete)
             {
                 <a asp-action="Delete" asp-route-id="@Model.ScraperId"
                    class= "btn btn-pills btn-primary waves-effect waves-themed">
@@ -49,43 +53,141 @@
 
         <div class="panel">
             <div class="panel-container show">
-                <div class="panel-content">
+                <div class="panel-content pb-0">
                     <p>
                         @Model.Description
                     </p>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-6">Automatically register?</dt>
+                        <dd class="col-sm-6">
+                            @(Model.SkipInbox ? "Yes" : "No")
+                        </dd>
+                    </dl>
                 </div>
             </div>
         </div>
 
-        <div class="panel">
-            <div class="panel-hdr">
-                <h2>
-                    Settings
-                </h2>
-            </div>
-            <div class="panel-container show">
-                <div class="panel-content pb-2">
-                    @foreach (var setting in (List<FormField>) ViewBag.Settings)
-                    {
-                        <div class="row mb-2">
-                            <div class="col-6">
-                                <strong>@setting.Key</strong> <span class="badge badge-primary">@setting.DataType.Name</span>
-                            </div>
-                            <div class="col-6">
-                                @if (setting.Type == AttributeFieldType.Password)
-                                {
-                                    <span class="text-blur">@(new string('*', setting.Value?.Length ?? 0))</span>
-                                }
-                                else
-                                {
-                                    @setting.Value
-                                }
-                            </div>
-                        </div>
-                    }
+
+        @if (Model.OverrideSource && Model.Source != null)
+        {
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Source
+                        <span class="fw-300">
+                            <i>Settings</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-2">
+                        <dl class="row mb-0">
+                            @if (Model.Source != null)
+                            {
+                                <dt class="col-sm-6">Set Source</dt>
+                                <dd class="col-sm-6">
+                                    @Model.Source.Title
+                                </dd>   
+                            }
+                        </dl>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
+        
+        @if (Model.Tags?.Any() ?? false)
+        {
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Tags
+                        <span class="fw-300">
+                            <i>Settings</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-2">
+                        <dl class="row mb-0">
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <dt class="col-sm-6">Add tag</dt>
+                                <dd class="col-sm-6">
+                                        <a class="badge badge-pill @tag.BackgroundColor"
+                                           asp-controller="Tag"
+                                           asp-action="Details"
+                                           asp-route-label="@tag.TagId">
+                                            @tag.FriendlyName
+                                        </a>
+                                </dd>   
+                            }
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @if (Model.OverrideClassification | Model.OverrideReleasableTo | Model.OverrideEyesOnly)
+        {
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Classification
+                        <span class="fw-300">
+                            <i>Settings</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-2">
+                        <dl class="row mb-0">
+                            @if (Model.OverrideClassification)
+                            {
+                                <dt class="col-sm-6">Override Classification</dt>
+                                <dd class="col-sm-6">
+                                    <span class="badge @Model.Classification.Color mr-1">@Model.Classification.Abbreviation</span>
+                                    @Model.Classification.Title
+                                    @if (string.IsNullOrEmpty(Model.Classification.Subtitle))
+                                    {
+                                        <text>@Model.Classification.Subtitle</text>
+                                    }
+                                </dd>   
+                            }
+                            @if (Model.OverrideReleasableTo)
+                            {
+                                <dt class="col-sm-6">Override ReleasableTo</dt>
+                                <dd class="col-sm-6">
+                                    @(string.Join(", ", Model.ReleasableTo.Select(g => g.Name)))
+                                </dd>   
+                            }
+                            @if (Model.OverrideEyesOnly)
+                            {
+                                <dt class="col-sm-6">Override EyesOnly</dt>
+                                <dd class="col-sm-6">
+                                    @(string.Join(", ", Model.EyesOnly.Select(g => g.Name)))
+                                </dd>   
+                            }
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(ViewBag.View))
+        {
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Configuration
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-2">
+                        @(await Html.PartialAsync(ViewBag.View, ViewBag.Settings, new ViewDataDictionary(ViewData)))
+                    </div>
+                </div>
+            </div>
+        }
 
     </div>
 </div>

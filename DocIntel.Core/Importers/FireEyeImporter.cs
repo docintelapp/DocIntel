@@ -35,7 +35,7 @@ namespace DocIntel.Core.Importers
 
         private readonly ILogger<FireEyeImporter> _logger;
         private readonly ApplicationSettings _settings;
-
+        public override bool HasSettings => true;
         public FireEyeImporter(IServiceProvider serviceProvider, Importer importer) : base(serviceProvider)
         {
             _importer = importer;
@@ -43,32 +43,22 @@ namespace DocIntel.Core.Importers
             _settings = (ApplicationSettings) serviceProvider.GetService(typeof(ApplicationSettings));
         }
 
-        [ImporterSetting("ApiKey")]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string ApiKey { get; set; }
-
-        [ImporterSetting("SecretKey", Type = AttributeFieldType.Password)]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string SecretKey { get; set; }
-
-#pragma warning disable CS1998
         public override async IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit)
-#pragma warning restore CS1998
         {
             _logger.LogDebug(
                 $"Pulling {GetType().FullName} from {lastPull?.ToString() ?? "(not date)"} but max {limit} documents.");
-
-            if (!string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(SecretKey))
+            
+            var importSettings = _importer.Settings.ToObject<FireEyeSettings>();
+            
+            if (!string.IsNullOrEmpty(importSettings.ApiKey) && !string.IsNullOrEmpty(importSettings.SecretKey))
             {
                 WebProxy webProxy = null;
                 if (!string.IsNullOrEmpty(_settings.Proxy))
                     webProxy = new WebProxy("http://" + _settings.Proxy + "/", true, new[] {_settings.NoProxy});
 
                 var client = webProxy != null
-                    ? new FireEyeAPI(ApiKey, SecretKey, proxy: webProxy)
-                    : new FireEyeAPI(ApiKey, SecretKey);
+                    ? new FireEyeAPI(importSettings.ApiKey, importSettings.SecretKey, proxy: webProxy)
+                    : new FireEyeAPI(importSettings.ApiKey, importSettings.SecretKey);
 
                 var reportParameters = new ReportParameters {limit = limit, since = DateTime.UtcNow.AddDays(-7)};
 
@@ -86,6 +76,22 @@ namespace DocIntel.Core.Importers
             {
                 _logger.LogDebug("Invalid AccessKey or SecretKey");
             }
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(FireEyeSettings));
+        }
+        
+        public override string GetSettingsView()
+        {
+            return "_FireEyeSettings";
+        }
+
+        public class FireEyeSettings
+        {
+            public string ApiKey { get; set; }
+            public string SecretKey { get; set; }
         }
     }
 }

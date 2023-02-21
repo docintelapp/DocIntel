@@ -36,6 +36,7 @@ namespace DocIntel.Core.Importers
 
         private readonly ILogger<FireEyeThreatMediaHighlightImporter> _logger;
         private readonly ApplicationSettings _settings;
+        public override bool HasSettings => true;
 
         public FireEyeThreatMediaHighlightImporter(IServiceProvider serviceProvider, Importer importer) : base(
             serviceProvider)
@@ -45,27 +46,17 @@ namespace DocIntel.Core.Importers
                 typeof(ILogger<FireEyeThreatMediaHighlightImporter>));
             _settings = (ApplicationSettings) serviceProvider.GetService(typeof(ApplicationSettings));
         }
-
-        [ImporterSetting("ApiKey")]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string ApiKey { get; set; }
-
-        [ImporterSetting("SecretKey", Type = AttributeFieldType.Password)]
-        // ReSharper disable once MemberCanBePrivate.Global TODO Check if necessary to be public
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global because it is used for creating the form dynamically.
-        public string SecretKey { get; set; }
-
-#pragma warning disable CS1998
+        
         public override async IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit)
-#pragma warning restore CS1998
         {
             _logger.LogDebug(
                 $"Pulling {GetType().FullName} from {lastPull?.ToString() ?? "(not date)"} but max {limit} documents.");
-
-            if (!string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(SecretKey))
+            
+            var importSettings = _importer.Settings.ToObject<FireEyeSettings>();
+            
+            if (!string.IsNullOrEmpty(importSettings.ApiKey) && !string.IsNullOrEmpty(importSettings.SecretKey))
             {
-                var client = new FireEyeAPI(ApiKey, SecretKey,
+                var client = new FireEyeAPI(importSettings.ApiKey, importSettings.SecretKey,
                     proxy: new WebProxy("http://" + _settings.Proxy + "/", true, new[] {_settings.NoProxy}));
                 var reportParameters = new ThreatMediaHighlightParameters();
                 reportParameters.limit = limit;
@@ -83,6 +74,17 @@ namespace DocIntel.Core.Importers
             {
                 _logger.LogDebug("Invalid AccessKey or SecretKey");
             }
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(FireEyeSettings));
+        }
+
+        class FireEyeSettings
+        {
+            public string ApiKey { get; set; }
+            public string SecretKey { get; set; }
         }
     }
 }

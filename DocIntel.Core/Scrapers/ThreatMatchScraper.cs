@@ -43,7 +43,7 @@ namespace DocIntel.Core.Scrapers
         private readonly ILogger<ThreatConnectScraper> _logger;
         private readonly Scraper _scraper;
         private readonly ApplicationSettings _settings;
-
+        public override bool HasSettings => true;
         public ThreatMatchScraper(Scraper scraper, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = (ILogger<ThreatConnectScraper>) serviceProvider.GetService(typeof(ILogger<ThreatConnectScraper>));
@@ -51,19 +51,15 @@ namespace DocIntel.Core.Scrapers
             _scraper = scraper;
         }
 
-        [ScraperSetting("Username")] public string Username { get; set; }
-
-        [ScraperSetting("APIKey", Type = AttributeFieldType.Password)]
-        public string APIKey { get; set; }
-
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
+            var scraperSettings = _scraper.Settings.ToObject<ThreatMatchSettings>();
             Init();
             var context = GetContextAsync();
             var match = Regex.Match(message.URL, @"https?://eu.threatmatch.com/app/reports/view/([0-9]+)");
             var reportId = match.Groups[1].ToString();
 
-            var client = new APIClient(Username, APIKey, proxy: new WebProxy("http://" + _settings.Proxy + "/", true, new string[] { _settings.NoProxy }));
+            var client = new APIClient(scraperSettings.Username, scraperSettings.APIKey, proxy: new WebProxy("http://" + _settings.Proxy + "/", true, new string[] { _settings.NoProxy }));
             await ImportReport(message, client, int.Parse(reportId), await context);
             return false;
         }
@@ -118,6 +114,17 @@ namespace DocIntel.Core.Scrapers
 
             _documentRepository.DeleteSubmittedDocument(context, message.SubmittedDocumentId);
             await context.DatabaseContext.SaveChangesAsync();
+        }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(ThreatMatchSettings));
+        }
+        
+        class ThreatMatchSettings
+        {
+            public string Username { get; set; }
+            public string APIKey { get; set; }
         }
     }
 }

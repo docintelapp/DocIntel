@@ -20,21 +20,36 @@
 }
 
 <div class="form-group">
+    <label asp-for="Name" class="control-label"></label>
+    <input asp-for="Name" class="form-control"/>
+    <span asp-validation-for="Name" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Description" class="control-label"></label>
+    <textarea asp-for="Description" class="form-control summernote"></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+</div>
+
+<div class="form-group">
     <label asp-for="Status" class="control-label"></label>
     <select asp-for="Status" asp-items="Html.GetEnumSelectList<ImporterStatus>()" class="form-control"></select>
     <span asp-validation-for="Status" class="text-danger"></span>
 </div>
 
 <div class="form-group">
-    <label asp-for="CollectionDelay" class="control-label"></label>
+    <label asp-for="CollectionDelay" class="control-label">Collection Delay</label>
     <select asp-for="CollectionDelay" asp-items="@collectionDelays" class="form-control"></select>
     <span asp-validation-for="CollectionDelay" class="text-danger"></span>
 </div>
 
 <div class="form-group">
-    <label asp-for="FetchingUserId" class="control-label"></label>
+    <label asp-for="FetchingUserId" class="control-label">User</label>
     <select asp-for="FetchingUserId" asp-items="@botUsers" class="form-control"></select>
     <span asp-validation-for="FetchingUserId" class="text-danger"></span>
+    <span class="form-text text-muted">
+        This user will be the user that registers the imported documents.
+    </span>
 </div>
 
 <div class="form-group">
@@ -51,12 +66,10 @@
 </div>
 
 <div class="form-group">
-    <label asp-for="SourceId" class="control-label">Source</label>
-    <select data-placeholder="Select a source" class="autocomplete-source form-control" name="SourceId">
-        @if (Model.SourceId != null)
-        {
-            <option selected="" value="@Model.SourceId">@(Model.Source?.Title ?? Model.SourceId.ToString())</option>
-        }
-    </select>
-    <span asp-validation-for="SourceId" class="text-danger"></span>
+    <div class="custom-control custom-switch">
+        @Html.CheckBoxFor(_ => _.SkipInbox, new {@class = "custom-control-input"})
+        <label class="custom-control-label" asp-for="SkipInbox">Skip Inbox?</label>
+    </div>
+    @Html.HelpTextFor(_ => _.SkipInbox)
+    <span asp-validation-for="SkipInbox" class="text-danger"></span>
 </div>

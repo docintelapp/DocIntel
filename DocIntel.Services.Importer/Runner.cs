@@ -157,6 +157,8 @@ namespace DocIntel.Services.Importer
                 message.OverrideClassification = feed.OverrideClassification;
                 message.OverrideReleasableTo = feed.OverrideReleasableTo;
                 message.OverrideEyesOnly = feed.OverrideEyesOnly;
+                message.OverrideSource = feed.OverrideSource;
+                message.SkipInbox = feed.SkipInbox;
                 message.SourceId = feed.SourceId;
 
                 if (feed.OverrideClassification)

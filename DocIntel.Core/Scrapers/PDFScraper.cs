@@ -133,5 +133,14 @@ namespace DocIntel.Core.Scrapers
             
             return true;
         }
+
+        public override Type GetSettingsType()
+        {
+            return (typeof(PdfSettings));
+        }
+        
+        class PdfSettings
+        {
+        }
     }
 }

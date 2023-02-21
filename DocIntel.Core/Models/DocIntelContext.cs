@@ -18,9 +18,12 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DocIntel.Core.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -174,13 +177,36 @@ namespace DocIntel.Core.Models
 
             modelBuilder.Entity<Scraper>().HasMany(_ => _.ReleasableTo).WithMany(_ => _.ScraperReleasableTo).UsingEntity(_ => _.ToTable("ScraperRelToGroup"));
             modelBuilder.Entity<Scraper>().HasMany(_ => _.EyesOnly).WithMany(_ => _.ScraperEyesOnly).UsingEntity(_ => _.ToTable("ScraperGroupEyesOnly"));
+            modelBuilder.Entity<Scraper>()
+                .HasMany(_ => _.Tags)
+                .WithMany(_ => _.Scrapers)
+                .UsingEntity<ScraperTag>(
+                    _ => _.ToTable("ScraperTags").HasKey(t => new { t.ScraperId, t.TagId })
+                );
 
             modelBuilder.Entity<Importer>().HasMany(_ => _.ReleasableTo).WithMany(_ => _.ImporterReleasableTo).UsingEntity(_ => _.ToTable("ImporterRelToGroup"));
             modelBuilder.Entity<Importer>().HasMany(_ => _.EyesOnly).WithMany(_ => _.ImporterEyesOnly).UsingEntity(_ => _.ToTable("ImporterGroupEyesOnly"));
+            modelBuilder.Entity<Importer>()
+                .HasMany(_ => _.Tags)
+                .WithMany(_ => _.Importers)
+                .UsingEntity<ImporterTag>( 
+                    _ => _.ToTable("ImporterTags").HasKey(t => new { t.ImporterId, t.TagId })
+                    );
 
-            modelBuilder.Entity<SubmittedDocument>().HasMany(_ => _.ReleasableTo).WithMany(_ => _.SubmittedDocumentReleasableTo).UsingEntity(_ => _.ToTable("SubmissionRelToGroup"));
-            modelBuilder.Entity<SubmittedDocument>().HasMany(_ => _.EyesOnly).WithMany(_ => _.SubmittedDocumentEyesOnly).UsingEntity(_ => _.ToTable("SubmissionGroupEyesOnly"));
+            modelBuilder.Entity<SubmittedDocument>()
+                .HasMany(_ => _.ReleasableTo)
+                .WithMany(_ => _.SubmittedDocumentReleasableTo)
+                .UsingEntity(_ => _.ToTable("SubmissionRelToGroup"));
+            modelBuilder.Entity<SubmittedDocument>()
+                .HasMany(_ => _.EyesOnly)
+                .WithMany(_ => _.SubmittedDocumentEyesOnly)
+                .UsingEntity(_ => _.ToTable("SubmissionGroupEyesOnly"));
 
+            modelBuilder.Entity<Importer>()
+                .HasMany<SubmittedDocument>()
+                .WithOne(_ => _.Importer)
+                .OnDelete(DeleteBehavior.Cascade);
+            
             modelBuilder.Entity<Document>().HasOne(_ => _.Thumbnail).WithOne(_ => _.DocumentThumbnail).OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Document>().HasMany(_ => _.Files).WithOne(_ => _.Document);
             
@@ -200,5 +226,23 @@ namespace DocIntel.Core.Models
             modelBuilder.Entity<UserSavedSearch>()
                 .HasKey(t => new {t.UserId, t.SavedSearchId});
         }
+        
+        public void TryUpdateManyToMany<T, TKey>(IEnumerable<T> currentItems, IEnumerable<T> newItems, Func<T, TKey> getKey) where T: class
+        {
+            this.Set<T>().RemoveRange(LinqHelpers.Except(currentItems, newItems, getKey));
+            this.Set<T>().AddRange(LinqHelpers.Except(newItems, currentItems, getKey));
+        }
+    }
+
+    public class ImporterTag
+    {
+        public Guid ImporterId { get; set; }
+        public Guid TagId { get; set; }
+    }
+
+    public class ScraperTag
+    {
+        public Guid ScraperId { get; set; }
+        public Guid TagId { get; set; }
     }
 }

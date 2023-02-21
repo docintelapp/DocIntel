@@ -47,6 +47,8 @@
                 </div>
             </div>
 
+            @await Html.PartialAsync("_FormFieldsSource", Model, new ViewDataDictionary(ViewData))
+            @await Html.PartialAsync("_FormFieldsTags", Model, new ViewDataDictionary(ViewData))
             @await Html.PartialAsync("_FormFieldsClassification", Model, new ViewDataDictionary(ViewData))
 
             <button type="submit" id="save-btn" class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified">
