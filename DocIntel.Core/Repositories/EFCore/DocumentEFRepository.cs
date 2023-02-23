@@ -126,7 +126,7 @@ namespace DocIntel.Core.Repositories.EFCore
 
             var regexSlug = "^" + Regex.Escape(slug) + "(-[0-9]+)?$";
             var maxSlug = context.DatabaseContext.Documents
-                .Where(_ => _.Title == document.Title & Regex.IsMatch(_.URL, regexSlug))
+                .Where(_ => Regex.IsMatch(_.URL, regexSlug))
                 .Select(_ => new { URL = _.URL, Length = _.URL.Length })
                 .OrderByDescending(_ => _.Length).ThenByDescending(_ => _.URL)
                 .FirstOrDefault();
