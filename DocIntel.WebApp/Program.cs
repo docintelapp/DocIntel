@@ -17,7 +17,14 @@
 
 using System;
 using System.IO;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Threading.Tasks;
+using DocIntel.Core.Helpers;
 using DocIntel.Core.Services;
+using DocIntel.Core.Settings;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -26,23 +33,29 @@ using Microsoft.Extensions.Hosting;
 
 using NLog;
 using NLog.Web;
-
+using Synsharp.Telepath;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace DocIntel.WebApp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
-            Logger logger;
+            int ret = 0;
+            if ((ret = await FlightChecks.PreFlightChecks()) > 0)
+            {
+                return ret;
+            }
+            
+            Logger logger = null;
             if (File.Exists("nlog.config"))
                 logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+            else if (File.Exists("/config/nlog.config"))
+                logger = NLogBuilder.ConfigureNLog("/config/nlog.config").GetCurrentClassLogger();
             else if (File.Exists("/etc/docintel/nlog.config"))
                 logger = NLogBuilder.ConfigureNLog("/etc/docintel/nlog.config").GetCurrentClassLogger();
-            else
-                throw new FileNotFoundException("nlog.config");
-
+            
             try
             {
                 var builder = CreateWebHostBuilder(args);
@@ -54,13 +67,15 @@ namespace DocIntel.WebApp
             {
                 //NLog: catch setup errors
                 logger.Error(ex, "Stopped program because of exception");
-                throw;
+                return 1;
             }
             finally
             {
                 // Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
                 LogManager.Shutdown();
             }
+
+            return 0;
         }
 
         public static IHostBuilder CreateWebHostBuilder(string[] args)

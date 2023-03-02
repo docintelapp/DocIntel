@@ -16,6 +16,8 @@
 */
 
 using System.Reflection;
+using System.Threading.Tasks;
+using DocIntel.Core.Helpers;
 using DocIntel.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,9 +27,16 @@ namespace DocIntel.Services.SourceIndexer
 {
     internal class Program : DocIntelServiceProgram
     {
-        public static void Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            int ret = 0;
+            if ((ret = await FlightChecks.PreFlightChecks()) > 0)
+            {
+                return ret;
+            }
+            
+            await CreateHostBuilder(args).Build().RunAsync();
+            return 0;
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
