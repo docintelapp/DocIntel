@@ -117,7 +117,7 @@ public class AppUserManager : AspNetUserManager<AppUser>
         }
         catch (Exception e)
         {
-            Console.WriteLine("ERROR in AppUserManager");
+            Logger.LogError("Error while getting user claims: {EMessage}", e.Message);
         }
 
         return Task.FromResult((IList<Claim>)Enumerable.Empty<Claim>().ToList());

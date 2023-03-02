@@ -50,7 +50,7 @@ namespace DocIntel.Core.Services
         {
             var env = hostingContext.HostingEnvironment;
             
-            var configFiles = new string[]
+            var configFiles = new[]
             {
                 "/etc/docintel/nlog.config",
                 $"/etc/docintel/nlog.{env.EnvironmentName}.config",
@@ -89,7 +89,7 @@ namespace DocIntel.Core.Services
         {
             var env = hostingContext.HostingEnvironment;
             
-            var configFiles = new string[]
+            var configFiles = new[]
             {
                 "/etc/docintel/appsettings.json",
                 $"/etc/docintel/appsettings.{env.EnvironmentName}.json",
@@ -114,7 +114,6 @@ namespace DocIntel.Core.Services
         public static void ConfigureService(HostBuilderContext hostContext, IServiceCollection serviceCollection,
             Assembly[] consumerAssemblies = null, bool runHostedServices = false)
         {
-            NpgsqlConnection.GlobalTypeMapper.UseJsonNet();
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             
             var configuration = hostContext.Configuration;

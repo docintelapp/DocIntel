@@ -44,7 +44,8 @@ namespace DocIntel.Core.Scrapers
     {
         private readonly ILogger<DefaultScraper> _logger;
         private readonly ApplicationSettings _settings;
-        private readonly TagUtility _tagUtility;
+        
+        private TagUtility _tagUtility;
         
         protected IDocumentRepository _documentRepository;
         protected ITagFacetRepository _facetRepository;
@@ -69,6 +70,7 @@ namespace DocIntel.Core.Scrapers
             _tagRepository = (ITagRepository) _serviceProvider.GetService(typeof(ITagRepository));
             _facetRepository = (ITagFacetRepository) _serviceProvider.GetService(typeof(ITagFacetRepository));
             _classificationRepository = _serviceProvider.GetRequiredService<IClassificationRepository>();
+            _tagUtility = _serviceProvider.GetRequiredService<TagUtility>();
         }
 
         public ScraperInformation Get()

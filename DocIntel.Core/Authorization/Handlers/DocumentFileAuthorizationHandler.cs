@@ -123,7 +123,8 @@ namespace DocIntel.Core.Authorization.Handlers
                     }
                 }
 
-                if (!context.HasFailed) base.HandleRequirementAsync(context, requirement, resource);
+                if (!context.HasFailed) 
+                    await base.HandleRequirementAsync(context, requirement, resource);
             }
         }
     }

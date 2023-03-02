@@ -40,7 +40,10 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         private readonly ISynapseRepository _observableRepository;
 
         public SolRDocumentIndexingUtility(ISolrOperations<IndexedDocument> solr,
-            ILogger<SolRDocumentIndexingUtility> logger, IMapper mapper, ApplicationSettings settings, ISynapseRepository observableRepository)
+            ILogger<SolRDocumentIndexingUtility> logger,
+            IMapper mapper,
+            ApplicationSettings settings,
+            ISynapseRepository observableRepository)
         {
             _solr = solr;
             _logger = logger;
@@ -122,7 +125,7 @@ namespace DocIntel.Core.Utils.Indexation.SolR
                 }
                 else
                 {
-                    _logger.LogWarning("File {filename} for document {document.DocumentId} could not be found.");
+                    _logger.LogWarning($"File {filename} for document {document.DocumentId} could not be found.");
                 }
             }
 

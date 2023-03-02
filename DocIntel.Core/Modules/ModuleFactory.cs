@@ -22,7 +22,6 @@ public class ModuleFactory
     
     private static Dictionary<string, ModuleConfiguration> _modules;
     private static Dictionary<string, Type> _exporters;
-    private static Dictionary<string, Type> _documentMetadata;
     private static Dictionary<string, ModuleLoadContext> _assemblyLoadContexts;
     
     private static List<WeakReference> _wr = new List<WeakReference>();
@@ -102,7 +101,6 @@ public class ModuleFactory
 
         _modules = null;
         _exporters = null;
-        _documentMetadata = null;
         _assemblies = null;
 
         Unload();

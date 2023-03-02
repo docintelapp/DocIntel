@@ -39,7 +39,7 @@ public class TagFacetFeatureExtractor : IFeatureExtractor
             }
             catch (Exception e)
             {
-                _logger.LogDebug($"Could not extract tags for facet '{_facet.Title}'");
+                _logger.LogDebug($"Could not extract tags for facet '{_facet.Title}' ({e.Message})");
             }
         }
 
