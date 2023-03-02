@@ -22,7 +22,7 @@ using System.IO;
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation.SolR;
-
+using Ganss.Xss;
 using SolrNet;
 
 namespace DocIntel.Core.Utils.ContentExtraction
@@ -31,11 +31,16 @@ namespace DocIntel.Core.Utils.ContentExtraction
     {
         private readonly ApplicationSettings _appSettings;
         private readonly ISolrOperations<IndexedDocument> _solr;
+        private readonly HtmlSanitizer _htmlSanitizer;
 
         public SolrContentExtractionUtility(ApplicationSettings appSettings, ISolrOperations<IndexedDocument> solr)
         {
             _appSettings = appSettings;
             _solr = solr;
+
+            _htmlSanitizer = new HtmlSanitizer();
+            _htmlSanitizer.AllowedTags.Clear();
+            _htmlSanitizer.KeepChildNodes = true;
         }
 
         public string ExtractText(Document document, DocumentFile file)
@@ -49,7 +54,14 @@ namespace DocIntel.Core.Utils.ContentExtraction
                 ExtractFormat = ExtractFormat.Text,
                 StreamType = file.MimeType
             });
-            return response?.Content;
+            var responseContent = response?.Content;
+            
+            // Removes any unnecessary HTML code that could be returned by SolR extractions, as the extracted text
+            // will appear when highlight excerpts are displayed.
+            if (!string.IsNullOrEmpty(responseContent))
+                responseContent = _htmlSanitizer.Sanitize(responseContent);
+            
+            return responseContent;
         }
     }
 }
