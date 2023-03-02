@@ -219,7 +219,7 @@ public class SynapseRepository : ISynapseRepository
         };
         
         var proxy = await _client.GetProxyAsync();
-        await proxy.Storm($"_di:document=$documentId -(refs)> * +property=$value | delnodes", stormOps).ToListAsync();
+        await proxy.Storm($"_di:document=$documentId -(refs)> * +property=$value | delnode", stormOps).ToListAsync();
     }
 
     public async Task<string[]> GetSimpleForms()
