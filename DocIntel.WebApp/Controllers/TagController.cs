@@ -455,7 +455,7 @@ namespace DocIntel.WebApp.Controllers
                     if (!string.IsNullOrEmpty(submittedTag.Keywords))
                         tag.Keywords = string.Join(", ", submittedTag.Keywords.Split(',').Select(x => x.Trim()));
 
-                    tag.MetaData = ParseMetaData(metadata, currentUser);
+                    tag.MetaData = ParseMetaData(metadata, currentUser, tag.MetaData);
                     
                     await _tagRepository.UpdateAsync(AmbientContext, tag);
                     await _context.SaveChangesAsync();

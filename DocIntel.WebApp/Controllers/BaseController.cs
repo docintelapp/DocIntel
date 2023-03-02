@@ -140,7 +140,9 @@ namespace DocIntel.WebApp.Controllers
             return base.View(viewName, model);
         }
         
-        protected Dictionary<string, JsonObject> ParseMetaData(Dictionary<string, string> metadata, AppUser currentUser)
+        protected Dictionary<string, JsonObject> ParseMetaData(Dictionary<string, string> metadata,
+            AppUser currentUser,
+            Dictionary<string, JsonObject> current = null)
         {
             var json = new Dictionary<string, JsonObject>();
             if (metadata != null)
@@ -153,17 +155,7 @@ namespace DocIntel.WebApp.Controllers
                     }
                     catch (JsonReaderException e)
                     {
-                        // ModelState.AddModelError("Settings", "The provided JSON is invalid.");
-                        /*
-                        _logger.Log(LogLevel.Error,
-                            EventIDs.EditIncomingFeedError,
-                            new LogEvent($"User '{currentUser.UserName}' provided an invalid JSON.")
-                                .AddUser(currentUser)
-                                .AddHttpContext(_accessor.HttpContext)
-                                .AddException(e),
-                            e,
-                            LogEvent.Formatter);
-                        */
+                        // TODO Log the error
                     }
                 }
             }

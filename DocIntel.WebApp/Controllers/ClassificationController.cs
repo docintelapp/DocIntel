@@ -342,7 +342,7 @@ namespace DocIntel.WebApp.Controllers
                     classification.Color = viewModel.Color;
                     classification.Default = viewModel.Default;
 
-                    classification.MetaData = this.ParseMetaData(metadata, currentUser);
+                    classification.MetaData = this.ParseMetaData(metadata, currentUser, classification.MetaData);
 
                     await _classificationRepository.UpdateAsync(AmbientContext, classification);
                     await _context.SaveChangesAsync();

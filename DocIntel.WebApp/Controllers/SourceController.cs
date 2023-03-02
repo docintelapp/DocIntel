@@ -427,7 +427,7 @@ namespace DocIntel.WebApp.Controllers
                     source.LinkedIn = submittedSource.LinkedIn;
                     source.Country = submittedSource.Country;
 
-                    source.MetaData = ParseMetaData(metadata, currentUser);
+                    source.MetaData = ParseMetaData(metadata, currentUser, source.MetaData);
 
                     if (!string.IsNullOrEmpty(submittedSource.Keywords))
                         source.Keywords = string.Join(", ", submittedSource.Keywords.Split(",").Select(_ => _.Trim()));

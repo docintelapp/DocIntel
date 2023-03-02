@@ -263,7 +263,7 @@ namespace DocIntel.WebApp.Controllers
                     facet.ExtractionRegex = submittedViewModel.ExtractionRegex;
                     facet.TagNormalization = submittedViewModel.TagNormalization;
                     
-                    facet.MetaData = this.ParseMetaData(metadata, currentUser);
+                    facet.MetaData = this.ParseMetaData(metadata, currentUser, facet.MetaData);
 
                     var tagFacet = await _facetRepository.UpdateAsync(AmbientContext, facet);
                     await _context.SaveChangesAsync();
