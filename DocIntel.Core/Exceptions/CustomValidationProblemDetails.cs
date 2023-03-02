@@ -20,7 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -70,7 +70,7 @@ namespace DocIntel.Core.Exceptions
             return validationErrors;
         }
 
-        [JsonProperty("errors")]
+        [JsonPropertyName("errors")]
         public new IEnumerable<ValidationError> Errors { get; } = new List<ValidationError>();
     }
 }

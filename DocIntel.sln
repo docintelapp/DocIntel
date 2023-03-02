@@ -23,8 +23,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocIntel.Services.Newslette
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocIntel.Services.Scraper", "DocIntel.Services.Scraper\DocIntel.Services.Scraper.csproj", "{78101BA8-6F84-4619-81E7-D3AB8D8F364B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocIntel.Integrations", "DocIntel.Integrations\DocIntel.Integrations.csproj", "{13DBE874-895C-433C-AE38-2E7A318B8EAD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocIntel.Tests", "DocIntel.Tests\DocIntel.Tests.csproj", "{4CF6F7C0-EBF8-4387-ADEA-BD2D8C473DC0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synsharp.Telepath", "synsharp\Synsharp.Telepath\Synsharp.Telepath.csproj", "{BC93C0DF-641B-4098-A6FE-00E00FD6D633}"
@@ -101,10 +99,6 @@ Global
 		{78101BA8-6F84-4619-81E7-D3AB8D8F364B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78101BA8-6F84-4619-81E7-D3AB8D8F364B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78101BA8-6F84-4619-81E7-D3AB8D8F364B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{13DBE874-895C-433C-AE38-2E7A318B8EAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{13DBE874-895C-433C-AE38-2E7A318B8EAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{13DBE874-895C-433C-AE38-2E7A318B8EAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{13DBE874-895C-433C-AE38-2E7A318B8EAD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4CF6F7C0-EBF8-4387-ADEA-BD2D8C473DC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4CF6F7C0-EBF8-4387-ADEA-BD2D8C473DC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CF6F7C0-EBF8-4387-ADEA-BD2D8C473DC0}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
@@ -159,16 +160,16 @@ public class ImportDocumentCommand : DocIntelCommand<ImportDocumentCommand.Setti
 
 public class DocumentImport
 {
-    [JsonProperty("title")] public string Title { get; set; }
-    [JsonProperty("short_description")] public string ShortDescription { get; set; }
-    [JsonProperty("source_url")] public string SourceUrl { get; set; }
-    [JsonProperty("document_date")] public DateTime DocumentDate { get; set; }
-    [JsonProperty("files")] public FileImport[] Files { get; set; }
+    [JsonPropertyName("title")] public string Title { get; set; }
+    [JsonPropertyName("short_description")] public string ShortDescription { get; set; }
+    [JsonPropertyName("source_url")] public string SourceUrl { get; set; }
+    [JsonPropertyName("document_date")] public DateTime DocumentDate { get; set; }
+    [JsonPropertyName("files")] public FileImport[] Files { get; set; }
 }
 
 public class FileImport
 {
-    [JsonProperty("filename")] public string Filename { get; set; }
-    [JsonProperty("title")] public string Title { get; set; }
-    [JsonProperty("filepath")] public string Filepath { get; set; }
+    [JsonPropertyName("filename")] public string Filename { get; set; }
+    [JsonPropertyName("title")] public string Title { get; set; }
+    [JsonPropertyName("filepath")] public string Filepath { get; set; }
 }
