@@ -1478,7 +1478,7 @@ namespace DocIntel.WebApp.Controllers
                 .GetAllAsync(AmbientContext, new GroupQuery {Id = eyesOnly}).ToHashSetAsync();
 
             document.Title = submittedDocument.Title;
-            document.DocumentDate = submittedDocument.DocumentDate;
+            document.DocumentDate = submittedDocument.DocumentDate.ToUniversalTime();
             document.ExternalReference = submittedDocument.ExternalReference;
             document.ShortDescription = submittedDocument.ShortDescription;
             document.Note = submittedDocument.Note;
