@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Settings;
-
 using Microsoft.Extensions.Logging;
 using Novell.Directory.Ldap;
 

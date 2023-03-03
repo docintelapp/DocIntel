@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Json.Schema;
 
 namespace DocIntel.Core.Modules;
 

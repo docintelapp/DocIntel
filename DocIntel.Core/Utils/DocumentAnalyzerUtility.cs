@@ -14,6 +14,7 @@ using DocIntel.Core.Utils.Indexation.SolR;
 using DocIntel.Core.Utils.Observables;
 using Microsoft.Extensions.Logging;
 using SolrNet;
+using SolrNet.Exceptions;
 
 namespace DocIntel.Core.Utils;
 
@@ -140,7 +141,7 @@ public class DocumentAnalyzerUtility
                         if (file.DocumentDate == DateTime.MinValue)
                             file.DocumentDate = date;
                     }
-                    catch (SolrNet.Exceptions.SolrConnectionException e)
+                    catch (SolrConnectionException e)
                     {
                         _logger.LogError($"Document {document.DocumentId} could not be analyzed due to an error with SolR: {e.Url}");
                         _logger.LogError(e.ToString());

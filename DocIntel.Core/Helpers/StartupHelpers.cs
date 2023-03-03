@@ -19,7 +19,6 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Authorization.Handlers;
 using DocIntel.Core.Modules;
@@ -35,7 +34,6 @@ using DocIntel.Core.Utils.Search.Documents;
 using DocIntel.Core.Utils.Search.Sources;
 using DocIntel.Core.Utils.Search.Tags;
 using DocIntel.Core.Utils.Thumbnail;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using SolrNet;

@@ -16,7 +16,6 @@
 */
 
 using System;
-
 using SolrNet.Attributes;
 
 namespace DocIntel.Core.Utils.Indexation.SolR

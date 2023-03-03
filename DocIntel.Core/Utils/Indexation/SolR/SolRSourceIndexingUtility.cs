@@ -16,13 +16,10 @@
 */
 
 using System;
-
 using AutoMapper;
-
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
 using Microsoft.Extensions.Logging;
-
 using SolrNet;
 
 namespace DocIntel.Core.Utils.Indexation.SolR

@@ -16,7 +16,6 @@
 */
 
 using System.Reflection;
-
 using RazorLight;
 using RazorLight.Compilation;
 using RazorLight.Generation;

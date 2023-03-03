@@ -16,7 +16,6 @@
 */
 
 using System.Collections.Generic;
-
 using DocIntel.Core.Models;
 using DocIntel.Core.Utils.Search.Documents;
 

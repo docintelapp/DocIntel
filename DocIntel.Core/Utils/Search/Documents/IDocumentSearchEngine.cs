@@ -16,7 +16,6 @@
 */
 
 using System;
-
 using DocIntel.Core.Models;
 
 namespace DocIntel.Core.Utils.Search.Documents

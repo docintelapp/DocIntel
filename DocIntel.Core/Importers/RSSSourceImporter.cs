@@ -21,16 +21,11 @@ using System.Linq;
 using System.Net;
 using System.ServiceModel.Syndication;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using System.Xml;
-
 using AngleSharp.Text;
-
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
-using Json.More;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Core.Importers
@@ -92,7 +87,7 @@ namespace DocIntel.Core.Importers
                         using var reader = XmlReader.Create(responseStream, settings);
                         feed = SyndicationFeed.Load(reader);
                     }
-                    catch (System.Net.WebException e)
+                    catch (WebException e)
                     {
                         _logger.LogError($"Could not process XML feed '{source.RSSFeed}' of source '{source.SourceId}' due to unexpected conditions: {e.Message}");
                     }

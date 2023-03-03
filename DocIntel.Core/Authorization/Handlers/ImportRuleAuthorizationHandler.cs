@@ -16,7 +16,6 @@
 */
 
 using DocIntel.Core.Models;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 

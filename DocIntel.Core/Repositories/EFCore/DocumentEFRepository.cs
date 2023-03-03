@@ -25,7 +25,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Transactions;
-
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Helpers;
@@ -34,14 +33,11 @@ using DocIntel.Core.Models;
 using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Search.Documents;
-
 using MassTransit;
-
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
-
 using Group = DocIntel.Core.Models.Group;
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 

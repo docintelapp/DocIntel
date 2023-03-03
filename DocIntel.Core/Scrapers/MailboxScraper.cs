@@ -20,20 +20,15 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Exceptions;
-using DocIntel.Core.Importers;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
-
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Security;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
 using MimeKit;
 
 namespace DocIntel.Core.Scrapers

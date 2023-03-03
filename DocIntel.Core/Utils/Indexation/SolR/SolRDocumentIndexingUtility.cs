@@ -19,14 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using AutoMapper;
-
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Observables;
 using Microsoft.Extensions.Logging;
-
 using SolrNet;
 
 namespace DocIntel.Core.Utils.Indexation.SolR

@@ -18,10 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
-
 using SolrNet.Attributes;
 
 namespace DocIntel.Core.Utils.Indexation.SolR

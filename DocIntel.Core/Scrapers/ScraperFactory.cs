@@ -19,7 +19,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;

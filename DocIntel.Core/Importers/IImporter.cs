@@ -17,11 +17,8 @@
 
 using System;
 using System.Collections.Generic;
-
 using DocIntel.Core.Models;
 using Json.Schema;
-using Newtonsoft.Json.Schema;
-using JsonSchema = Json.Schema.JsonSchema;
 
 namespace DocIntel.Core.Importers
 {

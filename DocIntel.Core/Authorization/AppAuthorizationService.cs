@@ -17,7 +17,6 @@
 
 using System.Security.Claims;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Authorization.Operations;
 using DocIntel.Core.Models;
 using Microsoft.AspNetCore.Authorization;

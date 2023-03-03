@@ -19,7 +19,7 @@ using System;
 
 namespace DocIntel.Core.Exceptions
 {
-    [System.Serializable]
+    [Serializable]
     public class DocIntelException : Exception
     {
         public DocIntelException(string message) : base(message) {}

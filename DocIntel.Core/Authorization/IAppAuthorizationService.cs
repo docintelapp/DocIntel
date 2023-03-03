@@ -17,7 +17,6 @@
 
 using System.Security.Claims;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Models;
 
 namespace DocIntel.Core.Authorization

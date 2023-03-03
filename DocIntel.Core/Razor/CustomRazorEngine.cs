@@ -18,13 +18,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
-
 using RazorLight.Instrumentation;
-
 using InjectDirective = RazorLight.Instrumentation.InjectDirective;
 using ModelDirective = RazorLight.Instrumentation.ModelDirective;
 

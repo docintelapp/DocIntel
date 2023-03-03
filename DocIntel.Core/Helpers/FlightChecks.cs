@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DocIntel.Core.Settings;
@@ -149,9 +151,9 @@ public static class FlightChecks
             try
             {
                 using var httpClient = new HttpClient();
-                var byteArray = System.Text.Encoding.ASCII.GetBytes($"{settings.Username}:{settings.Password}");
+                var byteArray = Encoding.ASCII.GetBytes($"{settings.Username}:{settings.Password}");
                 httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                    new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
                 var response = await httpClient.GetAsync($"http://{settings.Host}:15672/api/overview");
                 if (!response.IsSuccessStatusCode)

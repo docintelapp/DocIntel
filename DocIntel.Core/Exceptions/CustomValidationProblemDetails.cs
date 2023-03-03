@@ -24,8 +24,6 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-using Newtonsoft.Json;
-
 namespace DocIntel.Core.Exceptions
 {
     public class CustomValidationProblemDetails : ValidationProblemDetails

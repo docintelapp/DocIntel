@@ -19,12 +19,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-
 using DocIntel.Core.Utils.Indexation.SolR;
 using DocIntel.Core.Utils.Search.Documents;
-
 using Microsoft.Extensions.Logging;
-
 using SolrNet;
 using SolrNet.Commands.Parameters;
 using SolrNet.Exceptions;

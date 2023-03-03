@@ -15,9 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-
-using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
 
 namespace DocIntel.Core.Utils.Search.Documents

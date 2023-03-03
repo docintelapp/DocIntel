@@ -21,7 +21,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Messages;
@@ -29,7 +28,6 @@ using DocIntel.Core.Models;
 using DocIntel.Core.Repositories.Query;
 using DotLiquid;
 using MassTransit;
-
 using Microsoft.EntityFrameworkCore;
 using Tag = DocIntel.Core.Models.Tag;
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;

@@ -19,7 +19,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Helpers;
@@ -28,18 +27,13 @@ using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
 using DocIntel.Core.Utils.Indexation.SolR;
 using MassTransit;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
 using NLog.Web;
-
-using Npgsql;
-
 using RunMethodsSequentially;
 
 namespace DocIntel.Core.Services

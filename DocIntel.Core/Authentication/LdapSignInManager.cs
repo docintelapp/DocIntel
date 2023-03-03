@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using DocIntel.Core.Logging;
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

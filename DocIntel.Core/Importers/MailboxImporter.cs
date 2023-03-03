@@ -19,12 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using DocIntel.Core.Models;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Security;
-
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Core.Importers

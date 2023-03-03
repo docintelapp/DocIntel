@@ -17,9 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-
 using DocIntel.Core.Models;
-
 using SolrNet.Attributes;
 
 namespace DocIntel.Core.Utils.Indexation.SolR

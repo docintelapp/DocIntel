@@ -21,7 +21,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Models;
@@ -35,8 +34,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
-using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Scrapers
 {

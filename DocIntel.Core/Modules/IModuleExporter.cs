@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using DocIntel.Core.Repositories;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DocIntel.Core.Modules;

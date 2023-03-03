@@ -20,13 +20,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Settings;
-
 using Microsoft.Extensions.Logging;
-
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 

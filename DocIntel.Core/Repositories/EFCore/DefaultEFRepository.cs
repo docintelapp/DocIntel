@@ -19,15 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
-
 using DocIntel.Core.Authorization;
-
 using Ganss.Xss;
-
 using MassTransit;
-
 using Microsoft.EntityFrameworkCore;
-
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
 namespace DocIntel.Core.Repositories.EFCore

@@ -17,19 +17,17 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
-
 using DocIntel.Core.EmailViews.Actions;
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
-
+using MailKit.Net.Smtp;
 using MailKit.Security;
-
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-
 using MimeKit;
 using MimeKit.Text;
-
 using RazorLight;
 using RazorLight.Compilation;
 using RazorLight.Generation;
@@ -58,8 +56,8 @@ namespace DocIntel.Core.Utils
 
         public async Task SendActionEmail(AppUser user, string subject, string emailTemplate, object model)
         {
-            string assemblyFolder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var metadataReference = Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(Path.Combine(assemblyFolder, "DocIntel.Core.dll"));
+            string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var metadataReference = MetadataReference.CreateFromFile(Path.Combine(assemblyFolder, "DocIntel.Core.dll"));
 
             var engine = new RazorLightEngineBuilder()
                 .UseEmbeddedResourcesProject(typeof(MailKitEmailSender).Assembly, "DocIntel.Core.EmailViews.")
@@ -112,7 +110,7 @@ namespace DocIntel.Core.Utils
                 Text = body
             };
 
-            using var client = new MailKit.Net.Smtp.SmtpClient();
+            using var client = new SmtpClient();
             client.CheckCertificateRevocation = _emailSettings.CheckCertificateRevocation;
             client.Connect(_emailSettings.SMTPServer, _emailSettings.SMTPPort, SecureSocketOptions.StartTls);
             client.Authenticate(_emailSettings.SMTPUser, _emailSettings.SMTPPassword);

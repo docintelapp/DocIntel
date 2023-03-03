@@ -16,7 +16,6 @@
 */
 
 using System.Threading.Tasks;
-
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 

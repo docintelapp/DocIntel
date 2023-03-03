@@ -21,12 +21,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories.Query;
 using DocIntel.Core.Settings;
-
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.Core.Scrapers

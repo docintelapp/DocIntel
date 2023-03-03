@@ -20,10 +20,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Identity;
-using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Models
 {

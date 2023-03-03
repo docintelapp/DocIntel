@@ -19,12 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
-
 using MassTransit;
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 

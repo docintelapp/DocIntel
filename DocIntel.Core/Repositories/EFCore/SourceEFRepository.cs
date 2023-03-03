@@ -20,15 +20,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
 using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories.Query;
-
 using MassTransit;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;

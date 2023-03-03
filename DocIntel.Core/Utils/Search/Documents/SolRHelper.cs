@@ -19,7 +19,6 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-
 using SolrNet.Attributes;
 
 namespace DocIntel.Core.Utils.Search.Documents

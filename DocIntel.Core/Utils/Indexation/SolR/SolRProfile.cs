@@ -17,9 +17,7 @@
 
 using System;
 using System.Linq;
-
 using AutoMapper;
-
 using DocIntel.Core.Models;
 
 namespace DocIntel.Core.Utils.Indexation.SolR

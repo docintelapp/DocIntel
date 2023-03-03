@@ -16,9 +16,7 @@
 */
 
 using System;
-
 using AutoMapper;
-
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
 using SolrNet;

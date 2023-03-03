@@ -18,7 +18,6 @@
 
 using System;
 using System.Globalization;
-
 using Newtonsoft.Json;
 
 namespace DocIntel.Core.Helpers

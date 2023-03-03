@@ -1,7 +1,6 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using DocIntel.Core.Importers;
 using Json.Schema;
 using Json.Schema.Generation;
 

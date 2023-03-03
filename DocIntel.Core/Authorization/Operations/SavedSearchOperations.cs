@@ -16,7 +16,6 @@
 */
 
 using System.ComponentModel;
-
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace DocIntel.Core.Authorization.Operations

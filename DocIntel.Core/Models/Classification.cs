@@ -18,9 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Models
 {
