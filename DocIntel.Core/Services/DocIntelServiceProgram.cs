@@ -114,7 +114,7 @@ namespace DocIntel.Core.Services
         public static void ConfigureService(HostBuilderContext hostContext, IServiceCollection serviceCollection,
             Assembly[] consumerAssemblies = null, bool runHostedServices = false)
         {
-            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            //AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             
             var configuration = hostContext.Configuration;
             EmailSettings emailSettings = new EmailSettings();

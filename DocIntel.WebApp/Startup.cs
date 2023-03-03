@@ -102,7 +102,7 @@ namespace DocIntel.WebApp
             services.AddMvc();
 
             // NpgsqlConnection.GlobalTypeMapper.UseJsonNet();
-            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            // AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             var policyBuilder = new AuthorizationPolicyBuilder(CookieAuthenticationDefaults.AuthenticationScheme,
                 JwtBearerDefaults.AuthenticationScheme);
