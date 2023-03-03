@@ -155,11 +155,45 @@ export function initSearchPage(form_id) {
         });
         displayFilters();
     }
-    
-    $('.tag-selection .fa-search-plus').click(function(eventObject) {
-        var defaultFilter = $(this).parents('.tag-selection').data('default-filter');
-        var defaultFilterName = $(this).parents('.tag-selection').data('default-filter-name');
-        var field = $(this).parents('.tag-selection').data('default-filter-field');
+
+    $('.tag-search-selection .fa-search-plus').click(function(eventObject) {
+        var defaultFilter = $(this).parents('.tag-search-selection').data('default-filter');
+        var defaultFilterName = $(this).parents('.tag-search-selection').data('default-filter-name');
+        var field = $(this).parents('.tag-search-selection').data('default-filter-field');
+        if (filters[defaultFilter] === undefined) {
+            filters[defaultFilter] = {
+                'id': defaultFilter,
+                'name': defaultFilterName,
+                'negate': false,
+                'field': field,
+                'operator': 'oneof',
+                'values': {}
+            }
+        }
+        
+        let id = "#" + $(this).data('select-id');
+        let selectedData = $(id).select2('data')[0];
+        console.log(selectedData);
+        
+        var valueId = selectedData.id;
+        var valueName = selectedData.label;
+        if (valueId !== undefined && valueName !== undefined) {
+            filters[defaultFilter]['values'][valueId] = { 'id': valueId, 'name': valueName };
+
+            var valueColor = selectedData.backgroundColor;
+            if (valueColor !== undefined) {
+                filters[defaultFilter]['values'][valueId].color = valueColor;
+            }
+        }
+
+        form.submit();
+    });
+
+
+    $('.tag-search-selection .fa-search-plus').click(function(eventObject) {
+        var defaultFilter = $(this).parents('.tag-search-selection').data('default-filter');
+        var defaultFilterName = $(this).parents('.tag-search-selection').data('default-filter-name');
+        var field = $(this).parents('.tag-search-selection').data('default-filter-field');
         if (filters[defaultFilter] === undefined) {
             filters[defaultFilter] = {
                 'id': defaultFilter,
@@ -171,12 +205,47 @@ export function initSearchPage(form_id) {
             }
         }
 
-        var valueId = $(this).parents('.tag-selection').data('value-id');
-        var valueName = $(this).parents('.tag-selection').data('value-name');
+        let id = "#" + $(this).data('select-id');
+        let selectedData = $(id).select2('data')[0];
+        
+        var valueId = selectedData.id;
+        var valueName = selectedData.label;
         if (valueId !== undefined && valueName !== undefined) {
             filters[defaultFilter]['values'][valueId] = { 'id': valueId, 'name': valueName };
 
-            var valueColor = $(this).parents('.tag-selection').data('value-color');
+            var valueColor = selectedData.backgroundColor;
+            if (valueColor !== undefined) {
+                filters[defaultFilter]['values'][valueId].color = valueColor;
+            }
+        }
+
+        form.submit();
+    });
+    
+    $('.tag-search-selection .fa-search-minus').click(function(eventObject) {
+        var defaultFilter = '!' + $(this).parents('.tag-search-selection').data('default-filter');
+        var defaultFilterName = $(this).parents('.tag-search-selection').data('default-filter-name');
+        var field = $(this).parents('.tag-search-selection').data('default-filter-field');
+        if (filters[defaultFilter] === undefined) {
+            filters[defaultFilter] = {
+                'id': defaultFilter,
+                'name': defaultFilterName,
+                'negate': true,
+                'field': field,
+                'operator': 'oneof',
+                'values': {}
+            }
+        }
+
+        let id = "#" + $(this).data('select-id');
+        let selectedData = $(id).select2('data')[0];
+
+        var valueId = selectedData.id;
+        var valueName = selectedData.label;
+        if (valueId !== undefined && valueName !== undefined) {
+            filters[defaultFilter]['values'][valueId] = { 'id': valueId, 'name': valueName };
+
+            var valueColor = selectedData.backgroundColor;
             if (valueColor !== undefined) {
                 filters[defaultFilter]['values'][valueId].color = valueColor;
             }
@@ -352,6 +421,8 @@ export function autocompleteTags() {
     console.log("🦛 Installing autocomplete for tags ...");
     
     $(".autocomplete-tag").each(function(index, item) {
+        let format = $(this).data('format');
+        
         $(this).select2({
             placeholder: 'Search for a tag',
             tokenSeparators: [','],
@@ -407,12 +478,17 @@ export function autocompleteTags() {
                 return markup;
             }, // let our custom formatter work
             minimumInputLength: 2,
-            templateResult: formatTag,
-            templateSelection: formatTagSelection
+            templateResult: function(t) {
+                return formatTag(t, format);
+            },
+            templateSelection: function(t) {
+            return formatTagSelection(t, format);
+        },
         });
     });
 
-    function formatTag(tag) {
+    function formatTag(tag, format) {
+        console.log(format);
         if (tag.loading)
         {
             return tag.text;
@@ -428,16 +504,22 @@ export function autocompleteTags() {
         }
 
         if (tag.label) {
-            return "<div class='clearfix d-flex'>" +
-                "<div>" + "<span class='badge badge-pill " + tag.background_color + "'>" + 
-                (tag.facet && tag.facet.prefix ? tag.facet.prefix + ":" : "") + tag.label + "</span>" +
-                (tag.keywords && tag.keywords.length > 0 ? "<span class='text-muted ml-2 fs-sm keywords'>(" + tag.keywords.join(', ') + ")</span>" : "")
-                + "</div>" +
-            '</div>';
+            if (format === "short") {
+                return "<div class='clearfix d-flex'>" +
+                    "<div>" + "<span class='badge badge-pill " + tag.background_color + "'>" + tag.label + "</span>" + '</div>';
+                
+            } else {
+                return "<div class='clearfix d-flex'>" +
+                    "<div>" + "<span class='badge badge-pill " + tag.background_color + "'>" +
+                    (tag.facet && tag.facet.prefix ? tag.facet.prefix + ":" : "") + tag.label + "</span>" +
+                    (tag.keywords && tag.keywords.length > 0 ? "<span class='text-muted ml-2 fs-sm keywords'>(" + tag.keywords.join(', ') + ")</span>" : "")
+                    + "</div>" +
+                    '</div>';
+            }
         }
     }
 
-    function formatTagSelection (tag) {
+    function formatTagSelection (tag, format) {
         if (tag.hasOwnProperty("id") && tag.id == "")
             return tag.text;
 
@@ -449,9 +531,12 @@ export function autocompleteTags() {
             backgroundColor = tag.element.dataset.backgroundcolor;
         }
         backgroundColor = (backgroundColor || "bg-success-50").trim();
-
-        return "<span class='badge badge-pill " + (backgroundColor) + "'>"
-            + (prefix ? prefix + ":" : "") + (label) + "</span></div>";
+        if (format === "short") {
+            return "<span class='badge badge-pill " + (backgroundColor) + "'>" + (label) + "</span></div>";
+        } else {
+            return "<span class='badge badge-pill " + (backgroundColor) + "'>"
+                + (prefix ? prefix + ":" : "") + (label) + "</span></div>";   
+        }
     }
 }
 

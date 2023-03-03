@@ -16,19 +16,36 @@
                 </div>
                 <div id="@("collapse" + catId)" class="collapse" aria-labelledby="@("heading" + catId)" data-parent="#accordion_tags">
                     <div class="card-body">
-<div class="form-group">
-    <select data-placeholder="Select a tag"
-            data-tags="false" data-facet="@t.Key.Prefix" data-id-value="true"
-            class="autocomplete-tag form-control auto-submit" name="tags">
-    </select>
-</div>
+                        
+                        <div class="form-group">
+                            <div class="input-group">
+                                
+                                <select id="tag-filter-search-@t.Key.FacetId" data-placeholder="Select a tag"
+                                        data-tags="false" data-facet="@t.Key.Prefix" data-id-value="true" data-format="short"
+                                        class="autocomplete-tag form-control">
+                                </select>
+
+                                <div class="input-group-append tag-search-selection"
+                                     data-default-filter-field="tags_id"
+                                     data-default-filter="@t.Key.FacetId"
+                                     data-default-filter-name="@t.Key.Title">
+                                    <div class="btn btn-outline-default btn-sm waves-effect waves-themed">
+                                        <i class="fa fa-search-plus" data-select-id="tag-filter-search-@t.Key.FacetId"></i>
+                                    </div>
+                                    <div class="btn btn-outline-default btn-sm waves-effect waves-themed">
+                                        <i class="fa fa-search-minus" data-select-id="tag-filter-search-@t.Key.FacetId"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         @foreach (var item in t.OrderBy(_ => _.Label))
                         {
                             var label = item.Label;
-                            <div class="mb-1 d-flex tag-selection" 
+                            <div class="mb-1 d-flex tag-selection"
                                  data-value-id="@item.TagId"
                                  data-value-name="@item.Label"
-                                 data-value-color="@item.BackgroundColor" 
+                                 data-value-color="@item.BackgroundColor"
                                  data-default-filter-field="tags_id"
                                  data-default-filter="@item.Facet.FacetId"
                                  data-default-filter-name="@item.Facet.Title">
