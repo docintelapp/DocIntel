@@ -156,7 +156,7 @@ namespace DocIntel.Services.Scraper
                 var date = await page.EvaluateFunctionAsync<string>("() => document.lastModified");
                 if (!DateTime.TryParseExact(date, "MM/dd/yyyy hh:mm:ss", enUS, DateTimeStyles.None,
                     out lastModifiedDate))
-                    lastModifiedDate = DateTime.Now;
+                    lastModifiedDate = DateTime.UtcNow;
 
                 await page.SetViewportAsync(new ViewPortOptions
                 {

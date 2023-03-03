@@ -32,8 +32,8 @@ namespace DocIntel.Core.Models
         public Tag()
         {
             TagId = Guid.NewGuid();
-            CreationDate = DateTime.Now;
-            ModificationDate = DateTime.Now;
+            CreationDate = DateTime.UtcNow;
+            ModificationDate = DateTime.UtcNow;
         }
 
         [Key] public Guid TagId { get; set; }

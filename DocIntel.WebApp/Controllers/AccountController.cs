@@ -168,7 +168,7 @@ namespace DocIntel.WebApp.Controllers
                     if (result.Succeeded)
                     {
                         var currentUser = await _userManager.FindByNameAsync(model.UserName);
-                        currentUser.LastLogin = DateTime.Now;
+                        currentUser.LastLogin = DateTime.UtcNow;
                         await _userManager.UpdateAsync(currentUser);
 
                         _logger.Log(LogLevel.Information,

@@ -60,8 +60,8 @@ namespace DocIntel.WebApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var documents = (await GetFromSubscribedTags(AmbientContext, AmbientContext.CurrentUser, DateTime.Now))
-                .Union(await GetFromSubscribedSources(AmbientContext, AmbientContext.CurrentUser, DateTime.Now))
+            var documents = (await GetFromSubscribedTags(AmbientContext, AmbientContext.CurrentUser, DateTime.UtcNow))
+                .Union(await GetFromSubscribedSources(AmbientContext, AmbientContext.CurrentUser, DateTime.UtcNow))
                 .Distinct()
                 .OrderBy(_ => _.RegistrationDate)
                 .Take(15);
@@ -94,7 +94,7 @@ namespace DocIntel.WebApp.Controllers
 
                 viewModel.ExceptionName = exceptionThatOccurred.Message;
                 viewModel.StackTrace = exceptionThatOccurred.StackTrace;
-                viewModel.Time = DateTime.Now;
+                viewModel.Time = DateTime.UtcNow;
                 viewModel.Route = routeWhereExceptionOccurred;
             }
 

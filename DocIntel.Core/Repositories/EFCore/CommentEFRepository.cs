@@ -64,7 +64,7 @@ namespace DocIntel.Core.Repositories.EFCore
 
             if (IsValid(comment, out var modelErrors))
             {
-                comment.CommentDate = DateTime.Now;
+                comment.CommentDate = DateTime.UtcNow;
                 comment.ModificationDate = comment.CommentDate;
 
                 comment.AuthorId = ambientContext.CurrentUser.Id;

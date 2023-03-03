@@ -118,7 +118,7 @@ namespace DocIntel.Services.Newsletters
                 _logger.LogInformation("Sending newsletter to " + user.UserName);
 
                 // TODO Support weekly and hourly newsletters, for example for saved searches.
-                DateTime dateTime = DateTime.Now.AddDays(-1);
+                DateTime dateTime = DateTime.UtcNow.AddDays(-1);
                 
                 HashSet<Document> docs = await GetDocuments(ambientContext, user, dateTime);
                 if (!docs.Any())
