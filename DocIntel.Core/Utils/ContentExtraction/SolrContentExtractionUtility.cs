@@ -1,5 +1,5 @@
 /* DocIntel
- * Copyright (C) 2018-2021 Belgian Defense, Antoine Cailliau
+ * Copyright (C) 2018-2023 Belgian Defense, Antoine Cailliau
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -15,10 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// 
-
 using System.IO;
-
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Indexation.SolR;

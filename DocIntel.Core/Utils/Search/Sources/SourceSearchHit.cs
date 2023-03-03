@@ -1,5 +1,5 @@
 ﻿/* DocIntel
- * Copyright (C) 2018-2021 Belgian Defense, Antoine Cailliau, Kevin Menten
+ * Copyright (C) 2018-2023 Belgian Defense, Antoine Cailliau, Kevin Menten
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
