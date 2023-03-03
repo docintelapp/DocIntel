@@ -13,8 +13,6 @@ namespace DocIntel.Core.Authentication;
 
 public class AppRoleManager : AspNetRoleManager<AppRole>
 {
-    public override bool SupportsRoleClaims => true;
-
     public AppRoleManager(IRoleStore<AppRole> store,
         IEnumerable<IRoleValidator<AppRole>> roleValidators,
         ILookupNormalizer keyNormalizer,
@@ -29,6 +27,8 @@ public class AppRoleManager : AspNetRoleManager<AppRole>
             contextAccessor)
     {
     }
+
+    public override bool SupportsRoleClaims => true;
 
     public override Task<IdentityResult> CreateAsync(AppRole role)
     {

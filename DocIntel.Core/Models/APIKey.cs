@@ -38,7 +38,7 @@ namespace DocIntel.Core.Models
 
         public DateTime? LastUsage { get; set; }
         public string LastIP { get; set; }
-        
+
         [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
     }
 }

@@ -24,6 +24,5 @@ namespace DocIntel.Core.Utils.Indexation
     ///     Provides the requires features for indexing sources.
     /// </summary>
     public interface ISourceIndexingUtility : IIndexingUtility<Guid, Source>
-    {
-    }
+    {}
 }

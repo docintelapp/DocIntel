@@ -15,8 +15,8 @@ namespace DocIntel.Core.Services;
 public class DynamicContextConsumer
 {
     protected readonly ApplicationSettings _appSettings;
-    protected readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DynamicContextConsumer> _logger;
+    protected readonly IServiceProvider _serviceProvider;
 
     public DynamicContextConsumer(ApplicationSettings appSettings,
         IServiceProvider serviceProvider,

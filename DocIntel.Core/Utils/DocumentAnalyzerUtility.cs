@@ -25,10 +25,10 @@ public class DocumentAnalyzerUtility
     private readonly ITagFacetRepository _facetRepository;
     private readonly ILogger<DocumentAnalyzerUtility> _logger;
     private readonly ILogger<TagFacetFeatureExtractor> _loggerExtractor;
+    private readonly ISynapseRepository _observablesRepository;
     private readonly IObservablesUtility _observablesUtility;
     private readonly ISolrOperations<IndexedDocument> _solr;
     private readonly TagUtility _tagUtility;
-    private readonly ISynapseRepository _observablesRepository;
 
     public DocumentAnalyzerUtility(ILogger<DocumentAnalyzerUtility> logger,
         ILogger<TagFacetFeatureExtractor> loggerExtractor,
@@ -50,6 +50,7 @@ public class DocumentAnalyzerUtility
         _observablesRepository = observablesRepository;
         _facetRepository = facetRepository;
     }
+
     public async Task Analyze(Guid documentId, AmbientContext ambientContext)
     {   
         try

@@ -12,13 +12,6 @@ namespace DocIntel.Core.Utils.Observables.Extractors;
 
 public class RegexUrlExtractor : RegexExtractor
 {
-    private ILogger<RegexUrlExtractor> _logger;
-
-    public RegexUrlExtractor(ILogger<RegexUrlExtractor> logger)
-    {
-        _logger = logger;
-    }
-
     public const string GenericUrlRegex = @"
         (
             # Scheme.
@@ -38,7 +31,7 @@ public class RegexUrlExtractor : RegexExtractor
             # CISCO ESA style defangs followed by domain/path characters.
             (?:\x20[\/\.][^\.\/\s]\S*?)*
         )" + END_PUNCTUATION + @"(?=[\s""<>^`'{|}]|$)";
-        
+
     public const string BracketUrlRegex = @"
         (
             # Scheme.
@@ -113,6 +106,13 @@ public class RegexUrlExtractor : RegexExtractor
             (?:\x20[\/\.][^\.\/\s]\S*?)*
         )" + END_PUNCTUATION + @"(?=[\s""<>^`'{|}]|$)";
 
+    private ILogger<RegexUrlExtractor> _logger;
+
+    public RegexUrlExtractor(ILogger<RegexUrlExtractor> logger)
+    {
+        _logger = logger;
+    }
+
 #pragma warning disable CS1998
     public override async IAsyncEnumerable<SynapseNode> Extract(string content)
 #pragma warning restore CS1998
@@ -157,7 +157,7 @@ public class RegexUrlExtractor : RegexExtractor
             yield return synapseObject;
         }
     }
-    
+
     private Uri NormalizeUrl(string url)
     {
      _logger.LogDebug($"Normalize '{url}'");       
@@ -265,7 +265,7 @@ public class RegexUrlExtractor : RegexExtractor
 
             return null;
         }
-    
+
     private bool IsIPv6Url(Uri parsed)
     {
         string ipv6;

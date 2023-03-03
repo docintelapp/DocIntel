@@ -57,7 +57,7 @@ namespace DocIntel.Core.Helpers
             services.AddTransient<ModuleFactory>();
             ModuleFactory.Register(applicationSettings);
         }
-        
+
         /// <summary>
         ///     Register all services required for DocIntel.
         /// </summary>
@@ -83,7 +83,7 @@ namespace DocIntel.Core.Helpers
             services.AddScoped<ISourceSearchService, SolRSourceSearchEngine>();
             services.AddScoped<IDocumentSearchEngine, SolRDocumentSearchEngine>();
         }
-        
+
         public static void RegisterSolR(IServiceCollection serviceCollection, ApplicationSettings applicationSettings)
         {
             var settings = applicationSettings.Solr;
@@ -184,7 +184,7 @@ namespace DocIntel.Core.Helpers
             services.AddScoped<IImportRuleRepository, ImportRuleEFRepository>();
             services.AddScoped<ISavedSearchRepository, SavedSearchEFRepository>();
         }
-        
+
         public static void RegisterSynapse(IServiceCollection services, ApplicationSettings applicationSettings)
         {
             services.AddSingleton(applicationSettings.Synapse);

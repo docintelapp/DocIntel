@@ -22,7 +22,9 @@ public interface ISynapseRepository
     Task<SynapseNode> GetObservableByIden(string iden);
     Task<SynapseNode> GetObservableByIden(Document document, string iden, bool unmerged = false);
     Task Merge(Document document, bool delete = true);
+
     Task RemoveRefDataWithProperty(Document document, string property, object value,
         bool unmerged = false);
+
     Task<string[]> GetSimpleForms();
 }

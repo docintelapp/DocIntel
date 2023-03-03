@@ -51,7 +51,7 @@ namespace DocIntel.Core.Models
         public Guid? SourceId { get; set; }
         public bool OverrideSource { get; set; }
         public bool SkipInbox { get; set; }
-        
+
         [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
     }
 

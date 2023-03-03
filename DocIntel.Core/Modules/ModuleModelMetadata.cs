@@ -8,6 +8,7 @@ public class ModuleModelMetadata {
     public string Title { get; set; }
     public string Description { get; set; }
     public string ClassName { get; set; }
+
     [JsonIgnore]
     public Type Type { get; set; }
 }

@@ -31,7 +31,7 @@ namespace DocIntel.Core.Exceptions
         public CustomValidationProblemDetails()
         {
         }
-        
+
         public CustomValidationProblemDetails(IEnumerable<ValidationError> errors)
         {
             Errors = errors;
@@ -41,6 +41,9 @@ namespace DocIntel.Core.Exceptions
         {
             Errors = ConvertModelStateErrorsToValidationErrors(modelState);
         }
+
+        [JsonPropertyName("errors")]
+        public new IEnumerable<ValidationError> Errors { get; } = new List<ValidationError>();
 
         private List<ValidationError> ConvertModelStateErrorsToValidationErrors(ModelStateDictionary modelStateDictionary)
         {
@@ -67,8 +70,5 @@ namespace DocIntel.Core.Exceptions
 
             return validationErrors;
         }
-
-        [JsonPropertyName("errors")]
-        public new IEnumerable<ValidationError> Errors { get; } = new List<ValidationError>();
     }
 }

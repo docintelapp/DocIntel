@@ -12,8 +12,22 @@ namespace DocIntel.Core.Utils.Observables;
 
 public class RegexDomainExtractor : RegexExtractor
 {
-    private ILogger<RegexDomainExtractor> _logger;
+    // Currently not matching unicode characters, due to high false positive rates when auto-extracting
+    public const string REGEX_DOMAIN_REGEX = @"
+            # see if preceded by slashes or @
+            (\/|\\|@|@\]|%2F)? 
+            (           
+            (?:  
+                [a-zA-Z\d-]{1,63}  # Alphanumeric chunk (also dashes)
+            (?:\.|" + DEFANGED_DOT_REGEX + @")             # Dot separator between labels.
+                ){1,63}
+            
+                [a-zA-Z]{2,}  # Top level domain (numbers excluded)
+            )
+            ";
+
     private readonly HashSet<string> _TLD;
+    private ILogger<RegexDomainExtractor> _logger;
 
     public RegexDomainExtractor(ILogger<RegexDomainExtractor> logger)
     {
@@ -31,20 +45,6 @@ public class RegexDomainExtractor : RegexExtractor
             else 
                 _TLD = new HashSet<string>();
     }
-
-    // Currently not matching unicode characters, due to high false positive rates when auto-extracting
-    public const string REGEX_DOMAIN_REGEX = @"
-            # see if preceded by slashes or @
-            (\/|\\|@|@\]|%2F)? 
-            (           
-            (?:  
-                [a-zA-Z\d-]{1,63}  # Alphanumeric chunk (also dashes)
-            (?:\.|" + DEFANGED_DOT_REGEX + @")             # Dot separator between labels.
-                ){1,63}
-            
-                [a-zA-Z]{2,}  # Top level domain (numbers excluded)
-            )
-            ";
 
 #pragma warning disable CS1998
     public override async IAsyncEnumerable<SynapseNode> Extract(string content)

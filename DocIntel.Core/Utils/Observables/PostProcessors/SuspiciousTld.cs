@@ -8,18 +8,17 @@ namespace DocIntel.Core.Utils.Observables.PostProcessors;
 
 public class SuspiciousTld : IPostProcessor
 {
-    
     // TODO Probably best to have this NOT compiled within the application but available as a custom option
-        // TODO Extend to all known and common file extensions
-        private static readonly string[] _TLDToReview =
+    // TODO Extend to all known and common file extensions
+    private static readonly string[] _TLDToReview =
         {
             "PF", "XXX", "PY", "ZIP", "VI", "STREAM", "OPEN", "AI", "CAB", "PROPERTIES", "JAVA", "SHELL", "RUN", "SAVE",
             "SH", "TT", "PS", "APP", "READ", "PLUS", "DATA", "PE", "ANDROID", "AS", "INC", "IO", "MANAGEMENT", "MOV",
             "NAME", "NEW", "NOW", "SEEK", "SERVICES", "WIN", "SO"
         };
 
-        // TODO Probably best to have this NOT compiled within the application but available as a custom option 
-        private static readonly string[] _TLD =
+    // TODO Probably best to have this NOT compiled within the application but available as a custom option 
+    private static readonly string[] _TLD =
         {
             "AAA", "AARP", "ABARTH", "ABB", "ABBOTT", "ABBVIE", "ABC", "ABLE", "ABOGADO", "ABUDHABI", "AC", "ACADEMY",
             "ACCENTURE", "ACCOUNTANT", "ACCOUNTANTS", "ACO", "ACTOR", "AD", "ADAC", "ADS", "ADULT", "AE", "AEG", "AERO",
@@ -162,8 +161,8 @@ public class SuspiciousTld : IPostProcessor
             "XXX", "XYZ", "YACHTS", "YAHOO", "YAMAXUN", "YANDEX", "YE", "YODOBASHI", "YOGA", "YOKOHAMA", "YOU",
             "YOUTUBE", "YT", "YUN", "ZA", "ZAPPOS", "ZARA", "ZERO", "ZIP", "ZM", "ZONE", "ZUERICH", "ZW"
         };
-        
-        public Task Process(IEnumerable<SynapseNode> objects)
+
+    public Task Process(IEnumerable<SynapseNode> objects)
         {
             foreach (var o in objects.Where(node => node.Form == "inet:fqdn"))
             {
@@ -172,8 +171,8 @@ public class SuspiciousTld : IPostProcessor
 
             return Task.CompletedTask;
         }
-        
-        private SynapseNode Process(SynapseNode fqdn) {
+
+    private SynapseNode Process(SynapseNode fqdn) {
             var fqdnValue = (string)fqdn.Valu;
             var hostTld = fqdnValue.Split('.').Last();
             

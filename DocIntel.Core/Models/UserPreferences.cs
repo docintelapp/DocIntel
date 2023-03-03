@@ -22,8 +22,8 @@ namespace DocIntel.Core.Models
 {
     public class UserPreferences
     {
-        private UIPreferences _ui;
         private DigestPreferences _digest;
+        private UIPreferences _ui;
 
         public UserPreferences()
         {
@@ -43,14 +43,14 @@ namespace DocIntel.Core.Models
 
         public class DigestPreferences
         {
-            private DigestFrequency _frequency;
-            private DateTime _lastDigest;
-
             public enum DigestFrequency
             {
                 None,
                 Daily
             }
+
+            private DigestFrequency _frequency;
+            private DateTime _lastDigest;
 
             [Display(Name = "Email Digests")]
             public DigestFrequency Frequency
@@ -68,12 +68,6 @@ namespace DocIntel.Core.Models
 
         public class UIPreferences
         {
-            private string _timeZone;
-            private UITheme _theme;
-            private UIFontSize _fontSize = UIFontSize.Medium;
-            private bool _biggerContentFont = false;
-            private bool _highContrastText = false;
-
             public enum UIFontSize
             {
                 Small,
@@ -88,6 +82,12 @@ namespace DocIntel.Core.Models
                 Light,
                 Dark
             }
+
+            private bool _biggerContentFont = false;
+            private UIFontSize _fontSize = UIFontSize.Medium;
+            private bool _highContrastText = false;
+            private UITheme _theme;
+            private string _timeZone;
 
             [Display(Name = "TimeZone")]
             public string TimeZone

@@ -28,8 +28,8 @@ namespace DocIntel.Core.Utils.Indexation.SolR
     {
         private readonly ILogger<SolRSourceIndexingUtility> _logger;
         private readonly IMapper _mapper;
-        private readonly ISolrOperations<IndexedSource> _solr;
         private readonly ApplicationSettings _settings;
+        private readonly ISolrOperations<IndexedSource> _solr;
 
         public SolRSourceIndexingUtility(
             ISolrOperations<IndexedSource> solr,
@@ -84,6 +84,5 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             _logger.LogDebug("Commit");
             _solr.Commit();
         }
-
     }
 }

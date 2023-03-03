@@ -21,6 +21,5 @@ using DocIntel.Core.Models;
 namespace DocIntel.Core.Utils.Indexation
 {
     public interface ITagFacetIndexingUtility : IIndexingUtility<Guid, TagFacet>
-    {
-    }
+    {}
 }

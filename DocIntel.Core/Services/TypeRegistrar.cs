@@ -8,17 +8,12 @@ namespace DocIntel.Core.Services
     {
         private readonly IServiceCollection _serviceCollection;
         private IServiceProvider _serviceProvider;
-        
+
         public TypeRegistrar(IServiceCollection serviceCollection)
         {
             _serviceCollection = serviceCollection;
         }
 
-        public void SetServiceProvider(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-        
         public ITypeResolver Build()
         {
             if (_serviceProvider == null)
@@ -54,6 +49,11 @@ namespace DocIntel.Core.Services
             }
 
             _serviceCollection.AddSingleton(type, (provider) => func());
+        }
+
+        public void SetServiceProvider(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
         }
     }
 }

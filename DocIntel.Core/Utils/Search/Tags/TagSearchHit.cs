@@ -23,7 +23,7 @@ namespace DocIntel.Core.Utils.Search.Tags
     {
         public string Excerpt { get; internal set; }
         public string LabelExcerpt { get; internal set; }
-        
+
         public IndexedTag Tag { get; set; }
     }
 }

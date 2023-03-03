@@ -26,7 +26,6 @@ namespace DocIntel.Core.Repositories.EFCore
 {
     public class ImportRuleEFRepository : IImportRuleRepository
     {
-
         public async Task<ImportRuleSet> Create(AmbientContext context, ImportRuleSet importRuleSet)
         {
             var entry = context.DatabaseContext.ImportRuleSets.Add(importRuleSet);

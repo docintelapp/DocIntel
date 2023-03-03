@@ -254,7 +254,7 @@ namespace DocIntel.Core.Repositories
         /// </exception>
         Task<SubscriptionStatus> IsSubscribedAsync(AmbientContext ambientContext, AppUser user, Guid sourceId);
 
-        
+
         /// <summary>
         ///     Mute the source for a user.
         /// </summary>

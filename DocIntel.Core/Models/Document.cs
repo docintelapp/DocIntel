@@ -93,6 +93,7 @@ namespace DocIntel.Core.Models
         [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
 
         public Guid? ThumbnailId { get; set; }
+
         [ForeignKey("ThumbnailId")]
         public DocumentFile Thumbnail { get; set; }
 

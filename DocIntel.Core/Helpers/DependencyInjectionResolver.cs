@@ -6,12 +6,12 @@ namespace DocIntel.Core.Helpers;
 
 public class DependencyInjectionResolver : ITypeResolver, IDisposable
 {
-    private ServiceProvider ServiceProvider { get; }
-
     internal DependencyInjectionResolver(ServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider;
     }
+
+    private ServiceProvider ServiceProvider { get; }
 
     public void Dispose()
     {

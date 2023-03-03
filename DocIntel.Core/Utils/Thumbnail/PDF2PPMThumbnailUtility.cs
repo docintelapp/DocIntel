@@ -31,8 +31,8 @@ namespace DocIntel.Core.Utils.Thumbnail
 {
     public class PDF2PPMThumbnailUtility : IThumbnailUtility
     {
-        private readonly IDocumentRepository _documentRepository;
         private readonly ApplicationSettings _configuration;
+        private readonly IDocumentRepository _documentRepository;
         private readonly ILogger _logger;
 
         public PDF2PPMThumbnailUtility(ApplicationSettings configuration, ILogger<PDF2PPMThumbnailUtility> logger,

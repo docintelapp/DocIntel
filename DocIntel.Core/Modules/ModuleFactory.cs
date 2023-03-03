@@ -17,16 +17,15 @@ namespace DocIntel.Core.Modules;
 
 public class ModuleFactory
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<ModuleFactory> _logger;
-    
     private static Dictionary<string, ModuleConfiguration> _modules;
     private static Dictionary<string, Type> _exporters;
     private static Dictionary<string, ModuleLoadContext> _assemblyLoadContexts;
-    
+
     private static List<WeakReference> _wr = new List<WeakReference>();
     private static ApplicationSettings _applicationSettings;
     private static Dictionary<string,Assembly> _assemblies;
+    private readonly ILogger<ModuleFactory> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
     public ModuleFactory(IServiceProvider serviceProvider, ILogger<ModuleFactory> logger)
     {
@@ -248,7 +247,7 @@ public class ModuleFactory
 
         return null;
     }
-    
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     public IEnumerable<ModuleModelMetadata> GetMetadata(Type t)
     {

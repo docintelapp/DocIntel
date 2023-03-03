@@ -98,7 +98,7 @@ namespace DocIntel.Core.Utils
                 throw e;
             }
         }
-        
+
         private void SendEmail(AppUser user, string subject, string body)
         {
             var message = new MimeMessage();

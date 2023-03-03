@@ -376,7 +376,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 return new SubscriptionStatus {Subscribed = false};
             return new SubscriptionStatus {Subscribed = subscription.Subscribed, Notification = subscription.Notify};
         }
-        
+
         public async Task MuteAsync(AmbientContext ambientContext, AppUser user, Guid sourceId)
         {
             var retrievedSource = await _tableSelector(ambientContext).FindAsync(sourceId);
@@ -511,7 +511,7 @@ namespace DocIntel.Core.Repositories.EFCore
 
             return documents;
         }
-        
+
         private string GenerateSlug(AmbientContext context, Source document)
         {
             var slug = GenerateSlug(document.Title, 0);
@@ -534,6 +534,5 @@ namespace DocIntel.Core.Repositories.EFCore
                 }
             }
         }
-
     }
 }

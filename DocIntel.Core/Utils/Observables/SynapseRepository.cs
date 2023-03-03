@@ -14,7 +14,7 @@ public class SynapseRepository : ISynapseRepository
 {
     private readonly TelepathClient _client;
     private readonly ILogger<SynapseRepository> _logger;
-    
+
     private readonly NodeHelper _nodeHelper;
     private readonly ViewHelper _viewHelper;
 
@@ -61,12 +61,12 @@ public class SynapseRepository : ISynapseRepository
             _logger.LogDebug("No observables to add");
         }
     }
-    
+
     public Task Add(SynapseNode synapseNode, Document document, SynapseView view = null)
     {
         return Add(new[] { synapseNode }, document, view);
     }
-    
+
     public async Task Remove(Guid documentId, SynapseView view = null)
     {   
         var stormOps = new StormOps() { View = view?.Iden, Repr = true };
@@ -79,22 +79,6 @@ public class SynapseRepository : ISynapseRepository
         await _nodeHelper.DeleteAsync(docNode, stormOps);
     }
 
-    public async Task RemoveRefs(Guid documentId, SynapseView view = null)
-    {
-        var stormOps = new StormOps() { View = view?.Iden, Repr = true };
-        // TOOO Does not really delete the observables, just the link.
-        // TODO What needs to be deleted? Because an observable might linked or edited manually.
-        
-        var docNode = new SynapseNode()
-        {
-            Form = "_di:document",
-            Valu = documentId.ToString()
-        };
-        await _nodeHelper.DeleteAsync(docNode, stormOps);
-    }
-
-    private string GetViewName(Document document) => "document-" + document.DocumentId.ToString();
-
     public async Task<SynapseView> CreateView(Document document)
     {
         var name = GetViewName(document);
@@ -104,6 +88,7 @@ public class SynapseRepository : ISynapseRepository
             return view;
         return await _viewHelper.Fork("", name);
     }
+
     public async Task RemoveView(Document document)
     {
         var name = GetViewName(document);
@@ -130,13 +115,6 @@ public class SynapseRepository : ISynapseRepository
         var proxy = await _client.GetProxyAsync();
         await foreach (var element in proxy.Storm($"_di:document=$documentId -(refs)> * {filter}", stormOps).OfType<SynapseNode>())
             yield return element;
-    }
-
-    private async Task<SynapseView> GetViewAsync(Document document, bool unmerged = false)
-    {
-        var viewName = unmerged ? GetViewName(document) : null;
-        var view = (await _viewHelper.List() ?? Array.Empty<SynapseView>()).FirstOrDefault(_ => _.Name == viewName);
-        return view;
     }
 
     public async Task Remove(Document document, string iden, bool unmerged = false, bool softDelete = false)
@@ -264,5 +242,28 @@ public class SynapseRepository : ISynapseRepository
             .Select(_ => (string) _?.Valu?.ToString() ?? null)
             .Where(_ => _ != null)
             .ToArray();
+    }
+
+    public async Task RemoveRefs(Guid documentId, SynapseView view = null)
+    {
+        var stormOps = new StormOps() { View = view?.Iden, Repr = true };
+        // TOOO Does not really delete the observables, just the link.
+        // TODO What needs to be deleted? Because an observable might linked or edited manually.
+        
+        var docNode = new SynapseNode()
+        {
+            Form = "_di:document",
+            Valu = documentId.ToString()
+        };
+        await _nodeHelper.DeleteAsync(docNode, stormOps);
+    }
+
+    private string GetViewName(Document document) => "document-" + document.DocumentId.ToString();
+
+    private async Task<SynapseView> GetViewAsync(Document document, bool unmerged = false)
+    {
+        var viewName = unmerged ? GetViewName(document) : null;
+        var view = (await _viewHelper.List() ?? Array.Empty<SynapseView>()).FirstOrDefault(_ => _.Name == viewName);
+        return view;
     }
 }

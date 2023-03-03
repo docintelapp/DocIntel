@@ -28,7 +28,7 @@ namespace DocIntel.Core.Services
     public class MigrateDbContextService : IStartupServiceToRunSequentially
     {
         public int OrderNum { get; }
- 
+
         public async ValueTask ApplyYourChangeAsync(
             IServiceProvider scopedServices)
         {

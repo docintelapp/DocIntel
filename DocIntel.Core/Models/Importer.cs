@@ -57,16 +57,18 @@ namespace DocIntel.Core.Models
 
         public string FetchingUserId { get; set; }
         public AppUser FetchingUser { get; set; }
-        
+
         /// <summary>
         ///     The specific settings for the plugin.
         /// </summary>
         [Column(TypeName = "jsonb")]
         public JObject Settings { get; set; }
+
         public Guid ReferenceClass { get; set; }
-        
+
         [DefaultValue(10)]
         public int Limit { get; set; } = 10;
+
         public int Priority { get; set; }
 
         public bool OverrideClassification { get; set; }
@@ -79,7 +81,7 @@ namespace DocIntel.Core.Models
         public ICollection<Group> EyesOnly { get; set; }
         public Guid? SourceId { get; set; }
         public Source Source { get; set; }
-        
+
         public ICollection<Tag> Tags { get; set; }
         public bool OverrideSource { get; set; }
         public bool SkipInbox { get; set; }
@@ -95,11 +97,12 @@ namespace DocIntel.Core.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public bool Enabled { get; set; }
+
         [Column(TypeName = "jsonb")]
         public JObject Settings { get; set; }
-        
+
         public Guid ReferenceClass { get; set; }
-        
+
         public bool OverrideSource { get; set; }
         public Guid? SourceId { get; set; }
         public Source Source { get; set; }
@@ -114,7 +117,7 @@ namespace DocIntel.Core.Models
         public ICollection<Group> EyesOnly { get; set; }
         public bool OverrideReleasableTo { get; set; }
         public bool OverrideEyesOnly { get; set; }
-        
+
         public ICollection<Tag> Tags { get; set; }
     }
 }

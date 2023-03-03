@@ -25,7 +25,7 @@ namespace DocIntel.Core.Utils.Search.Sources
 
         public string TitleExcerpt { get; internal set; }
         public string Excerpt { get; internal set; }
-        
+
         public IndexedSource Source { get; set; }
     }
 }

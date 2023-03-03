@@ -6,8 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DocIntel.Core.Modules;
 
 public interface IModuleExporter
-{
-}
+{}
 
 public interface IModuleExporter<T1, T2> : IModuleExporter
 {

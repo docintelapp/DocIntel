@@ -18,7 +18,7 @@ namespace DocIntel.Core.Services;
 public class BaseDataDbService : IStartupServiceToRunSequentially
 {
     public int OrderNum { get; }
- 
+
     public async ValueTask ApplyYourChangeAsync(
         IServiceProvider scopedServices)
     {

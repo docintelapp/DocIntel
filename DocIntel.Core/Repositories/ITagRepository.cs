@@ -40,7 +40,7 @@ namespace DocIntel.Core.Repositories
             string[] includeRelatedData = null);
 
         IAsyncEnumerable<Tag> GetAllAsync(AmbientContext context, Func<IQueryable<Tag>, IQueryable<Tag>> query);
-        
+
         Task<Tag> GetAsync(AmbientContext ambientContext, Guid id, string[] includeRelatedData = null);
         Task<Tag> GetAsync(AmbientContext ambientContext, string label, string[] includeRelatedData = null);
 

@@ -62,7 +62,7 @@ namespace DocIntel.Core.Models
         public ICollection<UserFacetSubscription> SubscribedUsers { get; set; }
 
         public ICollection<Tag> Tags { get; set; }
-        
+
         [DisplayName("Automated Extraction")] public bool AutoExtract { get; set; }
         [DisplayName("Extraction Regex")] public string ExtractionRegex { get; set; }
         public string TagNormalization { get; set; }

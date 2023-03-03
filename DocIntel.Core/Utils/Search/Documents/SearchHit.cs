@@ -24,7 +24,7 @@ namespace DocIntel.Core.Utils.Search.Documents
         public Guid DocumentId { get; set; }
 
         public string Reference { get; internal set; }
-        
+
         public string Title { get; internal set; }
 
         public int Position { get; internal set; }

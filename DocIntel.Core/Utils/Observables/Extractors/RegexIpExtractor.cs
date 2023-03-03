@@ -24,7 +24,7 @@ public class RegexIpExtractor : RegexExtractor
     public const string IPV6_REGEX = @"
             \b(?:[a-f0-9]{1,4}:|:){2,7}(?:[a-f0-9]{1,4}|:)\b
         ";
-    
+
 #pragma warning disable CS1998
     public override async IAsyncEnumerable<SynapseNode> Extract(string content)
 #pragma warning restore CS1998

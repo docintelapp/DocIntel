@@ -33,8 +33,8 @@ namespace DocIntel.Core.Utils.Search.Documents
     public class SolRDocumentSearchEngine : IDocumentSearchEngine
     {
         private readonly ILogger<SolRDocumentSearchEngine> _logger;
+        private readonly ApplicationSettings _settings;
         private readonly ISolrOperations<IndexedDocument> _solr;
-        private readonly ApplicationSettings _settings; 
 
         public SolRDocumentSearchEngine(
             ISolrOperations<IndexedDocument> solr,

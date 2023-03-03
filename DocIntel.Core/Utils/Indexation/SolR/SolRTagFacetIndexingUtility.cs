@@ -26,8 +26,8 @@ namespace DocIntel.Core.Utils.Indexation.SolR
     public class SolRTagFacetIndexingUtility : ITagFacetIndexingUtility
     {
         private readonly IMapper _mapper;
-        private readonly ISolrOperations<IndexedTagFacet> _solr;
         private readonly ApplicationSettings _settings;
+        private readonly ISolrOperations<IndexedTagFacet> _solr;
 
         public SolRTagFacetIndexingUtility(
             ISolrOperations<IndexedTagFacet> solr,
@@ -76,6 +76,5 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         {
             _solr.Commit();
         }
-
     }
 }

@@ -47,14 +47,15 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             get => (SourceReliability) Enum.ToObject(typeof(SourceReliability), ReliabilityScore);
             set => ReliabilityScore = (int) value;
         }
-        [SolrField("reliability")] public int ReliabilityScore { get; set; } 
+
+        [SolrField("reliability")] public int ReliabilityScore { get; set; }
 
         [SolrField("country")] public string Country { get; set; }
-        
+
         [SolrField("num_docs")] public int NumDocs { get; set; }
-        
+
         [SolrField("last_doc_update")] public DateTime LastDocumentDate { get; set; }
-        
+
         [SolrField("suggest_label")] public string SuggestLabel { get; set; }
     }
 }

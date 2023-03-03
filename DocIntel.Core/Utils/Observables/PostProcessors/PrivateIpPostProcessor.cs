@@ -16,7 +16,7 @@ public class PrivateIpPostProcessor : IPostProcessor
         }
         return Task.CompletedTask;
     }
-    
+
     private static SynapseNode Process(SynapseNode ipV4)
     {
         var privateInternets = new[]

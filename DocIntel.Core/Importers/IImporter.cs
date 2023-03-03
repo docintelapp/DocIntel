@@ -24,7 +24,10 @@ namespace DocIntel.Core.Importers
 {
     public interface IImporter
     {
+        bool HasSettings { get; }
+
         ImporterInformation Get();
+
         // TODO Check if install is still a required method
         Importer Install();
         IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit);
@@ -32,6 +35,5 @@ namespace DocIntel.Core.Importers
         JsonSchema GetSettingsSchema();
         Type GetSettingsType();
         string GetSettingsView();
-        bool HasSettings { get; }
     }
 }

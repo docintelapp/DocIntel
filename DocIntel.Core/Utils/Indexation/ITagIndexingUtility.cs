@@ -24,6 +24,5 @@ namespace DocIntel.Core.Utils.Indexation
     ///     Provides the requires features for indexing tags.
     /// </summary>
     public interface ITagIndexingUtility : IIndexingUtility<Guid, Tag>
-    {
-    }
+    {}
 }

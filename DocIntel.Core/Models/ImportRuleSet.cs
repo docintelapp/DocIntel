@@ -24,8 +24,10 @@ namespace DocIntel.Core.Models
     public class ImportRuleSet
     {
         public Guid ImportRuleSetId { get; set; }
+
         [Required]
         public string Name { get; set; }
+
         public string Description { get; set; }
         public ICollection<ImportRule> ImportRules { get; set; }
         public int Position { get; set; }

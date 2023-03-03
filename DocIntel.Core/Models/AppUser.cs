@@ -27,6 +27,11 @@ namespace DocIntel.Core.Models
 {
     public class AppUser : IdentityUser
     {
+        public AppUser()
+        {
+            Preferences = new UserPreferences();
+        }
+
         [Display(Name = "First Name")] public string FirstName { get; set; }
 
         [Display(Name = "Last Name")] public string LastName { get; set; }
@@ -64,11 +69,6 @@ namespace DocIntel.Core.Models
             }
         }
 
-        public AppUser()
-        {
-            Preferences = new UserPreferences();
-        }
-        
         [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
     }
 }

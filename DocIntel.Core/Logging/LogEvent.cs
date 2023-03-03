@@ -25,8 +25,8 @@ namespace DocIntel.Core.Logging
 {
     public class LogEvent : IEnumerable<KeyValuePair<string, object>>
     {
-        private readonly List<KeyValuePair<string, object>> _properties = new();
         private readonly string _message;
+        private readonly List<KeyValuePair<string, object>> _properties = new();
 
         public LogEvent(string message)
         {

@@ -25,12 +25,11 @@ namespace DocIntel.Core.Helpers
 {
     public static class LinqHelpers
     {
-        
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> enumerable)
         {
             return enumerable == null || !enumerable.Any();
         }
-        
+
         public static IEnumerable<T> Except<T, TKey>(this IEnumerable<T> items, IEnumerable<T> other,
             Func<T, TKey> getKeyFunc)
         {

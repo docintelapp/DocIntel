@@ -12,7 +12,7 @@ public class SavedSearch
     public Guid SavedSearchId { get; set; }
     public string Name { get; set; }
     public bool Public { get; set; }
-    
+
     [Display(Name = "Creation Date")]
     [DataType(DataType.Date)]
     public DateTime CreationDate { get; set; }
@@ -26,13 +26,14 @@ public class SavedSearch
 
     public AppUser LastModifiedBy { get; set; }
     public string LastModifiedById { get; set; }
-    
+
     public string SearchTerm { get; set; }
-    
+
     [Column(TypeName = "jsonb")] 
     public IList<SearchFilter> Filters { get; set; }
+
     public SortCriteria SortCriteria { get; set; }
     public int PageSize { get; set; }
-    
+
     [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
 }

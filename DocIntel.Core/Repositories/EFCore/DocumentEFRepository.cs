@@ -45,11 +45,24 @@ namespace DocIntel.Core.Repositories.EFCore
 {
     public class DocumentEFRepository : DefaultEFRepository<Document>, IDocumentRepository
     {
+        // See https://www.garykessler.net/library/file_sigs.html for reference
+        private static readonly List<(int offset, byte[] data, string extension)> _fileSignature2 =
+            new List<(int offset, byte[] data, string extension)>()
+            {
+                {(0, new byte[] {0xFF, 0xD8, 0xFF, 0xE0}, ".jpeg")},
+                {(0, new byte[] {0xFF, 0xD8, 0xFF, 0xE2}, ".jpeg")},
+                {(0, new byte[] {0xFF, 0xD8, 0xFF, 0xE3}, ".jpeg")},
+                {(0, new byte[] {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}, ".png")},
+                {(0, new byte[] { 0x25, 0x50, 0x44, 0x46 }, ".pdf")},
+                {(0, new byte[] { 0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00 }, ".docx")},
+                {(0, new byte[] { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 }, ".doc")},
+            };
+
         private readonly ApplicationSettings _configuration;
 
         private readonly ILogger<DocumentEFRepository> _logger;
-        private readonly SHA256 _sha256Calculator;
         private readonly ApplicationSettings _settings;
+        private readonly SHA256 _sha256Calculator;
 
         public DocumentEFRepository(IPublishEndpoint busClient,
             IAppAuthorizationService appAuthorizationService,
@@ -113,26 +126,6 @@ namespace DocIntel.Core.Repositories.EFCore
             }
 
             throw new InvalidArgumentException(modelErrors);
-        }
-
-        private string GenerateDocumentSlug(AmbientContext context, Document document)
-        {
-            var slug = GenerateSlug(document.Title, 0);
-            if (slug == document.URL) return slug;
-
-            var regexSlug = "^" + Regex.Escape(slug) + "(-[0-9]+)?$";
-            var maxSlug = context.DatabaseContext.Documents
-                .Where(_ => Regex.IsMatch(_.URL, regexSlug))
-                .Select(_ => new { URL = _.URL, Length = _.URL.Length })
-                .OrderByDescending(_ => _.Length).ThenByDescending(_ => _.URL)
-                .FirstOrDefault();
-            if (maxSlug == null)
-                return slug;
-            var lastPart = maxSlug.URL.Split('-').Last();
-            if (!Int64.TryParse(lastPart, out long result))
-                return maxSlug.URL + "-1";
-
-            return maxSlug.URL.Substring(0, maxSlug.Length - lastPart.Length - 1) + "-" + (result + 1);
         }
 
         public async Task<Document> UpdateStatusAsync(AmbientContext context, Guid documentId, DocumentStatus status)
@@ -355,7 +348,7 @@ namespace DocIntel.Core.Repositories.EFCore
 
             return false;
         }
-        
+
         public async Task<bool> ExistsAsync(AmbientContext context, Func<IQueryable<Document>, IQueryable<Document>> query)
         {
             var filteredDocuments = BuildQuery(context.DatabaseContext.Documents, query);
@@ -368,8 +361,8 @@ namespace DocIntel.Core.Repositories.EFCore
 
             return false;
         }
-        
-        
+
+
         public async IAsyncEnumerable<Document> GetAllAsync(AmbientContext context, Func<IQueryable<Document>, IQueryable<Document>> query)
         {
             IQueryable<Document> enumerable = context.DatabaseContext.Documents;
@@ -721,7 +714,7 @@ namespace DocIntel.Core.Repositories.EFCore
             
             return trackingEntity.Entity;
         }
-        
+
         public async Task<SubmittedDocument> SubmitDocument(AmbientContext ambientContext, SubmittedDocument doc)
         {
             doc.SubmitterId = ambientContext.CurrentUser.Id;
@@ -729,7 +722,7 @@ namespace DocIntel.Core.Repositories.EFCore
             var trackingEntity = await ambientContext.DatabaseContext.AddAsync(doc);
             return trackingEntity.Entity;
         }
-        
+
         public IAsyncEnumerable<SubmittedDocument> GetSubmittedDocuments(AmbientContext ambientContext, Func<IQueryable<SubmittedDocument>, IQueryable<SubmittedDocument>> query = null, int page = 0, int limit = 100)
         {
             var queryable = ambientContext.DatabaseContext.SubmittedDocuments.AsQueryable();
@@ -742,7 +735,7 @@ namespace DocIntel.Core.Repositories.EFCore
             
             return queryable.AsAsyncEnumerable();
         }
-        
+
         public void DeleteSubmittedDocument(AmbientContext ambientContext,
             Guid id,
             SubmissionStatus status = SubmissionStatus.Processed,
@@ -775,7 +768,27 @@ namespace DocIntel.Core.Repositories.EFCore
 
             return Task.FromResult(queryable.SingleOrDefault(_ => _.SubmittedDocumentId == submissionId));
         }
-        
+
+        private string GenerateDocumentSlug(AmbientContext context, Document document)
+        {
+            var slug = GenerateSlug(document.Title, 0);
+            if (slug == document.URL) return slug;
+
+            var regexSlug = "^" + Regex.Escape(slug) + "(-[0-9]+)?$";
+            var maxSlug = context.DatabaseContext.Documents
+                .Where(_ => Regex.IsMatch(_.URL, regexSlug))
+                .Select(_ => new { URL = _.URL, Length = _.URL.Length })
+                .OrderByDescending(_ => _.Length).ThenByDescending(_ => _.URL)
+                .FirstOrDefault();
+            if (maxSlug == null)
+                return slug;
+            var lastPart = maxSlug.URL.Split('-').Last();
+            if (!Int64.TryParse(lastPart, out long result))
+                return maxSlug.URL + "-1";
+
+            return maxSlug.URL.Substring(0, maxSlug.Length - lastPart.Length - 1) + "-" + (result + 1);
+        }
+
         private IQueryable<Document> BuildQuery(IQueryable<Document> databaseContextDocuments, Func<IQueryable<Document>, IQueryable<Document>> query)
         {
             return query(databaseContextDocuments);
@@ -1003,7 +1016,7 @@ namespace DocIntel.Core.Repositories.EFCore
             var filename = fileReference + ".pdf";
             return filename;
         }
-        
+
         public static bool CheckFileContents(Stream stream, out string extension)
         {
             if (IsBinary(stream))
@@ -1041,7 +1054,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 return true;
             }
         }
-        
+
         // Not perfect, but good enough and used in GIT. See https://stackoverflow.com/questions/4744890/c-sharp-check-if-file-is-text-based
         // Could be updated with https://dev.w3.org/html5/cts/html5-type-sniffing.html
         public static bool IsBinary(Stream stream, int requiredConsecutiveNul = 1)
@@ -1075,19 +1088,5 @@ namespace DocIntel.Core.Repositories.EFCore
         
             return false;
         }
-
-        // See https://www.garykessler.net/library/file_sigs.html for reference
-        private static readonly List<(int offset, byte[] data, string extension)> _fileSignature2 =
-            new List<(int offset, byte[] data, string extension)>()
-            {
-                {(0, new byte[] {0xFF, 0xD8, 0xFF, 0xE0}, ".jpeg")},
-                {(0, new byte[] {0xFF, 0xD8, 0xFF, 0xE2}, ".jpeg")},
-                {(0, new byte[] {0xFF, 0xD8, 0xFF, 0xE3}, ".jpeg")},
-                {(0, new byte[] {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}, ".png")},
-                {(0, new byte[] { 0x25, 0x50, 0x44, 0x46 }, ".pdf")},
-                {(0, new byte[] { 0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00 }, ".docx")},
-                {(0, new byte[] { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 }, ".doc")},
-            };
-        
     }
 }

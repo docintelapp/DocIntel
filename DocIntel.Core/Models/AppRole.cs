@@ -59,12 +59,12 @@ namespace DocIntel.Core.Models
 
         public DateTime CreationDate { get; internal set; }
         public DateTime ModificationDate { get; internal set; }
-        
+
         public string CreatedById { get; set; }
         public AppUser CreatedBy { get; set; }
         public string LastModifiedById { get; set; }
         public AppUser LastModifiedBy { get; set; }
-        
+
         [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
     }
 }

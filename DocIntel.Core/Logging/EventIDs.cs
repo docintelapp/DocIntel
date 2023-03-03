@@ -26,7 +26,7 @@ namespace DocIntel.Core.Logging
         public static EventId LoginSuccessful = new EventId(10001, "login-success");
         public static EventId LoginFailed = new EventId(10002, "login-fail");
         public static EventId LoginError = new EventId(10003, "login-error");
-        
+
         public static EventId RegistrationClosed = new EventId(10004, "registration-closed");
         public static EventId RegistrationSuccessful = new EventId(10005, "registration-success");
         public static EventId RegistrationFailed = new EventId(10006, "registration-fail");
@@ -114,32 +114,12 @@ namespace DocIntel.Core.Logging
         public static EventId APIUnsubscribeFacetFailed = new EventId(26023, "unsubscribe-tagfacet-fail");
         public static EventId APIMergeFacetSuccessful = new EventId(26024, "merge-tagfacet-success");
         public static EventId APIMergeFacetFailed = new EventId(26025, "merge-tagfacet-fail");
-        
+
         public static EventId APIListWhitelistFailed = new EventId(27000, "list-whitelist-fail");
         public static EventId APICreateWhitelistSucces = new EventId(27001, "create-whitelist-success");
         public static EventId APICreateWhitelistFailed = new EventId(27002, "create-whitelist-fail");
         public static EventId APIDeleteWhitelistSucces = new EventId(27003, "delete-whitelist-success");
         public static EventId APIDeleteWhitelistFailed = new EventId(27004, "delete-whitelist-fail");
-
-        // Numbering schema:
-        // First digit: 1 = WebApp, 2 = API
-        // Second digit: 
-        // 0 = Account
-        // 1 = Comment
-        // 2 = Import rule
-        // 3 = Feed
-        // 4 = Role
-        // 5 = Source
-        // 6 = Tag and/or Facet
-        // 7 = User
-        // 8 = Document
-
-        private static EventId APIEventId(EventId eventId)
-        {
-            return new EventId(eventId.Id + 10000, "api-" + eventId.Name);
-        }
-
-        #region Account-related Event IDs
 
         public static EventId ForgotPasswordRequest = new EventId(10017, "forgot-password-fail");
         public static EventId ForgotPasswordSuccess = new EventId(10018, "forgot-password-success");
@@ -157,15 +137,6 @@ namespace DocIntel.Core.Logging
         public static EventId Enable2FAFailed = new EventId(10030, "enable-2fa-fail");
         public static EventId Enable2FASuccess = new EventId(10031, "enable-2fa-success");
         public static EventId RecoveryCodeGenerated = new EventId(10032, "2fa-recovery-code-generated");
-        
-        #endregion
-
-        #region Comment-related Event IDs
-
-        #endregion
-
-        #region Comment-related Event IDs
-
         public static EventId DiscardDocumentSuccessful = new EventId(18002, "discard-document-success");
         public static EventId DiscardDocumentFailed = new EventId(18003, "discard-document-fail");
         public static EventId PendingDocumentSuccessful = new EventId(18004, "pending-document-success");
@@ -183,7 +154,6 @@ namespace DocIntel.Core.Logging
         public static EventId DetailsDocumentFailed = new EventId(18016, "details-document-fail");
         public static EventId RegisterDocumentSuccessful = new EventId(18015, "register-document-success");
         public static EventId RegisterDocumentFailed = new EventId(18016, "register-document-fail");
-
         public static EventId APIDiscardDocumentSuccessful = APIEventId(DiscardDocumentSuccessful);
         public static EventId APIDiscardDocumentFailed = APIEventId(DiscardDocumentFailed);
         public static EventId APIPendingDocumentSuccessful = APIEventId(PendingDocumentSuccessful);
@@ -201,9 +171,6 @@ namespace DocIntel.Core.Logging
         public static EventId APIDetailsDocumentFailed = APIEventId(DetailsDocumentFailed);
         public static EventId APIRegisterDocumentSuccessful = APIEventId(RegisterDocumentSuccessful);
         public static EventId APIRegisterDocumentFailed = APIEventId(RegisterDocumentFailed);
-
-        #endregion
-
         public static EventId LocalUserCreated = new EventId(1000, "local-user-created");
         public static EventId UserLogOnSuccess = new EventId(1001, "user-logon-success");
         public static EventId UserLogOff = new EventId(1002, "user-logoff");
@@ -223,7 +190,7 @@ namespace DocIntel.Core.Logging
         public static EventId DetailsClassificationSuccessful = new(14012, "details-classification-success");
         public static EventId DetailsClassificationFailed = new(14013, "details-classification-fail");
         public static EventId DownloadFailed = new EventId(18001, "download-document-fail");
-        
+
         public static EventId ListFilesSuccessful = new(14006, "list-files-success");
         public static EventId ListFilesFailed = new(14007, "list-files-fail");
         public static EventId DetailsFileSuccessful = new(14006, "details-file-success");
@@ -340,10 +307,10 @@ namespace DocIntel.Core.Logging
         public static EventId ProfileUserSuccessful = new EventId(17003, "user-profile-success");
         public static EventId EditUserFailed = new EventId(17004, "edit-user-fail");
         public static EventId EditUserSuccessful = new EventId(17005, "edit-user-success");
-        
+
         public static EventId PasswordChangeSuccessful = new EventId(17006, "user-change-password-success");
         public static EventId PasswordChangeFailed = new EventId(17006, "user-change-password-fail");
-        
+
         public static EventId ListImportRuleSetFailed = new EventId(18000, "list-import-rule-set-fail");
         public static EventId ListImportRuleSetSuccessful = new EventId(18001, "list-import-rule-set-success");
         public static EventId DetailsImportRuleSetFailed = new EventId(18008, "list-import-rule-set-fail");
@@ -354,8 +321,8 @@ namespace DocIntel.Core.Logging
         public static EventId UpdateImportRuleSetSuccessful = new EventId(18005, "update-import-rule-set-success");
         public static EventId DeleteImportRuleSetFailed = new EventId(18006, "delete-import-rule-set-fail");
         public static EventId DeleteImportRuleSetSuccessful = new EventId(18007, "delete-import-rule-set-success");
-        
-        
+
+
         public static EventId ListObservableSuccess = new EventId(19001, "list-observable-success");
         public static EventId ListObservableFailed = new EventId(19002, "list-observable-failed");
         public static EventId DetailsObservableSuccess = new EventId(19003, "get-observable-success");
@@ -366,5 +333,35 @@ namespace DocIntel.Core.Logging
         public static EventId ReferenceObservableFailed = new EventId(19006, "reference-observable-failed");
         public static EventId DereferenceObservableSuccess = new EventId(19005, "dereference-observable-success");
         public static EventId DereferenceObservableFailed = new EventId(19006, "dereference-observable-failed");
+
+        // Numbering schema:
+        // First digit: 1 = WebApp, 2 = API
+        // Second digit: 
+        // 0 = Account
+        // 1 = Comment
+        // 2 = Import rule
+        // 3 = Feed
+        // 4 = Role
+        // 5 = Source
+        // 6 = Tag and/or Facet
+        // 7 = User
+        // 8 = Document
+
+        private static EventId APIEventId(EventId eventId)
+        {
+            return new EventId(eventId.Id + 10000, "api-" + eventId.Name);
+        }
+
+        #region Account-related Event IDs
+
+        #endregion
+
+        #region Comment-related Event IDs
+
+        #endregion
+
+        #region Comment-related Event IDs
+
+        #endregion
     }
 }

@@ -32,8 +32,8 @@ namespace DocIntel.Core.Authorization.Handlers
 {
     public class DocumentFileAuthorizationHandler : CustomAuthorizationHandler<DocumentFile>
     {
-        private readonly ApplicationSettings _settings;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ApplicationSettings _settings;
 
         public DocumentFileAuthorizationHandler(
             SignInManager<AppUser> signInManager,
@@ -46,7 +46,7 @@ namespace DocIntel.Core.Authorization.Handlers
             _settings = settings;
             _serviceProvider = serviceProvider;
         }
-        
+
         protected async Task<AmbientContext> GetContext(string registeredBy = null)
         {
             var userClaimsPrincipalFactory = _serviceProvider.GetService<AppUserClaimsPrincipalFactory>();

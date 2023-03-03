@@ -7,14 +7,14 @@ namespace DocIntel.Core.Helpers;
 
 public class DependencyInjectionRegistrar : ITypeRegistrar
 {
-    private IServiceCollection Services { get; }
-    private IList<IDisposable> BuiltProviders { get; }
-
     public DependencyInjectionRegistrar(IServiceCollection services)
     {
         Services = services;
         BuiltProviders = new List<IDisposable>();
     }
+
+    private IServiceCollection Services { get; }
+    private IList<IDisposable> BuiltProviders { get; }
 
     public ITypeResolver Build()
     {

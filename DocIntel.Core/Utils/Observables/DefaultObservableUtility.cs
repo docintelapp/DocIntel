@@ -17,7 +17,7 @@ public class DefaultObservableUtility : IObservablesUtility
     {
         typeof(LigatureRemover)
     };
-        
+
     private static readonly List<Type> Extractors = new()
     {
         typeof(RegexDomainExtractor),
@@ -25,16 +25,16 @@ public class DefaultObservableUtility : IObservablesUtility
         typeof(RegexIpExtractor),
         typeof(RegexUrlExtractor)
     };
-        
+
     private static readonly List<Type> PostProcessors = new()
     {
         typeof(SuspiciousTld)
     };
-        
+
     private readonly List<IExtractor> _extractors;
-    private readonly List<ITextTransform> _transforms;
-    private readonly List<IPostProcessor> _postProcessors;
     private readonly ILogger<DefaultObservableUtility> _logger;
+    private readonly List<IPostProcessor> _postProcessors;
+    private readonly List<ITextTransform> _transforms;
 
     public DefaultObservableUtility(IServiceProvider serviceProvider, ILogger<DefaultObservableUtility> logger)
     {

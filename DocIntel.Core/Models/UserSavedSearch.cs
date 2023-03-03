@@ -11,7 +11,7 @@ public class UserSavedSearch
     public string UserId { get; set; }
 
     public bool Default { get; set; }
-    
+
     public bool Notify { get; set; }
     public DateTime LastNotification { get; set; }
     public TimeSpan NotificationSpan { get; set; }

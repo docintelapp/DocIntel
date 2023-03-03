@@ -13,9 +13,6 @@ namespace DocIntel.Core.Authentication;
 
 public class AppUserManager : AspNetUserManager<AppUser>
 {
-    public override bool SupportsUserClaim => true;
-    public override bool SupportsUserRole => true;
-
     public AppUserManager(IUserStore<AppUser> store,
         IOptions<IdentityOptions> optionsAccessor,
         IPasswordHasher<AppUser> passwordHasher,
@@ -35,6 +32,9 @@ public class AppUserManager : AspNetUserManager<AppUser>
         logger)
     {
     }
+
+    public override bool SupportsUserClaim => true;
+    public override bool SupportsUserRole => true;
 
     /// <summary>
     ///     Resets the password of the user by generating and directly using a
@@ -64,8 +64,8 @@ public class AppUserManager : AspNetUserManager<AppUser>
                 newPassword);
         return passwordChangeResult.Succeeded;
     }
-    
-    
+
+
     /// <summary>
     ///     Resets the password via
     ///     <see

@@ -50,9 +50,9 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         [SolrField("created_by_id")] public string CreatedById { get; set; }
 
         [SolrField("modified_by_id")] public string LastModifiedById { get; set; }
-        
+
         [SolrField("num_docs")] public int NumDocs { get; set; }
-        
+
         [SolrField("last_doc_update")] public DateTime LastDocumentDate { get; set; }
     }
 }

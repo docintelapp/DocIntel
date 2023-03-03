@@ -37,8 +37,8 @@ namespace DocIntel.Core.Repositories.EFCore
     {
         private readonly IAppAuthorizationService _appAuthorizationService;
         private readonly IPublishEndpoint _busClient;
-        private HtmlSanitizer _sanitizer;
         private ILogger<TagFacetEFRepository> _logger;
+        private HtmlSanitizer _sanitizer;
 
         public TagFacetEFRepository(IPublishEndpoint busClient,
             IAppAuthorizationService appAuthorizationService, ILogger<TagFacetEFRepository> logger)
@@ -300,7 +300,7 @@ namespace DocIntel.Core.Repositories.EFCore
                     .Where(_ => (_.FacetId == facetId) & (_.UserId == user.Id))
             );
         }
-        
+
         public Task<UserFacetSubscription> IsSubscribedAsync(
             AmbientContext ambientContext, AppUser user,
             Guid facetId)

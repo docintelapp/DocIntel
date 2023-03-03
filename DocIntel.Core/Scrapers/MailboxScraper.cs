@@ -45,13 +45,15 @@ namespace DocIntel.Core.Scrapers
         private readonly ILogger<MailboxScraper> _logger;
         private readonly Scraper _scraper;
         private readonly ApplicationSettings _settings;
-        public override bool HasSettings => true;
+
         public MailboxScraper(Scraper scraper, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _scraper = scraper;
             _logger = (ILogger<MailboxScraper>) serviceProvider.GetService(typeof(ILogger<MailboxScraper>));
             _settings = (ApplicationSettings) serviceProvider.GetService(typeof(ApplicationSettings));
         }
+
+        public override bool HasSettings => true;
 
         public override async Task<bool> Scrape(SubmittedDocument message)
         {

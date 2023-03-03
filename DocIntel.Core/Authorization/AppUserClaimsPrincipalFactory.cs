@@ -32,8 +32,8 @@ namespace DocIntel.Core.Authorization
     public class AppUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<AppUser, AppRole>
     {
         private readonly IServiceProvider _serviceProvider;
-        
-        
+
+
         public AppUserClaimsPrincipalFactory(
             UserManager<AppUser> userManager,
             AppRoleManager roleManager,
@@ -42,7 +42,7 @@ namespace DocIntel.Core.Authorization
         {
             _serviceProvider = serviceProvider;
         }
-        
+
         // TODO Refactor, code duplication
         private DocIntelContext GetContext()
         {
@@ -51,7 +51,7 @@ namespace DocIntel.Core.Authorization
             var dbContext = new DocIntelContext(dbContextOptions, dbContextLogger);
             return dbContext;
         }
-        
+
         public override async Task<ClaimsPrincipal> CreateAsync(AppUser user)
         {
             var principal = await base.CreateAsync(user);

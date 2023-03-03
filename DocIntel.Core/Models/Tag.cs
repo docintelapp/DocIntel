@@ -43,7 +43,7 @@ namespace DocIntel.Core.Models
         [DataType(DataType.MultilineText)] public string Description { get; set; }
 
         public string Keywords { get; set; }
-        
+
         [DisplayName("Extraction Keywords")] public string ExtractionKeywords { get; set; }
 
         public string BackgroundColor { get; set; }
@@ -74,7 +74,7 @@ namespace DocIntel.Core.Models
         [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
 
         public string URL { get; set; }
-        
+
         public ICollection<Importer> Importers { get; set; }
         public ICollection<Scraper> Scrapers { get; set; }
     }

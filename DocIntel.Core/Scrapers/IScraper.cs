@@ -36,7 +36,7 @@ namespace DocIntel.Core.Scrapers
         /// <param name="message">The content to scrape.</param>
         /// <returns><c>True</c> if the next scrapers should process the message, <c>False</c> otherwise.</returns>
         Task<bool> Scrape(SubmittedDocument message);
-        
+
         JsonSchema GetSettingsSchema();
         Type GetSettingsType();
         string GetSettingsView();

@@ -508,14 +508,6 @@ namespace DocIntel.Core.Authorization
             return isAuthorized.Succeeded;
         }
 
-
-        public async Task<bool> CanListImportRules(ClaimsPrincipal claimsPrincipal, ImportRuleSet rule)
-        {
-            var isAuthorized =
-                await _authorizationService.AuthorizeAsync(claimsPrincipal, rule, ImportRuleOperations.List);
-            return isAuthorized.Succeeded;
-        }
-
         public async Task<bool> CanAddClassification(ClaimsPrincipal claimsPrincipal, Classification group)
         {
             var isAuthorized =
@@ -529,36 +521,39 @@ namespace DocIntel.Core.Authorization
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, group, ClassificationOperations.Update);
             return isAuthorized.Succeeded;
         }
-        
+
         public async Task<bool> CanDeleteClassification(ClaimsPrincipal claimsPrincipal, Classification group)
         {
             var isAuthorized =
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, group, ClassificationOperations.Delete);
             return isAuthorized.Succeeded;
         }
-        
+
         public async Task<bool> CanViewClassification(ClaimsPrincipal claimsPrincipal, Classification group)
         {
             var isAuthorized =
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, group, ClassificationOperations.View);
             return isAuthorized.Succeeded;
         }
-        
+
         public async Task<bool> CanAddDocumentFile(ClaimsPrincipal claimsPrincipal, Document document) {
             var isAuthorized =
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, document, DocumentOperations.AddFile);
             return isAuthorized.Succeeded;
         }
+
         public async Task<bool> CanViewDocumentFile(ClaimsPrincipal claimsPrincipal, DocumentFile document) {
             var isAuthorized =
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, document, DocumentOperations.ViewFile);
             return isAuthorized.Succeeded;
         }
+
         public async Task<bool> CanEditDocumentFile(ClaimsPrincipal claimsPrincipal, DocumentFile document) {
             var isAuthorized =
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, document, DocumentOperations.EditFile);
             return isAuthorized.Succeeded;
         }
+
         public async Task<bool> CanDeleteDocumentFile(ClaimsPrincipal claimsPrincipal, DocumentFile document) {
             var isAuthorized =
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, document, DocumentOperations.DeleteFile);
@@ -579,18 +574,26 @@ namespace DocIntel.Core.Authorization
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, group, SavedSearchOperations.Update);
             return isAuthorized.Succeeded;
         }
-        
+
         public async Task<bool> CanDeleteSavedSearch(ClaimsPrincipal claimsPrincipal, SavedSearch group)
         {
             var isAuthorized =
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, group, SavedSearchOperations.Delete);
             return isAuthorized.Succeeded;
         }
-        
+
         public async Task<bool> CanViewSavedSearch(ClaimsPrincipal claimsPrincipal, SavedSearch group)
         {
             var isAuthorized =
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, group, SavedSearchOperations.View);
+            return isAuthorized.Succeeded;
+        }
+
+
+        public async Task<bool> CanListImportRules(ClaimsPrincipal claimsPrincipal, ImportRuleSet rule)
+        {
+            var isAuthorized =
+                await _authorizationService.AuthorizeAsync(claimsPrincipal, rule, ImportRuleOperations.List);
             return isAuthorized.Succeeded;
         }
     }

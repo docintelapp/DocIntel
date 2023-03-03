@@ -141,18 +141,6 @@ namespace DocIntel.Core.Utils.Search.Tags
             }
         }
 
-        private List<string> BuildFacetQuery(TagSearchQuery query)
-        {
-            var facetQueries = new List<string>();
-            
-            if (!string.IsNullOrEmpty(query.FacetPrefix))
-                facetQueries.Add(
-                    SolRHelper<IndexedTag>.GetSolRName(_ => _.FacetPrefix) + ":" + query.FacetPrefix
-                );
-
-            return facetQueries;
-        }
-
         public TagSearchResults Suggest(TagSearchQuery query)
         {
             try
@@ -214,6 +202,18 @@ namespace DocIntel.Core.Utils.Search.Tags
 
                 throw e;
             }
+        }
+
+        private List<string> BuildFacetQuery(TagSearchQuery query)
+        {
+            var facetQueries = new List<string>();
+            
+            if (!string.IsNullOrEmpty(query.FacetPrefix))
+                facetQueries.Add(
+                    SolRHelper<IndexedTag>.GetSolRName(_ => _.FacetPrefix) + ":" + query.FacetPrefix
+                );
+
+            return facetQueries;
         }
     }
 }

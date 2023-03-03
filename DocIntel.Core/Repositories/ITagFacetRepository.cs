@@ -35,8 +35,9 @@ namespace DocIntel.Core.Repositories
 
         IAsyncEnumerable<TagFacet> GetAllAsync(AmbientContext ambientContext, FacetQuery query = null,
             string[] includeRelatedData = null);
+
         IAsyncEnumerable<TagFacet> GetAllAsync(AmbientContext ambientContext, Func<IQueryable<TagFacet>, IQueryable<TagFacet>> query);
-        
+
         Task<TagFacet> GetAsync(AmbientContext ambientContext, Guid id, string[] includeRelatedData = null);
         Task<TagFacet> GetAsync(AmbientContext ambientContext, string prefix, string[] includeRelatedData = null);
 
@@ -45,6 +46,5 @@ namespace DocIntel.Core.Repositories
 
         Task MergeAsync(AmbientContext ambientContext, Guid primary, Guid secondary);
         Task<UserFacetSubscription> IsSubscribedAsync(AmbientContext ambientContext, AppUser user, Guid guid);
-        
     }
 }

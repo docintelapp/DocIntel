@@ -40,32 +40,7 @@ namespace DocIntel.Core.Importers
         {
             _serviceProvider = serviceProvider;
         }
-        
-        protected async Task<AmbientContext> GetContextAsync()
-        {
-            var userClaimsPrincipalFactory = _serviceProvider.GetService<AppUserClaimsPrincipalFactory>();
-            if (userClaimsPrincipalFactory == null) throw new ArgumentNullException(nameof(userClaimsPrincipalFactory));
 
-            var userManager = _serviceProvider.GetService<UserManager<AppUser>>();
-            if (userManager == null) throw new ArgumentNullException(nameof(userManager));
-
-            var settings = _serviceProvider.GetRequiredService<ApplicationSettings>();
-            var options = _serviceProvider.GetRequiredService<DbContextOptions<DocIntelContext>>();
-            var context = new DocIntelContext(options, _serviceProvider.GetService<ILogger<DocIntelContext>>());
-
-            // TODO Moves the name of the default automation user to the application configuration.
-            var automationUser = await userManager.FindByNameAsync(settings.AutomationAccount);
-            if (automationUser == null)
-                return null;
-
-            var claims = await userClaimsPrincipalFactory.CreateAsync(automationUser);
-            return new AmbientContext {
-                DatabaseContext = context,
-                Claims = claims,
-                CurrentUser = automationUser
-            };
-        }
-        
         public ImporterInformation Get()
         {
             var importerAttribute = GetType().GetCustomAttribute<ImporterAttribute>();
@@ -95,20 +70,46 @@ namespace DocIntel.Core.Importers
         }
 
         public abstract IAsyncEnumerable<SubmittedDocument> PullAsync(DateTime? lastPull, int limit);
-        
+
         public JsonSchema GetSettingsSchema()
         {
             var generator = GetGenerator();
             return generator.FromType(GetSettingsType()).Build();
         }
-        
+
         public abstract Type GetSettingsType();
+
         public virtual string GetSettingsView()
         {
             return string.Empty;
         }
 
         public virtual bool HasSettings => false;
+
+        protected async Task<AmbientContext> GetContextAsync()
+        {
+            var userClaimsPrincipalFactory = _serviceProvider.GetService<AppUserClaimsPrincipalFactory>();
+            if (userClaimsPrincipalFactory == null) throw new ArgumentNullException(nameof(userClaimsPrincipalFactory));
+
+            var userManager = _serviceProvider.GetService<UserManager<AppUser>>();
+            if (userManager == null) throw new ArgumentNullException(nameof(userManager));
+
+            var settings = _serviceProvider.GetRequiredService<ApplicationSettings>();
+            var options = _serviceProvider.GetRequiredService<DbContextOptions<DocIntelContext>>();
+            var context = new DocIntelContext(options, _serviceProvider.GetService<ILogger<DocIntelContext>>());
+
+            // TODO Moves the name of the default automation user to the application configuration.
+            var automationUser = await userManager.FindByNameAsync(settings.AutomationAccount);
+            if (automationUser == null)
+                return null;
+
+            var claims = await userClaimsPrincipalFactory.CreateAsync(automationUser);
+            return new AmbientContext {
+                DatabaseContext = context,
+                Claims = claims,
+                CurrentUser = automationUser
+            };
+        }
 
         private JsonSchemaBuilder GetGenerator()
         {

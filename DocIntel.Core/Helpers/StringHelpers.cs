@@ -26,6 +26,7 @@ public static class StringHelpers
             "" => "",
             _ => string.Join("", input.Split('-').Select(FirstCharToUpper))
         };
+
     public static string FirstCharToUpper(this string input) =>
         input switch
         {

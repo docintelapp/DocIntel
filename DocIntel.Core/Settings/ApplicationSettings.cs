@@ -24,16 +24,16 @@ namespace DocIntel.Core.Settings
         public MFASettings MFA;
         public string ApplicationName { get; set; }
         public string ApplicationBaseURL { get; set; }
-        
+
         public bool OpenRegistration { get; set; }
 
         public string DocFolder { get; set; }
         public string DocumentPrefix { get; set; }
         public string StaticFiles { get; set; } = "wwwroot";
-        
+
         public string Proxy { get; set; }
         public string NoProxy { get; set; }
-        
+
         public string AutomationAccount { get; set; } = "automation";
         public SolrSettings Solr { get; set; } = new ();
         public LdapSettings LDAP { get; set; } = new();

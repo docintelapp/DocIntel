@@ -18,6 +18,5 @@
 namespace DocIntel.Core.Authorization.Operations
 {
     public interface IOperationConstants
-    {
-    }
+    {}
 }

@@ -37,7 +37,7 @@ namespace DocIntel.Core.Models
         public Document Document { get; set; }
         public Document DocumentThumbnail { get; set; }
         public string Filename { get; set; }
-        
+
         [Required]
         public string Title { get; set; }
 
@@ -66,16 +66,19 @@ namespace DocIntel.Core.Models
 
         [Display(Name = "Override Classification?")]
         public bool OverrideClassification { get; set; } = false;
+
         public Classification Classification { get; set; }
         public Guid? ClassificationId { get; set; }
 
         [Display(Name = "Override Releasable To?")]
         public bool OverrideReleasableTo { get; set; } = false;
+
         [Display(Name = "Releasable To")]
         public ICollection<Group> ReleasableTo { get; set; }
-        
+
         [Display(Name = "Override Eyes Only?")]
         public bool OverrideEyesOnly { get; set; } = false;
+
         [Display(Name = "Eyes Only")]
         public ICollection<Group> EyesOnly { get; set; }
 
@@ -87,7 +90,7 @@ namespace DocIntel.Core.Models
 
         [HelpText("Visible files are listed on the details page of the document.")]
         public bool Visible { get; set; }
-        
+
         [HelpText("Preview show the file content in the details page     of the document.")]
         public bool Preview { get; set; }
 

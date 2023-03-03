@@ -33,10 +33,10 @@ namespace DocIntel.Core.Authorization.Operations
 
         public static readonly OperationAuthorizationRequirement Edit =
             new() {Name = DocumentOperationsConstants.EditOperationName};
-        
+
         public static readonly OperationAuthorizationRequirement Delete =
             new() {Name = DocumentOperationsConstants.DeleteOperationName};
-        
+
         public static readonly OperationAuthorizationRequirement Discard =
             new() {Name = DocumentOperationsConstants.DiscardOperationName};
 
@@ -72,16 +72,15 @@ namespace DocIntel.Core.Authorization.Operations
 
         public static readonly OperationAuthorizationRequirement AddFile =
             new() {Name = DocumentOperationsConstants.AddFileOperationName};
-        
+
         public static readonly OperationAuthorizationRequirement ViewFile =
             new() {Name = DocumentOperationsConstants.ViewFileOperationName};
-        
+
         public static readonly OperationAuthorizationRequirement DeleteFile =
             new() {Name = DocumentOperationsConstants.DeleteFileOperationName};
-        
+
         public static readonly OperationAuthorizationRequirement EditFile =
             new() {Name = DocumentOperationsConstants.EditFileOperationName};
-
     }
 
     [DisplayName("Document")]

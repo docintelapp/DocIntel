@@ -47,7 +47,7 @@ namespace DocIntel.Core.Models
         public AppUser LastModifiedBy { get; set; }
 
         public DateTime ModificationDate { get; set; }
-        
+
         [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
     }
 }

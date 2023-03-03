@@ -27,11 +27,10 @@ namespace DocIntel.Core.Services
 {
     public abstract class DocIntelHostedService : IHostedService
     {
-        protected virtual string WorkerName => "";
-        
-        protected readonly IServiceProvider _serviceProvider;
-        protected readonly ILogger<DocIntelHostedService> _logger;
         private readonly IHostApplicationLifetime _appLifetime;
+        protected readonly ILogger<DocIntelHostedService> _logger;
+
+        protected readonly IServiceProvider _serviceProvider;
 
         public DocIntelHostedService(IServiceProvider serviceProvider)
         {
@@ -40,7 +39,9 @@ namespace DocIntel.Core.Services
             _appLifetime = serviceProvider.GetRequiredService<IHostApplicationLifetime>();
             serviceProvider.GetRequiredService<ILoggerFactory>();
         }
-        
+
+        protected virtual string WorkerName => "";
+
         public virtual async Task StartAsync(CancellationToken cancellationToken)
         {
             await Init();

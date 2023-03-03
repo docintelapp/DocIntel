@@ -12,10 +12,12 @@ public abstract class RegexExtractor : IExtractor
     public const string SEPARATOR_DEFANGS = @"[\(\)\[\]{}<>\\]";
 
     public const string DEFANGED_DOT_REGEX = @"\.|\[\.\]|\(\.\)|\sDOT\s|\[dot\]|\[DOT\]|\(dot\)|\(DOT\)";
-        
+
     protected const RegexOptions DEFAULT_REGEX_OPTIONS =
         RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace;
-        
+
+    public abstract IAsyncEnumerable<SynapseNode> Extract(string content);
+
     protected static string RefangDots(string url)
     {
         var sb = new StringBuilder(url);
@@ -33,7 +35,7 @@ public abstract class RegexExtractor : IExtractor
         sb.Replace("(DOT)", ".");
         sb.Replace("(dot)", ".");
     }
-        
+
     protected static string ReplaceFirst(string text, string search, string replace)
     {
         var pos = text.IndexOf(search);
@@ -57,6 +59,4 @@ public abstract class RegexExtractor : IExtractor
         sb.Replace(" ", "");
         sb.Replace("\u30fb", ".");
     }
-
-    public abstract IAsyncEnumerable<SynapseNode> Extract(string content);
 }

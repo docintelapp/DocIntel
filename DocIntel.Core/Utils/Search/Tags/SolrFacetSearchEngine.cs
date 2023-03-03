@@ -13,15 +13,15 @@ namespace DocIntel.Core.Utils.Search.Tags;
 
 public class SolrFacetSearchEngine : IFacetSearchService
 {
-    private ILogger<SolrFacetSearchEngine> _logger;
     private readonly ISolrOperations<IndexedTagFacet> _solr;
+    private ILogger<SolrFacetSearchEngine> _logger;
 
     public SolrFacetSearchEngine(ILogger<SolrFacetSearchEngine> logger, ISolrOperations<IndexedTagFacet> solr)
     {
         _logger = logger;
         _solr = solr;
     }
-        
+
     public TagFacetSearchResults Search(TagFacetSearchQuery query)
     {
         try

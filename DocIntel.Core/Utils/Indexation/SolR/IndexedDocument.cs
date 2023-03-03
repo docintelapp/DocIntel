@@ -52,13 +52,13 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         [HelpText("Filter based on the source identifier.")]
         [Example("source_id:a1bc72d6-aa00-4418-9d09-ea442c20cea1")]
         [SolrField("source_id")] public Guid? SourceId { get; set; }
-        
+
         public SourceReliability Reliability
         {
             get => (SourceReliability) Enum.ToObject(typeof(SourceReliability), ReliabilityScore);
             set => ReliabilityScore = (int) value;
         }
-        
+
         [DisplayName("Source reliability")]
         [HelpText("Filter based on the source reliability.")]
         [Example("source_reliability:0")]
@@ -72,12 +72,12 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         [HelpText("Filter based on the classification.")]
         [Example("classification:1388be53-11be-429d-b948-7ffa93a86d8d")]
         [SolrField("classification")] public Guid? Classification { get; set; }
-        
+
         [DisplayName("EYES ONLY")]
         [HelpText("Filter based on the EYES ONLY property.")]
         [Example("eyes_only:1388be53-11be-429d-b948-7ffa93a86d8d")]
         [SolrField("eyes_only")] public Guid[] EyesOnly { get; set; }
-        
+
         [DisplayName("RELEASABLE TO")]
         [HelpText("Filter based on the RELEASABLE TO property.")]
         [Example("releasable_to:1388be53-11be-429d-b948-7ffa93a86d8d")]
@@ -87,12 +87,12 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         [HelpText("Filter based on the registration date.")]
         [Example("registration_date:NOW/DAY")]
         [SolrField("registration_date")] public DateTime RegistrationDate { get; set; }
-        
+
         [DisplayName("Modification Date")]
         [HelpText("Filter based on the modification date.")]
         [Example("modification_date:[NOW/DAY-1DAY TO NOW/DAY+7DAYS]")]
         [SolrField("modification_date")] public DateTime ModificationDate { get; set; }
-        
+
         [DisplayName("Document Date")]
         [HelpText("Filter based on the document date.")]
         [Example("document_date:[NOW/DAY-1MONTH TO NOW/DAY+1DAY]")]
@@ -102,12 +102,12 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         [HelpText("Filter based on the user who registered the document.")]
         [Example("registered_by_id:[NOW/DAY-1MONTH TO NOW/DAY+1DAY]")]
         [SolrField("registered_by_id")] public string RegisteredById { get; set; }
-        
+
         [DisplayName("Status")]
         [HelpText("Filter based on the document status.")]
         [Example("status:0")]
         [SolrField("status")] public DocumentStatus Status { get; set; }
-        
+
         [DisplayName("URL")]
         [HelpText("Filter based on the URL.")]
         [Example("source_url:\"https://example.docintel.org/Document/Details/indicator-report-ursnif-activity-report-dec-9-2021\"")]

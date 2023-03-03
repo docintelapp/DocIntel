@@ -30,11 +30,11 @@ namespace DocIntel.Core.Utils.Indexation.SolR
 {
     public class SolRDocumentIndexingUtility : IDocumentIndexingUtility
     {
-        private readonly ApplicationSettings _settings;
         private readonly ILogger<SolRDocumentIndexingUtility> _logger;
         private readonly IMapper _mapper;
-        private readonly ISolrOperations<IndexedDocument> _solr;
         private readonly ISynapseRepository _observableRepository;
+        private readonly ApplicationSettings _settings;
+        private readonly ISolrOperations<IndexedDocument> _solr;
 
         public SolRDocumentIndexingUtility(ISolrOperations<IndexedDocument> solr,
             ILogger<SolRDocumentIndexingUtility> logger,

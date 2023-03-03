@@ -154,8 +154,7 @@ namespace DocIntel.Core.Importers
         }
 
         class RssSettings
-        {
-        }
+        {}
     }
 
 }

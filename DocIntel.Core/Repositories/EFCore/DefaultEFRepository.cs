@@ -29,10 +29,10 @@ namespace DocIntel.Core.Repositories.EFCore
 {
     public abstract class DefaultEFRepository<T> where T : class
     {
-        protected readonly Func<AmbientContext, DbSet<T>> _tableSelector;
         protected readonly IAppAuthorizationService _appAuthorizationService;
         protected readonly IPublishEndpoint _busClient;
         protected readonly HtmlSanitizer _sanitizer;
+        protected readonly Func<AmbientContext, DbSet<T>> _tableSelector;
 
         protected DefaultEFRepository(Func<AmbientContext, DbSet<T>> tableSelector, IPublishEndpoint busClient, IAppAuthorizationService appAuthorizationService)
         {

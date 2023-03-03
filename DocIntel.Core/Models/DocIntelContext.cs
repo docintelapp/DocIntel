@@ -75,13 +75,13 @@ namespace DocIntel.Core.Models
 
         public DbSet<Group> Groups { get; set; }
         public DbSet<Member> Members { get; set; }
-        
+
         public DbSet<Classification> Classifications { get; set; }
         public DbSet<SubmittedDocument> SubmittedDocuments { get; set; }
 
         public DbSet<SavedSearch> SavedSearches { get; set; }
         public DbSet<UserSavedSearch> UserSavedSearches { get; set; }
-        
+
         public override int SaveChanges()
         {
             var result = base.SaveChanges();
@@ -98,7 +98,7 @@ namespace DocIntel.Core.Models
 
             return result;
         }
-        
+
         public async Task<int> SaveChangesAsyncWithoutNotification(CancellationToken cancellationToken = default)
         {
             var saveTask = await base.SaveChangesAsync(cancellationToken);
@@ -225,7 +225,7 @@ namespace DocIntel.Core.Models
             modelBuilder.Entity<UserSavedSearch>()
                 .HasKey(t => new {t.UserId, t.SavedSearchId});
         }
-        
+
         public void TryUpdateManyToMany<T, TKey>(IEnumerable<T> currentItems, IEnumerable<T> newItems, Func<T, TKey> getKey) where T: class
         {
             this.Set<T>().RemoveRange(LinqHelpers.Except(currentItems, newItems, getKey));

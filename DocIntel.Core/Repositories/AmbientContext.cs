@@ -26,7 +26,7 @@ namespace DocIntel.Core.Repositories
         public DocIntelContext DatabaseContext { get; set; }
         public ClaimsPrincipal Claims { get; set; }
         public AppUser CurrentUser { get; set; }
-        
+
         public void Dispose()
         {
             if (DatabaseContext != null) DatabaseContext.Dispose();

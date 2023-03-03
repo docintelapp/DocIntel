@@ -21,13 +21,13 @@ namespace DocIntel.Core.Exceptions
 {
     public class FileAlreadyKnownException : DocIntelException
     {
+        public FileAlreadyKnownException() : base("The file is already known")
+        {
+        }
+
         public string Hash { get; set; }
         public string ExistingReference { get; set; }
 
         public Document Document { get; set; }
-
-        public FileAlreadyKnownException() : base("The file is already known")
-        {
-        }
     }
 }

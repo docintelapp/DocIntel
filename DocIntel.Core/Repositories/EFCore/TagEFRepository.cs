@@ -287,8 +287,8 @@ namespace DocIntel.Core.Repositories.EFCore
                 if (await _appAuthorizationService.CanViewTag(ambientContext.Claims, tag))
                     yield return tag;
         }
-        
-        
+
+
         public async IAsyncEnumerable<Tag> GetAllAsync(
             AmbientContext ambientContext,
             TagQuery query,
@@ -470,7 +470,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 }
             }
         }
-        
+
         public async Task<MuteStatus> IsMutedAsync(
             AmbientContext ambientContext, AppUser user,
             Guid tagId)
@@ -596,7 +596,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 modelErrors);
             return isValid;
         }
-        
+
         private string GenerateSlug(AmbientContext context, Tag document)
         {
             var slug = GenerateSlug(document.Label, 0);

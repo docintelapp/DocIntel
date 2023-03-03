@@ -4,10 +4,10 @@ namespace DocIntel.Core.Modules;
 
 public class ModuleAttribute : Attribute
 {
-    public string Name { get; }
-
     public ModuleAttribute(string name)
     {
         Name = name;
     }
+
+    public string Name { get; }
 }

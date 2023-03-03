@@ -29,8 +29,8 @@ namespace DocIntel.Core.Utils
 {
     public class TagUtility
     {
-        private readonly ITagRepository _tagRepository;
         private readonly ITagFacetRepository _facetRepository;
+        private readonly ITagRepository _tagRepository;
 
         public TagUtility(ITagRepository tagRepository, ITagFacetRepository facetRepository)
         {
@@ -64,7 +64,7 @@ namespace DocIntel.Core.Utils
                 .Where(_ => _ != null)
                 .DistinctBy(_ => _.TagId);
         }
-        
+
         private string[] Rewrite (string tag, List<Tuple<Regex,string>> regexes)
         {
             string rt = tag;

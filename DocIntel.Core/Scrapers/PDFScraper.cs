@@ -136,9 +136,8 @@ namespace DocIntel.Core.Scrapers
         {
             return (typeof(PdfSettings));
         }
-        
+
         class PdfSettings
-        {
-        }
+        {}
     }
 }

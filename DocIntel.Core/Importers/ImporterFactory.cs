@@ -39,7 +39,7 @@ namespace DocIntel.Core.Importers
                 .ToArray();
             return types;
         }
-        
+
         public static Task<IImporter> CreateImporter(Importer importer, IServiceProvider serviceProvider, AmbientContext context)
         {
             var type = AppDomain.CurrentDomain.GetAssemblies()
@@ -52,7 +52,7 @@ namespace DocIntel.Core.Importers
 
             return CreateImporter(importer, type, serviceProvider, context);
         }
-        
+
         public static Task<IImporter> CreateImporter(Guid referenceClass, IServiceProvider serviceProvider, AmbientContext context)
         {
             var type = AppDomain.CurrentDomain.GetAssemblies()
@@ -72,7 +72,7 @@ namespace DocIntel.Core.Importers
             var repository = (IIncomingFeedRepository) serviceProvider.GetService(typeof(IIncomingFeedRepository));
             return await CreateImporter(null, type, serviceProvider, context);
         }
-        
+
         public static Task<IImporter> CreateImporter(Importer importer, Type type, IServiceProvider serviceProvider, AmbientContext context)
         {
             var instance = (IImporter) Activator.CreateInstance(type, serviceProvider, importer);

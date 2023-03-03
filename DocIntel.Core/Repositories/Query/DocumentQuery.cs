@@ -48,10 +48,10 @@ namespace DocIntel.Core.Repositories.Query
         public string ExternalReference { get; set; }
         public Guid? SourceId { get; set; }
         public Guid[] SourceIds { get; set; }
-        
+
         public DateTime? ModifiedAfter { get; set; }
         public DateTime? ModifiedBefore { get; set; }
-        
+
         /// <summary>
         /// Do not return document with a muted tag for the current user.
         /// </summary>
