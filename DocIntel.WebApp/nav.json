@@ -74,6 +74,30 @@
 			]
 		},
 		{
+      "title": "Ingestion",
+			"icon": "fal fa-inbox",
+            "items": [
+                {
+                  "title": "Importers",
+                  "controller": "IncomingFeed",
+                  "action": "Index",
+                  "permissions": ["ViewIncomingFeed"]
+                },
+                {
+                  "title": "Scrapers",
+                  "controller": "Scraper",
+                  "action": "Index",
+                  "permissions": ["ViewScraper"]
+                },
+                {
+                    "title": "Import Ruleset",
+                    "controller": "ImportRuleSet",
+                    "action": "Index",
+                    "permissions": ["ViewIncomingFeed"]
+                }
+            ]
+        },
+		{
             "title": "Administration",
 			"icon": "fal fa-atom",
             "items": [
@@ -100,24 +124,6 @@
                   "controller": "Classification",
                   "action": "Index",
                   "permissions": ["ViewClassification"]
-                },
-                {
-                  "title": "Importers",
-                  "controller": "IncomingFeed",
-                  "action": "Index",
-                  "permissions": ["ViewIncomingFeed"]
-                },
-                {
-                  "title": "Scrapers",
-                  "controller": "Scraper",
-                  "action": "Index",
-                  "permissions": ["ViewScraper"]
-                },
-                {
-                    "title": "Import Ruleset",
-                    "controller": "ImportRuleSet",
-                    "action": "Index",
-                    "permissions": ["ViewIncomingFeed"]
                 }
             ]
         }
