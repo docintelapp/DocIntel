@@ -38,7 +38,7 @@
 
                         <div class="form-group">
                             <label class="control-label">Primary tag</label>
-                            <select name="primaryTagName" class="form-control autocomplete-tag" data-tags="false">
+                            <select name="primaryTagName" class="form-control autocomplete-tag" data-tags="false" data-id-value="true" >
                                 @if (ViewData.ContainsKey("primaryTagName"))
                                 {
                                     var tag = (Tag) ViewData["primaryTagName"];
@@ -54,7 +54,7 @@
 
                         <div class="form-group">
                             <label class="control-label">Tag to merge</label>
-                            <select name="secondaryTagName" class="form-control autocomplete-tag" data-tags="false"></select>
+                            <select name="secondaryTagName" class="form-control autocomplete-tag" data-tags="false" data-id-value="true" ></select>
                             <small class="form-text text-muted">This tag will be <strong>discarded</strong>.</small>
                         </div>
                     </div>
