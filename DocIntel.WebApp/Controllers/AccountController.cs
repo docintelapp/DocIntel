@@ -19,6 +19,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
@@ -113,9 +114,12 @@ namespace DocIntel.WebApp.Controllers
         {
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync();
+            var externalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            
             ViewData["ReturnUrl"] = returnUrl;
             return View(new SigninViewModel
             {
+                ExternalLogins = externalLogins,
                 RememberMe = true
             });
         }
@@ -149,6 +153,7 @@ namespace DocIntel.WebApp.Controllers
                 LogEvent.Formatter);
 
             ViewData["ReturnUrl"] = returnUrl;
+            model.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (ModelState.IsValid)
                 try
@@ -1200,6 +1205,60 @@ namespace DocIntel.WebApp.Controllers
             
             ModelState.AddModelError(nameof(model.Code), "Your code appears to be invalid.");
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        public async Task<IActionResult> LoginExternal(string provider, string returnUrl = null)
+        {
+            // Request a redirect to the external login provider.
+            var redirectUrl = Url.Action("ExternalLogin", "Account", new { ReturnUrl = returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return new ChallengeResult(provider, properties);
+        }
+                
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLogin(string returnUrl = null, string remoteError = null)
+        {
+            returnUrl = returnUrl ?? Url.Content("~/");
+            
+            if (remoteError != null)
+            {
+                TempData["ErrorMessage"] = $"Error from external provider: {remoteError}";
+                return RedirectToLocal(returnUrl);
+            }
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                TempData["ErrorMessage"] = "Error loading external login information.";
+                return RedirectToLocal(returnUrl);
+            }
+
+            // Sign in the user with this external login provider if the user already has a login.
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
+                return RedirectToLocal(returnUrl);
+            }
+            if (result.IsLockedOut)
+            {
+                return RedirectToPage("./Lockout");
+            }
+            else
+            {
+                // If the user does not have an account, then ask the user to create an account.
+                ViewData["ReturnUrl"] = returnUrl;
+                var externalLoginViewModel = new ExternalLoginViewModel {
+                    ProviderDisplayName = info.ProviderDisplayName,
+                };
+                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+                {
+                    externalLoginViewModel.Email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                }
+                return View(externalLoginViewModel);
+            }
         }
     }
 }

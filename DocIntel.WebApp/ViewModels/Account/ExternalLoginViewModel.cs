@@ -15,25 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Authentication;
 
 namespace DocIntel.WebApp.ViewModels.Account
 {
-    public class SigninViewModel
+    public class ExternalLoginViewModel
     {
-        [Display(Name = "User name")]
-        [Required(ErrorMessage = "You must enter your username!")]
-        public string UserName { get; set; }
+        public string ProviderDisplayName { get; set; }
 
-        [Display(Name = "Password")]
-        [Required(ErrorMessage = "You must enter your password!")]
-        [DataType(DataType.Password)]
-        public string Password { get; set; }
-
-        [Display(Name = "Remember me?")] public bool RememberMe { get; set; }
-        
-        public IList<AuthenticationScheme> ExternalLogins { get; set; }
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
     }
 }

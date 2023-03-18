@@ -42,6 +42,7 @@ using MassTransit;
 
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -59,6 +60,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -186,6 +188,17 @@ namespace DocIntel.WebApp
                     options.ExpireTimeSpan = TimeSpan.FromDays(1);
                     options.SlidingExpiration = true;
                     options.ForwardAuthenticate = "Identity.Application";
+                });
+            
+            var openIdSection = Configuration.GetSection("Authentication:OIDC");
+            
+            services.AddAuthentication()
+                .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, openIdSection["DisplayName"], options => {
+                    options.Authority = openIdSection["Authority"];
+                    options.ClientId = openIdSection["ClientId"];
+                    options.ClientSecret = openIdSection["ClientSecret"];
+                    options.ResponseType = OpenIdConnectResponseType.Code;
+                    options.SaveTokens = true;
                 });
 
             services.AddAuthorization(options => { options.DefaultPolicy = policy; });
