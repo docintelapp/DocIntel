@@ -27,8 +27,8 @@ namespace DocIntel.Core.Utils.ContentExtraction
     public class SolrContentExtractionUtility : IContentExtractionUtility
     {
         private readonly ApplicationSettings _appSettings;
-        private readonly ISolrOperations<IndexedDocument> _solr;
         private readonly HtmlSanitizer _htmlSanitizer;
+        private readonly ISolrOperations<IndexedDocument> _solr;
 
         public SolrContentExtractionUtility(ApplicationSettings appSettings, ISolrOperations<IndexedDocument> solr)
         {
