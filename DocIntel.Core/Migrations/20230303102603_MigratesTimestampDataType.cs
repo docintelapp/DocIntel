@@ -41,8 +41,8 @@ namespace DocIntel.Core.Migrations
             migrationBuilder.Sql(@"SET TimeZone='UTC'; ALTER TABLE ""Sources"" ALTER COLUMN ""LastIndexDate"" TYPE timestamp with time zone");    
             migrationBuilder.Sql(@"SET TimeZone='UTC'; ALTER TABLE ""Facets"" ALTER COLUMN ""LastIndexDate"" TYPE timestamp with time zone");    
             migrationBuilder.Sql(@"SET TimeZone='UTC'; ALTER TABLE ""Documents"" ALTER COLUMN ""LastIndexDate"" TYPE timestamp with time zone");    
-            migrationBuilder.Sql(@"SET TimeZone='UTC'; ALTER TABLE ""ExportTemplates"" ALTER COLUMN ""Created"" TYPE timestamp with time zone");          
-            migrationBuilder.Sql(@"SET TimeZone='UTC'; ALTER TABLE ""ExportTemplates"" ALTER COLUMN ""Modified"" TYPE timestamp with time zone");         
+            // migrationBuilder.Sql(@"SET TimeZone='UTC'; ALTER TABLE ""ExportTemplates"" ALTER COLUMN ""Created"" TYPE timestamp with time zone");          
+            // migrationBuilder.Sql(@"SET TimeZone='UTC'; ALTER TABLE ""ExportTemplates"" ALTER COLUMN ""Modified"" TYPE timestamp with time zone");         
             migrationBuilder.Sql(@"SET TimeZone='UTC'; ALTER TABLE ""SavedSearches"" ALTER COLUMN ""CreationDate"" TYPE timestamp with time zone");     
             migrationBuilder.Sql(@"SET TimeZone='UTC'; ALTER TABLE ""SavedSearches"" ALTER COLUMN ""ModificationDate"" TYPE timestamp with time zone"); 
             migrationBuilder.Sql(@"SET TimeZone='UTC'; ALTER TABLE ""UserSavedSearches"" ALTER COLUMN ""LastNotification"" TYPE timestamp with time zone"); 
@@ -88,8 +88,8 @@ namespace DocIntel.Core.Migrations
             migrationBuilder.Sql(@"ALTER TABLE ""Sources"" ALTER COLUMN ""LastIndexDate"" TYPE timestamp without time zone");    
             migrationBuilder.Sql(@"ALTER TABLE ""Facets"" ALTER COLUMN ""LastIndexDate"" TYPE timestamp without time zone");    
             migrationBuilder.Sql(@"ALTER TABLE ""Documents"" ALTER COLUMN ""LastIndexDate"" TYPE timestamp without time zone");    
-            migrationBuilder.Sql(@"ALTER TABLE ""ExportTemplates"" ALTER COLUMN ""Created"" TYPE timestamp without time zone");          
-            migrationBuilder.Sql(@"ALTER TABLE ""ExportTemplates"" ALTER COLUMN ""Modified"" TYPE timestamp without time zone");         
+            // migrationBuilder.Sql(@"ALTER TABLE ""ExportTemplates"" ALTER COLUMN ""Created"" TYPE timestamp without time zone");          
+            // migrationBuilder.Sql(@"ALTER TABLE ""ExportTemplates"" ALTER COLUMN ""Modified"" TYPE timestamp without time zone");         
             migrationBuilder.Sql(@"ALTER TABLE ""SavedSearches"" ALTER COLUMN ""CreationDate"" TYPE timestamp without time zone");     
             migrationBuilder.Sql(@"ALTER TABLE ""SavedSearches"" ALTER COLUMN ""ModificationDate"" TYPE timestamp without time zone"); 
             migrationBuilder.Sql(@"ALTER TABLE ""UserSavedSearches"" ALTER COLUMN ""LastNotification"" TYPE timestamp without time zone"); 
