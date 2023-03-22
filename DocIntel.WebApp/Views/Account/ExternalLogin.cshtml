@@ -1,4 +1,4 @@
-﻿@@using DocIntel.Core.Settings
+﻿@using DocIntel.Core.Settings
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model DocIntel.WebApp.ViewModels.Account.ExternalLoginViewModel
 @{
@@ -18,7 +18,7 @@
 
 <div class="row">
     <div class="col-md-4">
-        <form asp-page-handler="Confirmation" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+        <form asp-action="ExternalLoginConfirmation" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
             @if (TempData.ContainsKey("ErrorMessage"))
             {
                 <div class="alert alert-danger" role="alert">

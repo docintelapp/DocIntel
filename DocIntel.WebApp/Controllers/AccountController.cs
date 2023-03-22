@@ -20,6 +20,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Threading;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
@@ -40,6 +43,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 using SixLabors.ImageSharp;
@@ -1259,6 +1263,103 @@ namespace DocIntel.WebApp.Controllers
                 }
                 return View(externalLoginViewModel);
             }
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginViewModel model, string returnUrl = null)
+        {
+            returnUrl = returnUrl ?? Url.Content("/");
+            // Get the information about the user from the external login provider
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                TempData["ErrorMessage"] = "Error loading external login information during confirmation.";
+                return RedirectToLocal(returnUrl);
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var user = new AppUser();
+
+                    await _userManager.SetUserNameAsync(user, model.Email);
+                    await _userManager.SetEmailAsync(user, model.Email);
+
+                    var result = await _userManager.CreateAsync(user);
+                    if (result.Succeeded)
+                    {
+                        result = await _userManager.AddLoginAsync(user, info);
+                        if (result.Succeeded)
+                        {
+                            var currentUser = await _userManager.FindByNameAsync(model.Email);
+                            await _userManager.UpdateAsync(currentUser);
+                            _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+
+                            var userId = await _userManager.GetUserIdAsync(currentUser);
+                            var tokenConfirmation = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                            var callbackConfirmationUrl = Url.Action(
+                                "ConfirmEmail", "Account", 
+                                new { userId = userId, code = tokenConfirmation }, 
+                                protocol: Request.Scheme);
+                            await _emailSender.SendEmailConfirmation(user, callbackConfirmationUrl);
+                        
+                            _logger.Log(LogLevel.Information,
+                                EventIDs.RegistrationSuccessful,
+                                new LogEvent($"User '{user.UserName}' successfully registered.")
+                                    .AddUser(currentUser)
+                                    .AddHttpContext(_accessor.HttpContext),
+                                null,
+                                LogEvent.Formatter);
+
+                            // If account confirmation is required, we need to show the link if we don't have a real email sender
+                            if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                            {
+                                return View("EmailConfirmation");
+                            }
+                        
+                            _logger.Log(LogLevel.Warning,
+                                EventIDs.RegistrationFailed,
+                                new LogEvent($"Registration failed for user '{model.Email}'.")
+                                    .AddHttpContext(_accessor.HttpContext),
+                                null,
+                                LogEvent.Formatter);
+
+                            await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                            return LocalRedirect(returnUrl);
+                        }
+                    }
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.Log(LogLevel.Error,
+                        EventIDs.RegistrationError,
+                        new LogEvent(
+                                $"An error occured while registering user '{model.Email}' (Exception: {e.Message}).")
+                            .AddException(e)
+                            .AddProperty("user.email", model.Email)
+                            .AddHttpContext(_accessor.HttpContext)
+                            .AddException(e),
+                        e,
+                        LogEvent.Formatter);
+
+                    TempData["ErrorMessage"] = "Something bad happened while creating your account...";
+
+                    return View(model);
+                }
+            }
+
+            var externalLoginViewModel = new ExternalLoginViewModel {
+                ProviderDisplayName = info.ProviderDisplayName,
+            };
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(externalLoginViewModel);
         }
     }
 }
