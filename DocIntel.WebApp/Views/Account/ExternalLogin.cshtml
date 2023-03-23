@@ -16,8 +16,8 @@
     logging in.
 </p>
 
-<div class="row">
-    <div class="col-md-4">
+<div class="col-12">
+    <div class="row justify-content-left">
         <form asp-action="ExternalLoginConfirmation" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
             @if (TempData.ContainsKey("ErrorMessage"))
             {
@@ -26,9 +26,14 @@
                 </div>
             }
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Email" class="form-control" autocomplete="email" placeholder="Please enter your email."/>
+            <div class="form-group mt-4">
+                <label asp-for="UserName" class="control-label">Username</label>
+                <input disabled asp-for="UserName" class="form-control"/>
+                <input hidden asp-for="UserName" class="form-control"/>
+            </div>
+            <div class="form-group">
                 <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" autocomplete="email" placeholder="Please enter your email."/>
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>

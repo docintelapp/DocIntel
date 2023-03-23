@@ -1243,13 +1243,25 @@ namespace DocIntel.WebApp.Controllers
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
             if (result.Succeeded)
             {
-                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
+                var username = info.Principal.Identity.Name;
+                if (info.Principal.HasClaim(c => c.Type == "preferred_username"))
+                {
+                    username = info.Principal.FindFirstValue("preferred_username");
+                }
+                var currentUser = await _userManager.FindByNameAsync(username);
+                if (currentUser != null)
+                {
+                    currentUser.LastLogin = DateTime.UtcNow;
+                    await _userManager.UpdateAsync(currentUser);
+                }
+                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", username, info.LoginProvider);
+                
                 return RedirectToLocal(returnUrl);
             }
-            if (result.IsLockedOut)
-            {
-                return RedirectToPage("./Lockout");
-            }
+            // if (result.IsLockedOut)
+            // {
+            //     return RedirectToPage("./Lockout");
+            // }
             else
             {
                 // If the user does not have an account, then ask the user to create an account.
@@ -1261,12 +1273,15 @@ namespace DocIntel.WebApp.Controllers
                 {
                     externalLoginViewModel.Email = info.Principal.FindFirstValue(ClaimTypes.Email);
                 }
+                if (info.Principal.HasClaim(c => c.Type == "preferred_username"))
+                {
+                    externalLoginViewModel.UserName = info.Principal.FindFirstValue("preferred_username");
+                }
                 return View(externalLoginViewModel);
             }
         }
         
         [HttpPost]
-        [ValidateAntiForgeryToken]
         [AllowAnonymous]
         public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginViewModel model, string returnUrl = null)
         {
@@ -1283,10 +1298,23 @@ namespace DocIntel.WebApp.Controllers
             {
                 try
                 {
-                    var user = new AppUser();
+                    var user = new AppUser {
+                        RegistrationDate = DateTime.UtcNow,
+                        Email = model.Email
+                    };
+                    if (info.Principal.HasClaim(c => c.Type == ClaimTypes.GivenName))
+                    {
+                        user.FirstName = info.Principal.FindFirstValue(ClaimTypes.GivenName);
+                    }
+                    if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Surname))
+                    {
+                        user.LastName = info.Principal.FindFirstValue(ClaimTypes.Surname);
+                    }
 
-                    await _userManager.SetUserNameAsync(user, model.Email);
-                    await _userManager.SetEmailAsync(user, model.Email);
+                    // set username to supplied value if present, otherwise use email as username
+                    user.UserName = info.Principal.HasClaim(c => c.Type == "preferred_username")
+                        ? info.Principal.FindFirstValue("preferred_username")
+                        : model.Email;
 
                     var result = await _userManager.CreateAsync(user);
                     if (result.Succeeded)
@@ -1294,39 +1322,26 @@ namespace DocIntel.WebApp.Controllers
                         result = await _userManager.AddLoginAsync(user, info);
                         if (result.Succeeded)
                         {
-                            var currentUser = await _userManager.FindByNameAsync(model.Email);
-                            await _userManager.UpdateAsync(currentUser);
-                            _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
-
-                            var userId = await _userManager.GetUserIdAsync(currentUser);
-                            var tokenConfirmation = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                            var callbackConfirmationUrl = Url.Action(
-                                "ConfirmEmail", "Account", 
-                                new { userId = userId, code = tokenConfirmation }, 
-                                protocol: Request.Scheme);
-                            await _emailSender.SendEmailConfirmation(user, callbackConfirmationUrl);
-                        
                             _logger.Log(LogLevel.Information,
                                 EventIDs.RegistrationSuccessful,
-                                new LogEvent($"User '{user.UserName}' successfully registered.")
-                                    .AddUser(currentUser)
+                                new LogEvent($"User '{user.UserName}' created an account using '{info.LoginProvider}' provider.")
+                                    .AddUser(user)
                                     .AddHttpContext(_accessor.HttpContext),
                                 null,
                                 LogEvent.Formatter);
 
-                            // If account confirmation is required, we need to show the link if we don't have a real email sender
                             if (_userManager.Options.SignIn.RequireConfirmedAccount)
                             {
+                                var userId = await _userManager.GetUserIdAsync(user);
+                                var tokenConfirmation = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                                var callbackConfirmationUrl = Url.Action(
+                                    "ConfirmEmail", "Account", 
+                                    new { userId = userId, code = tokenConfirmation }, 
+                                    protocol: Request.Scheme);
+                                await _emailSender.SendEmailConfirmation(user, callbackConfirmationUrl);
+                                
                                 return View("EmailConfirmation");
                             }
-                        
-                            _logger.Log(LogLevel.Warning,
-                                EventIDs.RegistrationFailed,
-                                new LogEvent($"Registration failed for user '{model.Email}'.")
-                                    .AddHttpContext(_accessor.HttpContext),
-                                null,
-                                LogEvent.Formatter);
-
                             await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
                             return LocalRedirect(returnUrl);
                         }
@@ -1335,6 +1350,13 @@ namespace DocIntel.WebApp.Controllers
                     {
                         ModelState.AddModelError(string.Empty, error.Description);
                     }
+                        
+                    _logger.Log(LogLevel.Warning,
+                        EventIDs.RegistrationFailed,
+                        new LogEvent($"Registration failed for user '{model.Email}'.")
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
                 }
                 catch (Exception e)
                 {
@@ -1350,6 +1372,7 @@ namespace DocIntel.WebApp.Controllers
                         LogEvent.Formatter);
 
                     TempData["ErrorMessage"] = "Something bad happened while creating your account...";
+                    model.ProviderDisplayName = info.ProviderDisplayName;
 
                     return View(model);
                 }

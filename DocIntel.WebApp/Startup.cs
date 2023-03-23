@@ -191,15 +191,20 @@ namespace DocIntel.WebApp
                 });
             
             var openIdSection = Configuration.GetSection("Authentication:OIDC");
-            
-            services.AddAuthentication()
-                .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, openIdSection["DisplayName"], options => {
-                    options.Authority = openIdSection["Authority"];
-                    options.ClientId = openIdSection["ClientId"];
-                    options.ClientSecret = openIdSection["ClientSecret"];
-                    options.ResponseType = OpenIdConnectResponseType.Code;
-                    options.SaveTokens = true;
-                });
+            if (openIdSection.Exists())
+            {
+                services.AddAuthentication()
+                    .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme,
+                        openIdSection.GetValue<string>("DisplayName", OpenIdConnectDefaults.DisplayName),
+                        options =>
+                        {
+                            options.Authority = openIdSection["Authority"];
+                            options.ClientId = openIdSection["ClientId"];
+                            options.ClientSecret = openIdSection["ClientSecret"];
+                            options.ResponseType = OpenIdConnectResponseType.Code;
+                            options.SaveTokens = true;
+                        });
+            }
 
             services.AddAuthorization(options => { options.DefaultPolicy = policy; });
             services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();

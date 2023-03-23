@@ -33,3 +33,6 @@ However, you would not be able to log in the platform. You need to create an acc
       user role --username admin --role administrator
   
 You can now login on http://localhost:5005.
+
+Login via OIDC is supported, you have to create a client in your OIDC server and
+configure DocIntel like in the example configuration file found in [conf/appsettings.json.oidc.example](conf/appsettings.json.oidc.example)
