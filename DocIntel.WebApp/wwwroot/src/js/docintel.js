@@ -188,39 +188,6 @@ export function initSearchPage(form_id) {
 
         form.submit();
     });
-
-
-    $('.tag-search-selection .fa-search-plus').click(function(eventObject) {
-        var defaultFilter = $(this).parents('.tag-search-selection').data('default-filter');
-        var defaultFilterName = $(this).parents('.tag-search-selection').data('default-filter-name');
-        var field = $(this).parents('.tag-search-selection').data('default-filter-field');
-        if (filters[defaultFilter] === undefined) {
-            filters[defaultFilter] = {
-                'id': defaultFilter,
-                'name': defaultFilterName,
-                'negate': false,
-                'field': field,
-                'operator': 'oneof',
-                'values': {}
-            }
-        }
-
-        let id = "#" + $(this).data('select-id');
-        let selectedData = $(id).select2('data')[0];
-        
-        var valueId = selectedData.id;
-        var valueName = selectedData.label;
-        if (valueId !== undefined && valueName !== undefined) {
-            filters[defaultFilter]['values'][valueId] = { 'id': valueId, 'name': valueName };
-
-            var valueColor = selectedData.backgroundColor;
-            if (valueColor !== undefined) {
-                filters[defaultFilter]['values'][valueId].color = valueColor;
-            }
-        }
-
-        form.submit();
-    });
     
     $('.tag-search-selection .fa-search-minus').click(function(eventObject) {
         var defaultFilter = '!' + $(this).parents('.tag-search-selection').data('default-filter');
@@ -246,6 +213,36 @@ export function initSearchPage(form_id) {
             filters[defaultFilter]['values'][valueId] = { 'id': valueId, 'name': valueName };
 
             var valueColor = selectedData.backgroundColor;
+            if (valueColor !== undefined) {
+                filters[defaultFilter]['values'][valueId].color = valueColor;
+            }
+        }
+
+        form.submit();
+    });
+
+
+    $('.tag-selection .fa-search-plus').click(function(eventObject) {
+        var defaultFilter = $(this).parents('.tag-selection').data('default-filter');
+        var defaultFilterName = $(this).parents('.tag-selection').data('default-filter-name');
+        var field = $(this).parents('.tag-selection').data('default-filter-field');
+        if (filters[defaultFilter] === undefined) {
+            filters[defaultFilter] = {
+                'id': defaultFilter,
+                'name': defaultFilterName,
+                'negate': false,
+                'field': field,
+                'operator': 'oneof',
+                'values': {}
+            }
+        }
+
+        var valueId = $(this).parents('.tag-selection').data('value-id');
+        var valueName = $(this).parents('.tag-selection').data('value-name');
+        if (valueId !== undefined && valueName !== undefined) {
+            filters[defaultFilter]['values'][valueId] = { 'id': valueId, 'name': valueName };
+
+            var valueColor = $(this).parents('.tag-selection').data('value-color');
             if (valueColor !== undefined) {
                 filters[defaultFilter]['values'][valueId].color = valueColor;
             }
