@@ -30,18 +30,18 @@ using Microsoft.Extensions.Logging;
 namespace DocIntel.WebApp.Areas.API.Controllers;
 
 [Area("API")]
-[Route("API/Module")]
+[Route("API/Export")]
 [ApiController]
-public class ModuleController : DocIntelAPIControllerBase
+public class ExporterController : DocIntelAPIControllerBase
 {
     private readonly ILogger _logger;
     private readonly ModuleFactory _moduleFactory;
     private readonly IModelMetadataProvider _modelMetadataProvider;
     private readonly IModelBinderFactory _modelBinderFactory;
 
-    public ModuleController(AppUserManager userManager,
+    public ExporterController(AppUserManager userManager,
         DocIntelContext context,
-        ILogger<ModuleController> logger,
+        ILogger<ExporterController> logger,
         ModuleFactory moduleFactory,
         IModelMetadataProvider modelMetadataProvider,
         IModelBinderFactory modelBinderFactory)
