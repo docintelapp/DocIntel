@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using DocIntel.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Newtonsoft.Json.Linq;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -14,9 +15,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DocIntel.Core.Migrations
 {
     [DbContext(typeof(DocIntelContext))]
-    partial class DocIntelContextModelSnapshot : ModelSnapshot
+    [Migration("20230417135719_IntroducesCollectors")]
+    partial class IntroducesCollectors
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -309,6 +312,9 @@ namespace DocIntel.Core.Migrations
                     b.Property<string>("CollectorName")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("LastCollection")
+                        .HasColumnType("timestamp with time zone");
+                    
                     b.Property<string>("CronExpression")
                         .HasColumnType("text");
 

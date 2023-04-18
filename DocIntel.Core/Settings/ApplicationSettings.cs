@@ -71,6 +71,11 @@ namespace DocIntel.Core.Settings
         public double ImporterFrequencyCheck { get; set; } = 5;
 
         /// <summary>
+        /// Delay, in minutes, between two check of cron tasks.
+        /// </summary>
+        public double CronFrequencyCheck { get; set; } = 1;
+
+        /// <summary>
         /// Delay, in milliseconds, before a document/tag/facet/source gets committed to the SolR index.
         /// </summary>
         public int? CommitWithin { get; set; } = 1000;

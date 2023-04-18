@@ -334,6 +334,21 @@ namespace DocIntel.Core.Logging
         public static EventId DereferenceObservableSuccess = new EventId(19005, "dereference-observable-success");
         public static EventId DereferenceObservableFailed = new EventId(19006, "dereference-observable-failed");
 
+        public static EventId ListModuleSuccessful = new EventId(20000, "list-module-success");
+        public static EventId ListModuleFailed = new EventId(20001, "list-module-fail");
+        
+        public static EventId ListCollectorSuccessful = new EventId(21000, "list-collector-success");
+        public static EventId ListCollectorFailed = new EventId(21001, "list-collector-fail");
+        public static EventId DetailsCollectorSuccessful = new EventId(21002, "details-collector-success");
+        public static EventId DetailsCollectorFailed = new EventId(21003, "details-collector-fail");
+        public static EventId EditCollectorSuccessful = new EventId(21004, "edit-collector-success");
+        public static EventId EditCollectorFailed = new EventId(21005, "edit-collector-fail");
+        public static EventId EditCollectorError = new EventId(21005, "edit-collector-error");
+        public static EventId CreateCollectorSuccess = new EventId(21006, "edit-collector-success");
+        public static EventId CreateCollectorFailed = new EventId(21007, "edit-collector-fail");
+        public static EventId DeleteCollectorSuccess = new EventId(21008, "delete-collector-success");
+        public static EventId DeleteCollectorFailed = new EventId(21009, "delete-collector-fail");
+        
         // Numbering schema:
         // First digit: 1 = WebApp, 2 = API
         // Second digit: 

@@ -73,6 +73,12 @@ namespace DocIntel.WebApp.Helpers
             return logEvent;
         }
 
+        public static LogEvent AddCollector(this LogEvent logEvent, Collector collector)
+        {
+            logEvent.AddProperty("collector.id", collector.CollectorId);
+            return logEvent;
+        }
+        
         public static LogEvent AddComment(this LogEvent logEvent, Comment comment)
         {
             logEvent.AddProperty("comment.id", comment.CommentId);

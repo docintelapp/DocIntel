@@ -1,0 +1,59 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model IEnumerable<DocIntel.Core.Modules.ModuleConfiguration>
+
+@{
+    ViewData["Title"] = "Modules";
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-gears subheader-icon"></i> @ViewData["Title"]
+        <small>
+            Modules are external plug-ins, loaded dynamically at system startup.
+        </small>
+    </h1>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        @if (Model != null && Model.Any())
+        {
+            <div id="panel-source-info" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Modules
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-0">
+                        @foreach (var t in Model)
+                        {
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <p class="mb-0">
+                                        <strong>@t.Name</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="text-center fs-xl m-3">
+                            <i class="fal fa-inbox-in fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            We found no modules.<br/>
+                            <small>Setup one or contact your administrator.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

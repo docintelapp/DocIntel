@@ -596,5 +596,33 @@ namespace DocIntel.Core.Authorization
                 await _authorizationService.AuthorizeAsync(claimsPrincipal, rule, ImportRuleOperations.List);
             return isAuthorized.Succeeded;
         }
+        
+        public async Task<bool> CanCreateCollector(ClaimsPrincipal claimsPrincipal, Collector feed)
+        {
+            var isAuthorized =
+                await _authorizationService.AuthorizeAsync(claimsPrincipal, feed, CollectorOperations.Create);
+            return isAuthorized.Succeeded;
+        }
+
+        public async Task<bool> CanViewCollector(ClaimsPrincipal claimsPrincipal, Collector feed)
+        {
+            var isAuthorized =
+                await _authorizationService.AuthorizeAsync(claimsPrincipal, feed, CollectorOperations.View);
+            return isAuthorized.Succeeded;
+        }
+
+        public async Task<bool> CanEditCollector(ClaimsPrincipal claimsPrincipal, Collector feed)
+        {
+            var isAuthorized =
+                await _authorizationService.AuthorizeAsync(claimsPrincipal, feed, CollectorOperations.Edit);
+            return isAuthorized.Succeeded;
+        }
+
+        public async Task<bool> CanDeleteCollector(ClaimsPrincipal claimsPrincipal, Collector feed)
+        {
+            var isAuthorized =
+                await _authorizationService.AuthorizeAsync(claimsPrincipal, feed, CollectorOperations.Delete);
+            return isAuthorized.Succeeded;
+        }
     }
 }

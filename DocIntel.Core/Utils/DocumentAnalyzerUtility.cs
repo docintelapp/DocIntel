@@ -165,6 +165,20 @@ public class DocumentAnalyzerUtility
             if (document.Status == DocumentStatus.Submitted)
             {
                 document.Status = DocumentStatus.Analyzed;
+
+                if (document.MetaData?.ContainsKey("registration") ?? false)
+                {
+                    RegistrationMetadata registrationMetadata = null;
+                    if ((registrationMetadata =
+                            document.MetaData["registration"].Deserialize<RegistrationMetadata>()) != null
+                        && registrationMetadata.Auto)
+                    {
+                        _logger.LogDebug("Skip inbox due to document setting");
+                        await _observablesRepository.Merge(document);
+                        document.Status = DocumentStatus.Registered;
+                    }
+                }
+                
                 // Check if auto-register is enabled for the source
                 if (document.Source != null)
                 {
@@ -179,7 +193,7 @@ public class DocumentAnalyzerUtility
                         await _observablesRepository.Merge(document);
                         document.Status = DocumentStatus.Registered;
                     }
-                }   
+                }
             }
 
             

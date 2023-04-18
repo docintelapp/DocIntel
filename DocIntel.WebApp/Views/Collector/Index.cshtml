@@ -1,0 +1,82 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model IEnumerable<Collector>
+
+@{
+    ViewData["Title"] = "Collector";
+    var canCreate = (await AuthorizationService.AuthorizeAsync(User, null, IncomingFeedOperations.Create)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-inbox-in subheader-icon"></i> @ViewData["Title"]
+        <small>
+            Collector collects.
+        </small>
+    </h1>
+    <div>
+        <div class="btn-group">
+            @if (canCreate)
+            {
+                <a asp-action="Create"
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
+                    <i class="fal fa-plus mr-1"></i> Install
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        @if (Model != null && Model.Any())
+        {
+            <div id="panel-source-info" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Collectors
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-0">
+                        @foreach (var t in Model)
+                        {
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <p class="mb-0">
+                                        <a asp-action="Details" asp-route-id="@t.CollectorId">
+                                            <strong>@t.Name</strong>
+                                        </a>
+                                        @if (t.Enabled)
+                                        {
+                                            <span class="badge badge-success ml-1">Enabled</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary ml-1">Disabled</span>
+                                        }
+                                    </p>
+                                    <p class="text-muted mb-0">@t.Description</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="panel">
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="text-center fs-xl m-3">
+                            <i class="fal fa-inbox-in fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
+                            We found no collector.<br/>
+                            <small>Setup one or contact your administrator.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

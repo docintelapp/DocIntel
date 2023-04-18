@@ -1,0 +1,186 @@
+﻿@using DocIntel.Core.Authorization.Operations
+@using DocIntel.Core.Importers
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Collector
+
+@{
+    ViewData["Title"] = $"{Model.Name}";
+    var canEdit = (await AuthorizationService.AuthorizeAsync(User, null, CollectorOperations.Edit)).Succeeded;
+    var canDelete = (await AuthorizationService.AuthorizeAsync(User, null, CollectorOperations.Delete)).Succeeded;
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-inbox-in subheader-icon"></i> @ViewData["Title"]
+    </h1>
+    <div>
+        <div class="btn-group">
+            @if (canEdit)
+            {
+                if (ViewBag.HasSettings)
+                {
+                    <a asp-action="Configure" asp-route-id="@Model.CollectorId"
+                       class= "btn btn-pills btn-primary waves-effect waves-themed">
+                        <i class="fal fa-sliders-h-square mr-1"></i> Configure
+                    </a>   
+                }
+                <a asp-action="Edit" asp-route-id="@Model.CollectorId"
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
+                    <i class="fal fa-edit mr-1"></i> Edit
+                </a>
+            }
+            @if (canDelete)
+            {
+                <a asp-action="Delete" asp-route-id="@Model.CollectorId"
+                   class= "btn btn-pills btn-primary waves-effect waves-themed">
+                    <i class="fal fa-trash mr-1"></i> Delete
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-12">
+
+        @if (!Model.Enabled)
+        {
+            <div class="alert alert-warning" role="alert">
+                <strong>Heads up!</strong> This importer is currently disabled.
+            </div>
+        }
+
+        <div class="panel">
+            <div class="panel-container show">
+                <div class="panel-content pb-0">
+                    <p>
+                        @Html.Raw(Model.Description)
+                    </p>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-6">Automatically register?</dt>
+                        <dd class="col-sm-6">
+                            @(Model.SkipInbox ? "Yes" : "No")
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+
+        @if (Model.Source != null)
+        {
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Source
+                        <span class="fw-300">
+                            <i>Settings</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-2">
+                        <dl class="row mb-0">
+                            @if (Model.Source != null)
+                            {
+                                <dt class="col-sm-6">Set Source</dt>
+                                <dd class="col-sm-6">
+                                    @Model.Source.Title
+                                </dd>   
+                            }
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @if (Model.Tags?.Any() ?? false)
+        {
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Tags
+                        <span class="fw-300">
+                            <i>Settings</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-2">
+                        <dl class="row mb-0">
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <dt class="col-sm-6">Add tag</dt>
+                                <dd class="col-sm-6">
+                                        <a class="badge badge-pill @tag.BackgroundColor"
+                                           asp-controller="Tag"
+                                           asp-action="Details"
+                                           asp-route-label="@tag.TagId">
+                                            @tag.FriendlyName
+                                        </a>
+                                </dd>   
+                            }
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @if (true)
+        {
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Classification
+                        <span class="fw-300">
+                            <i>Settings</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-2">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-6">Classification</dt>
+                            <dd class="col-sm-6">
+                                <span class="badge @Model.Classification.Color mr-1">@Model.Classification.Abbreviation</span>
+                                @Model.Classification.Title
+                                @if (string.IsNullOrEmpty(Model.Classification.Subtitle))
+                                {
+                                    <text>@Model.Classification.Subtitle</text>
+                                }
+                            </dd>   
+                        
+                            <dt class="col-sm-6">Releasable To</dt>
+                            <dd class="col-sm-6">
+                                @(string.Join(", ", Model.ReleasableTo.Select(g => g.Name)))
+                            </dd>   
+
+                            <dt class="col-sm-6">Eyes Only</dt>
+                            <dd class="col-sm-6">
+                                @(string.Join(", ", Model.EyesOnly.Select(g => g.Name)))
+                            </dd>   
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(ViewBag.View))
+        {
+            <div class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Configuration
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pb-2">
+                        @(await Html.PartialAsync(ViewBag.View, ViewBag.Settings, new ViewDataDictionary(ViewData)))
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

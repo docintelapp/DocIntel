@@ -1,0 +1,29 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Collector
+
+<div id="panel-basic" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Source
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+
+            <div class="form-group" >
+                <label class="form-label">Source</label>
+                <select data-placeholder="Select a source" class="autocomplete-source form-control" name="SourceId">
+                    @if (Model.SourceId != null & Model.SourceId != Guid.Empty)
+                    {
+                        <option selected="" value="@Model.SourceId">@(Model.Source?.Title ?? Model.SourceId.ToString())</option>
+                    }
+                </select>
+                <span asp-validation-for="SourceId" class="text-danger"></span>
+            </div>
+            
+        </div>
+    </div>
+</div>

@@ -5,7 +5,9 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using DocIntel.Core.Collectors;
 using DocIntel.Core.Settings;
+using JetBrains.Annotations;
 using Json.Schema;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -19,6 +21,7 @@ public class ModuleFactory
 {
     private static Dictionary<string, ModuleConfiguration> _modules;
     private static Dictionary<string, Type> _exporters;
+    private static Dictionary<string, Type> _collectors;
     private static Dictionary<string, ModuleLoadContext> _assemblyLoadContexts;
 
     private static List<WeakReference> _wr = new List<WeakReference>();
@@ -42,7 +45,11 @@ public class ModuleFactory
         foreach (var module in _modules.Values)
         {
             RegisterExporters(module);
+            RegisterCollectors(module);
+            Console.WriteLine($"Done for module '{module.Name}'");
         }
+
+        Console.WriteLine("Done registering modules");
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -55,10 +62,39 @@ public class ModuleFactory
         }
 
         foreach (var exporter in configuration.Exporters)
-        {
+        {   
+            if (exporter.Key.Contains("."))
+            {
+                Console.WriteLine("Exporter name contains an illegal character: . (dot)");
+                continue;
+            }
+            
             var type = _assemblies[configuration.Name].GetType(exporter.Value);
             Console.WriteLine($"Installing exporter '{exporter.Key}' ({exporter.Value}) from module '{configuration.Name}'");
             _exporters.Add(GetKey(configuration.Name, exporter.Key), type);
+        }
+    }
+    
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void RegisterCollectors(ModuleConfiguration configuration)
+    {
+        if (!configuration.Collectors?.Any() ?? true)
+        {
+            Console.WriteLine($"No collectors found in configuration of {configuration.Name}");
+            return;
+        }
+
+        foreach (var collector in configuration.Collectors)
+        {
+            if (collector.Key.Contains("."))
+            {
+                Console.WriteLine("Collector name contains an illegal character: . (dot)");
+                continue;
+            }
+            
+            var type = _assemblies[configuration.Name].GetType(collector.Value.Class);
+            Console.WriteLine($"Installing collector '{collector.Key}' ({collector.Value.Class}) from module '{configuration.Name}'");
+            _collectors.Add(GetKey(configuration.Name, collector.Key), type);
         }
     }
 
@@ -66,7 +102,6 @@ public class ModuleFactory
     private static MapperConfigurationExpression RegisterProfiles(ApplicationSettings applicationSettings,
         IServiceProvider serviceProvider)
     {
-
         var mapperConfigurationExpression = new MapperConfigurationExpression();
             
         foreach (var configuration in _modules.Values)
@@ -123,6 +158,7 @@ public class ModuleFactory
 
         _modules = new();
         _exporters = new();
+        _collectors = new();
         _assemblyLoadContexts = new();
         _assemblies = new();
         
@@ -143,41 +179,53 @@ public class ModuleFactory
             {
                 var configFilepath = Path.Combine(moduleFolder, configFile.Path);
                 Console.WriteLine($"Reading configuration file '{configFilepath}'");
-                
-                var moduleConfiguration = JsonConvert.DeserializeObject<ModuleConfiguration>(File.ReadAllText(configFilepath));
-                if (moduleConfiguration == null) {
-                    Console.WriteLine("Could not load module configuration");
-                    continue;
-                }
-                
-                var baseDirectory = Path.GetDirectoryName(configFilepath);
-                Console.WriteLine($"Base directory for the module is '{baseDirectory}'");
-                string pluginLocation = baseDirectory.Replace('/', Path.DirectorySeparatorChar);
 
-                var moduleLoadContext = new ModuleLoadContext(Path.Combine(baseDirectory, moduleConfiguration.Assembly));
-                
-                Console.WriteLine($"Loading '{moduleConfiguration.Assembly}'");
-
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(moduleConfiguration.Assembly);
-
-                var assembly = moduleLoadContext.LoadFromAssemblyName(
-                    new AssemblyName(fileNameWithoutExtension));
-
-                Console.WriteLine($"Assembly {assembly.FullName} loaded");
-                _assemblies.Add(moduleConfiguration.Name, assembly);
-
-                foreach (var t in assembly.GetTypes())
+                try
                 {
-                    Console.WriteLine($"- {t.Name}");
-                }
+                    var moduleConfiguration = JsonConvert.DeserializeObject<ModuleConfiguration>(File.ReadAllText(configFilepath));
+                    if (moduleConfiguration == null) {
+                        Console.WriteLine("Could not load module configuration");
+                        continue;
+                    }
 
-                Console.WriteLine("ThreatQuotientExporter: " + assembly.GetType($"{fileNameWithoutExtension}.ThreatQuotientExporter"));
+                    if (moduleConfiguration.Name.Contains("."))
+                    {
+                        Console.WriteLine("Name contains an illegal character: . (dot)");
+                        continue;
+                    }
                 
-                var assemblyLoadContext = new WeakReference(moduleLoadContext, trackResurrection: true);
-                _assemblyLoadContexts.Add(moduleConfiguration.Name, moduleLoadContext);
-                _wr.Add(assemblyLoadContext);
+                    var baseDirectory = Path.GetDirectoryName(configFilepath);
+                    Console.WriteLine($"Base directory for the module is '{baseDirectory}'");
+                    string pluginLocation = baseDirectory.Replace('/', Path.DirectorySeparatorChar);
+
+                    var moduleLoadContext = new ModuleLoadContext(Path.Combine(baseDirectory, moduleConfiguration.Assembly));
                 
-                AddModules(moduleConfiguration);
+                    Console.WriteLine($"Loading '{moduleConfiguration.Assembly}'");
+
+                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(moduleConfiguration.Assembly);
+
+                    var assembly = moduleLoadContext.LoadFromAssemblyName(
+                        new AssemblyName(fileNameWithoutExtension));
+
+                    Console.WriteLine($"Assembly {assembly.FullName} loaded");
+                    _assemblies.Add(moduleConfiguration.Name, assembly);
+
+                    foreach (var t in assembly.GetTypes())
+                    {
+                        Console.WriteLine($"- {t.Name}");
+                    }
+
+                    var assemblyLoadContext = new WeakReference(moduleLoadContext, trackResurrection: true);
+                    _assemblyLoadContexts.Add(moduleConfiguration.Name, moduleLoadContext);
+                    _wr.Add(assemblyLoadContext);
+                
+                    AddModules(moduleConfiguration);
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
+                }
             }
         }
     }
@@ -265,5 +313,78 @@ public class ModuleFactory
                 }    
             }
         }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public bool HasCollectorSettings([NotNull] string module, [NotNull] string collector)
+    {
+        if (module == null) return false;
+        if (collector == null) return false;
+        
+        if (_modules.ContainsKey(module))
+        {
+            var moduleCollectors = _modules[module].Collectors;
+            if (moduleCollectors != null && moduleCollectors.ContainsKey(collector))
+            {
+                var moduleConfiguration = _modules[module];
+                var settingsTypeName = moduleConfiguration.Collectors[collector].Settings;
+                return settingsTypeName != null;
+            }
+        }
+
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public Type GetCollectorSettings(string module, string collector)
+    {
+        if (collector == null) return null;
+        if (module == null) return null;
+        
+        if (_modules.ContainsKey(module) && _modules[module].Collectors.ContainsKey(collector))
+        {
+            var moduleConfiguration = _modules[module];
+            var settingsTypeName = moduleConfiguration.Collectors[collector].Settings;
+            _logger.LogError(settingsTypeName);
+            if (settingsTypeName != null)
+            {
+                var assembly = _assemblies[moduleConfiguration.Name];
+                _logger.LogError($"Get {settingsTypeName} from assembly {assembly.FullName}");
+                return assembly.GetType(settingsTypeName);
+            }
+        }
+
+        return null;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public IDocumentCollector GetCollector(string module, string exporter)
+    {
+        var key = GetKey(module, exporter);
+        Console.WriteLine(key);
+        if (_collectors.ContainsKey(key))
+        {
+            var type = _collectors[key];
+            return CreateCollectorInstance(type);
+        }
+
+        return null;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private IDocumentCollector CreateCollectorInstance(Type type)
+    {
+        Console.WriteLine($"Creating instance of {type}");
+        var scope = _serviceProvider.CreateScope();
+        var sp = scope.ServiceProvider;
+
+        var instance = (IDocumentCollector)ActivatorUtilities.CreateInstance(sp, type);
+        return instance;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public IEnumerable<ModuleConfiguration> GetAll()
+    {
+        return _modules.Values;
     }
 }

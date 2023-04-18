@@ -1,0 +1,70 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Collector
+
+
+<div id="panel-basic" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Classification
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+
+            <div class="form-group">
+                <label class="form-label">Classification</label>
+                <select name="ClassificationId" class="form-control select2">
+                    @foreach (var g in (IEnumerable<Classification>) ViewBag.AllClassifications)
+                    {
+                        @if (Model.ClassificationId == g.ClassificationId)
+                        {
+                            <option value="@g.ClassificationId" selected>@g.Title</option>
+                        }
+                        else
+                        {
+                            <option value="@g.ClassificationId">@g.Title</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="ClassificationId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Releasable To</label>
+                <select class="select2 form-control" name="releasableTo" multiple="multiple">
+                    @foreach (var tag in (List<Group>) ViewBag.AllGroups)
+                    {
+                        @if (Model.ReleasableTo?.Any(_ => _.GroupId == tag.GroupId) ?? false)
+                        {
+                            <option value="@tag.GroupId" selected>@tag.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@tag.GroupId">@tag.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Eyes Only</label>
+                <select class="select2 form-control" name="eyesOnly" multiple="multiple">
+                    @foreach (var tag in (List<Group>) ViewBag.AllGroups)
+                    {
+                        @if (Model.EyesOnly?.Any(_ => _.GroupId == tag.GroupId) ?? false)
+                        {
+                            <option value="@tag.GroupId" selected>@tag.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@tag.GroupId">@tag.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+</div>

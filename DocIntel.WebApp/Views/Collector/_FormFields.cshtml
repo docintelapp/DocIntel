@@ -1,0 +1,63 @@
+@using DocIntel.Core.Authorization.Operations
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Collector
+
+@{
+    var botUsers = ((IEnumerable<AppUser>) ViewBag.BotUsers).Select(ii =>
+    {
+        var item = new SelectListItem {Value = ii.Id.ToString(), Text = ii.UserName};
+        return item;
+    }).ToList();
+}
+
+<div class="form-group">
+    <label asp-for="Name" class="control-label"></label>
+    <input asp-for="Name" class="form-control"/>
+    <span asp-validation-for="Name" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Description" class="control-label"></label>
+    <textarea asp-for="Description" class="form-control summernote"></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="CronExpression" class="control-label"></label>
+    <input asp-for="CronExpression" class="form-control"/>
+    <p class="text-muted mb-2">Use https://crontab.guru/ to check your expression</p>
+    <span asp-validation-for="CronExpression" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Limit" class="control-label"></label>
+    <input asp-for="Limit" class="form-control"/>
+    <span asp-validation-for="Limit" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <div class="custom-control custom-switch">
+        @Html.CheckBoxFor(_ => _.Enabled, new {@class = "custom-control-input"})
+        <label class="custom-control-label" asp-for="Enabled">Enabled?</label>
+    </div>
+    @Html.HelpTextFor(_ => _.Enabled)
+    <span asp-validation-for="Enabled" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <div class="custom-control custom-switch">
+        @Html.CheckBoxFor(_ => _.SkipInbox, new {@class = "custom-control-input"})
+        <label class="custom-control-label" asp-for="SkipInbox">Skip Inbox?</label>
+    </div>
+    @Html.HelpTextFor(_ => _.SkipInbox)
+    <span asp-validation-for="SkipInbox" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="UserId" class="control-label">User</label>
+    <select asp-for="UserId" asp-items="@botUsers" class="form-control"></select>
+    <span asp-validation-for="UserId" class="text-danger"></span>
+    <span class="form-text text-muted">
+        This user will be the user that registers the imported documents.
+    </span>
+</div>

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
+using DocIntel.Core.Collectors;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
@@ -162,6 +163,7 @@ namespace DocIntel.Core.Services
             StartupHelpers.RegisterRepositories(serviceCollection);
             StartupHelpers.RegisterSolR(serviceCollection, appSettings);
             StartupHelpers.RegisterSynapse(serviceCollection, appSettings);
+            StartupHelpers.RegisterModules(serviceCollection, appSettings);
             
             /*
             serviceCollection.AddIdentity<AppUser, AppRole>()
@@ -192,6 +194,7 @@ namespace DocIntel.Core.Services
             
             serviceCollection.AddAutoMapper(cfg => {
                 cfg.AddProfile<SolRProfile>();
+                cfg.AddProfile<CollectorProfile>();
             });
 
             var connectionString = configuration.GetConnectionString("DefaultConnection");

@@ -29,6 +29,8 @@ namespace DocIntel.Core.Importers
     {
         public static Type[] GetAllImporters()
         {
+            // TODO Check the external modules
+        
             var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(p =>
@@ -42,6 +44,8 @@ namespace DocIntel.Core.Importers
 
         public static Task<IImporter> CreateImporter(Importer importer, IServiceProvider serviceProvider, AmbientContext context)
         {
+            // TODO Check the external modules
+            
             var type = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .SingleOrDefault(p =>
@@ -55,6 +59,9 @@ namespace DocIntel.Core.Importers
 
         public static Task<IImporter> CreateImporter(Guid referenceClass, IServiceProvider serviceProvider, AmbientContext context)
         {
+            
+            // TODO Check the external modules
+            
             var type = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .SingleOrDefault(p =>
@@ -67,6 +74,9 @@ namespace DocIntel.Core.Importers
 
         public static async Task<IImporter> CreateImporter(Type type, IServiceProvider serviceProvider, AmbientContext context)
         {
+            
+            // TODO Check the external modules
+            
             var logger = (ILogger) serviceProvider.GetService(typeof(ILogger<>).MakeGenericType(type));
             var importerAttribute = type.GetCustomAttribute<ImporterAttribute>();
             var repository = (IIncomingFeedRepository) serviceProvider.GetService(typeof(IIncomingFeedRepository));
@@ -75,6 +85,9 @@ namespace DocIntel.Core.Importers
 
         public static Task<IImporter> CreateImporter(Importer importer, Type type, IServiceProvider serviceProvider, AmbientContext context)
         {
+            
+            // TODO Check the external modules
+            
             var instance = (IImporter) Activator.CreateInstance(type, serviceProvider, importer);
             return Task.FromResult(instance);
         }

@@ -75,6 +75,18 @@
     <_ContentIncludedByDefault Remove="Views\Shared\DisplayTemplates\SynapseNode.cshtml" />
     <_ContentIncludedByDefault Remove="Views\Shared\DisplayTemplates\Tag.cshtml" />
   </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="Views\Collector\Configure.cshtml" />
+    <AdditionalFiles Include="Views\Collector\Create.cshtml" />
+    <AdditionalFiles Include="Views\Collector\Details.cshtml" />
+    <AdditionalFiles Include="Views\Collector\Edit.cshtml" />
+    <AdditionalFiles Include="Views\Collector\Index.cshtml" />
+    <AdditionalFiles Include="Views\Collector\Uninstall.cshtml" />
+    <AdditionalFiles Include="Views\Collector\_FormFields.cshtml" />
+    <AdditionalFiles Include="Views\Collector\_FormFieldsClassification.cshtml" />
+    <AdditionalFiles Include="Views\Collector\_FormFieldsSource.cshtml" />
+    <AdditionalFiles Include="Views\Collector\_FormFieldsTags.cshtml" />
+  </ItemGroup>
 
   <Target Name="CopyFonts" AfterTargets="AfterBuild">
     <Copy SourceFiles="@(FontFiles)" DestinationFolder="$(OutDir)\wwwroot\fonts\%(RecursiveDir)" />

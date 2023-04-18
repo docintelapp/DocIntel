@@ -52,6 +52,8 @@ namespace DocIntel.Core.Models
         public ICollection<Scraper> ScraperEyesOnly { get; set; }
         public ICollection<SubmittedDocument> SubmittedDocumentReleasableTo { get; set; }
         public ICollection<SubmittedDocument> SubmittedDocumentEyesOnly { get; set; }
+        public ICollection<Collector> CollectorReleasableTo { get; set; }
+        public ICollection<Collector> CollectorEyesOnly { get; set; }
 
         [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
     }

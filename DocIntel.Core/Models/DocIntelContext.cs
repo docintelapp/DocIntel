@@ -70,6 +70,7 @@ namespace DocIntel.Core.Models
         public DbSet<APIKey> APIKeys { get; set; }
         public DbSet<Importer> IncomingFeeds { get; set; }
         public DbSet<Scraper> Scrapers { get; set; }
+        public DbSet<Collector> Collectors { get; set; }
         public DbSet<ImportRuleSet> ImportRuleSets { get; set; }
         public DbSet<ImportRule> ImportRules { get; set; }
 
@@ -183,6 +184,21 @@ namespace DocIntel.Core.Models
                     _ => _.ToTable("ScraperTags").HasKey(t => new { t.ScraperId, t.TagId })
                 );
 
+            
+            modelBuilder.Entity<Collector>()
+                .HasMany(_ => _.ReleasableTo)
+                .WithMany(_ => _.CollectorReleasableTo)
+                .UsingEntity(_ => _.ToTable("CollectorRelToGroup"));
+            modelBuilder.Entity<Collector>()
+                .HasMany(_ => _.EyesOnly)
+                .WithMany(_ => _.CollectorEyesOnly)
+                .UsingEntity(_ => _.ToTable("CollectorGroupEyesOnly"));
+            modelBuilder.Entity<Collector>()
+                .HasMany(_ => _.Tags)
+                .WithMany(_ => _.Collectors)
+                .UsingEntity(
+                    _ => _.ToTable("CollectorTags"));
+            
             modelBuilder.Entity<Importer>().HasMany(_ => _.ReleasableTo).WithMany(_ => _.ImporterReleasableTo).UsingEntity(_ => _.ToTable("ImporterRelToGroup"));
             modelBuilder.Entity<Importer>().HasMany(_ => _.EyesOnly).WithMany(_ => _.ImporterEyesOnly).UsingEntity(_ => _.ToTable("ImporterGroupEyesOnly"));
             modelBuilder.Entity<Importer>()

@@ -1,0 +1,64 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using System.Text
+@using System.Text.Json
+@using DocIntel.Core.Helpers
+@using Json.Schema
+@model Collector
+
+@{
+    ViewData["Title"] = $"Configure collector '{Model.Name}'";
+}
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-inbox-in subheader-icon"></i> @ViewData["Title"]
+    </h1>
+</div>
+
+
+<div class="row">
+    <div class="col-12">
+
+        @{
+            var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors);
+        }
+        @if (errors.Count() > 0)
+        {
+            <div class="alert alert-danger" role="alert">
+                <strong>Oh snap!</strong> Change a few things up and try submitting again.
+
+                <ul class="mb-0 mt-1">
+                    @foreach (var error in errors)
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form asp-action="Configure">
+            @Html.AntiForgeryToken()
+            <input asp-for="CollectorId" type="hidden"/>
+            <input asp-for="Settings" type="hidden"/>
+            
+            @{
+                var schema = JsonSchemaHelpers.ToJsonEditorSchema((Type)ViewBag.Schema);
+            }
+            <div class="editorJSON" 
+                 data-inputid="Settings"
+                 data-schema="@(Convert.ToBase64String(Encoding.UTF8.GetBytes(schema)))"
+                 data-startval="@((Model.Settings != null && Model.Settings.Count > 0) ? Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(Model.Settings))) : "")"></div>
+
+            <button type="submit" id="save-btn" class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified">
+                <i class="fal fa-save"></i> Save
+            </button>
+
+        </form>
+
+
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

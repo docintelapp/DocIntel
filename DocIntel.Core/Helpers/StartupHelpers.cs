@@ -159,6 +159,7 @@ namespace DocIntel.Core.Helpers
             services.AddScoped<IAuthorizationHandler, ImportRuleAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, GroupAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, ClassificationAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, CollectorAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, DocumentFileAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, ScraperAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, SavedSearchAuthorizationHandler>();
@@ -183,6 +184,7 @@ namespace DocIntel.Core.Helpers
             services.AddScoped<IScraperRepository, ScraperEFRepository>();
             services.AddScoped<IImportRuleRepository, ImportRuleEFRepository>();
             services.AddScoped<ISavedSearchRepository, SavedSearchEFRepository>();
+            services.AddScoped<ICollectorRepository, CollectorEFRepository>();
         }
 
         public static void RegisterSynapse(IServiceCollection services, ApplicationSettings applicationSettings)

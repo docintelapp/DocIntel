@@ -1,0 +1,39 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Collector
+
+<div id="panel-basic" class="panel">
+    <div class="panel-hdr">
+        <h2>
+            Tags
+            <span class="fw-300">
+                <i>Information</i>
+            </span>
+        </h2>
+    </div>
+    <div class="panel-container show">
+        <div class="panel-content">
+
+            
+            <div class="form-group">
+                <label class="form-label">Tags</label>
+                <select data-placeholder="Select a tag"
+                        class="autocomplete-tag form-control" name="tags" multiple="multiple" data-id-value="true">
+                    @if(Model.Tags?.Any() ?? false) {
+                    @foreach (var tag in (Model.Tags))
+                    {
+                        <option selected="selected" value="@tag.TagId"
+                                data-backgroundColor="@tag.BackgroundColor"
+                                data-prefix="@tag.Facet.Prefix">
+                            @(!string.IsNullOrEmpty(tag.Facet.Prefix) ? tag.Facet.Prefix + ":" : "")@tag.Label
+                        </option>
+                    }
+                    }
+                </select>
+                <p class="text-muted mt-2 mb-0">
+                    You can specify here tags that will be added to all documents imported using this collector.
+                </p>
+            </div>
+            
+        </div>
+    </div>
+</div>

@@ -88,6 +88,11 @@ namespace DocIntel.Core.Authorization
         Task<bool> CanEditScraper(ClaimsPrincipal claimsPrincipal, Scraper feed);
         Task<bool> CanDeleteScraper(ClaimsPrincipal claimsPrincipal, Scraper feed);
 
+        Task<bool> CanCreateCollector(ClaimsPrincipal claimsPrincipal, Collector feed);
+        Task<bool> CanViewCollector(ClaimsPrincipal claimsPrincipal, Collector feed);
+        Task<bool> CanEditCollector(ClaimsPrincipal claimsPrincipal, Collector feed);
+        Task<bool> CanDeleteCollector(ClaimsPrincipal claimsPrincipal, Collector feed);
+
         Task<bool> CanViewImportRule(ClaimsPrincipal claimsPrincipal, ImportRuleSet importRule);
         Task<bool> CanCreateImportRule(ClaimsPrincipal claimsPrincipal, ImportRuleSet importRule);
         Task<bool> CanEditImportRule(ClaimsPrincipal claimsPrincipal, ImportRuleSet importRule);

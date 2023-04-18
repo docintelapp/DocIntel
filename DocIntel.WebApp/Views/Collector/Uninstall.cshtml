@@ -1,0 +1,44 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Collector
+
+@{
+    ViewData["Title"] = $"Uninstall collector '{Model.Name}''";
+}
+
+
+<div class="subheader">
+    <h1 class="subheader-title">
+        <i class="fal fa-file-edit subheader-icon"></i> @ViewData["Title"]
+    </h1>
+</div>
+
+<form asp-action="Uninstall">
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        <div class="col-12">
+
+            <div class="alert bg-danger-400 text-white fade show" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="alert-icon">
+                        <i class="fal fa-exclamation-circle"></i>
+                    </div>
+                    <div class="flex-1">
+                        <span class="h5">Are you sure you want to delete the collector '@Model.Name'?</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <button type="submit" class= "btn btn-pills btn-danger" id="delete-confirmation-btn">Yes, delete!</button>
+            <a asp-action="Details" asp-route-id="@Model.CollectorId" class="ml-3">No, don't delete!</a>
+        </div>
+    </div>
+
+    <input type="hidden" asp-for="CollectorId"/>
+
+</form>

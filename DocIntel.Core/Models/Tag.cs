@@ -77,5 +77,6 @@ namespace DocIntel.Core.Models
 
         public ICollection<Importer> Importers { get; set; }
         public ICollection<Scraper> Scrapers { get; set; }
+        public ICollection<Collector> Collectors { get; set; }
     }
 }
