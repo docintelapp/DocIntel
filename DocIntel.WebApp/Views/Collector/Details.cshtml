@@ -150,16 +150,20 @@
                                     <text>@Model.Classification.Subtitle</text>
                                 }
                             </dd>   
-                        
-                            <dt class="col-sm-6">Releasable To</dt>
-                            <dd class="col-sm-6">
-                                @(string.Join(", ", Model.ReleasableTo.Select(g => g.Name)))
-                            </dd>   
-
-                            <dt class="col-sm-6">Eyes Only</dt>
-                            <dd class="col-sm-6">
-                                @(string.Join(", ", Model.EyesOnly.Select(g => g.Name)))
-                            </dd>   
+                            
+                            @if(Model.ReleasableTo.Any()) {
+                                <dt class="col-sm-6">Releasable To</dt>
+                                <dd class="col-sm-6">
+                                    @(string.Join(", ", Model.ReleasableTo.Select(g => g.Name)))
+                                </dd>   
+                            }
+                            
+                            @if(Model.EyesOnly.Any()) {
+                                <dt class="col-sm-6">Eyes Only</dt>
+                                <dd class="col-sm-6">
+                                    @(string.Join(", ", Model.EyesOnly.Select(g => g.Name)))
+                                </dd>   
+                            }
                         </dl>
                     </div>
                 </div>

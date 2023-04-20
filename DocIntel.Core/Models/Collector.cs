@@ -30,7 +30,6 @@ public class Collector {
     public string Module { get; set; }
     public string CollectorName { get; set; }
 
-    [Required]
     public string UserId { get; set; }
     public AppUser User { get; set; }
 

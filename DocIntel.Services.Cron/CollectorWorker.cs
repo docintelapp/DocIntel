@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -99,6 +100,8 @@ namespace DocIntel.Services.Cron
 
         private async Task ImportFeeds()
         {
+            var collectorLastCollection = DateTime.UtcNow;
+
             using var scope = _serviceProvider.CreateScope();
             using var context = await GetAmbientContext(scope.ServiceProvider);
             var collectors = await _collectorRepository.GetAllAsync(context).ToListAsync();
@@ -106,19 +109,19 @@ namespace DocIntel.Services.Cron
             foreach (var collector in collectors)
             {
                 var schedule = NCrontab.CrontabSchedule.Parse(collector.CronExpression);
-                Console.WriteLine($"updating {collector.LastCollection}");
+                // Console.WriteLine($"updating {collector.LastCollection}");
                 DateTime nextOccurrence = DateTime.MinValue;
                 if (collector.LastCollection != null)
                     nextOccurrence = schedule.GetNextOccurrence((DateTime)collector.LastCollection);
                 
-                if (nextOccurrence < DateTime.UtcNow)
+                if (nextOccurrence < collectorLastCollection)
                 {
                     using var collectorScope = _serviceProvider.CreateScope();
                     using var collectorContext = await GetAmbientContext(collectorScope.ServiceProvider);
                     await CollectFeed(collector, collectorContext);
 
-                    collector.LastCollection = DateTime.UtcNow;
-                    Console.WriteLine($"updating {collector.LastCollection}");
+                    collector.LastCollection = collectorLastCollection;
+                    // Console.WriteLine($"updating {collector.LastCollection}");
                     await collectorContext.DatabaseContext.SaveChangesAsync();
                     await context.DatabaseContext.SaveChangesAsync();
                 }
@@ -135,16 +138,17 @@ namespace DocIntel.Services.Cron
             var limit = collector.Limit;
 
             var client = _moduleFactory.GetCollector(collector.Module, collector.CollectorName);
-            Console.WriteLine(collector.Module);
-            Console.WriteLine(collector.CollectorName);
+            // Console.WriteLine(collector.Module);
+            // Console.WriteLine(collector.CollectorName);
             var collectorSettings = _moduleFactory.GetCollectorSettings(collector.Module, collector.CollectorName);
-            Console.WriteLine(collectorSettings);
+            // Console.WriteLine(collectorSettings);
             var settings = collector.Settings.Deserialize(
                 collectorSettings);
             
             await foreach (var report in client.Collect(lastCollection, limit, settings))
             {
                 var document = _mapper.Map<Document>(report);
+                
                 document.SourceId = collector.SourceId;
                 document.ClassificationId = collector.ClassificationId;
                 document.ReleasableTo = collector.ReleasableTo;
@@ -152,12 +156,24 @@ namespace DocIntel.Services.Cron
                 document.RegisteredById = collector.UserId;
                 document.LastModifiedById = collector.UserId;
                 
+                // Check if document is already known
+                if (document.SourceId != null
+                    && !string.IsNullOrEmpty(document.ExternalReference)
+                    && collectorContext.DatabaseContext.Documents.Any(_ => _.SourceId == document.SourceId
+                                                                           && _.ExternalReference == document.ExternalReference))
+                {
+                    _logger.LogDebug($"Document '{document.ExternalReference}' from '{document.SourceId}' was already imported.");
+                    // TODO Include a field version in the files
+                    continue;
+                }
+                
                 var tags = _tagUtility.GetOrCreateTags(collectorContext, report.Tags);
+                if (collector.Tags?.Any() ?? false)
+                    tags = tags.Union(collector.Tags).Distinct();
+                
                 document = await _documentRepository.AddAsync(collectorContext,
                     document,
-                    tags.Union(collector.Tags)
-                        .Distinct()
-                        .ToArray());
+                    tags.ToArray());
 
                 if (collector.SkipInbox)
                 {
@@ -178,7 +194,9 @@ namespace DocIntel.Services.Cron
                     if (file.Content != null)
                     {
                         await using var stream = file.Content.Stream();
-                        f = await _documentRepository.AddFile(collectorContext, f, stream);
+                        using var memoryStream = new MemoryStream();
+                        await stream.CopyToAsync(memoryStream);
+                        f = await _documentRepository.AddFile(collectorContext, f, memoryStream);
                     }
                 }
 
@@ -197,6 +215,8 @@ namespace DocIntel.Services.Cron
                         _logger.LogError($"Could not import structured data on document '{document.DocumentId}': {e.Message}");
                     }
                 }
+
+                await collectorContext.DatabaseContext.SaveChangesAsync();
             }
         }
     }

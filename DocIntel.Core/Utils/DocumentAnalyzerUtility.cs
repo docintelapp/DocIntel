@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
@@ -98,59 +99,66 @@ public class DocumentAnalyzerUtility
             foreach (var file in document.Files.Where(_ =>
                 (_.MimeType == "application/pdf") | _.MimeType.StartsWith("text/")))
             {
-                var filename = Path.Combine(_appSettings.DocFolder, file.Filepath);
-                if (File.Exists(filename))
+                if (file.Filepath != null)
                 {
-                    try
+                    var filename = Path.Combine(_appSettings.DocFolder, file.Filepath);
+                    if (File.Exists(filename))
                     {
-                        await using var f = File.OpenRead(filename);
-                        var response = await _solr.ExtractAsync(new ExtractParameters(f, document.DocumentId.ToString())
+                        try
                         {
-                            ExtractOnly = true,
-                            ExtractFormat = ExtractFormat.Text,
-                            StreamType = file.MimeType
-                        });
-
-                        var metadata = response.Metadata.ToDictionary(_ => _.FieldName, _ => _.Value);
-                        var title = ExtractTitle(metadata);
-
-                        var date = ExtractDate(metadata);
-                        if (date == DateTime.MinValue)
-                            date = DateTime.UtcNow;
-
-                        await DetectAutoExtractFacet(response, ambientContext, document, tagCache, facetCache);
-
-                        if (doExtractObservables)
-                        {
-                            try
+                            await using var f = File.OpenRead(filename);
+                            var response = await _solr.ExtractAsync(new ExtractParameters(f, document.DocumentId.ToString())
                             {
-                                var view = await _observablesRepository.CreateView(document);
-                                var fileObservables = await _observablesUtility.ExtractDataAsync(document, file, response.Content).ToListAsync();
-                                await _observablesUtility.AnnotateAsync(document, file, fileObservables);
-                                _logger.LogDebug($"Found {fileObservables.Count} observables");
-                                await _observablesRepository.Add(fileObservables, document, view);
-                            }
-                            catch (Exception e)
+                                ExtractOnly = true,
+                                ExtractFormat = ExtractFormat.Text,
+                                StreamType = file.MimeType
+                            });
+
+                            var metadata = response.Metadata.ToDictionary(_ => _.FieldName, _ => _.Value);
+                            var title = ExtractTitle(metadata);
+
+                            var date = ExtractDate(metadata);
+                            if (date == DateTime.MinValue)
+                                date = DateTime.UtcNow;
+
+                            await DetectAutoExtractFacet(response, ambientContext, document, tagCache, facetCache);
+
+                            if (doExtractObservables)
                             {
-                                _logger.LogError($"Could not extract observable in file '{file.FileId}' on document '{document.DocumentId}': {e.Message}");
+                                try
+                                {
+                                    var view = await _observablesRepository.CreateView(document);
+                                    var fileObservables = await _observablesUtility.ExtractDataAsync(document, file, response.Content).ToListAsync();
+                                    await _observablesUtility.AnnotateAsync(document, file, fileObservables);
+                                    _logger.LogDebug($"Found {fileObservables.Count} observables");
+                                    await _observablesRepository.Add(fileObservables, document, view);
+                                }
+                                catch (Exception e)
+                                {
+                                    _logger.LogError($"Could not extract observable in file '{file.FileId}' on document '{document.DocumentId}': {e.Message}");
+                                }
                             }
+
+                            if (string.IsNullOrEmpty(document.Title) & !string.IsNullOrEmpty(title))
+                                document.Title = title;
+
+                            if (file.DocumentDate == DateTime.MinValue)
+                                file.DocumentDate = date;
                         }
-
-                        if (string.IsNullOrEmpty(document.Title) & !string.IsNullOrEmpty(title))
-                            document.Title = title;
-
-                        if (file.DocumentDate == DateTime.MinValue)
-                            file.DocumentDate = date;
+                        catch (SolrConnectionException e)
+                        {
+                            _logger.LogError($"Document {document.DocumentId} could not be analyzed due to an error with SolR: {e.Url}");
+                            _logger.LogError(e.ToString());
+                        }
                     }
-                    catch (SolrConnectionException e)
+                    else
                     {
-                        _logger.LogError($"Document {document.DocumentId} could not be analyzed due to an error with SolR: {e.Url}");
-                        _logger.LogError(e.ToString());
+                        _logger.LogWarning($"Could not find file '{filename}' for document {document.DocumentId}");
                     }
                 }
                 else
                 {
-                    _logger.LogWarning($"Could not find file '{filename}' for document {document.DocumentId}");
+                    _logger.LogWarning($"Could not find file '{file.FileId}' for document {document.DocumentId}: no filename");
                 }
             }
 
@@ -166,6 +174,7 @@ public class DocumentAnalyzerUtility
             {
                 document.Status = DocumentStatus.Analyzed;
 
+                bool skip = false;
                 if (document.MetaData?.ContainsKey("registration") ?? false)
                 {
                     RegistrationMetadata registrationMetadata = null;
@@ -174,13 +183,14 @@ public class DocumentAnalyzerUtility
                         && registrationMetadata.Auto)
                     {
                         _logger.LogDebug("Skip inbox due to document setting");
+                        await _documentRepository.UpdateStatusAsync(ambientContext, document.DocumentId, DocumentStatus.Registered);
                         await _observablesRepository.Merge(document);
-                        document.Status = DocumentStatus.Registered;
+                        skip = true;
                     }
                 }
                 
                 // Check if auto-register is enabled for the source
-                if (document.Source != null)
+                if (!skip && document.Source != null)
                 {
                     RegistrationMetadata registrationMetadata = null;
                     if (document.Source.MetaData != default
@@ -190,15 +200,17 @@ public class DocumentAnalyzerUtility
                         && registrationMetadata.Auto)
                     {
                         _logger.LogDebug("Skip inbox due to source setting");
+                        await _documentRepository.UpdateStatusAsync(ambientContext, document.DocumentId, DocumentStatus.Registered);
                         await _observablesRepository.Merge(document);
-                        document.Status = DocumentStatus.Registered;
                     }
                 }
             }
 
             
             _logger.LogDebug($"Status of document '{document.DocumentId}' is '{document.Status}'.");
-            ambientContext.DatabaseContext.Update(document);
+            
+            var trackingEntity = ambientContext.DatabaseContext.Update(document);
+            
 
             await ambientContext.DatabaseContext.SaveChangesAsync();
             

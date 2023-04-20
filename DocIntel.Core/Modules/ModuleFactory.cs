@@ -46,10 +46,10 @@ public class ModuleFactory
         {
             RegisterExporters(module);
             RegisterCollectors(module);
-            Console.WriteLine($"Done for module '{module.Name}'");
+            // Console.WriteLine($"Done for module '{module.Name}'");
         }
 
-        Console.WriteLine("Done registering modules");
+        // Console.WriteLine("Done registering modules");
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -57,7 +57,7 @@ public class ModuleFactory
     {
         if (!configuration.Exporters?.Any() ?? true)
         {
-            Console.WriteLine($"No exporters found in configuration of {configuration.Name}");
+            // Console.WriteLine($"No exporters found in configuration of {configuration.Name}");
             return;
         }
 
@@ -65,12 +65,12 @@ public class ModuleFactory
         {   
             if (exporter.Key.Contains("."))
             {
-                Console.WriteLine("Exporter name contains an illegal character: . (dot)");
+                // Console.WriteLine("Exporter name contains an illegal character: . (dot)");
                 continue;
             }
             
             var type = _assemblies[configuration.Name].GetType(exporter.Value);
-            Console.WriteLine($"Installing exporter '{exporter.Key}' ({exporter.Value}) from module '{configuration.Name}'");
+            // Console.WriteLine($"Installing exporter '{exporter.Key}' ({exporter.Value}) from module '{configuration.Name}'");
             _exporters.Add(GetKey(configuration.Name, exporter.Key), type);
         }
     }
@@ -80,7 +80,7 @@ public class ModuleFactory
     {
         if (!configuration.Collectors?.Any() ?? true)
         {
-            Console.WriteLine($"No collectors found in configuration of {configuration.Name}");
+            // Console.WriteLine($"No collectors found in configuration of {configuration.Name}");
             return;
         }
 
@@ -88,40 +88,44 @@ public class ModuleFactory
         {
             if (collector.Key.Contains("."))
             {
-                Console.WriteLine("Collector name contains an illegal character: . (dot)");
+                // Console.WriteLine("Collector name contains an illegal character: . (dot)");
                 continue;
             }
             
             var type = _assemblies[configuration.Name].GetType(collector.Value.Class);
-            Console.WriteLine($"Installing collector '{collector.Key}' ({collector.Value.Class}) from module '{configuration.Name}'");
+            // Console.WriteLine($"Installing collector '{collector.Key}' ({collector.Value.Class}) from module '{configuration.Name}'");
             _collectors.Add(GetKey(configuration.Name, collector.Key), type);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static MapperConfigurationExpression RegisterProfiles(ApplicationSettings applicationSettings,
+    public static MapperConfigurationExpression GetProfiles(string moduleName, ApplicationSettings applicationSettings,
         IServiceProvider serviceProvider)
     {
         var mapperConfigurationExpression = new MapperConfigurationExpression();
-            
-        foreach (var configuration in _modules.Values)
+
+        if (_modules.ContainsKey(moduleName))
         {
+            var configuration = _modules[moduleName];
             if (!configuration.Profiles?.Any() ?? true)
             {
-                Console.WriteLine($"No profile found in configuration of {configuration.Name}");
-                continue;
+                // Console.WriteLine($"No profile found in configuration of {configuration.Name}");
             }
-
-            var profiles = configuration.Profiles
-                .Select(_ => _assemblies[configuration.Name].GetType(_))
-                .Where(_ => _ != null);
-            
-            Console.WriteLine($"Installing profiles for module '{configuration.Name}'");
-            
-            foreach (var profile in profiles)
+            else
             {
-                var instance = (Profile) ActivatorUtilities.CreateInstance(serviceProvider, profile);
-                mapperConfigurationExpression.AddProfile(instance);
+                var profiles = configuration.Profiles
+                    .Select(_ => _assemblies[configuration.Name].GetType(_))
+                    .Where(_ => _ != null);
+
+                // Console.WriteLine($"Installing profiles for module '{configuration.Name}'");
+
+                foreach (var profile in profiles)
+                {
+                    var instance = (Profile)ActivatorUtilities.CreateInstance(serviceProvider, profile);
+                    // Console.WriteLine(instance.ProfileName);
+                    mapperConfigurationExpression.AddProfile(instance);
+                    // Console.WriteLine($"Added profile '{profile.FullName}' to the AutoMapper configuration");
+                }
             }
         }
 
@@ -131,8 +135,7 @@ public class ModuleFactory
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void Init(ApplicationSettings applicationSettings)
     {
-        Console.WriteLine("Clear loaded modules");
-
+        // Console.WriteLine("Clear loaded modules");
         _modules = null;
         _exporters = null;
         _assemblies = null;
@@ -143,14 +146,14 @@ public class ModuleFactory
         {
             foreach (var assemblyLoadContext in _wr)
             {
-                Console.WriteLine("Wait for plugin to be unloaded...");
+                // Console.WriteLine("Wait for plugin to be unloaded...");
                 for (int i = 0; assemblyLoadContext.IsAlive && (i < 100); i++)
                 {
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
-                    Console.WriteLine($"GC.Collect {i}");
+                    // Console.WriteLine($"GC.Collect {i}");
                 }
-                Console.WriteLine($"Done: {assemblyLoadContext.IsAlive}");
+                // Console.WriteLine($"Done: {assemblyLoadContext.IsAlive}");
             }
             
             _wr = new List<WeakReference>();
@@ -167,7 +170,7 @@ public class ModuleFactory
         
         if (!string.IsNullOrEmpty(moduleFolder) & Directory.Exists(moduleFolder))
         {
-            Console.WriteLine($"Loading external modules...");
+            // Console.WriteLine($"Loading external modules...");
             Matcher matcher = new();
             matcher.AddIncludePatterns(new[] { "/**/module.json" });
 
@@ -178,42 +181,43 @@ public class ModuleFactory
             foreach (var configFile in configFiles.Files)
             {
                 var configFilepath = Path.Combine(moduleFolder, configFile.Path);
-                Console.WriteLine($"Reading configuration file '{configFilepath}'");
+                // Console.WriteLine($"Reading configuration file '{configFilepath}'");
 
                 try
                 {
                     var moduleConfiguration = JsonConvert.DeserializeObject<ModuleConfiguration>(File.ReadAllText(configFilepath));
                     if (moduleConfiguration == null) {
-                        Console.WriteLine("Could not load module configuration");
+                        // Console.WriteLine("Could not load module configuration");
                         continue;
                     }
 
                     if (moduleConfiguration.Name.Contains("."))
                     {
-                        Console.WriteLine("Name contains an illegal character: . (dot)");
+                        // Console.WriteLine("Name contains an illegal character: . (dot)");
                         continue;
                     }
                 
                     var baseDirectory = Path.GetDirectoryName(configFilepath);
-                    Console.WriteLine($"Base directory for the module is '{baseDirectory}'");
+                    // Console.WriteLine($"Base directory for the module is '{baseDirectory}'");
                     string pluginLocation = baseDirectory.Replace('/', Path.DirectorySeparatorChar);
 
-                    var moduleLoadContext = new ModuleLoadContext(Path.Combine(baseDirectory, moduleConfiguration.Assembly));
+                    var moduleLoadContext = new ModuleLoadContext(
+                        Path.Combine(baseDirectory, moduleConfiguration.Assembly));
                 
-                    Console.WriteLine($"Loading '{moduleConfiguration.Assembly}'");
+                    // Console.WriteLine($"Loading '{moduleConfiguration.Assembly}'");
 
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(moduleConfiguration.Assembly);
 
                     var assembly = moduleLoadContext.LoadFromAssemblyName(
                         new AssemblyName(fileNameWithoutExtension));
 
-                    Console.WriteLine($"Assembly {assembly.FullName} loaded");
+                    // Console.WriteLine($"Assembly {assembly.FullName} loaded");
                     _assemblies.Add(moduleConfiguration.Name, assembly);
 
-                    foreach (var t in assembly.GetTypes())
-                    {
-                        Console.WriteLine($"- {t.Name}");
-                    }
+                    // foreach (var t in assembly.GetTypes())
+                    // {
+                        // Console.WriteLine($"- {t.Name}");
+                    // }
 
                     var assemblyLoadContext = new WeakReference(moduleLoadContext, trackResurrection: true);
                     _assemblyLoadContexts.Add(moduleConfiguration.Name, moduleLoadContext);
@@ -223,8 +227,8 @@ public class ModuleFactory
                 }
                 catch(Exception e)
                 {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
+                    // Console.WriteLine(e.Message);
+                    // Console.WriteLine(e.StackTrace);
                 }
             }
         }
@@ -243,7 +247,7 @@ public class ModuleFactory
                 }
                 else
                 {
-                    Console.WriteLine("could not get target");
+                    // Console.WriteLine("could not get target");
                 }
             }
             _assemblyLoadContexts = null;
@@ -253,7 +257,7 @@ public class ModuleFactory
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void AddModules(ModuleConfiguration configuration)
     {
-        Console.WriteLine($"Saving configuration module '{configuration.Name}'");
+        // Console.WriteLine($"Saving configuration module '{configuration.Name}'");
         if (_modules.ContainsKey(configuration.Name))
             _modules[configuration.Name] = configuration;
         else    
@@ -267,7 +271,7 @@ public class ModuleFactory
         if (_exporters.ContainsKey(key))
         {
             var type = _exporters[key];
-            Console.WriteLine($"Creating instance of {type}");
+            // Console.WriteLine($"Creating instance of {type}");
             var scope = _serviceProvider.CreateScope();
             var sp = scope.ServiceProvider;
 
@@ -284,13 +288,17 @@ public class ModuleFactory
         return module + "." + exporter;
     }
 
-    public static IMapper GetMapper(IServiceProvider serviceProvider)
+    public static IMapper GetMapper(string moduleName, IServiceProvider serviceProvider)
     {
-        if (_modules?.Any() ?? false)
+        if (_modules?.ContainsKey(moduleName) ?? false)
         {
-            var mapperConfigurationExpression = RegisterProfiles(_applicationSettings, serviceProvider);
+            var mapperConfigurationExpression = GetProfiles(moduleName, _applicationSettings, serviceProvider);
             var mapperConfig = new MapperConfiguration(mapperConfigurationExpression);    
-            return new Mapper(mapperConfig);   
+            return new Mapper(mapperConfig);
+        }
+        else
+        {
+            // Console.WriteLine("No modules found.");
         }
 
         return null;
@@ -299,8 +307,6 @@ public class ModuleFactory
     [MethodImpl(MethodImplOptions.NoInlining)]
     public IEnumerable<ModuleModelMetadata> GetMetadata(Type t)
     {
-        var generator = new JsonSchemaBuilder();
-        
         foreach (var configuration in _modules.Values) {
             foreach (var moduleMetadata in configuration.Metadata)
             {
@@ -345,11 +351,9 @@ public class ModuleFactory
         {
             var moduleConfiguration = _modules[module];
             var settingsTypeName = moduleConfiguration.Collectors[collector].Settings;
-            _logger.LogError(settingsTypeName);
             if (settingsTypeName != null)
             {
                 var assembly = _assemblies[moduleConfiguration.Name];
-                _logger.LogError($"Get {settingsTypeName} from assembly {assembly.FullName}");
                 return assembly.GetType(settingsTypeName);
             }
         }
@@ -361,7 +365,7 @@ public class ModuleFactory
     public IDocumentCollector GetCollector(string module, string exporter)
     {
         var key = GetKey(module, exporter);
-        Console.WriteLine(key);
+        // Console.WriteLine(key);
         if (_collectors.ContainsKey(key))
         {
             var type = _collectors[key];
@@ -374,7 +378,7 @@ public class ModuleFactory
     [MethodImpl(MethodImplOptions.NoInlining)]
     private IDocumentCollector CreateCollectorInstance(Type type)
     {
-        Console.WriteLine($"Creating instance of {type}");
+        // Console.WriteLine($"Creating instance of {type}");
         var scope = _serviceProvider.CreateScope();
         var sp = scope.ServiceProvider;
 

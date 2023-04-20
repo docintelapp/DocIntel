@@ -460,7 +460,6 @@ namespace DocIntel.WebApp.Controllers
         {
             ViewBag.HasSettings = _moduleFactory.HasCollectorSettings(collector.Module, collector.CollectorName);
             ViewBag.Schema = _moduleFactory.GetCollectorSettings(collector.Module, collector.CollectorName);
-            LoggerExtensions.LogError(_logger, ViewBag.Schema?.ToString());
             ViewBag.Settings = collector.Settings;
 
             await InitializeViewBag(currentUser);

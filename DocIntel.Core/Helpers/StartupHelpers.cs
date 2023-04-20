@@ -36,6 +36,7 @@ using DocIntel.Core.Utils.Search.Tags;
 using DocIntel.Core.Utils.Thumbnail;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SolrNet;
 using SolrNet.Impl;
 using Synsharp.Telepath;
@@ -52,6 +53,7 @@ namespace DocIntel.Core.Helpers
         /// </summary>
         /// <param name="services">The service collection</param>
         /// <param name="applicationSettings"></param>
+        /// <param name="loggerFactory"></param>
         public static void RegisterModules(IServiceCollection services, ApplicationSettings applicationSettings)
         {
             services.AddTransient<ModuleFactory>();

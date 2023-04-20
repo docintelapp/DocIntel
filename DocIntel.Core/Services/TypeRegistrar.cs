@@ -13,6 +13,11 @@ namespace DocIntel.Core.Services
         {
             _serviceCollection = serviceCollection;
         }
+        
+        public TypeRegistrar(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
 
         public ITypeResolver Build()
         {
@@ -27,22 +32,16 @@ namespace DocIntel.Core.Services
 
         public void Register(Type type, Type implementation)
         {
-            Console.WriteLine("Register " + type.FullName);
-            Console.Out.Flush();
             _serviceCollection.AddSingleton(type, implementation);
         }
 
         public void RegisterInstance(Type type, object implementation)
         {
-            Console.WriteLine("RegisterInstance " + type.FullName);
-            Console.Out.Flush();
             _serviceCollection.AddSingleton(type, implementation);
         }
 
         public void RegisterLazy(Type type, Func<object> func)
         {            
-            Console.WriteLine("RegisterLazy " + type.FullName);
-            Console.Out.Flush();
             if (func is null)
             {
                 throw new ArgumentNullException(nameof(func));

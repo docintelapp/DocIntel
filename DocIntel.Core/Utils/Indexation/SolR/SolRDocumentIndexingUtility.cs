@@ -108,21 +108,28 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             foreach (var file in document.Files.Where(_ =>
                 _.MimeType == "application/pdf" || _.MimeType.StartsWith("text")))
             {
-                var filename = Path.Combine(_settings.DocFolder, file.Filepath);
-                if (File.Exists(filename))
+                if (file.Filepath != null)
                 {
-                    using var f = File.OpenRead(filename);
-                    var response = _solr.Extract(new ExtractParameters(f, file.FileId.ToString())
+                    var filename = Path.Combine(_settings.DocFolder, file.Filepath);
+                    if (File.Exists(filename))
                     {
-                        ExtractOnly = true,
-                        ExtractFormat = ExtractFormat.Text,
-                        StreamType = file.MimeType
-                    });
-                    fileContents.Add(response.Content);
+                        using var f = File.OpenRead(filename);
+                        var response = _solr.Extract(new ExtractParameters(f, file.FileId.ToString())
+                        {
+                            ExtractOnly = true,
+                            ExtractFormat = ExtractFormat.Text,
+                            StreamType = file.MimeType
+                        });
+                        fileContents.Add(response.Content);
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"File {filename} for document {document.DocumentId} could not be found.");
+                    }
                 }
                 else
                 {
-                    _logger.LogWarning($"File {filename} for document {document.DocumentId} could not be found.");
+                    _logger.LogWarning($"File {file.FileId} for document {document.DocumentId} could not be found: missing filepath.");
                 }
             }
 

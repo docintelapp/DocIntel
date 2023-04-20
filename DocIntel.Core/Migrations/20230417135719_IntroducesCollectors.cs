@@ -30,7 +30,7 @@ namespace DocIntel.Core.Migrations
                     UserId = table.Column<string>(type: "text", nullable: true),
                     SourceId = table.Column<Guid>(type: "uuid", nullable: false),
                     ClassificationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LastCollection = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    LastCollection = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {

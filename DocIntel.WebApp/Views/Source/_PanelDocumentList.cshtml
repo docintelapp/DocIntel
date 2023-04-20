@@ -11,7 +11,7 @@
             @if (Model.Documents != null && Model.Documents.Any())
             {
                 <ul class="list-group list-group-flush">
-                    @foreach (var document in Model.Documents)
+                    @foreach (var document in Model.Documents.OrderByDescending(_ => _.DocumentDate))
                     {
                         <li class="list-group-item py-3 px-3">
                             @await Html.PartialAsync("../Document/_DocumentSummary", document, new ViewDataDictionary(ViewData))

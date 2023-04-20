@@ -17,7 +17,7 @@ class ModuleLoadContext : AssemblyLoadContext
 
     private Assembly OnResolving(AssemblyLoadContext context, AssemblyName assemblyName)
     {
-        Console.WriteLine($"Could not resolve {assemblyName.Name}");
+        // Console.WriteLine($"Could not resolve {assemblyName.Name}");
         return null; // Fail to read.
     }
 
@@ -30,7 +30,7 @@ class ModuleLoadContext : AssemblyLoadContext
         }
         else
         {
-            Console.WriteLine($"Could not load assembly {assemblyName}");
+            // Console.WriteLine($"Could not load assembly {assemblyName}");
             return null;
         }
     }
@@ -44,7 +44,7 @@ class ModuleLoadContext : AssemblyLoadContext
         }
         else
         {
-            Console.WriteLine($"Could not load unmanaged dll {unmanagedDllName}");
+            // Console.WriteLine($"Could not load unmanaged dll {unmanagedDllName}");
             return IntPtr.Zero;
         }
     }

@@ -125,6 +125,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 return trackingEntity.Entity;
             }
 
+            _logger.LogDebug($"The submitted document is invalid: \n{string.Join("\n", modelErrors.Select(_ => "- " + _.ErrorMessage))}");
             throw new InvalidArgumentException(modelErrors);
         }
 
@@ -254,6 +255,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 return trackingEntity.Entity;
             }
 
+            _logger.LogDebug($"The submitted document is invalid: \n{string.Join("\n", modelErrors.Select(_ => "- " + _.ErrorMessage))}");
             throw new InvalidArgumentException(modelErrors);
         }
 
@@ -632,7 +634,8 @@ namespace DocIntel.Core.Repositories.EFCore
                 
                 return trackingEntity.Entity;
             }
-
+            
+            _logger.LogDebug($"The submitted file is invalid: \n{string.Join("\n", modelErrors.Select(_ => "- " + _.ErrorMessage))}");
             throw new InvalidArgumentException(modelErrors);
         }
 
@@ -690,6 +693,7 @@ namespace DocIntel.Core.Repositories.EFCore
                 return trackingEntity.Entity;
             }
 
+            _logger.LogDebug($"The submitted file is invalid: \n{string.Join("\n", modelErrors.Select(_ => "- " + _.ErrorMessage))}");
             throw new InvalidArgumentException(modelErrors);
         }
 
