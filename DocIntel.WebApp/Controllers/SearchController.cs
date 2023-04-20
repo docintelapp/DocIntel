@@ -161,7 +161,7 @@ namespace DocIntel.WebApp.Controllers
 
             var resultsDocuments = new List<DocumentSearchResult>();
             
-            _logger.LogInformation("Retreive documents");
+            _logger.LogDebug("Retreive documents");
             var documents = await _documentRepository.GetAllAsync(AmbientContext, new DocumentQuery()
             {
                 DocumentIds = results.Hits.Select(x => x.DocumentId).ToArray(),
@@ -169,6 +169,7 @@ namespace DocIntel.WebApp.Controllers
             }, new[] {"DocumentTags", "DocumentTags.Tag", "DocumentTags.Tag.Facet"}).ToDictionaryAsync(_ => _.DocumentId);
             
             foreach (var hit in results.Hits)
+            {
                 try
                 {
                     if (documents.ContainsKey(hit.DocumentId))
@@ -181,22 +182,20 @@ namespace DocIntel.WebApp.Controllers
                             TitleExcerpt = hit.TitleExcerpt,
                             Position = hit.Position
                         });   
+                    } else {
+                        _logger.LogWarning($"Your SolR index might be out-of-sync. The document '{hit.DocumentId}' was found in the index but not in the database.");
                     }
                 }
                 catch (UnauthorizedOperationException)
                 {
                     // TODO Use structured logging
-                    _logger.LogError("Unauthorized to view " + hit.DocumentId);
+                    _logger.LogError($"User '{currentUser.FriendlyName}' is unauthorized to view '{hit.DocumentId}' returned by the search engine.");
                 }
-                catch (NotFoundEntityException)
-                {
-                    // TODO Use structured logging
-                    _logger.LogError("Not found " + hit.DocumentId);
-                }
+            }
 
             var totalHits = results.TotalHits;
 
-            _logger.LogInformation("Retreive tags");
+            _logger.LogDebug("Retreive tags");
             var tagIds = results.FacetTags.Select<KeyValuePair<string,int>, Guid?>(_ =>
             {
                 if (Guid.TryParse(_.Key, out var id))
@@ -213,7 +212,7 @@ namespace DocIntel.WebApp.Controllers
                 new []{"Facet"}
             ).ToListAsync();
 
-            _logger.LogInformation("Retreive classifications");
+            _logger.LogDebug("Retreive classifications");
             var classDict = await _classificationRepository.GetAllAsync(AmbientContext).ToDictionaryAsync(_ => _.ClassificationId);
             var classificationVR = new List<VerticalResult<Classification>>();
             foreach (var r in results.Classifications)
@@ -234,7 +233,7 @@ namespace DocIntel.WebApp.Controllers
 
             var reliabilitiesVR = results.Reliabilities;
 
-            _logger.LogInformation("Retreive sources");
+            _logger.LogDebug("Retreive sources");
             var sourceIds = results.Sources.Select(r => r.Value).ToArray();
             var sourceDict = await _sourceRepository.GetAllAsync(AmbientContext, 
                     _ => _.Where(s => sourceIds.Contains(s.SourceId))
@@ -256,7 +255,7 @@ namespace DocIntel.WebApp.Controllers
                     // TODO Use structured logging
                 }
 
-            _logger.LogInformation("Retreive users");
+            _logger.LogDebug("Retreive users");
             var userIds = results.FacetRegistrants.Select(r => r.Value).ToArray();
             var userDict = await _userRepository.GetAllAsync(AmbientContext, new UserQuery() { Ids = userIds })
                 .ToDictionaryAsync(_ => _.Id);
@@ -278,20 +277,6 @@ namespace DocIntel.WebApp.Controllers
                 }
 
             watch.Stop();
-
-            /*
-             var didYouMeanTerms = new List<string>();
-            var accuracy = 0.83f;
-            foreach (var q in searchTerm.Split(" "))
-                if (!string.IsNullOrEmpty(q))
-                {
-                    var spellcheck = _documentSearchEngine.SuggestSimilar(q, accuracy, totalHits > 0);
-                    if (spellcheck.Length > 0)
-                        didYouMeanTerms.Add(spellcheck[0]);
-                    else
-                        didYouMeanTerms.Add(q);
-                }
-            */
 
             return View(new SearchIndexViewModel
             {
