@@ -86,6 +86,15 @@ if [ -z $COMPONENT ] || [ $COMPONENT = "thumbnailer" ]; then
   echo ""
 fi
 
+if [ -z $COMPONENT ] || [ $COMPONENT = "cron" ]; then 
+  echo "📦 Building DocIntel.Services.Cron"
+  docker build -t docintelapp/cron:latest  \
+    -t docintelapp/cron:$MAJOR  \
+    -t docintelapp/cron:$MINOR  \
+    -f ./DocIntel.Services.Cron/Dockerfile .
+  echo ""
+fi
+
 if [ -z $COMPONENT ] || [ $COMPONENT = "webapp" ]; then 
   echo "📦 Building DocIntel.WebApp"
   docker build -t docintelapp/webapp:latest  \

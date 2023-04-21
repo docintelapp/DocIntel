@@ -81,6 +81,16 @@ if [ -z "$MINOR" ]; then
 fi
 
 echo ""
+echo "📦 Pushing DocIntel.Services.Cron"
+docker push docintelapp/cron:latest
+if [ -z "$MAJOR" ]; then 
+  docker push docintelapp/cron:$MAJOR
+fi
+if [ -z "$MINOR" ]; then 
+  docker push docintelapp/cron:$MINOR
+fi
+
+echo ""
 echo "📦 Pushing DocIntel.WebApp"
 docker push docintelapp/webapp:latest
 if [ -z "$MAJOR" ]; then 
