@@ -224,7 +224,7 @@ public static class FlightChecks
         double freeSpacePercent = (double)drive.AvailableFreeSpace / (double)drive.TotalSize * 100.0;
         if (freeSpacePercent < 5.0)
         {
-            Console.WriteLine($"🛑 There is not enough free disk space on the partition {driveName}: {freeSpacePercent:0.##}");
+            Console.WriteLine($"[KO] There is not enough free disk space on the partition {driveName}: {freeSpacePercent:0.##}");
             ret = false;
         } else 
             Console.WriteLine($"[OK] There is at least 5% of free disk space.");
