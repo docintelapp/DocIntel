@@ -107,16 +107,23 @@ public static class FlightChecks
                 using var conn = new NpgsqlConnection(connectionString);
                 conn.Open();
                 Console.WriteLine("[OK] DocIntel could connect to PostgreSQL server.");
-                
-                using var command = new NpgsqlCommand(
-                    @"SELECT ""MigrationId"" FROM ""__EFMigrationsHistory"" ORDER BY ""MigrationId"" DESC LIMIT 1", conn);
 
-                using var reader = command.ExecuteReader();
-
-                if (reader.Read())
+                try
                 {
-                    var latestMigrationId = reader.GetString(0);
-                    Console.WriteLine($"[OK] Latest migration ID: {latestMigrationId}");
+                    using var command = new NpgsqlCommand(
+                        @"SELECT ""MigrationId"" FROM ""__EFMigrationsHistory"" ORDER BY ""MigrationId"" DESC LIMIT 1", conn);
+
+                    using var reader = command.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        var latestMigrationId = reader.GetString(0);
+                        Console.WriteLine($"[OK] Latest migration ID: {latestMigrationId}");
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine($"[??] Could not retrieve last migrations, may be running for the first time?");
                 }
 
             }
@@ -187,9 +194,9 @@ public static class FlightChecks
 
     private static async Task<bool> DiskPreFlightChecks(ApplicationSettings applicationSettings)
     {
-        Console.WriteLine(Directory.Exists(applicationSettings.ModuleFolder)
-            ? $"[OK] Module folder: {applicationSettings.ModuleFolder}"
-            : $"[KO] Module folder '{applicationSettings.ModuleFolder}' not found.");
+        Console.WriteLine(Directory.Exists(applicationSettings.ModulesFolder)
+            ? $"[OK] Module folder: {applicationSettings.ModulesFolder}"
+            : $"[KO] Module folder '{applicationSettings.ModulesFolder}' not found.");
         
         return CheckFolder(applicationSettings.DocFolder);
     }
@@ -396,7 +403,7 @@ public static class FlightChecks
         else
         {
             Console.WriteLine($"[OK] DocIntel will use the Synapse server located at '{synapseSettings.URL}'.");
-            Console.WriteLine($"[OK] DocIntel woll log in on Synapse with '{synapseSettings.UserName}' username.");
+            Console.WriteLine($"[OK] DocIntel will log in on Synapse with '{synapseSettings.UserName}' username.");
         }
 
         Uri uri;
@@ -414,7 +421,7 @@ public static class FlightChecks
             catch (Exception e)
             {
                 ret = false;
-                Console.WriteLine("[KO] Synapse server could not be reached.");   
+                Console.WriteLine($"[KO] Synapse server on hostname {uri.Host} could not be reached on port {uri.Port}.");   
             }
         }
         else
