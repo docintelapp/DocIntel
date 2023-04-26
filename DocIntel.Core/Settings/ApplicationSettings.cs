@@ -45,7 +45,7 @@ namespace DocIntel.Core.Settings
         public string LockFolder { get; set; }
         public SecuritySettings Security { get; set; } = new();
         public ScheduleSettings Schedule { get; set; } = new();
-        public string ModuleFolder { get; set; }
+        public string ModulesFolder { get; set; }
     }
 
     public class ScheduleSettings

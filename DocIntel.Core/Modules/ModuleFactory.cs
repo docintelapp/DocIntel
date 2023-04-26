@@ -166,7 +166,7 @@ public class ModuleFactory
         _assemblies = new();
         
         // Hot-load modules from external binaries
-        var moduleFolder = applicationSettings.ModuleFolder;
+        var moduleFolder = applicationSettings.ModulesFolder;
         
         if (!string.IsNullOrEmpty(moduleFolder) & Directory.Exists(moduleFolder))
         {
