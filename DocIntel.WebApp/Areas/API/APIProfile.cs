@@ -31,8 +31,20 @@ using Synsharp.Telepath.Messages;
 
 namespace DocIntel.WebApp.Areas.API
 {
+    public static class ProfileHelper
+    {
+        
+        public static IMappingExpression<TSource, TDestination> IgnoreAllMembers<TSource, TDestination>(
+            this IMappingExpression<TSource, TDestination> expression
+        )
+        {
+            expression.ForAllMembers(opt => opt.Ignore());
+            return expression;
+        }
+    }
     public class APIProfile : Profile
     {
+        
         public APIProfile()
         {
             CreateMap<ApiObservableDetails, SynapseNode>()
@@ -103,6 +115,7 @@ namespace DocIntel.WebApp.Areas.API
             CreateMap<DocumentFile, APIFile>()
                 .MaxDepth(2);
             CreateMap<APIFile, DocumentFile>()
+                .IgnoreAllMembers()
                 .ForMember(_ => _.Title, _ =>
                 {
                     _.PreCondition(_ => !string.IsNullOrEmpty(_.Title));
