@@ -53,7 +53,7 @@ public class ExporterController : DocIntelAPIControllerBase
         _modelBinderFactory = modelBinderFactory;
     }
 
-    [HttpGet("Export/{module}/{exporter}/Document")]
+    [HttpGet("{module}/{exporter}/Document")]
     [Produces("application/json")]
     [MethodImpl(MethodImplOptions.NoInlining)]
     public async Task<IActionResult> ExportDocument(string module, string exporter)
@@ -96,7 +96,7 @@ public class ExporterController : DocIntelAPIControllerBase
         }
     }
 
-    [HttpGet("Export/{module}/{exporter}/Document/{id}")]
+    [HttpGet("{module}/{exporter}/Document/{id}")]
     [Produces("application/json")]
     [MethodImpl(MethodImplOptions.NoInlining)]
     public async Task<IActionResult> ExportDocument(string module, string exporter, Guid id)
