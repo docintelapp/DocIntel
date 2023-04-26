@@ -43,7 +43,7 @@ services:
     image: vertexproject/synapse-cortex:v2.x.x
     container_name: docintel-dev-synapse
     ports:
-      - 8902:4443
+      - 27492:27492
     volumes:
       - _DOCINTEL_DATA_/vertex/:/vertex/storage
     environment:
@@ -56,6 +56,7 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+      - _DOCINTEL_DATA_/modules/:/modules
     depends_on:
       - solr
       - synapse
@@ -69,6 +70,7 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+      - _DOCINTEL_DATA_/modules/:/modules
     depends_on:
       - solr
       - synapse
@@ -82,6 +84,7 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+      - _DOCINTEL_DATA_/modules/:/modules
     depends_on:
       - solr
       - synapse
@@ -95,6 +98,7 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+      - _DOCINTEL_DATA_/modules/:/modules
     depends_on:
       - solr
       - synapse
@@ -108,6 +112,7 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+      - _DOCINTEL_DATA_/modules/:/modules
     depends_on:
       - solr
       - synapse
@@ -121,6 +126,7 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+      - _DOCINTEL_DATA_/modules/:/modules
     depends_on:
       - solr
       - synapse
@@ -134,6 +140,7 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+      - _DOCINTEL_DATA_/modules/:/modules
     depends_on:
       - solr
       - synapse
@@ -147,6 +154,7 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+      - _DOCINTEL_DATA_/modules/:/modules
     depends_on:
       - solr
       - synapse
@@ -162,6 +170,7 @@ services:
       - _DOCINTEL_CONFIG_:/config
       - _DOCINTEL_DATA_/files/:/files
       - _DOCINTEL_DATA_/lock/:/lock
+      - _DOCINTEL_DATA_/modules/:/modules
     depends_on:
       - solr
       - synapse

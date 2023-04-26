@@ -15,6 +15,7 @@
     "DocumentPrefix" : "DI",
     "StaticFiles": "./wwwroot/",
     "LockFolder": "/lock",
+    "ModulesFolder": "/modules",
     
     "ConnectionStrings": {
         "DefaultConnection": "User ID=_POSTGRES_USER_;Password=_POSTGRES_PW_;Host=_POSTGRES_HOST_;Port=_POSTGRES_PORT_;Database=_POSTGRES_DB_;Pooling=true;"
