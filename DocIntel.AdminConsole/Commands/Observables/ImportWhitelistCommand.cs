@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -55,13 +56,16 @@ namespace DocIntel.AdminConsole.Commands.Observables
                 
                 var tag = (!string.IsNullOrEmpty(settings.Tag) ? settings.Tag : $"{settings.Source}.{settings.List}").ToLower();
                 tag = Regex.Replace(tag, @"[^a-z0-9\.]+", "_");
-                
+
                 try
                 {
                     using var client = new WebClient();
-                    if(!string.IsNullOrEmpty(_applicationSettings.Proxy))
-                        client.Proxy = new WebProxy(_applicationSettings.Proxy);
-                    
+                    if (!string.IsNullOrEmpty(_applicationSettings.Proxy))
+                    {
+                        client.Proxy = new WebProxy(_applicationSettings.Proxy, true,
+                            _applicationSettings.NoProxy?.Split(new char[] {',',';'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? new string[] { });
+                    }
+
                     using var stream = new MemoryStream(client.DownloadData(url));
                     System.Console.WriteLine("Downloaded");
                     using (StreamReader sr = new StreamReader(stream))

@@ -73,7 +73,7 @@ namespace DocIntel.Core.Scrapers
             var httpClientHandler = new HttpClientHandler();
             if (!string.IsNullOrEmpty(_settings.Proxy))
             {
-                httpClientHandler.Proxy = new WebProxy("http://" + _settings.Proxy + "/", true, new[] { _settings.NoProxy });
+                httpClientHandler.Proxy = new WebProxy(_settings.Proxy, true, _settings.NoProxy?.Split(new char[] {',',';'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? new string[] { });
             }
 
             HttpClient httpClient = new HttpClient(httpClientHandler);

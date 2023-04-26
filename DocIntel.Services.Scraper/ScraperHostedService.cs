@@ -50,7 +50,8 @@ namespace DocIntel.Services.Scraper
                 _logger.LogDebug("Browser Fetcher Initialized");
                 if (!string.IsNullOrEmpty(_settings.Proxy))
                 {
-                    browserFetcher.WebProxy = new WebProxy(_settings.Proxy);
+                    browserFetcher.WebProxy = new WebProxy(_settings.Proxy, true,
+                        _settings.NoProxy?.Split(new char[] {',',';'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? new string[] { });
                     _logger.LogDebug("Configuring proxy " + _settings.Proxy);
                 }
                 _logger.LogDebug("Browser Fetcher Proxy");

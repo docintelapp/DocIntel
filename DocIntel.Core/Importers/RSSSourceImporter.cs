@@ -75,7 +75,7 @@ namespace DocIntel.Core.Importers
                     if (!string.IsNullOrEmpty(_settings.Proxy))
                         httpWebRequest.Proxy =
                             // new WebProxy(_settings.Proxy, true);
-                            new WebProxy(_settings.Proxy, true, _settings.NoProxy.Split(new char[] {',',';'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
+                            new WebProxy(_settings.Proxy, true, _settings.NoProxy?.Split(new char[] {',',';'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? new string[] { });
 
                     SyndicationFeed feed = null;
                     try

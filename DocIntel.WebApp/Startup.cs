@@ -221,7 +221,6 @@ namespace DocIntel.WebApp
             StartupHelpers.RegisterServices(services);
             StartupHelpers.RegisterSolR(services, appSettings);
             StartupHelpers.RegisterSynapse(services, appSettings);
-            
             StartupHelpers.RegisterModules(services, appSettings);
             
             services.AddAutoMapper(cfg =>

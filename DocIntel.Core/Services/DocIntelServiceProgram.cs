@@ -161,6 +161,7 @@ namespace DocIntel.Core.Services
             StartupHelpers.RegisterIndexingServices(serviceCollection);
             StartupHelpers.RegisterSearchServices(serviceCollection);
             StartupHelpers.RegisterRepositories(serviceCollection);
+            
             StartupHelpers.RegisterSolR(serviceCollection, appSettings);
             StartupHelpers.RegisterSynapse(serviceCollection, appSettings);
             StartupHelpers.RegisterModules(serviceCollection, appSettings);

@@ -97,23 +97,33 @@ namespace DocIntel.Core.Helpers
             };
             
             if (!string.IsNullOrEmpty(applicationSettings.Proxy))
+            {
+                Console.WriteLine($"Will use proxy {applicationSettings.Proxy} for SolR.");
                 handler.Proxy = new WebProxy()
                 {
                     Address = new Uri(applicationSettings.Proxy ?? ""),
-                    BypassList = new[] { applicationSettings.NoProxy ?? ""}
+                    BypassList = applicationSettings.NoProxy?.Split(new char[] {',',';'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? new string[] { }
                 };
-            
+            }
+            else
+            {
+                Console.WriteLine($"Will not use proxy for SolR.");
+            }
+
             var client = new HttpClient(handler);
             
-            // TODO Move strings to configuration
             serviceCollection.AddSolrNet($"{settings.Uri}/solr", 
                 null, 
                 (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
             
-            serviceCollection.AddSolrNet<IndexedDocument>($"{settings.Uri}/solr/document", null, (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
-            serviceCollection.AddSolrNet<IndexedTag>($"{settings.Uri}/solr/tag", null, (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
-            serviceCollection.AddSolrNet<IndexedTagFacet>($"{settings.Uri}/solr/facet", null, (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
-            serviceCollection.AddSolrNet<IndexedSource>($"{settings.Uri}/solr/source", null, (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
+            serviceCollection.AddSolrNet<IndexedDocument>($"{settings.Uri}/solr/document", null, 
+                (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
+            serviceCollection.AddSolrNet<IndexedTag>($"{settings.Uri}/solr/tag", null, 
+                (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
+            serviceCollection.AddSolrNet<IndexedTagFacet>($"{settings.Uri}/solr/facet", null, 
+                (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
+            serviceCollection.AddSolrNet<IndexedSource>($"{settings.Uri}/solr/source", null, 
+                (url) => new AutoSolrConnection(url, client, new InsecureHttpWebRequestFactory()));
         }
 
         /// <summary>

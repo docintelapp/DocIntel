@@ -80,7 +80,10 @@ public class ImportDocumentCommand : DocIntelCommand<ImportDocumentCommand.Setti
             var handler = new HttpClientHandler();
             if (!string.IsNullOrEmpty(_applicationSettings.Proxy))
             {
-                handler.Proxy = new WebProxy(_applicationSettings.Proxy, true, _applicationSettings.NoProxy.Split(","));
+                handler.Proxy = new WebProxy(_applicationSettings.Proxy, 
+                    true,
+                    _applicationSettings.NoProxy?.Split(new char[] {',',';'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? new string[] { }
+                    );
             }
             var httpClient = new HttpClient(handler);
             
