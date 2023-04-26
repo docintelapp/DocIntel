@@ -95,7 +95,8 @@ namespace DocIntel.WebApp.Areas.API
                 {
                     _.PreCondition(_ => _.ClassificationId != null);
                     _.MapFrom(_ => _.ClassificationId);
-                });
+                })
+                .ForMember(_ => _.Status, _ => _.Ignore());
             
             CreateMap<DocumentFile, APIFileDetails>()
                 .MaxDepth(2);
