@@ -59,7 +59,11 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
             var submitted = await _documentRepository.GetAllAsync(ambientContext,
                 _ => _.Where(__ => __.Status == DocumentStatus.Submitted))
                 .OrderByDescending(__ => __.RegistrationDate).FirstAsync();
-            await _documentAnalyzerUtility.Analyze(submitted.DocumentId, ambientContext);
+            if (!await _documentAnalyzerUtility.Analyze(submitted.DocumentId, ambientContext))
+            {
+                _logger.LogError("Could not analyze document. Skipping forever.");
+                submitted.Status = DocumentStatus.Error;
+            }
         }
     }
 

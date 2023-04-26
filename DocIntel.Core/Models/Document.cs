@@ -108,7 +108,8 @@ namespace DocIntel.Core.Models
     {
         Submitted = 0,
         Analyzed = 1,
-        Registered = 2
+        Registered = 2,
+        Error = 3
     }
 
 }

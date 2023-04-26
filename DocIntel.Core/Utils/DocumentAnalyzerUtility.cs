@@ -52,7 +52,7 @@ public class DocumentAnalyzerUtility
         _facetRepository = facetRepository;
     }
 
-    public async Task Analyze(Guid documentId, AmbientContext ambientContext)
+    public async Task<bool> Analyze(Guid documentId, AmbientContext ambientContext)
     {   
         try
         {
@@ -216,6 +216,7 @@ public class DocumentAnalyzerUtility
             
             // TODO Use structured logging
             _logger.LogInformation($"Document {document.Reference} ({document.DocumentId}) successfully analyzed.");
+            return true;
         }
         catch (Exception e)
         {
@@ -223,6 +224,8 @@ public class DocumentAnalyzerUtility
             _logger.LogError(e.StackTrace);
             _logger.LogError(e.InnerException?.Message);
         }
+
+        return false;
     }
 
     private static DateTime ExtractDate(Dictionary<string, string> metadata)
