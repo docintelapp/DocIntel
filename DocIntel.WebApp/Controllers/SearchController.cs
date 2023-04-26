@@ -88,23 +88,27 @@ namespace DocIntel.WebApp.Controllers
             return View();
         }
 
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(string searchTerm = "")
         {
             var defaultUserSavedSearch = _savedSearchRepository.GetDefault(AmbientContext);
             if (defaultUserSavedSearch != null)
             {
                 var savedSearch = defaultUserSavedSearch.SavedSearch;
-                var parameters = BuildRouteValueDictionary(savedSearch);
+                var parameters = BuildRouteValueDictionary(savedSearch, searchTerm);
                 return RedirectToAction("Search", parameters);
             }
 
-            return RedirectToAction("Search");
+            return RedirectToAction("Search", new { searchTerm = searchTerm });
         }
 
-        private static RouteValueDictionary BuildRouteValueDictionary(SavedSearch savedSearch)
+        private static RouteValueDictionary BuildRouteValueDictionary(SavedSearch savedSearch, string searchTerm)
         {
             var parameters = new RouteValueDictionary();
-            parameters.Add("searchTerm", savedSearch.SearchTerm);
+            if (!string.IsNullOrEmpty(searchTerm))
+                parameters.Add("searchTerm", searchTerm);
+            else
+                parameters.Add("searchTerm", savedSearch.SearchTerm);
+            
             parameters.Add("sortCriteria", savedSearch.SortCriteria);
             parameters.Add("pageSize", savedSearch.PageSize);
 
@@ -337,7 +341,7 @@ namespace DocIntel.WebApp.Controllers
 
             await AmbientContext.DatabaseContext.SaveChangesAsync();
             
-            var parameters = BuildRouteValueDictionary(userSavedSearch.SavedSearch);
+            var parameters = BuildRouteValueDictionary(userSavedSearch.SavedSearch, searchTerm);
             return RedirectToAction("Search", parameters);
         }
     }
