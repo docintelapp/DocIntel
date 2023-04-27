@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synsharp.Telepath", "synsha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocIntel.Extensions", "DocIntel.Extensions\DocIntel.Extensions.csproj", "{72B62728-83C8-4B77-A5CE-0C2BEB8BDD50}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocIntel.Services.Cron", "DocIntel.Services.Cron\DocIntel.Services.Cron.csproj", "{2C7E3E1E-6772-4807-B7A1-C590B152E357}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,5 +117,9 @@ Global
 		{72B62728-83C8-4B77-A5CE-0C2BEB8BDD50}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72B62728-83C8-4B77-A5CE-0C2BEB8BDD50}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72B62728-83C8-4B77-A5CE-0C2BEB8BDD50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C7E3E1E-6772-4807-B7A1-C590B152E357}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C7E3E1E-6772-4807-B7A1-C590B152E357}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C7E3E1E-6772-4807-B7A1-C590B152E357}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C7E3E1E-6772-4807-B7A1-C590B152E357}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
