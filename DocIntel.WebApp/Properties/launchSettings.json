@@ -22,6 +22,15 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
             "applicationUrl": "http://localhost:5001/"
+        },
+        "DocIntelhttps": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "applicationUrl": "https://localhost:7033;http://localhost:5001",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
         }
     }
 }

@@ -56,6 +56,28 @@
                             </div>
                         </form>
                     </div>
+                    @{
+                        if ((Model.ExternalLogins?.Count ?? 0) != 0)
+                        {
+                            <div class="col-12" style="padding:2rem 3rem">
+                                <div class="mt-0 mb-2 pt-0 text-center">
+                                    <h3>Use another service to log in.</h3>
+                                </div>
+                                <form id="external-account" asp-action="LoginExternal" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
+                                    <div class="row no-gutter">
+                                        <div class="col-12">
+                                            <div class="align-items-center text-center mt-2">
+                                                @foreach (var provider in Model.ExternalLogins!)
+                                                {
+                                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                    }
                 </div>
                 
             </div>

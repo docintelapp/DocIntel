@@ -33,3 +33,24 @@ However, you would not be able to log in the platform. You need to create an acc
       user role --username admin --role administrator
   
 You can now login on http://localhost:5005.
+
+## OIDC Support
+
+Login via OIDC is supported, you have to create a client in your OIDC server and
+configure DocIntel like in the example configuration file found in [conf/appsettings.json.oidc.example](conf/appsettings.json.oidc.example)
+
+For OIDC to work when running the app behind a reverse proxy, all requests need to be https.
+This can be achieved by setting an env variable for the webapp service in docker-compose (see also conf/docker-compose.yml.example)
+which forwards the https scheme header so that generated URLs by DocIntel also contain the https scheme.
+
+```yaml
+   webapp:
+     image: "docintelapp/webapp"
+     container_name: docintel-dev-webapp
+     ports:
+       - 5005:80
+     environment:
+       - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+```
+
+More information can be found [here](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-7.0#forward-the-scheme-for-linux-and-non-iis-reverse-proxies)

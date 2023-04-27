@@ -19,6 +19,10 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Threading;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
@@ -39,6 +43,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 using SixLabors.ImageSharp;
@@ -113,9 +118,12 @@ namespace DocIntel.WebApp.Controllers
         {
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync();
+            var externalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            
             ViewData["ReturnUrl"] = returnUrl;
             return View(new SigninViewModel
             {
+                ExternalLogins = externalLogins,
                 RememberMe = true
             });
         }
@@ -149,6 +157,7 @@ namespace DocIntel.WebApp.Controllers
                 LogEvent.Formatter);
 
             ViewData["ReturnUrl"] = returnUrl;
+            model.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (ModelState.IsValid)
                 try
@@ -1200,6 +1209,180 @@ namespace DocIntel.WebApp.Controllers
             
             ModelState.AddModelError(nameof(model.Code), "Your code appears to be invalid.");
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        public async Task<IActionResult> LoginExternal(string provider, string returnUrl = null)
+        {
+            // Request a redirect to the external login provider.
+            var redirectUrl = Url.Action("ExternalLogin", "Account", new { ReturnUrl = returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return new ChallengeResult(provider, properties);
+        }
+                
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLogin(string returnUrl = null, string remoteError = null)
+        {
+            returnUrl = returnUrl ?? Url.Content("~/");
+            
+            if (remoteError != null)
+            {
+                TempData["ErrorMessage"] = $"Error from external provider: {remoteError}";
+                return RedirectToLocal(returnUrl);
+            }
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                TempData["ErrorMessage"] = "Error loading external login information.";
+                return RedirectToLocal(returnUrl);
+            }
+
+            // Sign in the user with this external login provider if the user already has a login.
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            if (result.Succeeded)
+            {
+                var username = info.Principal.Identity.Name;
+                if (info.Principal.HasClaim(c => c.Type == "preferred_username"))
+                {
+                    username = info.Principal.FindFirstValue("preferred_username");
+                }
+                var currentUser = await _userManager.FindByNameAsync(username);
+                if (currentUser != null)
+                {
+                    currentUser.LastLogin = DateTime.UtcNow;
+                    await _userManager.UpdateAsync(currentUser);
+                }
+                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", username, info.LoginProvider);
+                
+                return RedirectToLocal(returnUrl);
+            }
+            // if (result.IsLockedOut)
+            // {
+            //     return RedirectToPage("./Lockout");
+            // }
+            else
+            {
+                // If the user does not have an account, then ask the user to create an account.
+                ViewData["ReturnUrl"] = returnUrl;
+                var externalLoginViewModel = new ExternalLoginViewModel {
+                    ProviderDisplayName = info.ProviderDisplayName,
+                };
+                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+                {
+                    externalLoginViewModel.Email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                }
+                if (info.Principal.HasClaim(c => c.Type == "preferred_username"))
+                {
+                    externalLoginViewModel.UserName = info.Principal.FindFirstValue("preferred_username");
+                }
+                return View(externalLoginViewModel);
+            }
+        }
+        
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginViewModel model, string returnUrl = null)
+        {
+            returnUrl = returnUrl ?? Url.Content("/");
+            // Get the information about the user from the external login provider
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                TempData["ErrorMessage"] = "Error loading external login information during confirmation.";
+                return RedirectToLocal(returnUrl);
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var user = new AppUser {
+                        RegistrationDate = DateTime.UtcNow,
+                        Email = model.Email
+                    };
+                    if (info.Principal.HasClaim(c => c.Type == ClaimTypes.GivenName))
+                    {
+                        user.FirstName = info.Principal.FindFirstValue(ClaimTypes.GivenName);
+                    }
+                    if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Surname))
+                    {
+                        user.LastName = info.Principal.FindFirstValue(ClaimTypes.Surname);
+                    }
+
+                    // set username to supplied value if present, otherwise use email as username
+                    user.UserName = info.Principal.HasClaim(c => c.Type == "preferred_username")
+                        ? info.Principal.FindFirstValue("preferred_username")
+                        : model.Email;
+
+                    var result = await _userManager.CreateAsync(user);
+                    if (result.Succeeded)
+                    {
+                        result = await _userManager.AddLoginAsync(user, info);
+                        if (result.Succeeded)
+                        {
+                            _logger.Log(LogLevel.Information,
+                                EventIDs.RegistrationSuccessful,
+                                new LogEvent($"User '{user.UserName}' created an account using '{info.LoginProvider}' provider.")
+                                    .AddUser(user)
+                                    .AddHttpContext(_accessor.HttpContext),
+                                null,
+                                LogEvent.Formatter);
+
+                            if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                            {
+                                var userId = await _userManager.GetUserIdAsync(user);
+                                var tokenConfirmation = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                                var callbackConfirmationUrl = Url.Action(
+                                    "ConfirmEmail", "Account", 
+                                    new { userId = userId, code = tokenConfirmation }, 
+                                    protocol: Request.Scheme);
+                                await _emailSender.SendEmailConfirmation(user, callbackConfirmationUrl);
+                                
+                                return View("EmailConfirmation");
+                            }
+                            await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                            return LocalRedirect(returnUrl);
+                        }
+                    }
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                        
+                    _logger.Log(LogLevel.Warning,
+                        EventIDs.RegistrationFailed,
+                        new LogEvent($"Registration failed for user '{model.Email}'.")
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+                }
+                catch (Exception e)
+                {
+                    _logger.Log(LogLevel.Error,
+                        EventIDs.RegistrationError,
+                        new LogEvent(
+                                $"An error occured while registering user '{model.Email}' (Exception: {e.Message}).")
+                            .AddException(e)
+                            .AddProperty("user.email", model.Email)
+                            .AddHttpContext(_accessor.HttpContext)
+                            .AddException(e),
+                        e,
+                        LogEvent.Formatter);
+
+                    TempData["ErrorMessage"] = "Something bad happened while creating your account...";
+                    model.ProviderDisplayName = info.ProviderDisplayName;
+
+                    return View(model);
+                }
+            }
+
+            var externalLoginViewModel = new ExternalLoginViewModel {
+                ProviderDisplayName = info.ProviderDisplayName,
+            };
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(externalLoginViewModel);
         }
     }
 }
