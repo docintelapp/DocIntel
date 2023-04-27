@@ -18,6 +18,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DocIntel.Core.Exceptions;
@@ -57,7 +58,7 @@ namespace DocIntel.Core.Scrapers
 
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
-            var scraperSettings = _scraper.Settings.ToObject<MailboxSettings>();
+            var scraperSettings = _scraper.Settings.Deserialize<MailboxSettings>();
             
             Init();
             var context = await GetContextAsync();
@@ -86,7 +87,7 @@ namespace DocIntel.Core.Scrapers
         private async Task ImportEmail(AmbientContext context, string uid, SubmittedDocument submittedDocument,
             Source source)
         {
-            var scraperSettings = _scraper.Settings.ToObject<MailboxSettings>();
+            var scraperSettings = _scraper.Settings.Deserialize<MailboxSettings>();
             
             if (!string.IsNullOrEmpty(scraperSettings.Host) && !string.IsNullOrEmpty(scraperSettings.Username))
                 using (var client = new ImapClient())

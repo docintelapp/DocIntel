@@ -31,7 +31,6 @@ using DocIntel.Core.Scrapers;
 using DocIntel.WebApp.Areas.API.Models;
 using DocIntel.WebApp.Helpers;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 

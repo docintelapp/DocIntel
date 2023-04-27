@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Nodes;
 using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Models;
@@ -12,7 +13,7 @@ public class Scraper {
     public bool Enabled { get; set; }
 
     [Column(TypeName = "jsonb")]
-    public JObject Settings { get; set; }
+    public JsonObject Settings { get; set; }
 
     public Guid ReferenceClass { get; set; }
 

@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 using DocIntel.Core.Models;
@@ -74,7 +75,7 @@ namespace DocIntel.Services.Scraper
 
         public override async Task<bool> Scrape(SubmittedDocument message)
         {
-            var scraperSettings = _scraper.Settings.ToObject<ReadabilitySettings>();
+            var scraperSettings = _scraper.Settings.Deserialize<ReadabilitySettings>();
             Init();
             
             _engine = new CustomRazorLightEngineBuilder()

@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using Newtonsoft.Json.Linq;
 
 namespace DocIntel.WebApp.Areas.API.Models
@@ -26,7 +27,7 @@ namespace DocIntel.WebApp.Areas.API.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public bool Enabled { get; set; }
-        public JObject Settings { get; set; }
+        public JsonObject Settings { get; set; }
         public Guid ReferenceClass { get; set; }
         public bool OverrideSource { get; set; }
         public Guid? SourceId { get; set; }
