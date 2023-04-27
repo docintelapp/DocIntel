@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="PuppeteerSharp" Version="8.0.0" />
+    <PackageReference Include="PuppeteerSharp" Version="9.1.0" />
   </ItemGroup>
   
   <ItemGroup>

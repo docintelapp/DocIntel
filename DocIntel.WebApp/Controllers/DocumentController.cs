@@ -388,7 +388,7 @@ namespace DocIntel.WebApp.Controllers
 
         private async Task SetupViewBag(AppUser currentUser, Document document)
         {
-            ViewBag.ReviewObservables = await _synapseRepository.GetObservables(document, true).Any();
+            ViewBag.ReviewObservables = await _synapseRepository.GetObservables(document, true).AnyAsync();
             
             ViewBag.AllClassifications = AmbientContext.DatabaseContext.Classifications.ToList();
             var allGroups = await _groupRepository.GetAllAsync(AmbientContext).ToListAsync();
@@ -857,11 +857,11 @@ namespace DocIntel.WebApp.Controllers
                     var tag = new DocumentTag()
                     {
                         DocumentId = document.DocumentId,
-                        Tag = _tagRepository.GetAllAsync(AmbientContext, new TagQuery()
+                        Tag = (_tagRepository.GetAllAsync(AmbientContext, new TagQuery()
                         {
                             FacetPrefix = prefix,
                             Label = label
-                        }).FirstOrDefault()?.Result ?? new Tag()
+                        }).FirstOrDefaultAsync().Result) ?? new Tag()
                         {
                             Label = label,
                             Facet = new TagFacet()

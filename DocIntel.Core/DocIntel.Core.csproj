@@ -18,45 +18,45 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotLiquid" Version="2.2.656" />
-    <PackageReference Include="IPNetwork2" Version="2.6.508" />
-    <PackageReference Include="JsonSchema.Net.Generation" Version="3.0.3" />
-    <PackageReference Include="MailKit" Version="3.4.2" />
-    <PackageReference Include="Markdig" Version="0.30.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="7.0.0" />
+    <PackageReference Include="DotLiquid" Version="2.2.692" />
+    <PackageReference Include="IPNetwork2" Version="2.6.560" />
+    <PackageReference Include="JsonSchema.Net.Generation" Version="3.1.0" />
+    <PackageReference Include="MailKit" Version="4.0.0" />
+    <PackageReference Include="Markdig" Version="0.31.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="7.0.5" />
      <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="7.0.0" />
 
-    <PackageReference Include="MimeKit" Version="3.4.2" />
+    <PackageReference Include="MimeKit" Version="4.0.0" />
 
     <PackageReference Include="Net.RunMethodsSequentially" Version="2.0.0" />
 
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.15-beta2" />
-    <PackageReference Include="Npgsql.Json.NET" Version="7.0.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
-    <PackageReference Include="Spectre.Console" Version="0.45.1-preview.0.41" />
-    <PackageReference Include="Spectre.Console.Cli" Version="0.45.1-preview.0.41" />
+    <PackageReference Include="Npgsql.Json.NET" Version="7.0.4" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+    <PackageReference Include="Spectre.Console" Version="0.46.1-preview.0.20" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.46.1-preview.0.20" />
     <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
-    <PackageReference Include="AutoMapper" Version="12.0.0" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />    
-    <PackageReference Include="HtmlSanitizer" Version="8.0.601" />    
-    <PackageReference Include="MassTransit" Version="8.0.8" />
-    <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.8" />
-    <PackageReference Include="NLog" Version="5.0.5" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="5.1.5" />
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />    
+    <PackageReference Include="HtmlSanitizer" Version="8.0.645" />    
+    <PackageReference Include="MassTransit" Version="8.0.15" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.15" />
+    <PackageReference Include="NLog" Version="5.1.3" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.3" />
     <PackageReference Include="Novell.Directory.Ldap.NETStandard2_0" Version="3.1.0" />
-    <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.0">
+    <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>  
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" /> 
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />      
     <PackageReference Include="System.ServiceModel.Syndication" Version="7.0.0" />  
-    <PackageReference Include="RazorLight" Version="2.3.0" />
+    <PackageReference Include="RazorLight" Version="2.3.1" />
   </ItemGroup>
 
   <ItemGroup>
