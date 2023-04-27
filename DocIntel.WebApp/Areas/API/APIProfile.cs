@@ -108,6 +108,11 @@ namespace DocIntel.WebApp.Areas.API
                     _.PreCondition(_ => _.ClassificationId != null);
                     _.MapFrom(_ => _.ClassificationId);
                 })
+                .ForMember(_ => _.MetaData, _ =>
+                {
+                    _.PreCondition(_ => _.MetaData != null);
+                    _.MapFrom(_ => _.MetaData);
+                })
                 .ForMember(_ => _.Status, _ => _.Ignore());
             
             CreateMap<DocumentFile, APIFileDetails>()

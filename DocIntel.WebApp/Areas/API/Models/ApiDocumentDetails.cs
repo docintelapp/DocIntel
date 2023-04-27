@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using DocIntel.Core.Models;
 using Newtonsoft.Json;
@@ -84,6 +85,8 @@ namespace DocIntel.WebApp.Areas.API.Models
         /// <example>ad153066-0c0a-4ecc-914b-e5876c8d3787</example>
         [JsonPropertyName("classification_id")]
         public Guid? ClassificationId { get; set; }
+        
+        public Dictionary<string, JsonObject> MetaData { get; set; }
     }
     
     public class ApiDocumentDetails : ApiDocument
