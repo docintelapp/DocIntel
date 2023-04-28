@@ -1,4 +1,5 @@
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using DocIntel.Core.Utils.Search.Documents
 @model Document
 
 <div class="d-flex flex-row">
@@ -32,7 +33,25 @@
                     </span>
                     <span class="mr-1">-</span>
                 }
-                @Html.Timeago(Model.DocumentDate)
+                @if (ViewData.ContainsKey("sortCriteria"))
+                {
+                    var sortCriteria = ViewData["sortCriteria"] as SortCriteria? ?? SortCriteria.Relevance;
+                    if (sortCriteria == SortCriteria.Relevance | sortCriteria == SortCriteria.DocumentDate)
+                    {
+                        @Html.Timeago(Model.DocumentDate)
+                    } else if (sortCriteria == SortCriteria.ModificationDate)
+                    {
+                    <text>Modified @Html.Timeago(Model.ModificationDate)</text>
+                    }
+                    else if (sortCriteria == SortCriteria.RegistrationDate)
+                    {
+                    <text>Registered @Html.Timeago(Model.RegistrationDate)</text>
+                    }
+                }
+                else
+                {
+                    <text>@Html.Timeago(Model.DocumentDate)</text>
+                }
             </p>
             @if (!string.IsNullOrEmpty(Model.ShortDescription))
             {
