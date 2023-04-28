@@ -46,10 +46,10 @@ public class ModuleFactory
         {
             RegisterExporters(module);
             RegisterCollectors(module);
-            // Console.WriteLine($"Done for module '{module.Name}'");
+            Console.WriteLine($"Done for module '{module.Name}'");
         }
 
-        // Console.WriteLine("Done registering modules");
+        Console.WriteLine("Done registering modules");
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -109,7 +109,7 @@ public class ModuleFactory
             var configuration = _modules[moduleName];
             if (!configuration.Profiles?.Any() ?? true)
             {
-                // Console.WriteLine($"No profile found in configuration of {configuration.Name}");
+                Console.WriteLine($"No profile found in configuration of {configuration.Name}");
             }
             else
             {
@@ -117,14 +117,14 @@ public class ModuleFactory
                     .Select(_ => _assemblies[configuration.Name].GetType(_))
                     .Where(_ => _ != null);
 
-                // Console.WriteLine($"Installing profiles for module '{configuration.Name}'");
+                Console.WriteLine($"Installing profiles for module '{configuration.Name}'");
 
                 foreach (var profile in profiles)
                 {
                     var instance = (Profile)ActivatorUtilities.CreateInstance(serviceProvider, profile);
-                    // Console.WriteLine(instance.ProfileName);
+                    Console.WriteLine(instance.ProfileName);
                     mapperConfigurationExpression.AddProfile(instance);
-                    // Console.WriteLine($"Added profile '{profile.FullName}' to the AutoMapper configuration");
+                    Console.WriteLine($"Added profile '{profile.FullName}' to the AutoMapper configuration");
                 }
             }
         }

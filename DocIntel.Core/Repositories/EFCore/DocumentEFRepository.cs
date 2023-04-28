@@ -421,8 +421,8 @@ namespace DocIntel.Core.Repositories.EFCore
             enumerable = enumerable.Include(_ => _.Files).ThenInclude(_ => _.EyesOnly);
             enumerable = enumerable.Include(_ => _.Files).ThenInclude(_ => _.ReleasableTo);
 
-            var document = enumerable.AsSingleQuery().SingleOrDefault(_ => _.DocumentId == id);
-
+            var document = enumerable.AsSingleQuery().Where(_ => _.DocumentId == id).SingleOrDefault();
+            
             if (document == null)
                 throw new NotFoundEntityException();
 

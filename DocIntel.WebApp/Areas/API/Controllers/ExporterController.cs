@@ -25,6 +25,7 @@ using DocIntel.Core.Modules;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace DocIntel.WebApp.Areas.API.Controllers;
@@ -38,19 +39,21 @@ public class ExporterController : DocIntelAPIControllerBase
     private readonly ModuleFactory _moduleFactory;
     private readonly IModelMetadataProvider _modelMetadataProvider;
     private readonly IModelBinderFactory _modelBinderFactory;
-
+    private readonly IServiceProvider _serviceProvider;
+    
     public ExporterController(AppUserManager userManager,
         DocIntelContext context,
         ILogger<ExporterController> logger,
         ModuleFactory moduleFactory,
         IModelMetadataProvider modelMetadataProvider,
-        IModelBinderFactory modelBinderFactory)
+        IModelBinderFactory modelBinderFactory, IServiceProvider serviceProvider)
         : base(userManager, context)
     {
         _logger = logger;
         _moduleFactory = moduleFactory;
         _modelMetadataProvider = modelMetadataProvider;
         _modelBinderFactory = modelBinderFactory;
+        _serviceProvider = serviceProvider;
     }
 
     [HttpGet("{module}/{exporter}/Document")]
@@ -118,8 +121,9 @@ public class ExporterController : DocIntelAPIControllerBase
                 var methodInfo = instance.GetType().GetMethod("ExportDocumentAsync");
                 if (methodInfo != null)
                 {
-                    var result = (Task<IActionResult>) methodInfo.Invoke(instance, new object[] { AmbientContext, id, exporterParameters });
-                    if (result != null) return await result;
+                    var result = methodInfo.Invoke(instance, new object[] { AmbientContext, id, exporterParameters });
+                    
+                    if (result != null) return await (Task<ActionResult>) result;
                     else _logger.LogError($"Could not invoke ExportDocumentAsync for exporter '{exporter}' in module '{module}'.");
                 }
                 else
@@ -139,7 +143,7 @@ public class ExporterController : DocIntelAPIControllerBase
             return Unauthorized();
         }
     }
-
+    
     /// <summary>
     /// Create a new instance of the specified type and bind its values to the request. It uses the same model
     /// binding methods as the standard model binding for ASP.NET Core MVC.
