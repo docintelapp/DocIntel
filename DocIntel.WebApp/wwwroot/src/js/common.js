@@ -8,6 +8,11 @@ import { JSONEditor } from '@json-editor/json-editor/dist/jsoneditor.js'
 
 
 $(document).ready(function() {
+
+    $('select.auto-submit').change(function() {
+        $(this).closest('form').submit();
+    });
+    
     console.log("🦛 Installing summernote...");
     $('.summernote').each(function () {
         $(this).summernote({
