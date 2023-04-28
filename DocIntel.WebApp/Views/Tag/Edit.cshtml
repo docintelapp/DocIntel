@@ -91,6 +91,13 @@
                         </div>
                         <div class="form-group">
                             <label asp-for="ExtractionKeywords" class="control-label"></label>
+                            @if (!Model.Facet.AutoExtract)
+                            {
+                                <div class="alert border-danger bg-transparent text-danger fs-sm p-2 my-1 mb-2" role="alert">
+                                    <a asp-action="Edit" asp-controller="TagFacet" asp-route-id="@Model.FacetId">The facet is not configured for automated extraction</a>.
+                                    The keywords you might specify below will thereby not be extracted.
+                                </div>
+                            }
                             <input asp-for="ExtractionKeywords" class="form-control"/>
                             <span asp-validation-for="ExtractionKeywords" class="text-danger"></span>
                             <small class="form-text text-muted">
