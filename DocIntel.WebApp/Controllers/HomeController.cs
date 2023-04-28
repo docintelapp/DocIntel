@@ -60,8 +60,8 @@ namespace DocIntel.WebApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var documents = (await GetFromSubscribedTags(AmbientContext, AmbientContext.CurrentUser, DateTime.UtcNow))
-                .Union(await GetFromSubscribedSources(AmbientContext, AmbientContext.CurrentUser, DateTime.UtcNow))
+            var documents = (await GetFromSubscribedTags(AmbientContext))
+                .Union(await GetFromSubscribedSources(AmbientContext))
                 .Distinct()
                 .OrderBy(_ => _.RegistrationDate)
                 .Take(15);
@@ -101,43 +101,65 @@ namespace DocIntel.WebApp.Controllers
             return View(viewModel);
         }
         
-        private async Task<IEnumerable<Document>> GetFromSubscribedTags(AmbientContext ambientContext,
-            AppUser user,
-            DateTime date)
+        private async Task<IEnumerable<Document>> GetFromSubscribedTags(AmbientContext ambientContext)
         {
-            var tagSubscriptions = await _tagRepository.GetSubscriptionsAsync(ambientContext, user, 0, -1).ToListAsync();
-            
-            DocumentQuery query = new DocumentQuery
-            {
-                TagIds = tagSubscriptions.Select(_ => _.tag.TagId).ToArray(),
-                Page = 0,
-                Limit = 15,
-                ExcludeMuted = true,
-                OrderBy = SortCriteria.RegistrationDate
-            };
+            var tagSubscriptions = await _tagRepository.GetSubscriptionsAsync(ambientContext, ambientContext.CurrentUser, 0, -1).ToListAsync();
 
-            return await _documentRepository.GetAllAsync(ambientContext, query, new []{ "DocumentTags", "DocumentTags.Tag", "DocumentTags.Tag.Facet", "Source" }).ToListAsync();
+            if (tagSubscriptions.Any())
+            {
+                var query = new DocumentQuery
+                {
+                    TagIds = tagSubscriptions.Select(_ => _.tag.TagId).ToArray(),
+                    Page = 0,
+                    Limit = 15,
+                    ExcludeMuted = true,
+                    OrderBy = SortCriteria.RegistrationDate
+                };
+
+                return await _documentRepository.GetAllAsync(ambientContext,
+                        query,
+                        new[]
+                        {
+                            "DocumentTags",
+                            "DocumentTags.Tag",
+                            "DocumentTags.Tag.Facet",
+                            "Source"
+                        })
+                    .ToListAsync();
+            }
+
+            return new Document[] { };
         }
         
         
-        private async Task<IEnumerable<Document>> GetFromSubscribedSources(AmbientContext ambientContext,
-            AppUser user,
-            DateTime date)
+        private async Task<IEnumerable<Document>> GetFromSubscribedSources(AmbientContext ambientContext)
         {
             var documentSubscriptions =
-                _sourceRepository.GetSubscriptionsAsync(ambientContext, user, 0, -1).ToEnumerable();
-        
-            DocumentQuery query = new DocumentQuery
+                _sourceRepository.GetSubscriptionsAsync(ambientContext, ambientContext.CurrentUser, 0, -1).ToEnumerable();
+            if (documentSubscriptions.Any())
             {
-                SourceIds = documentSubscriptions.Select(_ => _.source.SourceId).ToArray(),
-                Page = 0,
-                Limit = 15,
-                ExcludeMuted = true,
-                OrderBy = SortCriteria.RegistrationDate
-            };
+                DocumentQuery query = new DocumentQuery
+                {
+                    SourceIds = documentSubscriptions.Select(_ => _.source.SourceId).ToArray(),
+                    Page = 0,
+                    Limit = 15,
+                    ExcludeMuted = true,
+                    OrderBy = SortCriteria.RegistrationDate
+                };
 
-            return await _documentRepository.GetAllAsync(ambientContext, query, new []{ "DocumentTags", "DocumentTags.Tag", "DocumentTags.Tag.Facet", "Source" }).ToListAsync();
-        
+                return await _documentRepository.GetAllAsync(ambientContext,
+                        query,
+                        new[]
+                        {
+                            "DocumentTags",
+                            "DocumentTags.Tag",
+                            "DocumentTags.Tag.Facet",
+                            "Source"
+                        })
+                    .ToListAsync();
+            }
+
+            return new Document[] { };
         }
     }
 }
