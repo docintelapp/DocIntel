@@ -53,7 +53,7 @@ namespace DocIntel.Core.Importers
             _logger.LogDebug(
                 $"Pulling {GetType().FullName} from {lastPull?.ToString() ?? "(not date)"} but max {limit} documents.");
 
-            var importSettings = _importer.Settings.ToObject<RssSettings>();
+            var importSettings = _importer.Settings.Deserialize<RssSettings>();
 
             var context = await GetContextAsync();
             var sources = await _sourceRepository

@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
@@ -38,9 +40,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace DocIntel.WebApp.Controllers
 {
@@ -458,7 +457,7 @@ namespace DocIntel.WebApp.Controllers
             ViewBag.HasSettings = instance.HasSettings;
             ViewBag.View = instance.GetSettingsView();
             ViewBag.Schema = instance.GetSettingsSchema();
-            ViewBag.Settings = incomingFeed.Settings?.ToObject(instance.GetSettingsType());
+            ViewBag.Settings = incomingFeed.Settings?.Deserialize(instance.GetSettingsType());
 
             await InitializeViewBag(currentUser);
         }
@@ -709,13 +708,13 @@ namespace DocIntel.WebApp.Controllers
                 if (!instance.HasSettings)
                     return RedirectToAction((nameof(Details)), new { id });
                 
-                var json = JObject.Parse("{}");
+                var json = JsonObject.Parse("{}");
                 if (settings != null)
                     try
                     {
-                        json = JObject.Parse(settings);
+                        json = JsonObject.Parse(settings);
                     }
-                    catch (JsonReaderException e)
+                    catch (Exception e)
                     {
                         ModelState.AddModelError("Settings", "The provided JSON is invalid.");
                         _logger.Log(LogLevel.Error, EventIDs.EditIncomingFeedError,
@@ -732,7 +731,7 @@ namespace DocIntel.WebApp.Controllers
                 {
                     if (ModelState.IsValid)
                     {
-                        incomingFeed.Settings = json;
+                        incomingFeed.Settings = json.AsObject();
 
                         await _incomingFeedRepository.UpdateAsync(
                             AmbientContext,

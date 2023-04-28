@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Nodes;
 using Newtonsoft.Json.Linq;
 
 namespace DocIntel.Core.Models
@@ -62,8 +63,8 @@ namespace DocIntel.Core.Models
         ///     The specific settings for the plugin.
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public JObject Settings { get; set; }
-
+        public JsonObject? Settings { get; set; }
+        
         public Guid ReferenceClass { get; set; }
 
         [DefaultValue(10)]

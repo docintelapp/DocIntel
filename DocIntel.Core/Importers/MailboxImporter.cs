@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using DocIntel.Core.Models;
 using MailKit;
@@ -35,6 +36,8 @@ namespace DocIntel.Core.Importers
         private readonly Importer _importer;
         private readonly ILogger<MailboxImporter> _logger;
 
+        public override bool HasSettings => true;
+
         public MailboxImporter(IServiceProvider serviceProvider, Importer importer) : base(serviceProvider)
         {
             _importer = importer;
@@ -46,7 +49,7 @@ namespace DocIntel.Core.Importers
             _logger.LogDebug(
                 $"Pulling {GetType().FullName} from {lastPull?.ToString() ?? "(not date)"} but max {limit} documents.");
             
-            var importSettings = _importer.Settings.ToObject<MailboxSettings>();
+            var importSettings = _importer.Settings.Deserialize<MailboxSettings>();
             
             if (!string.IsNullOrEmpty(importSettings.Host) && !string.IsNullOrEmpty(importSettings.Username))
             {

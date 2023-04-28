@@ -43,10 +43,10 @@
             <input asp-for="Settings" type="hidden"/>
 
             @{
-                var schema = JsonSerializer.Serialize((JsonSchema)ViewBag.Schema);
-            }
-            <div class="editorJSON" data-schema="@(Convert.ToBase64String(Encoding.UTF8.GetBytes(schema)))"
-                 data-startval="@(Model.Settings != null ? Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Model.Settings))) : "")"></div>
+                            var schema = JsonSerializer.Serialize((JsonSchema)ViewBag.Schema);
+                        }
+                        <div class="editorJSON" data-schema="@(Convert.ToBase64String(Encoding.UTF8.GetBytes(schema)))"
+                             data-startval="@(Model.Settings != null ? Convert.ToBase64String(Encoding.UTF8.GetBytes(Model.Settings.ToString())) : "")"></div>
 
             <button type="submit" id="save-btn" class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified">
                 <i class="fal fa-save"></i> Save
