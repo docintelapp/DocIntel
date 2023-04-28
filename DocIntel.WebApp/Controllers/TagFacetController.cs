@@ -83,7 +83,7 @@ namespace DocIntel.WebApp.Controllers
                 return Unauthorized();
             }
             ViewBag.ModuleMetadata = _moduleFactory.GetMetadata(typeof(TagFacet));
-            return View();
+            return View(new TagFacet());
         }
 
         [HttpPost]

@@ -93,7 +93,11 @@ namespace DocIntel.WebApp.Helpers
             return JsonEditor<TModel>(html, tMetaData, schema, key, metadata);
         }
 
-        public static IHtmlContent JsonEditor<TModel>(this IHtmlHelper<TModel> html, Type tMetaData, string schema, string key, Dictionary<string,JsonObject> metadata)
+        public static IHtmlContent JsonEditor<TModel>(this IHtmlHelper<TModel> html,
+            Type tMetaData,
+            string schema,
+            string key,
+            Dictionary<string, JsonObject> metadata)
         {
             var b64Schema = Convert.ToBase64String(Encoding.UTF8.GetBytes(schema));
             

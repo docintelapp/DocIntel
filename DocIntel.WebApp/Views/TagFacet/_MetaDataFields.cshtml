@@ -4,8 +4,11 @@
 @using DocIntel.Core.Modules
 @model TagFacet
 
-@foreach (var metadata in (IEnumerable<ModuleModelMetadata>) ViewBag.ModuleMetadata)
-{
-    <h3>@metadata.Title</h3>    
-    @(Html.JsonEditor(metadata.Name, Model.MetaData, metadata.Type))
+@if (ViewBag.ModuleMetadata != null) {
+    var moduleModelMetadatas = (IEnumerable<ModuleModelMetadata>) ViewBag.ModuleMetadata;
+    foreach (var metadata in moduleModelMetadatas)
+    {
+        <h3>@metadata.Title</h3>    
+        @(Html.JsonEditor(metadata.Name, Model?.MetaData, metadata.Type))
+    }
 }
