@@ -40,6 +40,7 @@ using DocIntel.WebApp.ViewModels.DocumentViewModel;
 using MassTransit;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -70,6 +71,7 @@ namespace DocIntel.WebApp.Controllers
         private readonly ITagRepository _tagRepository;
         public readonly IClassificationRepository _classificationRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public DocumentController(
             DocIntelContext context,
@@ -88,7 +90,7 @@ namespace DocIntel.WebApp.Controllers
             ApplicationSettings appSettings,
             IClassificationRepository classificationRepository,
             IUserRepository userRepository,
-            ISynapseRepository synapseRepository, TagUtility tagUtility)
+            ISynapseRepository synapseRepository, TagUtility tagUtility, IWebHostEnvironment webHostEnvironment)
             : base(context,
                 userManager,
                 configuration,
@@ -109,6 +111,7 @@ namespace DocIntel.WebApp.Controllers
             _userRepository = userRepository;
             _synapseRepository = synapseRepository;
             _tagUtility = tagUtility;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet("Document")]
@@ -306,9 +309,20 @@ namespace DocIntel.WebApp.Controllers
         public async Task<IActionResult> Thumbnail(Guid id)
         {
             var currentUser = await GetCurrentUser();
+            string rootPath = _appSettings.StaticFiles;
+            if (string.IsNullOrEmpty(rootPath))
+            {
+                rootPath = _webHostEnvironment.WebRootPath;
+            }
+            else if (!rootPath.StartsWith("/"))
+            {
+                rootPath = Path.Combine(_webHostEnvironment.ContentRootPath, rootPath);
+            }
+
+            var placeHolderImage = Path.Combine(rootPath, "images", "thumbnail-placeholder.png");
+            
             try
             {
-                var placeHolderImage = Path.Combine(_appSettings.StaticFiles, "images", "thumbnail-placeholder.png");
                 var document = await _documentRepository.GetAsync(AmbientContext, new DocumentQuery {DocumentId = id},
                     new[] {"Files"});
 

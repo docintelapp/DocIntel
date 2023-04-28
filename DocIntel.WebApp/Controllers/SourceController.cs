@@ -38,6 +38,7 @@ using DocIntel.WebApp.ViewModels.SourceViewModel;
 using Ganss.Xss;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -62,6 +63,7 @@ namespace DocIntel.WebApp.Controllers
         private readonly HtmlSanitizer _sanitizer;
         private readonly ApplicationSettings _appSettings;
         private readonly ModuleFactory _moduleFactory;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         
         public SourceController(IAppAuthorizationService appAuthorizationService,
             DocIntelContext context,
@@ -74,7 +76,7 @@ namespace DocIntel.WebApp.Controllers
             ISourceSearchService sourceSearchEngine,
             ISourceRepository sourceRepository,
             IDocumentRepository documentRepository,
-            IHttpContextAccessor accessor, ApplicationSettings appSettings, ModuleFactory moduleFactory)
+            IHttpContextAccessor accessor, ApplicationSettings appSettings, ModuleFactory moduleFactory, IWebHostEnvironment webHostEnvironment)
             : base(context,
                 userManager,
                 configuration,
@@ -88,6 +90,7 @@ namespace DocIntel.WebApp.Controllers
             _accessor = accessor;
             _appSettings = appSettings;
             _moduleFactory = moduleFactory;
+            this._webHostEnvironment = webHostEnvironment;
 
             _sanitizer = new HtmlSanitizer();
             _sanitizer.AllowedSchemes.Add("data");
@@ -686,10 +689,20 @@ namespace DocIntel.WebApp.Controllers
 
         public async Task<IActionResult> LogoAsync(Guid id)
         {
+            string rootPath = _appSettings.StaticFiles;
+            if (string.IsNullOrEmpty(rootPath))
+            {
+                rootPath = _webHostEnvironment.WebRootPath;
+            }
+            else if (!rootPath.StartsWith("/"))
+            {
+                rootPath = Path.Combine(_webHostEnvironment.ContentRootPath, rootPath);
+            }
+
+            var placeHolderImage = Path.Combine(rootPath, "images", "thumbnail-placeholder.png");
             var currentUser = await GetCurrentUser();
             try
             {
-                var placeHolderImage = Path.Combine(_appSettings.StaticFiles, "images", "thumbnail-placeholder.png");
                 var source = await _sourceRepository.GetAsync(AmbientContext, id);
                 if (!string.IsNullOrEmpty(source.LogoFilename))
                 {
@@ -729,8 +742,7 @@ namespace DocIntel.WebApp.Controllers
                     null,
                     LogEvent.Formatter);
 
-                return PhysicalFile(Path.Combine(Directory.GetCurrentDirectory(),
-                    "wwwroot/images/thumbnail-placeholder.png"), "image/png");
+                return PhysicalFile(placeHolderImage, "image/png");
             }
         }
 
