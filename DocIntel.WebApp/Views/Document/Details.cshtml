@@ -51,13 +51,13 @@
         @if ((Model.Document.Source?.Reliability == SourceReliability.D))
         {
             <div class="alert alert-warning" role="alert">
-                <strong>Be critic!</strong> The document below originate from a source that might not be reliable or known for factual reporting. Read and analyze with caution.
+                <strong>Be critical!</strong> The document below originate from a source that might not be reliable or known for factual reporting. Read and analyze with caution.
             </div>
         }
         else if ((Model.Document.Source?.Reliability == SourceReliability.F))
         {
             <div class="alert alert-secondary" role="alert">
-                <strong>Be critic!</strong> The document below originate from a source that was not yet evaluated.
+                <strong>Be critical!</strong> The document below originate from a source that was not yet evaluated.
             </div>
         }
 
