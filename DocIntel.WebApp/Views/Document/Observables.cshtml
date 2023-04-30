@@ -129,7 +129,16 @@
                                                 <p class="m-0">
                                                     @foreach (var t in prefixTree)
                                                     {
-                                                        <span class="@(t.StartsWith("_di")?"badge-primary":"badge-secondary") badge">@t</span>
+                                                        <span class="@(t.StartsWith("_di")?"badge-primary":"badge-secondary") badge">
+                                                        @if (t == "_di.workflow.review")
+                                                        {
+                                                            <text>To review</text>
+                                                        }
+                                                        else
+                                                        {
+                                                            <text>@t</text>
+                                                        }
+                                                        </span>
                                                     }
                                                 </p>
                                             }
