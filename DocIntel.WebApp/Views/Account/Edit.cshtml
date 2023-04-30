@@ -1,5 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using DocIntel.Core.Settings
 @model AppUser
+@inject ApplicationSettings _settings
 
 @{
     ViewData["Title"] = "Edit your profile";
@@ -35,15 +37,20 @@
                 </div>
             }
             
-            
             @if(Model.EmailConfirmed) {
                 <div class="alert alert-success mb-3">
                 <p class="mb-0 text-success"><i class="fas fa-badge-check mr-2"></i> Your email is verified.</p>
                 </div>
             } else {
+                if (_settings.Email.EmailEnabled) {
                 <div class="alert alert-danger mb-3">
                     <p class="mb-0 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i> Your email is not verified. <a asp-action="SendConfirmationLink">Click here to verify your email.</a></p>
                     </div>
+                } else {
+                    <div class="alert alert-danger mb-3">
+                        <p class="mb-0 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i> Your email is not verified but your administrator has disabled emails.</p>
+                    </div>
+                }
             }
 
             <div id="panel-basic" class="panel mt-4">

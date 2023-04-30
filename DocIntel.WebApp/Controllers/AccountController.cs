@@ -918,6 +918,9 @@ namespace DocIntel.WebApp.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(string userid, string code)
         {
+            if (!_settings.Email.EmailEnabled || _settings.AuthenticationMethod == "LDAP")
+                return NotFound();
+            
             var user = await _userManager.FindByIdAsync(userid);
             if (user == null)
             {
@@ -952,6 +955,9 @@ namespace DocIntel.WebApp.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
+            if (!_settings.Email.EmailEnabled || _settings.AuthenticationMethod == "LDAP")
+                return NotFound();
+        
             var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
             {
@@ -1000,6 +1006,9 @@ namespace DocIntel.WebApp.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
+            if (!_settings.Email.EmailEnabled)
+                return NotFound();
+            
             if (userId == null || code == null)
             {
                 _logger.Log(LogLevel.Warning,

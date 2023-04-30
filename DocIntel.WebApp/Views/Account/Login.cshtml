@@ -41,7 +41,7 @@
                                             <input type="checkbox" class="custom-control-input" asp-for="RememberMe"/>
                                             <label class="custom-control-label" asp-for="RememberMe">Remember me</label>
                                         </div>
-                                        @if (_settings.AuthenticationMethod != "LDAP")
+                                        @if (_settings.AuthenticationMethod != "LDAP" && _settings.Email.EmailEnabled)
                                         {
                                             <div>
                                                 <a asp-action="ForgotPassword" asp-action-username="@Model.UserName">Reset password</a>
