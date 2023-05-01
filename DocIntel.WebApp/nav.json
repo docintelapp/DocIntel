@@ -94,6 +94,12 @@
                     "controller": "ImportRuleSet",
                     "action": "Index",
                     "permissions": ["ViewIncomingFeed"]
+                },
+                {
+                  "title": "Collectors",
+                  "controller": "Collector",
+                  "action": "Index",
+                  "permissions": ["ViewCollector"]
                 }
             ]
         },
