@@ -32,6 +32,7 @@
 
 <div class="row">
 
+    @if (ViewBag.ScraperExists ?? false) {
     <div class="col-6">
         <form method="post" asp-action="SubmitURL" asp-controller="Document" class="mb-3">
             <div class="panel">
@@ -63,8 +64,9 @@
             </div>
         </form>
     </div>
+    }
 
-    <div class="col-6">
+    <div class="@((ViewBag.ScraperExists?? false) ? "col-6" : "col-12")">
         <form method="post" enctype="multipart/form-data" asp-action="Upload" asp-controller="Document">
 
             <div class="panel">

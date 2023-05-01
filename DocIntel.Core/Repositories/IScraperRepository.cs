@@ -151,5 +151,15 @@ namespace DocIntel.Core.Repositories
             Func<IQueryable<Scraper>,IQueryable<Scraper>> query = null,
             Func<IQueryable<Scraper>,IQueryable<Scraper>> includes = null,
             int page = 0, int limit = 25);
+
+        /// <summary>
+        ///     Returns whether a scraper that the user has the right to view
+        ///     exists in the repository.
+        /// </summary>
+        /// <returns>
+        ///     <c>True</c> if a scraper and the user has the right
+        ///     to view, <c>False</c> otherwise.
+        /// </returns>
+        Task<bool> AnyAsync(AmbientContext ambientContext);
     }
 }

@@ -182,6 +182,16 @@ namespace DocIntel.Core.Repositories.EFCore
                     yield return feed;
         }
 
+        public async Task<bool> AnyAsync(AmbientContext ambientContext)
+        {
+            var feeds = ambientContext.DatabaseContext.Scrapers;
+
+            foreach (var feed in feeds)
+                if (await _appAuthorizationService.CanViewScraper(ambientContext.Claims, feed))
+                    return true;
+            return false;
+        }
+
         /// <summary>
         ///     Removes an existing scraper from the database. The
         ///     removal is announced with a <see cref="ScraperRemovedMessage" />

@@ -36,7 +36,7 @@ using DocIntel.Core.Utils;
 using DocIntel.Core.Utils.Observables;
 using DocIntel.Core.Utils.Search.Documents;
 using DocIntel.WebApp.ViewModels.DocumentViewModel;
-
+using JetBrains.Annotations;
 using MassTransit;
 
 using Microsoft.AspNetCore.Authorization;
@@ -69,9 +69,10 @@ namespace DocIntel.WebApp.Controllers
         private readonly TagUtility _tagUtility;
         private readonly ISourceRepository _sourceRepository;
         private readonly ITagRepository _tagRepository;
-        public readonly IClassificationRepository _classificationRepository;
+        private readonly IClassificationRepository _classificationRepository;
         private readonly IUserRepository _userRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IScraperRepository _scraperRepository;
 
         public DocumentController(
             DocIntelContext context,
@@ -90,7 +91,7 @@ namespace DocIntel.WebApp.Controllers
             ApplicationSettings appSettings,
             IClassificationRepository classificationRepository,
             IUserRepository userRepository,
-            ISynapseRepository synapseRepository, TagUtility tagUtility, IWebHostEnvironment webHostEnvironment)
+            ISynapseRepository synapseRepository, TagUtility tagUtility, IWebHostEnvironment webHostEnvironment, IScraperRepository scraperRepository)
             : base(context,
                 userManager,
                 configuration,
@@ -112,6 +113,7 @@ namespace DocIntel.WebApp.Controllers
             _synapseRepository = synapseRepository;
             _tagUtility = tagUtility;
             _webHostEnvironment = webHostEnvironment;
+            _scraperRepository = scraperRepository;
         }
 
         [HttpGet("Document")]
@@ -546,6 +548,9 @@ namespace DocIntel.WebApp.Controllers
         [HttpPost("Document/SubmitURL")]
         public async Task<IActionResult> SubmitURL(string url)
         {
+            if (string.IsNullOrWhiteSpace(url)) 
+                return RedirectToAction("Pending");
+            
             try
             {
                 var currentUser = await GetCurrentUser();
@@ -608,6 +613,8 @@ namespace DocIntel.WebApp.Controllers
         {
             if (!await _appAuthorizationService.CanCreateDocument(User, null))
                 return Unauthorized();
+
+            ViewBag.ScraperExists = await _scraperRepository.AnyAsync(AmbientContext);
 
             return View();
         }
