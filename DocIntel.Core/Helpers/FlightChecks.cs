@@ -20,9 +20,7 @@ public static class FlightChecks
     {
         Console.WriteLine("Running pre-flight checks...");
             
-        if (!File.Exists("nlog.config") 
-            && !File.Exists("/config/nlog.config") 
-            && !File.Exists("/etc/docintel/nlog.config"))
+        if (!CheckNlogConfig(out var nlogfilepath))
         {
             Console.WriteLine("DocIntel could not file an appropriate log configuration file. " +
                               "Please check that you have a nlog.config file in the current directory, " +
@@ -31,12 +29,10 @@ public static class FlightChecks
         }
         else
         {
-            Console.WriteLine("[OK] Log configuration file found.");
+            Console.WriteLine($"[OK] Log configuration file found: {nlogfilepath}");
         }
             
-        if (!File.Exists("appsettings.json") 
-            && !File.Exists("/config/appsettings.json") 
-            && !File.Exists("/etc/docintel/appsettings.json"))
+        if (!CheckAppSettingsConfig(out var appSettingsFilePath))
         {
             Console.WriteLine("DocIntel could not file an appropriate app configuration file. " +
                               "Please check that you have a appsettings.json file in the current directory, " +
@@ -45,7 +41,7 @@ public static class FlightChecks
         }
         else
         {
-            Console.WriteLine("[OK] App configuration file found.");
+            Console.WriteLine($"[OK] App configuration file found: {appSettingsFilePath}");
         }
 
         var configurationBuilder = new ConfigurationBuilder()
@@ -83,6 +79,50 @@ public static class FlightChecks
             Console.WriteLine("[KO] Not all checks passed, aborting. Please check the errors, fix the problems, and restart.");
             return 1;
         }
+    }
+    
+    private static bool CheckNlogConfig(out string filePath)
+    {
+        string[] possiblePaths = new string[]
+        {
+            "nlog.config",  // Check in current directory
+            "/config/nlog.config",  // Check in /config directory
+            "/etc/docintel/nlog.config"  // Check in /etc/docintel directory
+        };
+
+        foreach (string path in possiblePaths)
+        {
+            if (File.Exists(path))
+            {
+                filePath = Path.GetFullPath(path);
+                return true;
+            }
+        }
+
+        filePath = null;
+        return false;
+    }
+
+    private static bool CheckAppSettingsConfig(out string filePath)
+    {
+        string[] possiblePaths = new string[]
+        {
+            "appsettings.json",  // Check in current directory
+            "/config/appsettings.json",  // Check in /config directory
+            "/etc/docintel/appsettings.json"  // Check in /etc/docintel directory
+        };
+
+        foreach (string path in possiblePaths)
+        {
+            if (File.Exists(path))
+            {
+                filePath = Path.GetFullPath(path);
+                return true;
+            }
+        }
+
+        filePath = null;
+        return false;
     }
 
     private static async Task<bool> PostgresPreFlightChecks(IConfigurationRoot config)
