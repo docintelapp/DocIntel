@@ -8,6 +8,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DocIntel.Core.Settings;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Synsharp.Telepath;
@@ -67,7 +69,7 @@ public static class FlightChecks
         var synapseSuccess = await SynapsePreFlightChecks(applicationSettings.Synapse);
         var rabbitMqSuccess = await RabbitMqPreFlightChecks(applicationSettings.RabbitMQ);
         var postgresSuccess = await PostgresPreFlightChecks(configuration);
-            
+        var emailSuccess = await EmailPreFlightChecks(applicationSettings.Email);
         
         if (diskSpaceSuccess & proxySuccess & solrSuccess & synapseSuccess & rabbitMqSuccess & postgresSuccess)
         {
@@ -498,6 +500,61 @@ public static class FlightChecks
             }
         }
             
+        return ret;
+    }
+
+    private static async Task<bool> EmailPreFlightChecks(EmailSettings config)
+    {
+        var ret = true;
+        
+        Console.WriteLine("---- Running pre-flight checks for emails...");
+
+        if (config.EmailEnabled)
+        {
+            if (string.IsNullOrEmpty(config.SMTPServer))
+            {
+                ret = false;
+                Console.WriteLine("[KO] SMTP URI is null or empty. Specify a correct URI to the SMTP server.");
+            }
+            else
+            {
+                Console.WriteLine($"[OK] DocIntel will use the SMTP server located at '{config.SMTPServer}:{config.SMTPPort}'.");
+                Console.WriteLine($"[OK] DocIntel will log in on SMTP with '{config.SMTPUser}' username.");
+            }
+            
+            try
+            {
+                var tcpClient = new TcpClient();
+                tcpClient.Connect(config.SMTPServer, config.SMTPPort);
+                Console.WriteLine($"[OK] SMTP server {config.SMTPServer} is reachable on port {config.SMTPPort}.");
+            }
+            catch (Exception e)
+            {
+                ret = false;
+                Console.WriteLine($"[KO] SMTP server on hostname {config.SMTPServer} could not be reached on port {config.SMTPPort}.");   
+            }
+            
+            try
+            {
+                using var client = new SmtpClient();
+                client.CheckCertificateRevocation = config.CheckCertificateRevocation;
+                await client.ConnectAsync(config.SMTPServer, config.SMTPPort, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(config.SMTPUser, config.SMTPPassword);
+                await client.DisconnectAsync(true);
+                Console.WriteLine(
+                    $"[OK] DocIntel successfully connected to the SMTP Server.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[KO] DocIntel could not connect to the SMTP server ({e.Message}).");
+                ret = false;   
+            }
+        }
+        else
+        {
+            Console.WriteLine($"[OK] Emails are not enabled.");
+        }
+
         return ret;
     }
 }
