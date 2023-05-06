@@ -175,7 +175,7 @@ namespace DocIntel.Services.Newsletters
             DateTime date)
         {
             var documentSubscriptions =
-                _sourceRepository.GetSubscriptionsAsync(ambientContext, user, 0, -1).ToEnumerable();
+                await _sourceRepository.GetSubscriptionsAsync(ambientContext, user, 0, -1).ToListAsync();
             foreach (var s in documentSubscriptions)
             {
                 DocumentQuery query = new DocumentQuery
@@ -189,7 +189,7 @@ namespace DocIntel.Services.Newsletters
 
                 await foreach (var d in _documentRepository.GetAllAsync(ambientContext, query))
                 {
-                        yield return d;
+                    yield return d;
                 }
             }
         }
@@ -198,7 +198,7 @@ namespace DocIntel.Services.Newsletters
             AppUser user,
             DateTime date)
         {
-            var tagSubscriptions = _tagRepository.GetSubscriptionsAsync(ambientContext, user, 0, -1).ToEnumerable();
+            var tagSubscriptions = await _tagRepository.GetSubscriptionsAsync(ambientContext, user, 0, -1).ToListAsync();
             foreach (var s in tagSubscriptions)
             {
                 DocumentQuery query = new DocumentQuery
