@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Collectors;
+using DocIntel.Core.Exceptions;
 using DocIntel.Core.Importers;
 using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
@@ -120,8 +121,8 @@ namespace DocIntel.Services.Cron
                     using var collectorContext = await GetAmbientContext(collectorScope.ServiceProvider);
                     await CollectFeed(collector, collectorContext);
 
-                    collector.LastCollection = collectorLastCollection;
                     // Console.WriteLine($"updating {collector.LastCollection}");
+                    collector.LastCollection = collectorLastCollection;
                     await collectorContext.DatabaseContext.SaveChangesAsync();
                     await context.DatabaseContext.SaveChangesAsync();
                 }
@@ -141,39 +142,55 @@ namespace DocIntel.Services.Cron
             // Console.WriteLine(collector.Module);
             // Console.WriteLine(collector.CollectorName);
             var collectorSettings = _moduleFactory.GetCollectorSettings(collector.Module, collector.CollectorName);
-            // Console.WriteLine(collectorSettings);
+            Console.WriteLine(collectorSettings);
             var settings = collector.Settings.Deserialize(
                 collectorSettings);
-            
-            await foreach (var report in client.Collect(lastCollection, limit, settings))
+
+            await foreach (var report in client.Collect(collector, settings))
             {
                 var document = _mapper.Map<Document>(report);
-                
+
                 document.SourceId = collector.SourceId;
                 document.ClassificationId = collector.ClassificationId;
                 document.ReleasableTo = collector.ReleasableTo;
                 document.EyesOnly = collector.EyesOnly;
                 document.RegisteredById = collector.UserId;
                 document.LastModifiedById = collector.UserId;
-                
+
                 // Check if document is already known
                 if (document.SourceId != null
                     && !string.IsNullOrEmpty(document.ExternalReference)
                     && collectorContext.DatabaseContext.Documents.Any(_ => _.SourceId == document.SourceId
-                                                                           && _.ExternalReference == document.ExternalReference))
+                                                                           && _.ExternalReference ==
+                                                                           document.ExternalReference))
                 {
-                    _logger.LogDebug($"Document '{document.ExternalReference}' from '{document.SourceId}' was already imported.");
+                    _logger.LogDebug(
+                        $"Document '{document.ExternalReference}' from '{document.SourceId}' was already imported.");
                     // TODO Include a field version in the files
                     continue;
                 }
-                
-                var tags = _tagUtility.GetOrCreateTags(collectorContext, report.Tags);
-                if (collector.Tags?.Any() ?? false)
-                    tags = tags.Union(collector.Tags).Distinct();
-                
-                document = await _documentRepository.AddAsync(collectorContext,
-                    document,
-                    tags.ToArray());
+
+                try
+                {
+                    var tags = _tagUtility.GetOrCreateTags(collectorContext, report.Tags);
+                    if (collector.Tags?.Any() ?? false)
+                        tags = tags.Union(collector.Tags).Distinct();
+
+                    document = await _documentRepository.AddAsync(collectorContext,
+                        document,
+                        tags.ToArray());
+                }
+                catch (InvalidArgumentException e)
+                {
+                    Console.WriteLine(e.Message);
+                    foreach (var error in e.Errors)
+                    {
+                        foreach(var error2 in error.Value)
+                            Console.WriteLine(error.Key + ": " + error2);
+                    }
+
+                    throw;
+                }
 
                 if (collector.SkipInbox)
                 {
