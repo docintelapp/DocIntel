@@ -54,13 +54,29 @@
         <div class="panel">
             <div class="panel-container show">
                 <div class="panel-content pb-0">
-                    <p>
-                        @Html.Raw(Model.Description)
-                    </p>
+                    @if (!string.IsNullOrWhiteSpace(Model.Description)) {
+                        <text>@Html.Raw(Model.Description)</text>
+                    }
                     <dl class="row mb-0">
+                        <dt class="col-sm-6">Last Collection</dt>
+                        <dd class="col-sm-6">
+                            @Model.LastCollection
+                        </dd>
+                        <dt class="col-sm-6">Cron Expression</dt>
+                        <dd class="col-sm-6">
+                            @Model.CronExpression
+                        </dd>
+                        <dt class="col-sm-6">Limit</dt>
+                        <dd class="col-sm-6">
+                            @Model.Limit
+                        </dd>
                         <dt class="col-sm-6">Automatically register?</dt>
                         <dd class="col-sm-6">
                             @(Model.SkipInbox ? "Yes" : "No")
+                        </dd>
+                        <dt class="col-sm-6">Import Structured Data?</dt>
+                        <dd class="col-sm-6">
+                            @(Model.ImportStructuredData ? "Yes" : "No")
                         </dd>
                     </dl>
                 </div>
