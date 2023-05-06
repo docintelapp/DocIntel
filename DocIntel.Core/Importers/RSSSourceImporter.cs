@@ -115,7 +115,7 @@ namespace DocIntel.Core.Importers
                             if ((rssMetadata.LastPull == default || date > lastSourcePull) && link != default)
                             {
                                 var keywords = rssMetadata.Keywords;
-                                if (keywords.Length > 0 && !(subject + summary).SplitSpaces()
+                                if (keywords != null && keywords.Length > 0 && !(subject + summary).SplitSpaces()
                                     .Any(_ => keywords.Contains(_)))
                                 {
                                     _logger.LogTrace("Keyword not found, skip...");
