@@ -54,7 +54,7 @@ namespace DocIntel.Core.Utils
                     .Select(rule => new Tuple<Regex,string>(new Regex(rule.SearchPattern),rule.Replacement))
                     );
 
-            return labels.Distinct()
+            return labels.Where(_ => !string.IsNullOrWhiteSpace(_)).Distinct()
                 .SelectMany(_ => GetOrCreateTag(ambientContext,
                         _,
                         tagCache,
@@ -89,6 +89,9 @@ namespace DocIntel.Core.Utils
             
                 var facetPrefix = splittedLabel[0];
                 var tagLabel = splittedLabel[1];
+                if (string.IsNullOrWhiteSpace(facetPrefix) | string.IsNullOrWhiteSpace(tagLabel))
+                    continue;
+                
                 var f = await GetOrCreateFacet(ambientContext, facetPrefix, facetCache);
                 var t = await GetOrCreateTag(ambientContext, f, tagLabel, tagCache);
                 yield return t;
@@ -106,14 +109,14 @@ namespace DocIntel.Core.Utils
             var retrievedTag = _tagRepository.GetAllAsync(ambientContext, new TagQuery()
             {
                 FacetId = facet.FacetId,
-                Label = label
+                Label = label.Trim()
             }).ToEnumerable().SingleOrDefault();
             
             if (retrievedTag == null)
             {
                 retrievedTag = await _tagRepository.CreateAsync(ambientContext, new Tag
                 {
-                    Label = label,
+                    Label = label.Trim(),
                     Facet = facet,
                     FacetId = facet.FacetId
                 });
@@ -133,15 +136,15 @@ namespace DocIntel.Core.Utils
             
             var retrievedFacet = await _facetRepository.GetAllAsync(ambientContext, new FacetQuery
             {
-                Prefix = prefix
+                Prefix = prefix.Trim()
             }).SingleOrDefaultAsync();
 
             if (retrievedFacet == null)
             {
                 retrievedFacet = await _facetRepository.AddAsync(ambientContext, new TagFacet
                 {
-                    Title = prefix,
-                    Prefix = prefix
+                    Title = prefix.Trim(),
+                    Prefix = prefix.Trim()
                 });
             }
 
