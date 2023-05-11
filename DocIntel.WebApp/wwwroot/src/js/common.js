@@ -71,7 +71,10 @@ $(document).ready(function() {
         };
 
         if ($(node).data("startval") && $(node).data("startval").length > 0) {
-            options.startval = JSON.parse(atob($(node).data("startval")));
+            options.startval = Object.assign(
+                JSON.parse(atob($(node).data("defaultval"))),
+                JSON.parse(atob($(node).data("startval")))
+            );
         }
 
         let editor = new JSONEditor(node, options);

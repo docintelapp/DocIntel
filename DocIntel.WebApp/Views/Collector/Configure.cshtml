@@ -47,6 +47,7 @@
             <div class="editorJSON" 
                  data-inputid="Settings"
                  data-schema="@(Convert.ToBase64String(Encoding.UTF8.GetBytes(schema)))"
+                 data-defaultval="@(Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(ViewBag.DefaultSettings))))"
                  data-startval="@((Model.Settings != null && Model.Settings.Count > 0) ? Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(Model.Settings))) : "")"></div>
 
             <button type="submit" id="save-btn" class= "btn btn-pills btn-success waves-effect waves-themed btn-iconified">

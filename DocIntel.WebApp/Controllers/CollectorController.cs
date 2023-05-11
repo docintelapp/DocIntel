@@ -19,6 +19,7 @@ using System;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using AutoMapper;
 using DocIntel.Core.Authentication;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Exceptions;
@@ -459,7 +460,9 @@ namespace DocIntel.WebApp.Controllers
         private async Task InitializeViewBag(Guid id, Collector collector, AppUser currentUser)
         {
             ViewBag.HasSettings = _moduleFactory.HasCollectorSettings(collector.Module, collector.CollectorName);
-            ViewBag.Schema = _moduleFactory.GetCollectorSettings(collector.Module, collector.CollectorName);
+            var settingsType = _moduleFactory.GetCollectorSettings(collector.Module, collector.CollectorName);
+            ViewBag.Schema = settingsType;
+            ViewBag.DefaultSettings = Activator.CreateInstance(settingsType);
             ViewBag.Settings = collector.Settings;
 
             await InitializeViewBag(currentUser);
