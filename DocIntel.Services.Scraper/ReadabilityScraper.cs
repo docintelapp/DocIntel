@@ -172,6 +172,11 @@ namespace DocIntel.Services.Scraper
                 _logger.LogTrace("Loaded: " + res.Status);
                 foreach (var header in res.Headers) _logger.LogTrace("Header " + header.Key + " = " + header.Value);
 
+                if (res.Headers.ContainsKey("content-type") || !res.Headers["content-type"].StartsWith("text/html"))
+                {
+                    return false;
+                }
+                
                 var enUS = new CultureInfo("en-US");
                 DateTime lastModifiedDate;
                 var date = await page.EvaluateFunctionAsync<string>("() => document.lastModified");
@@ -198,6 +203,7 @@ namespace DocIntel.Services.Scraper
 
                 var extractedContent =
                     await page.EvaluateFunctionAsync<ReadabilityArticle>("() => new Readability(document).parse()");
+                if (extractedContent == null) throw new ArgumentNullException(nameof(extractedContent));
 
                 Source source;
 
@@ -318,6 +324,7 @@ namespace DocIntel.Services.Scraper
                 Console.WriteLine("----");
                 Console.WriteLine(e.InnerException);
                 Console.WriteLine("----");
+                throw;
             }
             finally
             {
