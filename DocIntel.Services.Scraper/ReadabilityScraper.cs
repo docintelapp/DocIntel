@@ -174,7 +174,7 @@ namespace DocIntel.Services.Scraper
 
                 if (res.Headers.ContainsKey("content-type") || !res.Headers["content-type"].StartsWith("text/html"))
                 {
-                    return false;
+                    return true;
                 }
                 
                 var enUS = new CultureInfo("en-US");
