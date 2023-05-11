@@ -100,7 +100,8 @@ namespace DocIntel.Core.Utils.Search.Documents
                     new("hl.fragsize", "250"),
                     new("hl.simple.pre", "<span class='bg-warning-50'>"),
                     new("hl.simple.post", "</span>"),
-                    new("bf", "recip(ms(NOW,registration_date),3.16e-11,1,1)")
+                    new("bf",
+                        $"recip(ms(NOW,{SolRHelper<IndexedDocument>.GetSolRName(_ => _.DocumentDate)}),3.16e-11,1,1)")
                 };
 
                 foreach (var fq in facetQuery)

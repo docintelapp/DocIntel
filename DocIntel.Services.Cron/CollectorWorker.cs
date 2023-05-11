@@ -210,10 +210,13 @@ namespace DocIntel.Services.Cron
 
                     if (file.Content != null)
                     {
-                        await using var stream = file.Content.Stream();
-                        using var memoryStream = new MemoryStream();
-                        await stream.CopyToAsync(memoryStream);
-                        f = await _documentRepository.AddFile(collectorContext, f, memoryStream);
+                        await using var stream = file.Content?.Stream();
+                        if (stream != null)
+                        {
+                            using var memoryStream = new MemoryStream();
+                            await stream.CopyToAsync(memoryStream);
+                            f = await _documentRepository.AddFile(collectorContext, f, memoryStream);
+                        }
                     }
                 }
 

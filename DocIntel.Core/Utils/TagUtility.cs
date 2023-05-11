@@ -101,7 +101,7 @@ namespace DocIntel.Core.Utils
         private async Task<Tag> GetOrCreateTag(AmbientContext ambientContext, TagFacet facet, string label, HashSet<Tag> cache)
         {
             Tag cached;
-            if ((cached = cache.FirstOrDefault(_ => _.FacetId == facet.FacetId & _.Label.ToUpper() == label.ToUpper())) != null)
+            if ((cached = cache.FirstOrDefault(_ => _.FacetId == facet.FacetId & _.Label.ToUpper().Trim() == label.ToUpper().Trim())) != null)
             {
                 return cached;
             }
@@ -129,7 +129,7 @@ namespace DocIntel.Core.Utils
         private async Task<TagFacet> GetOrCreateFacet(AmbientContext ambientContext, string prefix, HashSet<TagFacet> cache)
         {
             TagFacet cached;
-            if ((cached = cache.FirstOrDefault(_ => _.Prefix == prefix)) != null)
+            if ((cached = cache.FirstOrDefault(_ => _.Prefix == prefix.Trim())) != null)
             {
                 return cached;
             }
