@@ -78,6 +78,26 @@ namespace DocIntel.Services.Scraper
             var scraperSettings = _scraper.Settings.Deserialize<ReadabilitySettings>();
             Init();
             
+            try
+            {
+                var browserFetcher = new BrowserFetcher();
+                _logger.LogDebug("Browser Fetcher Initialized");
+                if (!string.IsNullOrEmpty(_settings.Proxy))
+                {
+                    browserFetcher.WebProxy = new WebProxy(_settings.Proxy, true,
+                        _settings.NoProxy?.Split(new char[] {',',';'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? new string[] { });
+                    _logger.LogDebug("Configuring proxy " + _settings.Proxy);
+                }
+                _logger.LogDebug("Browser Fetcher Proxy");
+                await browserFetcher.DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
+                _logger.LogDebug("Browser Downloaded");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                _logger.LogError(e.StackTrace);
+            }
+            
             _engine = new CustomRazorLightEngineBuilder()
                 .UseFileSystemProject(Path.Combine(Directory.GetCurrentDirectory(), "Views"))
                 .UseMemoryCachingProvider()
