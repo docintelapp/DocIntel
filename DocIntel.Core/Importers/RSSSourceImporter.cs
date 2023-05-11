@@ -139,6 +139,10 @@ namespace DocIntel.Core.Importers
                         await _sourceRepository.UpdateAsync(context, source);
                         await context.DatabaseContext.SaveChangesAsync();
                     }
+                    else
+                    {
+                        _logger.LogError("Feed was null");
+                    }
                 }
                 else
                 {
