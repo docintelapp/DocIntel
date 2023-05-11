@@ -142,9 +142,8 @@ namespace DocIntel.Services.Cron
             // Console.WriteLine(collector.Module);
             // Console.WriteLine(collector.CollectorName);
             var collectorSettings = _moduleFactory.GetCollectorSettings(collector.Module, collector.CollectorName);
-            Console.WriteLine(collectorSettings);
-            var settings = collector.Settings.Deserialize(
-                collectorSettings);
+            // Console.WriteLine(collectorSettings);
+            var settings = collector.Settings.Deserialize(collectorSettings);
 
             await foreach (var report in client.Collect(collector, settings))
             {
