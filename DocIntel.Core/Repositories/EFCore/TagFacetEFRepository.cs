@@ -336,9 +336,11 @@ namespace DocIntel.Core.Repositories.EFCore
                 new[] {facetPrimary, facetSecondary})) throw new UnauthorizedOperationException();
 
             // Check for conflicting tags
-            var tagsExistingLabel = ambientContext.DatabaseContext.Tags.AsQueryable()
+            var primaryTags = ambientContext.DatabaseContext.Tags.AsQueryable()
                 .Where(_ => _.FacetId == primaryId)
-                .AsEnumerable()
+                .ToList();
+            
+            var tagsExistingLabel = primaryTags
                 .Select(_ => new Tuple<Guid,Tag>(_.TagId, ambientContext.DatabaseContext.Tags
                     .FirstOrDefault(__ => __.FacetId == secondaryId && __.Label == _.Label)))
                 .Where(_ => _.Item2 != null)
@@ -347,12 +349,23 @@ namespace DocIntel.Core.Repositories.EFCore
             // Update the documents with conflicting tags and remove the tags
             foreach (var tagPair in tagsExistingLabel)
             {
-                foreach (var documentTag in ambientContext.DatabaseContext.DocumentTag
+                var documentTags = ambientContext.DatabaseContext.DocumentTag
                     .AsQueryable()
-                    .Where(_ => _.TagId == tagPair.Item2.TagId))
+                    .Where(_ => _.TagId == tagPair.Item2.TagId).ToArray();
+                
+                // Add new tag
+                foreach (var documentTag in documentTags)
                 {
-                    documentTag.TagId = tagPair.Item1;
+                    ambientContext.DatabaseContext.DocumentTag.Add(new DocumentTag()
+                    {
+                        DocumentId = documentTag.DocumentId,
+                        TagId = tagPair.Item1
+                    });
                 }
+                
+                // Remove the old tag
+                ambientContext.DatabaseContext.DocumentTag.RemoveRange(
+                    ambientContext.DatabaseContext.DocumentTag.Where(_ => _.TagId == tagPair.Item2.TagId));
                 ambientContext.DatabaseContext.Tags.Remove(tagPair.Item2);
             }
             
