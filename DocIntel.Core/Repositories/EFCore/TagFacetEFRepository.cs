@@ -356,11 +356,12 @@ namespace DocIntel.Core.Repositories.EFCore
                 // Add new tag
                 foreach (var documentTag in documentTags)
                 {
-                    ambientContext.DatabaseContext.DocumentTag.Add(new DocumentTag()
-                    {
-                        DocumentId = documentTag.DocumentId,
-                        TagId = tagPair.Item1
-                    });
+                    if (!ambientContext.DatabaseContext.DocumentTag.Any(_ => _.DocumentId == documentTag.DocumentId & _.TagId == tagPair.Item1))
+                        ambientContext.DatabaseContext.DocumentTag.Add(new DocumentTag()
+                        {
+                            DocumentId = documentTag.DocumentId,
+                            TagId = tagPair.Item1
+                        });
                 }
                 
                 // Remove the old tag
