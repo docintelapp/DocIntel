@@ -172,8 +172,9 @@ namespace DocIntel.Services.Scraper
                 _logger.LogTrace("Loaded: " + res.Status);
                 foreach (var header in res.Headers) _logger.LogTrace("Header " + header.Key + " = " + header.Value);
 
-                if (res.Headers.ContainsKey("content-type") || !res.Headers["content-type"].StartsWith("text/html"))
+                if (!res.Headers.ContainsKey("content-type") || !res.Headers["content-type"].StartsWith("text/html"))
                 {
+                    _logger.LogInformation("Skipped due to bad content-type:" + res.Headers["content-type"]);
                     return true;
                 }
                 
