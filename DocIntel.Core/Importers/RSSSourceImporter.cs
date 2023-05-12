@@ -128,6 +128,7 @@ namespace DocIntel.Core.Importers
                                 {
                                     Title = subject,
                                     Description = summary,
+                                    DocumentDate = date.UtcDateTime,
                                     URL = link.ToString(),
                                     OverrideSource = true,
                                     SourceId = source.SourceId

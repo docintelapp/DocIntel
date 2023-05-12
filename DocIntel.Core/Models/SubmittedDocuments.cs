@@ -53,6 +53,7 @@ namespace DocIntel.Core.Models
         public bool SkipInbox { get; set; }
 
         [Column(TypeName = "jsonb")] public Dictionary<string, JsonObject> MetaData { get; set; }
+        public DateTime? DocumentDate { get; set; }
     }
 
     public enum SubmissionStatus
