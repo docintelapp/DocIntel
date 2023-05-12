@@ -71,10 +71,14 @@ $(document).ready(function() {
         };
 
         if ($(node).data("startval") && $(node).data("startval").length > 0) {
-            options.startval = Object.assign(
-                JSON.parse(atob($(node).data("defaultval"))),
-                JSON.parse(atob($(node).data("startval")))
-            );
+            if ($(node).data("defaultval") && $(node).data("defaultval").length > 0) {
+                options.startval = Object.assign(
+                    JSON.parse(atob($(node).data("defaultval"))),
+                    JSON.parse(atob($(node).data("startval")))
+                );
+            } else {
+                options.startval = JSON.parse(atob($(node).data("startval")));
+            }
         }
 
         let editor = new JSONEditor(node, options);
