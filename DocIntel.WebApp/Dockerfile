@@ -17,7 +17,7 @@ COPY ["./DocIntel.WebApp/package.json", "./DocIntel.WebApp/"]
 RUN apt-get update && apt-get install curl build-essential autoconf libpng-dev python2 -y --no-install-recommends
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 RUN apt-get update && apt-get install -y nodejs
-RUN npm install --global yarn
+# RUN npm install --global yarn
 WORKDIR /src/DocIntel.WebApp/
 RUN npm install
 WORKDIR /src
