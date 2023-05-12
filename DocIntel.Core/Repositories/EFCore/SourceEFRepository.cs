@@ -61,7 +61,6 @@ namespace DocIntel.Core.Repositories.EFCore
                     source.RegisteredById = ambientContext.CurrentUser.Id;
                     source.LastModifiedById = ambientContext.CurrentUser.Id;
                 }
-
                 source.URL = GenerateSourceSlug(ambientContext, source);
 
                 var trackingEntity = await _tableSelector(ambientContext).AddAsync(source);
@@ -116,7 +115,7 @@ namespace DocIntel.Core.Repositories.EFCore
             if (slug == source.URL) return slug;
 
             var regexSlug = "^" + Regex.Escape(slug) + "(-[0-9]+)?$";
-            var maxSlug = context.DatabaseContext.Documents
+            var maxSlug = context.DatabaseContext.Sources
                 .Where(_ => Regex.IsMatch(_.URL, regexSlug))
                 .Select(_ => new { URL = _.URL, Length = _.URL.Length })
                 .OrderByDescending(_ => _.Length).ThenByDescending(_ => _.URL)
@@ -126,7 +125,6 @@ namespace DocIntel.Core.Repositories.EFCore
             var lastPart = maxSlug.URL.Split('-').Last();
             if (!Int64.TryParse(lastPart, out long result))
                 return maxSlug.URL + "-1";
-
             return maxSlug.URL.Substring(0, maxSlug.Length - lastPart.Length - 1) + "-" + (result + 1);
         }
 

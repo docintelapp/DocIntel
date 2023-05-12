@@ -603,8 +603,8 @@ namespace DocIntel.Core.Repositories.EFCore
             if (slug == document.URL) return slug;
 
             var regexSlug = "^" + Regex.Escape(slug) + "(-[0-9]+)?$";
-            var maxSlug = context.DatabaseContext.Documents
-                .Where(_ => _.Title == document.Label & Regex.IsMatch(_.URL, regexSlug))
+            var maxSlug = context.DatabaseContext.Tags
+                .Where(_ => _.Label == document.Label & Regex.IsMatch(_.URL, regexSlug))
                 .Select(_ => new { URL = _.URL, Length = _.URL.Length })
                 .OrderByDescending(_ => _.Length).ThenByDescending(_ => _.URL)
                 .FirstOrDefault();
