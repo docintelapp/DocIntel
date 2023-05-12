@@ -151,7 +151,11 @@ namespace DocIntel.WebApp.Controllers
                 {
                     try
                     {
-                        json.Add(kv.Key, JsonNode.Parse(kv.Value)?.AsObject() ?? new JsonObject());
+                        if (kv.Value != null)
+                        {
+                            var jsonObject = JsonNode.Parse(kv.Value)?.AsObject() ?? new JsonObject();
+                            json.Add(kv.Key, jsonObject);
+                        }
                     }
                     catch (JsonReaderException e)
                     {
