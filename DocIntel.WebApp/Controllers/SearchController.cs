@@ -222,9 +222,10 @@ namespace DocIntel.WebApp.Controllers
             foreach (var r in results.Classifications)
                 try
                 {
-                    classificationVR.Add(new VerticalResult<Classification>(
-                        classDict[r.Value], r.Count
-                    ));
+                    if (classDict.ContainsKey(r.Value))
+                        classificationVR.Add(new VerticalResult<Classification>(
+                            classDict[r.Value], r.Count
+                        ));
                 }
                 catch (UnauthorizedOperationException)
                 {
@@ -246,9 +247,10 @@ namespace DocIntel.WebApp.Controllers
             foreach (var r in results.Sources)
                 try
                 {
-                    sourcesVR.Add(new VerticalResult<Source>(
-                        sourceDict[r.Value], r.Count
-                    ));
+                    if (sourceDict.ContainsKey(r.Value))
+                        sourcesVR.Add(new VerticalResult<Source>(
+                            sourceDict[r.Value], r.Count
+                        ));
                 }
                 catch (UnauthorizedOperationException)
                 {
@@ -267,9 +269,10 @@ namespace DocIntel.WebApp.Controllers
             foreach (var r in results.FacetRegistrants)
                 try
                 {
-                    registrantsVR.Add(new VerticalResult<AppUser>(
-                        userDict[r.Value], r.Count
-                    ));
+                    if (userDict.ContainsKey(r.Value))
+                        registrantsVR.Add(new VerticalResult<AppUser>(
+                            userDict[r.Value], r.Count
+                        ));
                 }
                 catch (UnauthorizedOperationException)
                 {
