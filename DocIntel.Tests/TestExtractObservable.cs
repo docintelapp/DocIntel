@@ -12,6 +12,26 @@ public class TestExtractObservable
     }
 
     [Test]
+    public async Task TestFinalDotNotExtractedInUrl()
+    {
+        using var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.SetMinimumLevel(LogLevel.Trace);
+            builder.AddConsole(options => options.DisableColors = true);
+        });
+
+        var logger = loggerFactory.CreateLogger<RegexUrlExtractor>();
+
+        var test = @"http://www.example.org/. ";
+        
+        var extractor = new RegexUrlExtractor(logger);
+        var observables = await extractor.Extract(test).ToListAsync();
+        
+        Assert.That(observables.Count, Is.EqualTo(1));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Valu == "http://www.example.org/"));
+    }
+
+    [Test]
     public async Task TestIpNotExtractedAsUrl()
     {
         using var loggerFactory = LoggerFactory.Create(builder =>
@@ -93,24 +113,29 @@ public class TestExtractObservable
         
         Assert.That(observables.Count, Is.EqualTo(18));
         
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "188.166.61.146")); 
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "172.107.231.236"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "193.29.57.161"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "136.244.100.127"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "217.69.10.104"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "92.38.178.246"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "172.105.94.67"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.188.93.132")); 
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.189.222.33"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.183.103.122"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.188.108.228"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "45.128.132.6")); 
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "92.223.105.246")); 
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.183.101.21")); 
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.183.101.114"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "45.128.135.15"));
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "5.188.108.22")); 
-        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Repr == "70.34.201.16"));
+        foreach (var o in observables)
+        {
+            LoggerExtensions.LogDebug(logger, $"Valu: {o.Valu}\nRepr: {o.Repr}");
+        }
+        
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "188.166.61.146")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "172.107.231.236"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "193.29.57.161"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "136.244.100.127"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "217.69.10.104"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "92.38.178.246"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "172.105.94.67"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "5.188.93.132")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "5.189.222.33"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "5.183.103.122"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "5.188.108.228"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "45.128.132.6")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "92.223.105.246")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "5.183.101.21")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "5.183.101.114"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "45.128.135.15"));
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "5.188.108.22")); 
+        Assert.That(observables.Any(o => o.Form == "inet:ipv4" && o.Valu == "70.34.201.16"));
     }
     
     [Test]
@@ -138,7 +163,7 @@ public class TestExtractObservable
         
         Assert.That(observables.Count, Is.EqualTo(1));
 
-        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://mb.glbaitech.com/mboard.dll"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Valu == "http://mb.glbaitech.com/mboard.dll"));
     }
     
     [Test]
@@ -166,7 +191,7 @@ public class TestExtractObservable
         
         Assert.That(observables.Count, Is.EqualTo(1));
 
-        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://mb.glbaitech.com/mboard.dll"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Valu == "http://mb.glbaitech.com/mboard.dll"));
     }
     
     [Test]
@@ -193,10 +218,10 @@ hxxp://193[.]56[.]29[.]123:8888/access.php?order=golc_finish&cmn=[Victim_HostNam
         Assert.That(observables.Count, Is.EqualTo(4));
 
         // We have to settle here for less ideal extraction with the last ]
-        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php?order=GetPubkey&cmn=[Victim_HostName"));
-        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php?order=golc_key_add&cmn=[Victim_HostName]&type=1"));
-        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php?order=golc_key_add&cmn=[Victim_HostName]&type=2"));
-        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php?order=golc_finish&cmn=[Victim_HostName]&"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Valu == "http://193.56.29.123:8888/access.php?order=GetPubkey&cmn=[Victim_HostName"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Valu == "http://193.56.29.123:8888/access.php?order=golc_key_add&cmn=[Victim_HostName]&type=1"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Valu == "http://193.56.29.123:8888/access.php?order=golc_key_add&cmn=[Victim_HostName]&type=2"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Valu == "http://193.56.29.123:8888/access.php?order=golc_finish&cmn=[Victim_HostName]&"));
     }
     
     [Test]
@@ -217,8 +242,8 @@ hxxp://193[.]56[.]29[.]123:8888/access.php?order=golc_finish&cmn=[Victim_HostNam
         
         Assert.That(observables.Count, Is.EqualTo(1));
 
-        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php"));
-        Assert.That(!observables.Any(o => o.Form == "inet:url" && o.Repr == "http://193.56.29.123:8888/access.php)"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Valu == "http://193.56.29.123:8888/access.php"));
+        Assert.That(!observables.Any(o => o.Form == "inet:url" && o.Valu == "http://193.56.29.123:8888/access.php)"));
     }
     
     [Test]
@@ -240,8 +265,7 @@ hxxp://193[.]56[.]29[.]123:8888/access.php?order=golc_finish&cmn=[Victim_HostNam
         var observables = await extractor.Extract(test).ToListAsync();
         
         Assert.That(observables.Count, Is.EqualTo(1));
-
-        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Repr == "https://www.example.com/hello,world.html"));
+        Assert.That(observables.Any(o => o.Form == "inet:url" && o.Valu.ToString() == "https://www.example.com/hello,world.html"));
     }
     
 }

@@ -34,7 +34,7 @@
                 </select>
             </td>
             <td style="width: 75%">
-                <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">@item.Repr</p>
+                <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">@(item.Repr ?? item.Valu)</p>
                 @if (item.Tags.Any())
                 {
                     <p class="m-0">

@@ -6,7 +6,7 @@
         <h2>
             @Model.ReferencingDocsCount @Html.Pluralize("document",Model.ReferencingDocsCount)
             <span class="fw-300">
-                <i>referencing @Model.Root.Repr</i>
+                <i>referencing @(Model.Root.Repr ?? Model.Root.Valu)</i>
             </span>
         </h2>
     </div>
