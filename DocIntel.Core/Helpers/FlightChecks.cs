@@ -495,7 +495,7 @@ public static class FlightChecks
             }
             catch (SynsharpException e)
             {
-                Console.WriteLine($"[KO] DocIntel could not connect to the Synapse server ({e.Message}).");
+                Console.WriteLine($"[KO] DocIntel could not connect to the Synapse server ({e.Message}).\n{e.StackTrace}");
                 ret = false;   
             }
         }
