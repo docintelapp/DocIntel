@@ -29,7 +29,88 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       -
-        name: Build and push
+        name: Build and push DocIntel.Services.DocumentAnalyzer
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./DocIntel.Services.DocumentAnalyzer/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_ORGANIZATION }}/document-analyzer:latest
+
+      -
+        name: Build and push DocIntel.Services.DocumentIndexer
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./DocIntel.Services.DocumentIndexer/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_ORGANIZATION }}/document-indexer:latest
+
+      -
+        name: Build and push DocIntel.Services.Importer
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./DocIntel.Services.Importer/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_ORGANIZATION }}/importer:latest
+
+      -
+        name: Build and push DocIntel.Services.Newsletters
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./DocIntel.Services.Newsletters/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_ORGANIZATION }}/newsletter:latest
+
+      -
+        name: Build and push DocIntel.Services.Scraper
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./DocIntel.Services.Scraper/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_ORGANIZATION }}/scraper:latest
+
+      -
+        name: Build and push DocIntel.Services.SourceIndexer
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./DocIntel.Services.SourceIndexer/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_ORGANIZATION }}/source-indexer:latest
+
+      -
+        name: Build and push DocIntel.Services.TagIndexer
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./DocIntel.Services.TagIndexer/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_ORGANIZATION }}/tag-indexer:latest
+
+      -
+        name: Build and push DocIntel.Services.Thumbnailer
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./DocIntel.Services.Thumbnailer/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_ORGANIZATION }}/thumbnailer:latest
+
+      -
+        name: Build and push DocIntel.Services.Cron
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./DocIntel.Services.Cron/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_ORGANIZATION }}/cron:latest
+
+      -
+        name: Build and push DocIntel.WebApp
         uses: docker/build-push-action@v4
         with:
           context: .
