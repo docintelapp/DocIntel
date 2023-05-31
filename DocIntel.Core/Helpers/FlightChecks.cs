@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
@@ -65,7 +66,7 @@ public static class FlightChecks
         var diskSpaceSuccess = await DiskPreFlightChecks(applicationSettings);
         
         var proxySuccess = ProxyPreFlightChecks(applicationSettings);
-        var solrSuccess = await SolRPreFlightChecks(applicationSettings.Solr);
+        var solrSuccess = await SolRPreFlightChecks(applicationSettings);
         var synapseSuccess = await SynapsePreFlightChecks(applicationSettings.Synapse);
         var rabbitMqSuccess = await RabbitMqPreFlightChecks(applicationSettings.RabbitMQ);
         var postgresSuccess = await PostgresPreFlightChecks(configuration);
@@ -313,8 +314,9 @@ public static class FlightChecks
         return ret;
     }
 
-    private static async Task<bool> SolRPreFlightChecks(SolrSettings solrSettings)
+    private static async Task<bool> SolRPreFlightChecks(ApplicationSettings settings)
     {
+        var solrSettings = settings.Solr;
         var ret = true;
 
         Console.WriteLine("---- Running pre-flight checks for SolR...");
@@ -357,7 +359,31 @@ public static class FlightChecks
         {
             try
             {
-                using var httpClient = new HttpClient();
+                var handler = new HttpClientHandler()
+                {
+                    AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
+                };
+                if (solrSettings.InsecureSSL)
+                {
+                    handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                    handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                }
+
+                if (!string.IsNullOrEmpty(settings.Proxy))
+                {
+                    Console.WriteLine($"Will use proxy {settings.Proxy} for SolR.");
+                    handler.Proxy = new WebProxy()
+                    {
+                        Address = new Uri(settings.Proxy ?? ""),
+                        BypassList = settings.NoProxy?.Split(new char[] {',',';'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? new string[] { }
+                    };
+                }
+                else
+                {
+                    Console.WriteLine($"Will not use proxy for SolR.");
+                }
+                
+                using var httpClient = new HttpClient(handler);
                 using var response = await httpClient.GetAsync(solrSettings.Uri + "/solr/admin/info/system?wt=json");
                 string apiResponse = await response.Content.ReadAsStringAsync();
 

@@ -102,5 +102,6 @@ namespace DocIntel.Core.Settings
     public class SolrSettings
     {
         public string Uri { get; set; } = "http://localhost:8983";
+        public bool InsecureSSL { get; set; } = false;
     }
 }
