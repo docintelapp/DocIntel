@@ -365,13 +365,14 @@ public static class FlightChecks
                 };
                 if (solrSettings.InsecureSSL)
                 {
+                    Console.WriteLine($"[!!] Will skip SSL certificate check for SolR.");
                     handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
                     handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 }
 
                 if (!string.IsNullOrEmpty(settings.Proxy))
                 {
-                    Console.WriteLine($"Will use proxy {settings.Proxy} for SolR.");
+                    Console.WriteLine($"[OK] Will use proxy {settings.Proxy} for SolR.");
                     handler.Proxy = new WebProxy()
                     {
                         Address = new Uri(settings.Proxy ?? ""),
@@ -380,7 +381,7 @@ public static class FlightChecks
                 }
                 else
                 {
-                    Console.WriteLine($"Will not use proxy for SolR.");
+                    Console.WriteLine($"[OK] Will not use proxy for SolR.");
                 }
                 
                 using var httpClient = new HttpClient(handler);
@@ -405,28 +406,46 @@ public static class FlightChecks
             
         if (ret)
         {
-            await CheckSolRCore(solrSettings, "document", "dd8797b6467657af39021615b51aba22", "afa181ec19bb965f95e55871b2748d86");
-            await CheckSolRCore(solrSettings, "tag", "2352416bd9b7f609fda9aa5ce9429005", "15af4bbd0222eea195307519b469592f");
-            await CheckSolRCore(solrSettings, "facet", "df64ee714a333057d0a5ebaf0d50f984", "dbfd0e73a69141eb2613f8b33fea71e3");
-            await CheckSolRCore(solrSettings, "source", "0c50f43a645c5694733359ec9d9731c5", "15af4bbd0222eea195307519b469592f");
+            await CheckSolRCore(settings, "document", "dd8797b6467657af39021615b51aba22", "afa181ec19bb965f95e55871b2748d86");
+            await CheckSolRCore(settings, "tag", "2352416bd9b7f609fda9aa5ce9429005", "15af4bbd0222eea195307519b469592f");
+            await CheckSolRCore(settings, "facet", "df64ee714a333057d0a5ebaf0d50f984", "dbfd0e73a69141eb2613f8b33fea71e3");
+            await CheckSolRCore(settings, "source", "0c50f43a645c5694733359ec9d9731c5", "15af4bbd0222eea195307519b469592f");
         }
             
         return ret;
     }
 
-    private static async Task CheckSolRCore(SolrSettings solrSettings, string core, string expectedHashSchema, string expectedHashConfig)
+    private static async Task CheckSolRCore(ApplicationSettings settings, string core, string expectedHashSchema, string expectedHashConfig)
     {
+        var solrSettings = settings.Solr;
         try
         {
-            using (var client = new HttpClient())
+            var handler = new HttpClientHandler()
             {
-                var response = await client.GetAsync(solrSettings.Uri + $"/solr/{core}/admin/ping?wt=json");
-                response.EnsureSuccessStatusCode(); // Throws an exception if the HTTP response status code is not in the 2xx range
-                Console.WriteLine($"[OK] Solr core '{core}' is up and running.");
-
-                await CheckSolRFileHash(client, solrSettings, core, "managed-schema.xml", expectedHashSchema);
-                await CheckSolRFileHash(client, solrSettings, core, "solrconfig.xml", expectedHashConfig);
+                AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
+            };
+            if (solrSettings.InsecureSSL)
+            {
+                handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                handler.ClientCertificateOptions = ClientCertificateOption.Manual;
             }
+
+            if (!string.IsNullOrEmpty(settings.Proxy))
+            {
+                handler.Proxy = new WebProxy()
+                {
+                    Address = new Uri(settings.Proxy ?? ""),
+                    BypassList = settings.NoProxy?.Split(new char[] {',',';'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? new string[] { }
+                };
+            }
+
+            using var client = new HttpClient(handler);
+            var response = await client.GetAsync(solrSettings.Uri + $"/solr/{core}/admin/ping?wt=json");
+            response.EnsureSuccessStatusCode(); // Throws an exception if the HTTP response status code is not in the 2xx range
+            Console.WriteLine($"[OK] Solr core '{core}' is up and running.");
+
+            await CheckSolRFileHash(client, solrSettings, core, "managed-schema.xml", expectedHashSchema);
+            await CheckSolRFileHash(client, solrSettings, core, "solrconfig.xml", expectedHashConfig);
         }
         catch (HttpRequestException ex)
         {
