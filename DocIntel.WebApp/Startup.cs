@@ -136,15 +136,18 @@ namespace DocIntel.WebApp
             {
                 Console.WriteLine("Uses LDAP authentication");
                 services.AddScoped<ILdapService, ActiveDirectoryLdapService>();
-                services.AddScoped<LdapUserManager, LdapUserManager>();
-                services.AddScoped<SignInManager<AppUser>, LdapSignInManager>();
-
                 services.AddSingleton(ldapSettings);
+                    
+                services.AddTransient<SignInManager<AppUser>, LdapSignInManager>();
+                services.AddTransient<UserManager<AppUser>, LdapUserManager>();
+                services.AddTransient<RoleManager<AppRole>, AppRoleManager>();
 
                 services.AddIdentity<AppUser, AppRole>()
-                    .AddUserManager<LdapUserManager>()
                     .AddSignInManager<LdapSignInManager>()
-                    .AddEntityFrameworkStores<DocIntelContext>();
+                    .AddUserManager<LdapUserManager>()
+                    .AddRoleManager<AppRoleManager>()
+                    .AddEntityFrameworkStores<DocIntelContext>()
+                    .AddDefaultTokenProviders();
             }
             else
             {

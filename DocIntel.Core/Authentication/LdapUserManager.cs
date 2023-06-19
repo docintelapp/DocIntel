@@ -28,7 +28,7 @@ namespace DocIntel.Core.Authentication
     /// <summary>
     ///     Provides an API for managing users via an LDAP service.
     /// </summary>
-    public class LdapUserManager : UserManager<AppUser>
+    public class LdapUserManager : AppUserManager
     {
         private readonly ILdapService _ldapService;
 
@@ -92,19 +92,7 @@ namespace DocIntel.Core.Authentication
         {
             _ldapService = ldapService;
         }
-
-        /// <summary>
-        ///     The LDAP service supports roles.
-        /// </summary>
-        /// <value>True</value>
-        public override bool SupportsUserRole => true;
-
-        /// <summary>
-        ///     The LDAP service supports user claims.
-        /// </summary>
-        /// <value>True</value>
-        public override bool SupportsUserClaim => true;
-
+        
         /// <summary>
         ///     Returns a flag indicating whether the given password is valid
         ///     for the specified user.

@@ -32,7 +32,7 @@ namespace DocIntel.Core.Authentication
     ///     Provides the API for the users to sign in DocIntel via an LDAP
     ///     service.
     /// </summary>
-    public class LdapSignInManager : SignInManager<AppUser>
+    public class LdapSignInManager : AppSignInManager
     {
         private readonly ILdapService _ldapService;
         private readonly LdapSettings _ldapSettings;
