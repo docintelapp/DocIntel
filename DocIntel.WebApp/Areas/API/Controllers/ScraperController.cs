@@ -31,6 +31,7 @@ using DocIntel.Core.Scrapers;
 using DocIntel.WebApp.Areas.API.Models;
 using DocIntel.WebApp.Helpers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -48,7 +49,7 @@ public class ScraperController : DocIntelAPIControllerBase
     private readonly IGroupRepository _groupRepository;
     private readonly IServiceProvider _serviceProvider;
 
-    public ScraperController(AppUserManager userManager,
+    public ScraperController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<ScraperController> logger,
         IScraperRepository scraperRepository,

@@ -31,6 +31,7 @@ using DocIntel.WebApp.Helpers;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -54,7 +55,7 @@ namespace DocIntel.WebApp.Controllers
 
         public ClassificationController(IAppAuthorizationService appAuthorizationService,
             IClassificationRepository classificationRepository,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             ApplicationSettings configuration,
             ILogger<ClassificationController> logger,
             DocIntelContext context,

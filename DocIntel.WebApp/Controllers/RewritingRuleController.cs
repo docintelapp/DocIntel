@@ -47,7 +47,7 @@ namespace DocIntel.WebApp.Controllers
             DocIntelContext context,
             ILogger<RewritingRuleController> logger,
             ApplicationSettings configuration,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             IAuthorizationService authorizationService,
             IImportRuleRepository importRuleRepository,
             IHttpContextAccessor accessor)

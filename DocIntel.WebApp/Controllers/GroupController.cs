@@ -52,7 +52,7 @@ namespace DocIntel.WebApp.Controllers
 
         public GroupController(IAppAuthorizationService appAuthorizationService,
             IGroupRepository groupRepository,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             ApplicationSettings configuration,
             ILogger<GroupController> logger,
             DocIntelContext context,

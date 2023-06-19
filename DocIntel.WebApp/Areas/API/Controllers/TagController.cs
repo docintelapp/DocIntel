@@ -53,7 +53,7 @@ public class TagController : DocIntelAPIControllerBase
     private readonly ITagRepository _tagRepository;
     private readonly ITagSearchService _tagSearchEngine;
 
-    public TagController(AppUserManager userManager,
+    public TagController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ITagSearchService tagSearchEngine,
         ILogger<TagController> logger,

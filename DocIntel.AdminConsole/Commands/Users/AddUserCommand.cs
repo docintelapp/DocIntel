@@ -20,7 +20,7 @@ namespace DocIntel.AdminConsole.Commands.Users
         
         public AddUserCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             ApplicationSettings applicationSettings,
             IOptions<IdentityOptions> identityOptions, AppRoleManager roleManager) : base(context,
             userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)

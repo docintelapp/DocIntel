@@ -59,7 +59,7 @@ public class SearchController : DocIntelAPIControllerBase
     private readonly IFacetSearchService _facetSearchEngine;
     private readonly ISourceSearchService _sourceSearchEngine;
 
-    public SearchController(AppUserManager userManager,
+    public SearchController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ITagSearchService tagSearchEngine,
         ILogger<SearchController> logger,

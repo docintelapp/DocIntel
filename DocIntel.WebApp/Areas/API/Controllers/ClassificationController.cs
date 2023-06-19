@@ -76,7 +76,7 @@ public class ClassificationController : DocIntelAPIControllerBase
     private readonly IMapper _mapper;
     private readonly IClassificationRepository _classificationRepository;
 
-    public ClassificationController(AppUserManager userManager,
+    public ClassificationController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<ClassificationController> logger,
         IClassificationRepository classificationRepository,

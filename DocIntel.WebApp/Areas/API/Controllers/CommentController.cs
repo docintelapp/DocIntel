@@ -31,6 +31,7 @@ using DocIntel.WebApp.Areas.API.Models;
 using DocIntel.WebApp.Helpers;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
@@ -66,7 +67,7 @@ public class CommentController : DocIntelAPIControllerBase
     private readonly ILogger<CommentController> _logger;
     private readonly IMapper _mapper;
 
-    public CommentController(AppUserManager userManager,
+    public CommentController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<CommentController> logger,
         IHttpContextAccessor accessor,

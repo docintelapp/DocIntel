@@ -48,7 +48,7 @@ namespace DocIntel.WebApp.Controllers
 
         public TagFacetController(DocIntelContext context,
             ILogger<TagFacetController> logger,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             ApplicationSettings configuration,
             IAuthorizationService authorizationService,
             IAppAuthorizationService appAuthorizationService,

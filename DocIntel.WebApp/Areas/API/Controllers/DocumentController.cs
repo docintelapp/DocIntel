@@ -87,7 +87,7 @@ public class DocumentController : DocIntelAPIControllerBase
     private readonly ISynapseRepository _synapseRepository;
     private readonly ITagRepository _tagRepository;
 
-    public DocumentController(AppUserManager userManager,
+    public DocumentController(UserManager<AppUser> userManager,
         DocIntelContext context,
         IDocumentRepository documentRepository,
         ILogger<DocumentController> logger,

@@ -43,10 +43,10 @@ namespace DocIntel.WebApp.Controllers
         protected readonly IAuthorizationService _authorizationService;
         protected readonly ApplicationSettings _configuration;
         protected readonly DocIntelContext _context;
-        protected readonly AppUserManager _userManager;
+        protected readonly UserManager<AppUser> _userManager;
 
         public BaseController(DocIntelContext context,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             ApplicationSettings configuration,
             IAuthorizationService authorizationService)
         {

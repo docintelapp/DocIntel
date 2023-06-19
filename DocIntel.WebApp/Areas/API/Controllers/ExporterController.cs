@@ -41,7 +41,7 @@ public class ExporterController : DocIntelAPIControllerBase
     private readonly IModelBinderFactory _modelBinderFactory;
     private readonly IServiceProvider _serviceProvider;
     
-    public ExporterController(AppUserManager userManager,
+    public ExporterController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<ExporterController> logger,
         ModuleFactory moduleFactory,

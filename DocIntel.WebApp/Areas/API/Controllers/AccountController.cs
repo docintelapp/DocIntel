@@ -67,7 +67,7 @@ namespace DocIntel.WebApp.Areas.API.Controllers
         private readonly ILogger<AuthenticationController> _logger;
         private readonly IUserRepository _userRepository;
 
-        public AccountController(AppUserManager userManager,
+        public AccountController(UserManager<AppUser> userManager,
             DocIntelContext context,
             IConfiguration config,
             IUserRepository userRepository,

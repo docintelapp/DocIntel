@@ -53,7 +53,7 @@ namespace DocIntel.WebApp.Controllers
 
         public RoleController(IAppAuthorizationService appAuthorizationService,
             AppRoleManager roleManager,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             ApplicationSettings configuration,
             ILogger<RoleController> logger,
             DocIntelContext context,

@@ -10,6 +10,7 @@ using DocIntel.Core.Utils.Search.Documents;
 using DocIntel.WebApp.Areas.Synapse.Views.Node;
 using DocIntel.WebApp.Controllers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Synsharp.Telepath;
@@ -27,7 +28,7 @@ public class NodeController : BaseController
     private readonly NodeHelper _nodeHelper;
 
     public NodeController(DocIntelContext context,
-        AppUserManager userManager,
+        UserManager<AppUser> userManager,
         ApplicationSettings configuration,
         IAuthorizationService authorizationService,
         TelepathClient synapseClient,

@@ -134,25 +134,30 @@ namespace DocIntel.Core.Services
             {
                 Console.WriteLine("Uses LDAP authentication");
                 serviceCollection.AddScoped<ILdapService, ActiveDirectoryLdapService>();
-                serviceCollection.AddScoped<LdapUserManager, LdapUserManager>();
-                serviceCollection.AddScoped<SignInManager<AppUser>, LdapSignInManager>();
-
                 serviceCollection.AddSingleton(ldapSettings);
+                    
+                serviceCollection.AddScoped<SignInManager<AppUser>, LdapSignInManager>();
+                serviceCollection.AddScoped<UserManager<AppUser>, LdapUserManager>();
+                serviceCollection.AddScoped<RoleManager<AppRole>, AppRoleManager>();
 
                 serviceCollection.AddIdentity<AppUser, AppRole>()
-                    .AddUserManager<LdapUserManager>()
                     .AddSignInManager<LdapSignInManager>()
-                    .AddEntityFrameworkStores<DocIntelContext>();
+                    .AddUserManager<LdapUserManager>()
+                    .AddRoleManager<AppRoleManager>()
+                    .AddEntityFrameworkStores<DocIntelContext>()
+                    .AddDefaultTokenProviders();
             }
             else
             {
                 Console.WriteLine("Uses native authentication");
                 serviceCollection.AddScoped<SignInManager<AppUser>, AppSignInManager>();
                 serviceCollection.AddScoped<UserManager<AppUser>, AppUserManager>();
+                serviceCollection.AddScoped<RoleManager<AppRole>, AppRoleManager>();
 
                 serviceCollection.AddIdentity<AppUser, AppRole>()
                     .AddSignInManager<AppSignInManager>()
                     .AddUserManager<AppUserManager>()
+                    .AddRoleManager<AppRoleManager>()
                     .AddEntityFrameworkStores<DocIntelContext>()
                     .AddDefaultTokenProviders();
             }

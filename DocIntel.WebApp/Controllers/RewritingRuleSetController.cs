@@ -53,7 +53,7 @@ namespace DocIntel.WebApp.Controllers
             ILogger<RewritingRuleSetController> logger,
             ApplicationSettings configuration,
             IIncomingFeedRepository incomingFeedRepository,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             IAuthorizationService authorizationService,
             IImportRuleRepository importRuleRepository,
             IHttpContextAccessor accessor)

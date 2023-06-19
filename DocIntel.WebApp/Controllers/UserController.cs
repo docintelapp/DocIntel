@@ -51,7 +51,7 @@ namespace DocIntel.WebApp.Controllers
         private readonly IOptions<IdentityOptions> _identityOptions;
 
         public UserController(
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             ApplicationSettings configuration,
             ILogger<UserController> logger,
             DocIntelContext context,

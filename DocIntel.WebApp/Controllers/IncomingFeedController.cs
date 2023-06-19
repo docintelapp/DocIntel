@@ -62,7 +62,7 @@ namespace DocIntel.WebApp.Controllers
             DocIntelContext context,
             ILogger<DocumentController> logger,
             ApplicationSettings configuration,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             IAuthorizationService authorizationService,
             IIncomingFeedRepository incomingFeedRepository,
             IHttpContextAccessor accessor, IServiceProvider serviceProvider,

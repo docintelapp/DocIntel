@@ -55,7 +55,7 @@ namespace DocIntel.WebApp.Controllers
             ILogger<FileController> logger,
             ApplicationSettings configuration,
             IAppAuthorizationService appAuthorizationService,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             IAuthorizationService authorizationService,
             IDocumentRepository documentRepository,
             IHttpContextAccessor accessor,

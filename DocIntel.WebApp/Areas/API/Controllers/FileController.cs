@@ -90,7 +90,7 @@ public class FileController : DocIntelAPIControllerBase
     private readonly IGroupRepository _groupRepository;
     private readonly ApplicationSettings _configuration;
 
-    public FileController(AppUserManager userManager,
+    public FileController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<FileController> logger,
         IHttpContextAccessor accessor,

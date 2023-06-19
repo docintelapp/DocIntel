@@ -65,7 +65,7 @@ namespace DocIntel.WebApp.Controllers
             ILogger<DocumentController> logger,
             IDocumentSearchEngine searchEngine,
             ApplicationSettings configuration,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             ITagRepository tagRepository,
             IDocumentRepository documentRepository,
             IAuthorizationService authorizationService,

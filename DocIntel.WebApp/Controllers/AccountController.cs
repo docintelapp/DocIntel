@@ -69,7 +69,7 @@ namespace DocIntel.WebApp.Controllers
 
         public AccountController(
             DocIntelContext context,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             ApplicationSettings configuration,
             ILogger<AccountController> logger,

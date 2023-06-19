@@ -68,7 +68,7 @@ public class RewritingRuleController : DocIntelAPIControllerBase
     private readonly IMapper _mapper;
     private readonly IImportRuleRepository _importRuleRepository;
 
-    public RewritingRuleController(AppUserManager userManager,
+    public RewritingRuleController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<RewritingRuleController> logger,
         IImportRuleRepository importRuleRepository,

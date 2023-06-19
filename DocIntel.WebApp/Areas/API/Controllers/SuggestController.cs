@@ -59,7 +59,7 @@ public class SuggestController : DocIntelAPIControllerBase
     private readonly IFacetSearchService _facetSearchEngine;
     private readonly ISourceSearchService _sourceSearchEngine;
 
-    public SuggestController(AppUserManager userManager,
+    public SuggestController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ITagSearchService tagSearchEngine,
         ILogger<SuggestController> logger,

@@ -81,7 +81,7 @@ public class FacetController : DocIntelAPIControllerBase
     private readonly IMapper _mapper;
     private readonly IFacetSearchService _facetSearchEngine;
 
-    public FacetController(AppUserManager userManager,
+    public FacetController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<FacetController> logger,
         IHttpContextAccessor accessor,

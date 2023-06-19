@@ -47,7 +47,7 @@ namespace DocIntel.WebApp.Controllers
         public CommentController(DocIntelContext context,
             ILogger<CommentController> logger,
             ApplicationSettings configuration,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             IAuthorizationService authorizationService,
             ICommentRepository commentRepository,
             IDocumentRepository documentRepository,

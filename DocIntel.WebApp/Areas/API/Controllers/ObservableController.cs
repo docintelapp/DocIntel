@@ -30,6 +30,7 @@ using DocIntel.Core.Utils.Observables;
 using DocIntel.WebApp.Areas.API.Models;
 using DocIntel.WebApp.Helpers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
@@ -61,7 +62,7 @@ public class ObservableController : DocIntelAPIControllerBase
     private readonly ISynapseRepository _observableRepository;
     private readonly IDocumentRepository _documentRepository;
 
-    public ObservableController(AppUserManager userManager,
+    public ObservableController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<ObservableController> logger,
         ISynapseRepository observableRepository,

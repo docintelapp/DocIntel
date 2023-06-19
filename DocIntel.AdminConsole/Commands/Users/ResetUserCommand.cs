@@ -17,7 +17,7 @@ namespace DocIntel.AdminConsole.Commands.Users
 
         public ResetUserCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
-            AppUserManager userManager, ApplicationSettings applicationSettings, AppRoleManager roleManager) : base(context,
+            UserManager<AppUser> userManager, ApplicationSettings applicationSettings, AppRoleManager roleManager) : base(context,
             userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
         }

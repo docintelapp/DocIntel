@@ -45,7 +45,7 @@ namespace DocIntel.WebApp.Controllers
 
         public HomeController(DocIntelContext context,
             ApplicationSettings configuration,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             IAuthorizationService authorizationService,
             IDocumentRepository documentRepository, ITagRepository tagRepository, ISourceRepository sourceRepository)
             : base(context,

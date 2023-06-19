@@ -26,6 +26,7 @@ using DocIntel.WebApp.Helpers;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -43,7 +44,7 @@ namespace DocIntel.WebApp.Controllers
         public ModuleController(DocIntelContext context,
             ILogger<ModuleController> logger,
             ApplicationSettings configuration,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             IAuthorizationService authorizationService,
             ModuleFactory moduleFactory,
             IHttpContextAccessor accessor)

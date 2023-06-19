@@ -79,7 +79,7 @@ public class GroupController : DocIntelAPIControllerBase
     private readonly IMapper _mapper;
     private readonly IGroupRepository _groupRepository;
 
-    public GroupController(AppUserManager userManager,
+    public GroupController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<GroupController> logger,
         IGroupRepository groupRepository,

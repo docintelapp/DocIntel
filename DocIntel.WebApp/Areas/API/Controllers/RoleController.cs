@@ -72,7 +72,7 @@ public class RoleController : DocIntelAPIControllerBase
     private readonly IMapper _mapper;
     private readonly AppRoleManager _roleManager;
 
-    public RoleController(AppUserManager userManager,
+    public RoleController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<RoleController> logger,
         AppRoleManager roleManager,

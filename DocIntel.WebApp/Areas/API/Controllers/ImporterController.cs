@@ -49,7 +49,7 @@ public class ImporterController : DocIntelAPIControllerBase
     private readonly IGroupRepository _groupRepository;
     private readonly IServiceProvider _serviceProvider;
 
-    public ImporterController(AppUserManager userManager,
+    public ImporterController(UserManager<AppUser> userManager,
         DocIntelContext context,
         ILogger<ImporterController> logger,
         IIncomingFeedRepository importerRepository,

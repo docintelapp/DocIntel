@@ -30,9 +30,9 @@ namespace DocIntel.WebApp.Areas.API.Controllers
     public abstract class DocIntelAPIControllerBase : ControllerBase
     {
         protected readonly DocIntelContext _context;
-        protected readonly AppUserManager _userManager;
+        protected readonly UserManager<AppUser> _userManager;
 
-        protected DocIntelAPIControllerBase(AppUserManager userManager,
+        protected DocIntelAPIControllerBase(UserManager<AppUser> userManager,
             DocIntelContext context)
         {
             _userManager = userManager;

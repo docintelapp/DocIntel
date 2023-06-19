@@ -35,6 +35,7 @@ using DocIntel.WebApp.Helpers;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -60,7 +61,7 @@ namespace DocIntel.WebApp.Controllers
             DocIntelContext context,
             ILogger<ScraperController> logger,
             ApplicationSettings configuration,
-            AppUserManager userManager,
+            UserManager<AppUser> userManager,
             IAuthorizationService authorizationService,
             IScraperRepository scraperRepository,
             IHttpContextAccessor accessor, IServiceProvider serviceProvider,

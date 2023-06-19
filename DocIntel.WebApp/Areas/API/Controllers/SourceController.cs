@@ -53,7 +53,7 @@ public class SourceController : DocIntelAPIControllerBase
 
     public SourceController(DocIntelContext context,
         ILogger<SourceController> logger,
-        AppUserManager userManager,
+        UserManager<AppUser> userManager,
         ISourceSearchService sourceSearchEngine,
         ISourceRepository sourceRepository,
         IHttpContextAccessor accessor,
