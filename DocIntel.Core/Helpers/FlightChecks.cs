@@ -406,16 +406,16 @@ public static class FlightChecks
             
         if (ret)
         {
-            await CheckSolRCore(settings, "document", "dd8797b6467657af39021615b51aba22", "afa181ec19bb965f95e55871b2748d86");
-            await CheckSolRCore(settings, "tag", "2352416bd9b7f609fda9aa5ce9429005", "15af4bbd0222eea195307519b469592f");
-            await CheckSolRCore(settings, "facet", "df64ee714a333057d0a5ebaf0d50f984", "dbfd0e73a69141eb2613f8b33fea71e3");
-            await CheckSolRCore(settings, "source", "0c50f43a645c5694733359ec9d9731c5", "15af4bbd0222eea195307519b469592f");
+            await CheckSolRCore(settings, "document", "dd8797b6467657af39021615b51aba22");
+            await CheckSolRCore(settings, "tag", "2352416bd9b7f609fda9aa5ce9429005");
+            await CheckSolRCore(settings, "facet", "df64ee714a333057d0a5ebaf0d50f984");
+            await CheckSolRCore(settings, "source", "0c50f43a645c5694733359ec9d9731c5");
         }
             
         return ret;
     }
 
-    private static async Task CheckSolRCore(ApplicationSettings settings, string core, string expectedHashSchema, string expectedHashConfig)
+    private static async Task CheckSolRCore(ApplicationSettings settings, string core, string expectedHashSchema)
     {
         var solrSettings = settings.Solr;
         try
@@ -445,7 +445,6 @@ public static class FlightChecks
             Console.WriteLine($"[OK] Solr core '{core}' is up and running.");
 
             await CheckSolRFileHash(client, solrSettings, core, "managed-schema.xml", expectedHashSchema);
-            await CheckSolRFileHash(client, solrSettings, core, "solrconfig.xml", expectedHashConfig);
         }
         catch (HttpRequestException ex)
         {
