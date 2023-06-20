@@ -35,7 +35,7 @@ public class DynamicContextConsumer
         {
             var dbContextOptions = scopeServiceProvider.GetRequiredService<DbContextOptions<DocIntelContext>>();
             var dbContextLogger = scopeServiceProvider.GetRequiredService<ILogger<DocIntelContext>>();
-            var userManager = scopeServiceProvider.GetRequiredService<AppUserManager>();
+            var userManager = scopeServiceProvider.GetRequiredService<UserManager<AppUser>>();
             var userClaimsPrincipalFactory = scopeServiceProvider.GetRequiredService<AppUserClaimsPrincipalFactory>();
             
             dbContext = new DocIntelContext(dbContextOptions, dbContextLogger);
