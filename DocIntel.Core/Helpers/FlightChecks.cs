@@ -481,7 +481,7 @@ public static class FlightChecks
             
         Console.WriteLine("---- Running pre-flight checks for Synapse...");
 
-        if (string.IsNullOrEmpty(synapseSettings.URL))
+        if (synapseSettings.URL == null)
         {
             ret = false;
             Console.WriteLine("[KO] Synapse URI is null or empty. Specify a correct URI to the Synapse server.");
@@ -492,35 +492,38 @@ public static class FlightChecks
             Console.WriteLine($"[OK] DocIntel will log in on Synapse with '{synapseSettings.UserName}' username.");
         }
 
-        Uri uri;
-        if (Uri.TryCreate(synapseSettings.URL, UriKind.Absolute, out uri) 
-            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeNetTcp))
-        {
-            Console.WriteLine($"[OK] Synapse URL is valid.");
+        Console.WriteLine($"[OK] Synapse URL is valid.");
 
-            try
-            {
-                var tcpClient = new TcpClient();
-                tcpClient.Connect(uri.Host, uri.Port);
-                Console.WriteLine($"[OK] Synapse server {uri.Host} is reachable on port {uri.Port}.");
-            }
-            catch (Exception e)
-            {
-                ret = false;
-                Console.WriteLine($"[KO] Synapse server on hostname {uri.Host} could not be reached on port {uri.Port}.");   
-            }
+        try
+        {
+            var tcpClient = new TcpClient();
+            tcpClient.Connect(synapseSettings.URL.Host, synapseSettings.URL.Port);
+            Console.WriteLine($"[OK] Synapse server {synapseSettings.URL.Host} is reachable on port {synapseSettings.URL.Port}.");
         }
-        else
+        catch (Exception e)
         {
             ret = false;
-            Console.WriteLine("[KO] Synapse URI is invalid. Specify a correct URI to the Synapse server.");   
+            Console.WriteLine($"[KO] Synapse server on hostname {synapseSettings.URL.Host} could not be reached on port {synapseSettings.URL.Port}.");
         }
 
         if (ret)
         {
-            var uriBuilder = new UriBuilder(uri);
-            uriBuilder.UserName = synapseSettings.UserName;
-            uriBuilder.Password = synapseSettings.Password;
+            var uriBuilder = new UriBuilder(synapseSettings.URL);
+
+            if (!string.IsNullOrEmpty(synapseSettings.UserName))
+            {
+                Console.WriteLine("[!!] Your configuration specifies a username for Synapse. It is now recommenced to specify it in the URI for the connection, for example tcp://myuser@myserver.com");
+            }
+            
+            if (!string.IsNullOrEmpty(synapseSettings.Password))
+            {
+                Console.WriteLine("[!!] Your configuration specifies a password for Synapse. It is now recommenced to specify it in the URI for the connection, for example tcp://myuser:mypassword@myserver.com. It is best to use client certificates.");
+            }
+            
+            if (string.IsNullOrEmpty(uriBuilder.UserName) && !string.IsNullOrEmpty(synapseSettings.UserName)) 
+                uriBuilder.UserName = synapseSettings.UserName;
+            if (string.IsNullOrEmpty(uriBuilder.Password) && !string.IsNullOrEmpty(synapseSettings.Password)) 
+                uriBuilder.Password = synapseSettings.Password;
             try
             {
                 var telepath = new TelepathClient(uriBuilder.ToString());

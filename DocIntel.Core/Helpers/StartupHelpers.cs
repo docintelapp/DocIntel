@@ -205,10 +205,14 @@ namespace DocIntel.Core.Helpers
             services.AddScoped<TelepathClient>(provider =>
             {
                 var settings = provider.GetRequiredService<SynapseSettings>();
-                var uri = new UriBuilder(settings.URL);
-                uri.UserName = settings.UserName;
-                uri.Password = settings.Password;
-                return new TelepathClient(uri.ToString());
+                var uriBuilder = new UriBuilder(settings.URL);
+                
+                if (string.IsNullOrEmpty(uriBuilder.UserName) && !string.IsNullOrEmpty(settings.UserName)) 
+                    uriBuilder.UserName = settings.UserName;
+                if (string.IsNullOrEmpty(uriBuilder.Password) && !string.IsNullOrEmpty(settings.Password)) 
+                    uriBuilder.Password = settings.Password;
+                
+                return new TelepathClient(uriBuilder.ToString());
             });
             services.AddScoped<ISynapseRepository, SynapseRepository>();
         }
