@@ -32,9 +32,7 @@
     },
   
     "Synapse": {
-      "URL": "_SYNAPSE_URL_",
-      "UserName": "_SYNAPSE_USER_",
-      "Password": "_SYNAPSE_PW_"
+      "URL": "_SYNAPSE_URL_"
     },
     
     "RabbitMQ": {

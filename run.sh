@@ -133,9 +133,7 @@ sed -i.bck "s~_POSTGRES_PW_~$postgrespw~g" $conffolder/appsettings.json
 sed -i.bck "s~_POSTGRES_DB_~docintel~g" $conffolder/appsettings.json
 sed -i.bck "s~_POSTGRES_PORT_~5432~g" $conffolder/appsettings.json
 sed -i.bck "s~_POSTGRES_HOST_~docintel-dev-postgres~g" $conffolder/appsettings.json
-sed -i.bck "s~_SYNAPSE_URL_~https://docintel-dev-synapse:27492~g" $conffolder/appsettings.json
-sed -i.bck "s~_SYNAPSE_USER_~root~g" $conffolder/appsettings.json
-sed -i.bck "s~_SYNAPSE_PW_~$synapsepw~g" $conffolder/appsettings.json
+sed -i.bck "s~_SYNAPSE_URL_~tcp://root:$synapsepw@docintel-dev-synapse:27492~g" $conffolder/appsettings.json
 sed -i.bck "s~_RABBITMQ_HOST_~docintel-dev-rabbitmq~g" $conffolder/appsettings.json
 sed -i.bck "s~_RABBITMQ_VHOST_~/~g" $conffolder/appsettings.json
 sed -i.bck "s~_RABBITMQ_USER_~guest~g" $conffolder/appsettings.json
