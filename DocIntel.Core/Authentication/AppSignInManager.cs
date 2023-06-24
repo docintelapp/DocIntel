@@ -118,7 +118,7 @@ namespace DocIntel.Core.Authentication
                     null,
                     LogEvent.Formatter);
 
-                return SignInResult.LockedOut;
+                return SignInResult.NotAllowed;
             }
 
             var signInResult
