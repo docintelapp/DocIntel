@@ -96,6 +96,7 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
             {
                 _indexingUtility.Update(tag);
                 tag.LastIndexDate = DateTime.UtcNow;
+                await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
             }
             catch (UnauthorizedOperationException)
             {
@@ -133,7 +134,6 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
                 _logger.LogDebug(e.StackTrace);
             }
 
-        await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
         _logger.LogInformation($"TagIndexerTimedConsumer successfully executed");
     }
 }
