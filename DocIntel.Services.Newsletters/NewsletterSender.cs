@@ -36,6 +36,7 @@ using MimeKit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using RazorLight.DependencyInjection;
 
 namespace DocIntel.Services.Newsletters
 {
@@ -105,10 +106,14 @@ namespace DocIntel.Services.Newsletters
         }
 
         public async Task RunAsync() {
+            _logger.LogInformation("Sending newsletter.");
             var engine = new CustomRazorLightEngineBuilder()
 	            .UseFileSystemProject(Path.Combine(Directory.GetCurrentDirectory(), "Views"))
                 .UseMemoryCachingProvider()
                 .Build();
+            
+            var injector = new PropertyInjector(_serviceProvider);
+            engine.Options.PreRenderCallbacks.Add(template => injector.Inject(template));
 
             AmbientContext ambientContext = await GetAmbientContext();
             var users = await _userRepository.GetUsersForNewsletter(ambientContext).ToArrayAsync();

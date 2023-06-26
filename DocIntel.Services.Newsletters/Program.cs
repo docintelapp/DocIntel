@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Threading.Tasks;
 using DocIntel.Core.Helpers;
 using DocIntel.Core.Services;
@@ -49,7 +50,8 @@ namespace DocIntel.Services.Newsletters
                 {
                     services.AddScoped<NewsletterSender>();
                     services.AddHostedService<EmailNotificationHostedService>();
-                    ConfigureService(hostContext, services, runHostedServices: true);
+                    // ConfigureService(hostContext, services, runHostedServices: true);
+                    ConfigureService(hostContext, services, new [] { typeof(Program).Assembly }, runHostedServices: true);
                 })
                 .UseNLog();
     }

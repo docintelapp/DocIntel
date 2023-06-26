@@ -65,8 +65,8 @@ namespace DocIntel.Core.Services
             foreach (var configFile in configFiles.Reverse())
             {
                 if (File.Exists(configFile))
-                {
-                    logging.AddNLog(configFile);
+                {   
+                    logging.AddNLog(Path.GetFullPath(configFile));
                     success = true;
                     break;
                 }

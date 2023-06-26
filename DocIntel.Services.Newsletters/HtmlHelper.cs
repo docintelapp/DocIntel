@@ -6,8 +6,7 @@ namespace DocIntel.Services.Newsletters;
 
 public static class HtmlHelper
 {
-    public static IHtmlContent Sanitize(this IHtmlHelper htmlHelper,
-        string text)
+    public static IHtmlContent Sanitize(string text)
     {
         return new HtmlString(new HtmlSanitizer().Sanitize(text));
     }
