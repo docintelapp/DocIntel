@@ -129,8 +129,12 @@ namespace DocIntel.Core.Utils.Thumbnail
 
                 await SaveThumbnail(context, file, memoryStream);
 
-                File.Delete(tempFilePath);
+                if (File.Exists(tempFilePath))
+                    File.Delete(tempFilePath);
 
+                if (File.Exists(tempFilePath + ".png"))
+                    File.Delete(tempFilePath + ".png");
+                
                 return true;
             }
             catch (Exception e)
