@@ -114,7 +114,7 @@
                                         </td>
                                         <td style="width: 75%">
                                             <p class="m-0 mb-2" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
-                                                @if (!string.IsNullOrEmpty(item.Repr))
+                                                @if (!string.IsNullOrEmpty(item.Repr as string))
                                                 {
                                                     <text>@item.Repr</text>
                                                 }

@@ -2,7 +2,7 @@
 @model DocIntel.WebApp.Areas.Synapse.Views.Node.NodeDetailsViewModel
 
 @{
-    var coreValue = !string.IsNullOrEmpty(Model.Root.Repr) ? Model.Root.Repr : Model.Root.Valu;
+    var coreValue = !string.IsNullOrEmpty(Model.Root.Repr as string) ? Model.Root.Repr : Model.Root.Valu;
     
     ViewBag.Title = $"[{Model.Root.Form}] {coreValue}";
     Layout = "_Layout";

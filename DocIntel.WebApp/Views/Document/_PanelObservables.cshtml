@@ -31,7 +31,7 @@
                                     <td>@item.Form</td>
                                     <td>
                                         <a asp-area="Synapse" asp-controller="Node" asp-action="Details" asp-route-id="@item.Iden">
-                                            @if (!string.IsNullOrEmpty((item.Repr)))
+                                            @if (!string.IsNullOrEmpty((item.Repr as string)))
                                             {
                                                 <text>@item.Repr</text>
                                             } else
