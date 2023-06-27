@@ -110,7 +110,7 @@ namespace DocIntel.Core.Utils
             {
                 FacetId = facet.FacetId,
                 Label = label.Trim()
-            }).ToEnumerable().SingleOrDefault();
+            }).ToEnumerable().FirstOrDefault();
             
             if (retrievedTag == null)
             {
