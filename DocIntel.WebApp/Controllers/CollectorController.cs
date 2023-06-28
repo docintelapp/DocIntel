@@ -283,21 +283,24 @@ namespace DocIntel.WebApp.Controllers
             [Bind(Prefix = "releasableTo")] Guid[] releasableTo,
             [Bind(Prefix = "eyesOnly")] Guid[] eyesOnly,
             [Bind(Prefix = "tags")] Guid[] tags,
-            [Bind(Prefix = "Collector")] string collectorId)
+            [Bind(Prefix = "collector")] string collectorId)
         {
             var currentUser = await GetCurrentUser();
 
             try
             {
+                if (string.IsNullOrEmpty(collectorId))
+                    ModelState.AddModelError("Collector", "Please select a collector.");
+            
                 if (ModelState.IsValid)
                 {
-                    var collector = new Collector(); 
+                    var collector = new Collector();
 
-                    var mod = collectorId.Split('.', 2)[0];
-                    var colname = collectorId.Split('.', 2)[1];
-                    collector.Module = mod;
-                    collector.CollectorName = colname;
-                    
+                        var mod = collectorId.Split('.', 2)[0];
+                        var colname = collectorId.Split('.', 2)[1];
+                        collector.Module = mod;
+                        collector.CollectorName = colname;
+
                     if (!string.IsNullOrEmpty(submittedCollector.Name))
                         collector.Name = submittedCollector.Name;
                     if (!string.IsNullOrEmpty(submittedCollector.Description))
@@ -347,6 +350,7 @@ namespace DocIntel.WebApp.Controllers
                             new {id = collector.CollectorId});
                 }
 
+                await InitializeViewBag(currentUser);
                 return View(submittedCollector);
             }
             catch (UnauthorizedOperationException)
