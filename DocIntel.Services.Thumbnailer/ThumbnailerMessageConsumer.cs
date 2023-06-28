@@ -82,8 +82,10 @@ namespace DocIntel.Services.Thumbnailer
             {
                 var document =
                     await _documentRepository.GetAsync(ambientContext, documentId, new[] {"Files"});
-                await _utility.GenerateThumbnail(ambientContext, document);
-                await ambientContext.DatabaseContext.SaveChangesAsync();
+                if (document.Status == DocumentStatus.Registered) {
+                    await _utility.GenerateThumbnail(ambientContext, document);
+                    await ambientContext.DatabaseContext.SaveChangesAsync();
+                }
             }
             catch (UnauthorizedOperationException)
             {
