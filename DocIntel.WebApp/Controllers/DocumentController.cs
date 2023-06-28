@@ -1476,9 +1476,6 @@ namespace DocIntel.WebApp.Controllers
             }
         }
 
-        
-
-
         private async Task<Document> SaveDocument(Document document,
             Document submittedDocument,
             string sourceId,
