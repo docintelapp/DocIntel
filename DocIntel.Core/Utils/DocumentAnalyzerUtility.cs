@@ -147,8 +147,11 @@ public class DocumentAnalyzerUtility
                         }
                         catch (SolrConnectionException e)
                         {
-                            _logger.LogError($"Document {document.DocumentId} could not be analyzed due to an error with SolR: {e.Url}");
-                            _logger.LogError(e.ToString());
+                            _logger.LogError($"File {file.FileId} from {document.DocumentId} could not be analyzed due to an error with SolR: {e.Url}\n{e.ToString()}");
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogError($"File {file.FileId} from {document.DocumentId} could not be analyzed due to an error {e.Message}\n{e.ToString()}");
                         }
                     }
                     else
@@ -220,9 +223,7 @@ public class DocumentAnalyzerUtility
         }
         catch (Exception e)
         {
-            _logger.LogError($"Document {documentId} could not be analyzed ({e.GetType()} {e.Message}).");
-            _logger.LogError(e.StackTrace);
-            _logger.LogError(e.InnerException?.Message);
+            _logger.LogError($"Document {documentId} could not be analyzed ({e.GetType()} {e.Message})\n{e.StackTrace}\n----\n{e.InnerException?.Message}.");
         }
 
         return false;
