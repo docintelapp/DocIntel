@@ -599,12 +599,16 @@ namespace DocIntel.Core.Repositories.EFCore
                 (releasableTo ?? Enumerable.Empty<Group>())
                 .Union(file.EyesOnly ?? Enumerable.Empty<Group>()).ToHashSet();
 
-            if (!CheckFileContents(stream, out var extension))
+            if (string.IsNullOrEmpty(file.MimeType) && !CheckFileContents(stream, out var extension))
             {
                 throw new InvalidArgumentException(new List<ValidationResult>
                 {
                     new ValidationResult("File type is not supported", new[] {"file"})
                 });                
+            }
+            else
+            {
+                extension = Path.GetExtension(file.Filename);
             }
 
             if (IsValid(ambientContext, file, out var modelErrors))
@@ -620,8 +624,11 @@ namespace DocIntel.Core.Repositories.EFCore
                 _logger.LogDebug($"Copied to {Path.Combine(GetDocumentsFolder(), newFilePath)}");
 
                 file.Filepath = newFilePath;
-                new FileExtensionContentTypeProvider().TryGetContentType(file.Filepath, out var contentType);
-                file.MimeType = contentType;
+                if (string.IsNullOrEmpty(file.MimeType)) {
+                    _logger.LogDebug($"File Extension: {Path.GetExtension(file.Filepath)}");
+                    new FileExtensionContentTypeProvider().TryGetContentType(file.Filepath, out var contentType);
+                    file.MimeType = contentType;
+                }
                 
                 var trackingEntity = await ambientContext.DatabaseContext.AddAsync(file);
 

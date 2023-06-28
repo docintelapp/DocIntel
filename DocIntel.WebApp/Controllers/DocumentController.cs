@@ -659,7 +659,8 @@ namespace DocIntel.WebApp.Controllers
                             Document = document,
                             DocumentId = document.DocumentId,
                             Preview = true,
-                            Visible = true
+                            Visible = true,
+                            MimeType = file.ContentType
                         },
                         stream
                     );
