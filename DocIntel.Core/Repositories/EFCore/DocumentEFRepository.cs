@@ -599,18 +599,15 @@ namespace DocIntel.Core.Repositories.EFCore
                 (releasableTo ?? Enumerable.Empty<Group>())
                 .Union(file.EyesOnly ?? Enumerable.Empty<Group>()).ToHashSet();
 
-            if (string.IsNullOrEmpty(file.MimeType) && !CheckFileContents(stream, out var extension))
+            string extension = Path.GetExtension(file.Filename);
+            if ((string.IsNullOrEmpty(file.MimeType) || string.IsNullOrEmpty(extension)) && !CheckFileContents(stream, out extension))
             {
                 throw new InvalidArgumentException(new List<ValidationResult>
                 {
                     new ValidationResult("File type is not supported", new[] {"file"})
                 });                
             }
-            else
-            {
-                extension = Path.GetExtension(file.Filename);
-            }
-
+            
             if (IsValid(ambientContext, file, out var modelErrors))
             {
                 var newFilePath =
