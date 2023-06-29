@@ -73,6 +73,8 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
                     _logger.LogError("Could not analyze document. Skipping forever.");
                     submitted.Status = DocumentStatus.Error;
                 }
+
+                await documentAmbientContext.DatabaseContext.SaveChangesAsync();
             }
 
             Interlocked.Exchange(ref currentlyRunning, 0);

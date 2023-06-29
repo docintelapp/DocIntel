@@ -214,7 +214,7 @@ public class DocumentAnalyzerUtility
             
             var trackingEntity = ambientContext.DatabaseContext.Update(document);
             
-
+// TODO Move outside of utility?
             await ambientContext.DatabaseContext.SaveChangesAsync();
             
             // TODO Use structured logging

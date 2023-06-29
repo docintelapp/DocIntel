@@ -26,6 +26,8 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
     private Timer? _timer;
     private int executionCount;
 
+    private static int currentlyRunning = 0;
+    
     public TagIndexerTimedConsumer(ILogger<TagIndexerTimedConsumer> logger,
         ITagRepository tagRepository,
         ApplicationSettings appSettings,
@@ -63,6 +65,8 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
 
     private async void DoWork(object? state)
     {
+        if (0 == Interlocked.Exchange(ref currentlyRunning, 1))
+        {
         using IServiceScope scope = _serviceProvider.CreateScope();
         
         var count = Interlocked.Increment(ref executionCount);
@@ -135,5 +139,13 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
             }
 
         _logger.LogInformation($"TagIndexerTimedConsumer successfully executed");
+
+        Interlocked.Exchange(ref currentlyRunning, 0);
+        }
+        else
+        {
+            _logger.LogInformation(
+                $"Timed Hosted Service is still running. Skipping this beat.");   
+        }
     }
 }

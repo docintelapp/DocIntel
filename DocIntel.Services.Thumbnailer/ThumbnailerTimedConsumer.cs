@@ -27,6 +27,8 @@ public class ThumbnailerTimedConsumer : DynamicContextConsumer, IHostedService, 
     private Timer? _timer;
     private int executionCount;
 
+    private static int currentlyRunning = 0;
+    
     public ThumbnailerTimedConsumer(ILogger<ThumbnailerTimedConsumer> logger,
         IDocumentRepository documentRepository,
         AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
@@ -65,6 +67,8 @@ public class ThumbnailerTimedConsumer : DynamicContextConsumer, IHostedService, 
 
     private async void DoWork(object? state)
     {
+        if (0 == Interlocked.Exchange(ref currentlyRunning, 1))
+        {
         var count = Interlocked.Increment(ref executionCount);
         _logger.LogInformation(
             "Timed Hosted Service is working. Count: {Count}", count);
@@ -116,5 +120,13 @@ public class ThumbnailerTimedConsumer : DynamicContextConsumer, IHostedService, 
                     LogEvent.Formatter);
                 _logger.LogDebug(e.StackTrace);
             }
+
+        Interlocked.Exchange(ref currentlyRunning, 0);
+        }
+        else
+        {
+            _logger.LogInformation(
+                $"Timed Hosted Service is still running. Skipping this beat.");   
+        }
     }
 }
