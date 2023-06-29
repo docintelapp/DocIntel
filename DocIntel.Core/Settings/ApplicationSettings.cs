@@ -61,6 +61,11 @@ namespace DocIntel.Core.Settings
         public double AnalyzerFrequencyCheck { get; set; } = 5;
 
         /// <summary>
+        /// Delay, in minutes, before the first check of missed messages for the document analyzer.
+        /// </summary>
+        public double AnalyzerWaitCheck { get; set; } = 10;
+
+        /// <summary>
         /// Delay, in minutes, between two check of missed messages for the indexers..
         /// </summary>
         public double IndexingFrequencyCheck { get; set; } = 15;
