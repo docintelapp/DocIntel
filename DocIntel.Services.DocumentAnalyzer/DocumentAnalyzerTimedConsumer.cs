@@ -80,7 +80,7 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
         else
         {
             _logger.LogInformation(
-                $"Timed Hosted Service is still running. Skipping this beat. {Count}");   
+                $"Timed Hosted Service is still running. Skipping this beat.");   
         }
     }
 
