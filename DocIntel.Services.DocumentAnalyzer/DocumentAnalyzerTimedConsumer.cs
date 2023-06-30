@@ -53,8 +53,6 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
             var count = Interlocked.Increment(ref executionCount);
             _logger.LogInformation(
                 "Timed Hosted Service got the lock. Count: {Count}", count);
-
-            Thread.Sleep(TimeSpan.FromMinutes(2));
                             
             using var scope = _serviceProvider.CreateScope();
             using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
