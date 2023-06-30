@@ -126,6 +126,8 @@ public class RegexUrlExtractor : RegexExtractor
             _logger.LogTrace($"Extracted {url} with GENERIC_URL_REGEX ({capture.ToString()}).");
             if (url is not null) uris.Add(url);
         }
+        
+        /*
 
         // Appears to extract domains and IP addresses as URL. Leading to high number of false positive
         matches = Regex.Matches(content, BracketUrlRegex, DEFAULT_REGEX_OPTIONS);
@@ -145,6 +147,8 @@ public class RegexUrlExtractor : RegexExtractor
             _logger.LogTrace($"Extracted {url} with BACKSLASH_URL_REGEX ({capture.Groups[1].Value.ToString()}).");
             if (url is not null) uris.Add(url);
         }
+        
+        */        
 
         _logger.LogDebug($"Extracted {uris.Count} urls.");
         foreach (var uri in uris)
