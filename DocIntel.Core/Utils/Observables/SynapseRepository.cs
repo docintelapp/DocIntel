@@ -50,11 +50,7 @@ public class SynapseRepository : ISynapseRepository
         if (nodes.Any())
         {
             SynapseNode[] addedNodes = await _nodeHelper.AddAsync(nodes, stormOps).ToArrayAsync();
-            _logger.LogDebug($"Idens: {string.Join(",", addedNodes.Select(_ => _.Iden).ToArray())}");
-            _logger.LogDebug($"Reprs: {string.Join(",", addedNodes.Select(_ => _.Repr).ToArray())}");
             var connected = await _nodeHelper.AddLightEdgeAsync(addedNodes, "refs", docNode, stormOps).ToListAsync();
-            _logger.LogDebug($"Got {string.Join(",", connected.Select(_ => _.Iden).ToArray())}");
-            _logger.LogDebug($"Got {string.Join(",", connected.Select(_ => _.Repr).ToArray())}");
         }
         else
         {
