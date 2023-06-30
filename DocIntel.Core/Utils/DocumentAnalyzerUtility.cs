@@ -106,6 +106,7 @@ public class DocumentAnalyzerUtility
                     {
                         try
                         {
+                            _logger.LogDebug($"Will analyze file {file.FileId}");
                             await using var f = File.OpenRead(filename);
                             var response = await _solr.ExtractAsync(new ExtractParameters(f, document.DocumentId.ToString())
                             {
@@ -129,9 +130,11 @@ public class DocumentAnalyzerUtility
                                 {
                                     var view = await _observablesRepository.CreateView(document);
                                     var fileObservables = await _observablesUtility.ExtractDataAsync(document, file, response.Content).ToListAsync();
-                                    await _observablesUtility.AnnotateAsync(document, file, fileObservables);
                                     _logger.LogDebug($"Found {fileObservables.Count} observables");
+                                    await _observablesUtility.AnnotateAsync(document, file, fileObservables);
+                                    _logger.LogDebug($"Annotated {fileObservables.Count} observables");
                                     await _observablesRepository.Add(fileObservables, document, view);
+                                    _logger.LogDebug($"Addded {fileObservables.Count} observables to document");
                                 }
                                 catch (Exception e)
                                 {

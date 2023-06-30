@@ -65,6 +65,7 @@ public class DefaultObservableUtility : IObservablesUtility
                 yield return observable;
             }
         }   
+        _logger.LogDebug("Extraction complete");
     }
 
     public async Task AnnotateAsync(Document document, DocumentFile file, IEnumerable<SynapseNode> objects)
@@ -75,5 +76,6 @@ public class DefaultObservableUtility : IObservablesUtility
             _logger.LogDebug($"Running post processor '{postProcessor}' on observables");
             await postProcessor.Process(objects);
         }
+        _logger.LogDebug("Annotation complete");
     }
 }
