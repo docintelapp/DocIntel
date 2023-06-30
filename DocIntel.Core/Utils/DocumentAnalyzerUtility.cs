@@ -68,6 +68,9 @@ public class DocumentAnalyzerUtility
                     nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag),
                     nameof(Document.DocumentTags) + "." + nameof(DocumentTag.Tag) + "." + nameof(Tag.Facet)
                 });
+
+            if (document.Status == DocumentStatus.Registered)
+                return true;
             
             var tagCache = new HashSet<Tag>();
             var facetCache = new HashSet<TagFacet>();

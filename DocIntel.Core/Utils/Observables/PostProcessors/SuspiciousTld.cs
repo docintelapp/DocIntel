@@ -180,20 +180,20 @@ public class SuspiciousTld : IPostProcessor
         if (_TLD.Contains(hostTld.ToUpper()))
         {
             // Manually review suspicious tld's such as common file extensions (e.g. zip, py, pf...)
-            if (_TLDToReview.Contains(hostTld.ToUpper()))
+            if (_TLDToReview.Contains(hostTld.ToUpper()) & !fqdn.Tags.ContainsKey("_di.workflow.review"))
                 fqdn.Tags.Add("_di.workflow.review", new long?[]{});
             
             // Manually review if the main hostname part shorter than 3 chars (too expensive)
-            if (fqdnValue.Split('.')[fqdnValue.Split('.').Length - 2].Length < 3)
+            if (fqdnValue.Split('.')[fqdnValue.Split('.').Length - 2].Length < 3 & !fqdn.Tags.ContainsKey("_di.workflow.review"))
                 fqdn.Tags.Add("_di.workflow.review", new long?[]{});
             
             // Manually review the domain if there are too many dots (e.g. can be mobile app identifier)
-            if (fqdnValue.Split('.').Length > 5)
+            if (fqdnValue.Split('.').Length > 5 & !fqdn.Tags.ContainsKey("_di.workflow.review"))
                 fqdn.Tags.Add("_di.workflow.review", new long?[]{});
             
             // Manually review masked IP (e.g 111.111.xxx.xxx)
             var ipRangeMatch = Regex.Match(fqdnValue, @"^(?:[0-9xX]{1,3}\.){3}[0-9xX]{1,3}$");
-            if (ipRangeMatch.Success)
+            if (ipRangeMatch.Success & !fqdn.Tags.ContainsKey("_di.workflow.review"))
                 fqdn.Tags.Add("_di.workflow.review", new long?[]{});
             
             // Manually review possible virus detection names
@@ -202,16 +202,17 @@ public class SuspiciousTld : IPostProcessor
                 @"^(DOWNLOADER|WIN\.TROJAN|TROJAN|BACKDOOR|WIN32|EXPLOIT|VIRUS|VIRTOOL)\..*$",
                 RegexOptions.IgnoreCase);
             
-            if (avMatch.Success)
+            if (avMatch.Success & !fqdn.Tags.ContainsKey("_di.workflow.review"))
                 fqdn.Tags.Add("_di.workflow.review", new long?[]{});
             
             // Manually review if the domain starts with -, probably a false positive
-            if (fqdnValue.StartsWith('-'))
+            if (fqdnValue.StartsWith('-') & !fqdn.Tags.ContainsKey("_di.workflow.review"))
                 fqdn.Tags.Add("_di.workflow.review", new long?[]{});
         }
         else
         {
-            fqdn.Tags.Add("_di.workflow.review", new long?[]{});
+            if (!fqdn.Tags.ContainsKey("_di.workflow.review"))
+                fqdn.Tags.Add("_di.workflow.review", new long?[]{});
         }
         
         return fqdn;

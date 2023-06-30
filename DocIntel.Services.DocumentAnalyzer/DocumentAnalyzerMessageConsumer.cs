@@ -33,7 +33,8 @@ using Microsoft.Extensions.Logging;
 namespace DocIntel.Services.DocumentAnalyzer
 {
     public class DocumentAnalyzerMessageConsumer : DynamicContextConsumer, 
-        IConsumer<DocumentCreatedMessage>/*, 
+        IConsumer<DocumentCreatedMessage>,
+        IConsumer<DocumentAnalysisRequest>/*, 
         IConsumer<FileCreatedMessage>, 
         IConsumer<FileUpdatedMessage>*/
     {
@@ -57,6 +58,21 @@ namespace DocIntel.Services.DocumentAnalyzer
         public async Task Consume(ConsumeContext<DocumentCreatedMessage> context)
         {
             _logger.LogDebug("DocumentCreatedMessage: {0}", context.Message.DocumentId);
+            
+            try
+            {
+                await Analyze(context.Message.DocumentId);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Document {context.Message.DocumentId} could not be analyzed ({e.Message}).");
+                _logger.LogError(e.StackTrace);
+            }
+        }
+
+        public async Task Consume(ConsumeContext<DocumentAnalysisRequest> context)
+        {
+            _logger.LogDebug("DocumentAnalysisRequest: {0}", context.Message.DocumentId);
             
             try
             {

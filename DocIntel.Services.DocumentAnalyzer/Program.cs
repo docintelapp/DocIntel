@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using DocIntel.Core.Helpers;
@@ -50,7 +51,14 @@ namespace DocIntel.Services.DocumentAnalyzer
                 {
                     services.AddSingleton<DocumentAnalyzerMessageConsumer>();
                     services.AddHostedService<DocumentAnalyserHostedService>();
-                    services.AddHostedService<DocumentAnalyzerTimedConsumer>();
+
+                    Console.WriteLine($"Leader? {Environment.GetEnvironmentVariable("LEADER_SERVICE")}");
+                    if (Convert.ToBoolean(Environment.GetEnvironmentVariable("LEADER_SERVICE")))
+                    {
+                        Console.WriteLine("Adding hosted service DocumentAnalyzerTimedConsumer");
+                        services.AddHostedService<DocumentAnalyzerTimedConsumer>();
+                    }
+
                     ConfigureService(hostContext, services, new Assembly[] { typeof(Program).Assembly }, runHostedServices: true);
                 })
                 .UseNLog();
