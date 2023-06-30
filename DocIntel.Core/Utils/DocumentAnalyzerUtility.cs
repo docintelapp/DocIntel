@@ -215,12 +215,11 @@ public class DocumentAnalyzerUtility
                 }
             }
 
-            
             _logger.LogDebug($"Status of document '{document.DocumentId}' is '{document.Status}'.");
             
             var trackingEntity = ambientContext.DatabaseContext.Update(document);
             
-// TODO Move outside of utility?
+            // TODO Move outside of utility?
             await ambientContext.DatabaseContext.SaveChangesAsync();
             
             // TODO Use structured logging
