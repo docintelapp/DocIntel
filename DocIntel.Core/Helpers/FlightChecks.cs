@@ -12,6 +12,7 @@ using DocIntel.Core.Settings;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using Synsharp.Telepath;
 
@@ -526,7 +527,17 @@ public static class FlightChecks
                 uriBuilder.Password = synapseSettings.Password;
             try
             {
-                var telepath = new TelepathClient(uriBuilder.ToString());
+                /*
+                using var loggerFactory = LoggerFactory.Create(builder =>
+                {
+                    builder
+                        .AddFilter("Microsoft", LogLevel.Warning)
+                        .AddFilter("System", LogLevel.Warning)
+                        .AddFilter("Synsharp", LogLevel.Trace)
+                        .AddConsole();
+                });
+                */
+                var telepath = new TelepathClient(uriBuilder.ToString() /*, loggerFactory: loggerFactory */);
                 using var proxy = await telepath.GetProxyAsync(TimeSpan.FromSeconds(10));
                 if (proxy != null)
                 {
@@ -538,7 +549,7 @@ public static class FlightChecks
                     Console.WriteLine("[KO] Synapse Telepath Proxy could not be obtained. Check that the Synapse server is up and running.");
                     ret = false;
                 }
-
+                telepath.Dispose();
             }
             catch (SynsharpException e)
             {
