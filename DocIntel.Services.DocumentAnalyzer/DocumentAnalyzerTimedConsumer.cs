@@ -8,7 +8,6 @@ using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
-using DocIntel.Core.Utils;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,42 +18,43 @@ namespace DocIntel.Services.DocumentAnalyzer;
 
 public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedService, IDisposable
 {
-    private int executionCount = 0;
+    private int _executionCount;
+    private Timer _timer;
+    
     private readonly ILogger<DocumentAnalyzerTimedConsumer> _logger;
-    private Timer? _timer = null;
-    private IDocumentRepository _documentRepository;
-    private DocumentAnalyzerUtility _documentAnalyzerUtility;
+    private readonly IDocumentRepository _documentRepository;
     private readonly IPublishEndpoint _busClient;
 
-    private static int currentlyRunning = 0;
+    private static int _currentlyRunning;
 
     public DocumentAnalyzerTimedConsumer(ILogger<DocumentAnalyzerTimedConsumer> logger,
         IDocumentRepository documentRepository,
-        DocumentAnalyzerUtility documentAnalyzerUtility,
         ApplicationSettings appSettings,
         IServiceProvider serviceProvider,
-        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, UserManager<AppUser> userManager, IPublishEndpoint busClient)
+        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, 
+        UserManager<AppUser> userManager, 
+        IPublishEndpoint busClient)
         : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
     {
         _logger = logger;
         _documentRepository = documentRepository;
-        _documentAnalyzerUtility = documentAnalyzerUtility;
         _busClient = busClient;
     }
 
-    public async Task StartAsync(CancellationToken stoppingToken)
+    public Task StartAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Timed Hosted Service running.");
+        _logger.LogInformation("Timed Hosted Service running");
         var period = TimeSpan.FromMinutes(_appSettings.Schedule.AnalyzerFrequencyCheck);
         var dueTime = TimeSpan.FromMinutes(_appSettings.Schedule.AnalyzerWaitCheck);
-        _timer = new Timer(async _ => await DoWork(_), null, dueTime, period);
+        _timer = new Timer(async _ => await DoWork(), null, dueTime, period);
+        return Task.CompletedTask;
     }
 
-    private async Task DoWork(object? state)
+    private async Task DoWork()
     {
-        if (0 == Interlocked.Exchange(ref currentlyRunning, 1))
+        if (0 == Interlocked.Exchange(ref _currentlyRunning, 1))
         {
-            var count = Interlocked.Increment(ref executionCount);
+            var count = Interlocked.Increment(ref _executionCount);
             _logger.LogInformation(
                 "Timed Hosted Service got the lock. Count: {Count}", count);
                             
@@ -91,7 +91,7 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
                 // await documentAmbientContext.DatabaseContext.SaveChangesAsync();
             //}
 
-            Interlocked.Exchange(ref currentlyRunning, 0);
+            Interlocked.Exchange(ref _currentlyRunning, 0);
         }
         else
         {
@@ -102,7 +102,7 @@ public class DocumentAnalyzerTimedConsumer : DynamicContextConsumer, IHostedServ
 
     public Task StopAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Timed Hosted Service is stopping.");
+        _logger.LogInformation("Timed Hosted Service is stopping");
 
         _timer?.Change(Timeout.Infinite, 0);
 
