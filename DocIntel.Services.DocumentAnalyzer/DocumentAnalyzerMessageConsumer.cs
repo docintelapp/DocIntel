@@ -16,12 +16,10 @@
 */
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using DocIntel.Core.Authorization;
 using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
-using DocIntel.Core.Repositories;
 using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
@@ -32,124 +30,90 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Synsharp.Telepath;
 
-namespace DocIntel.Services.DocumentAnalyzer
+namespace DocIntel.Services.DocumentAnalyzer;
+
+public class DocumentAnalyzerMessageConsumer : DynamicContextConsumer, 
+    IConsumer<DocumentCreatedMessage>,
+    IConsumer<DocumentAnalysisRequest>
 {
-    public class DocumentAnalyzerMessageConsumer : DynamicContextConsumer, 
-        IConsumer<DocumentCreatedMessage>,
-        IConsumer<DocumentAnalysisRequest>/*, 
-        IConsumer<FileCreatedMessage>, 
-        IConsumer<FileUpdatedMessage>*/
+    private readonly ILogger<DocumentAnalyzerMessageConsumer> _logger;
+    private readonly DocumentAnalyzerUtility _documentAnalyzerUtility;
+    private readonly TelepathClient _telepathClient;
+
+    public DocumentAnalyzerMessageConsumer(ILogger<DocumentAnalyzerMessageConsumer> logger,
+        DocumentAnalyzerUtility documentAnalyzerUtility,
+        ApplicationSettings appSettings,
+        IServiceProvider serviceProvider,
+        AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
+        UserManager<AppUser> userManager)
+        : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
     {
-        private readonly ILogger<DocumentAnalyzerMessageConsumer> _logger;
-        private readonly DocumentAnalyzerUtility _documentAnalyzerUtility;
-        private readonly IDocumentRepository _documentRepository;
-        private readonly TelepathClient _telepathClient;
+        _logger = logger;
+        _documentAnalyzerUtility = documentAnalyzerUtility;
+        _logger?.LogTrace("A new instance of DocumentAnalyzerMessageConsumer was created");
 
-        public DocumentAnalyzerMessageConsumer(ILogger<DocumentAnalyzerMessageConsumer> logger,
-            DocumentAnalyzerUtility documentAnalyzerUtility,
-            ApplicationSettings appSettings,
-            IServiceProvider serviceProvider,
-            AppUserClaimsPrincipalFactory userClaimsPrincipalFactory, IDocumentRepository documentRepository,
-            UserManager<AppUser> userManager)
-            : base(appSettings, serviceProvider, userClaimsPrincipalFactory, userManager)
-        {
-            _logger = logger;
-            _documentAnalyzerUtility = documentAnalyzerUtility;
-            _documentRepository = documentRepository;
-            
-            
-
-            var settings = serviceProvider.GetRequiredService<SynapseSettings>();
-            var uriBuilder = new UriBuilder(settings.URL);
+        var settings = serviceProvider.GetRequiredService<SynapseSettings>();
+        var uriBuilder = new UriBuilder(settings.URL);
                 
-            if (string.IsNullOrEmpty(uriBuilder.UserName) && !string.IsNullOrEmpty(settings.UserName)) 
-                uriBuilder.UserName = settings.UserName;
-            if (string.IsNullOrEmpty(uriBuilder.Password) && !string.IsNullOrEmpty(settings.Password)) 
-                uriBuilder.Password = settings.Password;
+        if (string.IsNullOrEmpty(uriBuilder.UserName) && !string.IsNullOrEmpty(settings.UserName)) 
+            uriBuilder.UserName = settings.UserName;
+        if (string.IsNullOrEmpty(uriBuilder.Password) && !string.IsNullOrEmpty(settings.Password)) 
+            uriBuilder.Password = settings.Password;
                 
-            _telepathClient = new TelepathClient(uriBuilder.ToString());
-        }
+        _telepathClient = new TelepathClient(uriBuilder.ToString());
+        _telepathClient.OnConnect += (_, _) => 
+            _logger?.LogTrace("TelepathClient for DocumentAnalyzerMessageConsumer connected");
+        _telepathClient.OnDisconnect += (_, _) => 
+            _logger?.LogTrace("TelepathClient for DocumentAnalyzerMessageConsumer disconnected");
+    }
 
-        public async Task Consume(ConsumeContext<DocumentCreatedMessage> context)
-        {
-            _logger.LogDebug("DocumentCreatedMessage: {0}", context.Message.DocumentId);
+    public async Task Consume(ConsumeContext<DocumentCreatedMessage> context)
+    {
+        _logger.LogDebug("DocumentCreatedMessage received by {MessageReceiver} for document {DocumentId}", 
+            nameof(DocumentAnalyzerMessageConsumer),
+            context.Message.DocumentId);
             
-            try
-            {
-                await Analyze(context.Message.DocumentId);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Document {context.Message.DocumentId} could not be analyzed ({e.Message}).");
-                _logger.LogError(e.StackTrace);
-            }
-        }
-
-        public async Task Consume(ConsumeContext<DocumentAnalysisRequest> context)
+        try
         {
-            _logger.LogDebug("DocumentAnalysisRequest: {0}", context.Message.DocumentId);
+            await Analyze(context.Message.DocumentId);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e,
+                "Document {DocumentId} could not be analyzed ({ErrorMessage})",
+                context.Message.DocumentId,
+                e.Message);
+            _logger.LogDebug("{ErrorMessage}\n{StackTrace}", e.Message, e.StackTrace);
+        }
+    }
+
+    public async Task Consume(ConsumeContext<DocumentAnalysisRequest> context)
+    {
+        _logger.LogDebug("DocumentAnalysisRequest received by {MessageReceiver} for document {DocumentId}", 
+            nameof(DocumentAnalyzerMessageConsumer),
+            context.Message.DocumentId);
             
-            try
-            {
-                await Analyze(context.Message.DocumentId);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Document {context.Message.DocumentId} could not be analyzed ({e.Message}).");
-                _logger.LogError(e.StackTrace);
-            }
-        }
-
-        private async Task Analyze(Guid documentId)
+        try
         {
-            using var scope = _serviceProvider.CreateScope();
-            using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
-
-            ISynapseRepository observablesRepository = new SynapseRepository(_telepathClient,
-                scope.ServiceProvider.GetRequiredService<ILoggerFactory>());
-            await _documentAnalyzerUtility.Analyze(documentId, ambientContext, observablesRepository);
+            await Analyze(context.Message.DocumentId);
         }
-
-        /*
-        public async Task Consume(ConsumeContext<FileCreatedMessage> context)
+        catch (Exception e)
         {
-            _logger.LogDebug("FileCreatedMessage: {0}", context.Message.FileId);
-            var ambientContext = await GetAmbientContext();
-
-            try
-            {
-                var file = await _documentRepository.GetFileAsync(ambientContext, context.Message.FileId, new [] { "Document" });
-                if (file.Document.Status != DocumentStatus.Registered)
-                    await Analyze(file.DocumentId);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Document {context.Message.FileId} could not be analyzed ({e.Message}).");
-                _logger.LogError(e.StackTrace);
-            }
-            
-            ambientContext.Dispose();
+            _logger.LogError(e,
+                "Document {DocumentId} could not be analyzed ({ErrorMessage})",
+                context.Message.DocumentId,
+                e.Message);
+            _logger.LogDebug("{ErrorMessage}\n{StackTrace}", e.Message, e.StackTrace);
         }
+    }
 
-        public async Task Consume(ConsumeContext<FileUpdatedMessage> context)
-        {
-            _logger.LogDebug("FileCreatedMessage: {0}", context.Message.FileId);
-            var ambientContext = await GetAmbientContext();
+    private async Task Analyze(Guid documentId)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
 
-            try
-            {
-                var file = await _documentRepository.GetFileAsync(ambientContext, context.Message.FileId, new [] { "Document" });
-                if (file.Document.Status != DocumentStatus.Registered)
-                    await Analyze(file.DocumentId);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Document {context.Message.FileId} could not be analyzed ({e.Message}).");
-                _logger.LogError(e.StackTrace);
-            }
-            
-            ambientContext.Dispose();
-        }
-        */
+        ISynapseRepository observablesRepository = new SynapseRepository(_telepathClient,
+            scope.ServiceProvider.GetRequiredService<ILoggerFactory>());
+        await _documentAnalyzerUtility.Analyze(documentId, ambientContext, observablesRepository);
     }
 }

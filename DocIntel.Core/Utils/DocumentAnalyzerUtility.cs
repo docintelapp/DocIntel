@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using DocIntel.Core.Messages;
 using DocIntel.Core.Models;
 using DocIntel.Core.Repositories;
 using DocIntel.Core.Repositories.Query;
@@ -25,34 +24,35 @@ public class DocumentAnalyzerUtility
     private readonly IDocumentRepository _documentRepository;
     private readonly ITagFacetRepository _facetRepository;
     private readonly ILogger<DocumentAnalyzerUtility> _logger;
-    private readonly ILogger<TagFacetFeatureExtractor> _loggerExtractor;
-    // private readonly ;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly IObservablesUtility _observablesUtility;
     private readonly ISolrOperations<IndexedDocument> _solr;
     private readonly TagUtility _tagUtility;
 
     public DocumentAnalyzerUtility(ILogger<DocumentAnalyzerUtility> logger,
-        ILogger<TagFacetFeatureExtractor> loggerExtractor,
+        ILoggerFactory loggerFactory,
         IDocumentRepository documentRepository,
         ApplicationSettings appSettings, 
         ISolrOperations<IndexedDocument> solr,
         IObservablesUtility observablesUtility,
         TagUtility tagUtility,
-        // ISynapseRepository observablesRepository, 
         ITagFacetRepository facetRepository)
     {
         _logger = logger;
-        _loggerExtractor = loggerExtractor;
+        _loggerFactory = loggerFactory;
         _documentRepository = documentRepository;
         _appSettings = appSettings;
         _solr = solr;
         _observablesUtility = observablesUtility;
         _tagUtility = tagUtility;
-        // _observablesRepository = observablesRepository;
         _facetRepository = facetRepository;
+        
+        _logger?.LogTrace("A new instance of DocumentAnalyzerUtility was created");
     }
 
-    public async Task<bool> Analyze(Guid documentId, AmbientContext ambientContext, ISynapseRepository _observablesRepository)
+    public async Task<bool> Analyze(Guid documentId,
+        AmbientContext ambientContext,
+        ISynapseRepository synapseRepository)
     {   
         try
         {
@@ -76,25 +76,28 @@ public class DocumentAnalyzerUtility
             var facetCache = new HashSet<TagFacet>();
             
             var doExtractObservables = true;
-            ExtractionMetaData extractionMetaData = null;
+            ExtractionMetaData extractionMetaData;
             if (document.MetaData != default 
                 && document.MetaData.ContainsKey("extraction")
                 && (extractionMetaData = document.MetaData["extraction"].Deserialize<ExtractionMetaData>()) != null
                 && !extractionMetaData.StructuredData)
             {
-                _logger.LogDebug("Skip extraction of structured data to document metadata");
+                _logger.LogDebug("Skip extraction of structured data for {DocumentId} due to document metadata",
+                    document.DocumentId);
                 doExtractObservables = false;
             }
 
             // Check if source requires no extraction
             if (document.Source != null)
             {
-                ExtractionMetaData sourceExtractionMetaData = null;
+                ExtractionMetaData sourceExtractionMetaData;
                 if (document.Source.MetaData != default 
                     && document.Source.MetaData.ContainsKey("extraction")
-                    && (sourceExtractionMetaData = document.Source.MetaData["extraction"].Deserialize<ExtractionMetaData>()) != null
+                    && (sourceExtractionMetaData 
+                        = document.Source.MetaData["extraction"].Deserialize<ExtractionMetaData>()) != null
                     && !sourceExtractionMetaData.StructuredData) {
-                    _logger.LogDebug("Skip extraction of structured data to source metadata");
+                    _logger.LogDebug("Skip extraction of structured data for {DocumentId} due to source metadata",
+                        document.DocumentId);
                     doExtractObservables = false;
                 }
             }
@@ -109,14 +112,23 @@ public class DocumentAnalyzerUtility
                     {
                         try
                         {
-                            _logger.LogDebug($"Will analyze file {file.FileId}");
+                            _logger.LogDebug("Will analyze file {FileId}", file.FileId);
                             await using var f = File.OpenRead(filename);
-                            var response = await _solr.ExtractAsync(new ExtractParameters(f, document.DocumentId.ToString())
+                            var response = await _solr.ExtractAsync(
+                                new ExtractParameters(f, document.DocumentId.ToString())
+                                {
+                                    ExtractOnly = true,
+                                    ExtractFormat = ExtractFormat.Text,
+                                    StreamType = file.MimeType
+                                });
+                            
+                            if (response == null)
                             {
-                                ExtractOnly = true,
-                                ExtractFormat = ExtractFormat.Text,
-                                StreamType = file.MimeType
-                            });
+                                _logger.LogError("Could not extract text in file {FileId} on document {DocumentIdt}", 
+                                    file.FileId, 
+                                    document.DocumentId);
+                                throw new ArgumentNullException(nameof(response));
+                            }
 
                             var metadata = response.Metadata.ToDictionary(_ => _.FieldName, _ => _.Value);
                             var title = ExtractTitle(metadata);
@@ -131,17 +143,39 @@ public class DocumentAnalyzerUtility
                             {
                                 try
                                 {
-                                    var view = await _observablesRepository.CreateView(document);
-                                    var fileObservables = await _observablesUtility.ExtractDataAsync(document, file, response.Content).ToListAsync();
-                                    _logger.LogDebug($"Found {fileObservables.Count} observables");
+                                    var view = await synapseRepository.CreateView(document);
+                                    var fileObservables = await _observablesUtility.ExtractDataAsync(document,
+                                            file,
+                                            response.Content)
+                                        .ToListAsync();
+                                    _logger.LogDebug(
+                                        "Found {ObservablesCount} observables in file {FileId} of document {DocumentId}",
+                                        fileObservables.Count,
+                                        file.FileId,
+                                        document.DocumentId);
+                                    
                                     await _observablesUtility.AnnotateAsync(document, file, fileObservables);
-                                    _logger.LogDebug($"Annotated {fileObservables.Count} observables");
-                                    await _observablesRepository.Add(fileObservables, document, view);
-                                    _logger.LogDebug($"Addded {fileObservables.Count} observables to document");
+                                    _logger.LogDebug(
+                                        "Annotated {ObservablesCount} observables in file {FileId} of document {DocumentId}",
+                                        fileObservables.Count,
+                                        file.FileId,
+                                        document.DocumentId);
+                                    
+                                    await synapseRepository.Add(fileObservables, document, view);
+                                    _logger.LogDebug(
+                                        "Added {ObservablesCount} observables from file {FileId} to document {DocumentId}",
+                                        fileObservables.Count,
+                                        file.FileId,
+                                        document.DocumentId);
                                 }
                                 catch (Exception e)
                                 {
-                                    _logger.LogError($"Could not extract observable in file '{file.FileId}' on document '{document.DocumentId}': {e.Message}");
+                                    _logger.LogError(
+                                        "Could not extract observable in file {FileId} on document {DocumentIdt} ({ErrorMessage})",
+                                        file.FileId,
+                                        document.DocumentId,
+                                        e.Message);
+                                    _logger.LogDebug("{ErrorMessage}\n{StackTrace}", e.Message, e.StackTrace);
                                 }
                             }
 
@@ -153,21 +187,36 @@ public class DocumentAnalyzerUtility
                         }
                         catch (SolrConnectionException e)
                         {
-                            _logger.LogError($"File {file.FileId} from {document.DocumentId} could not be analyzed due to an error with SolR: {e.Url}\n{e.ToString()}");
+                            _logger.LogError(
+                                "File {FileId} from {DocumentId} could not be analyzed due to an error with SolR (url={SolrUrl}, error={ErrorMessage})",
+                                file.FileId,
+                                document.DocumentId,
+                                e.Url,
+                                e.Message);
+                            _logger.LogDebug("{ErrorMessage}\n{StackTrace}", e.Message, e.StackTrace);
                         }
                         catch (Exception e)
                         {
-                            _logger.LogError($"File {file.FileId} from {document.DocumentId} could not be analyzed due to an error {e.Message}\n{e.ToString()}");
+                            _logger.LogError(
+                                "File {FileId} from {DocumentId} could not be analyzed due to an error {ErrorMessage}",
+                                file.FileId,
+                                document.DocumentId,
+                                e.Message);
+                            _logger.LogDebug("{ErrorMessage}\n{StackTrace}", e.Message, e.StackTrace);
                         }
                     }
                     else
                     {
-                        _logger.LogWarning($"Could not find file '{filename}' for document {document.DocumentId}");
+                        _logger.LogWarning("Could not find file {Filename} for {DocumentId}",
+                            filename,
+                            document.DocumentId);
                     }
                 }
                 else
                 {
-                    _logger.LogWarning($"Could not find file '{file.FileId}' for document {document.DocumentId}: no filename");
+                    _logger.LogWarning("Could not find file {FileId} for {DocumentId}: No filename",
+                        file.FileId,
+                        document.DocumentId);
                 }
             }
 
@@ -186,14 +235,16 @@ public class DocumentAnalyzerUtility
                 bool skip = false;
                 if (document.MetaData?.ContainsKey("registration") ?? false)
                 {
-                    RegistrationMetadata registrationMetadata = null;
+                    RegistrationMetadata registrationMetadata;
                     if ((registrationMetadata =
                             document.MetaData["registration"].Deserialize<RegistrationMetadata>()) != null
                         && registrationMetadata.Auto)
                     {
-                        _logger.LogDebug("Skip inbox due to document setting");
-                        await _documentRepository.UpdateStatusAsync(ambientContext, document.DocumentId, DocumentStatus.Registered);
-                        await _observablesRepository.Merge(document);
+                        _logger.LogDebug("Skip inbox for {DocumentId} due to document metadata", document.DocumentId);
+                        await _documentRepository.UpdateStatusAsync(ambientContext,
+                            document.DocumentId,
+                            DocumentStatus.Registered);
+                        await synapseRepository.Merge(document);
                         skip = true;
                     }
                 }
@@ -201,34 +252,38 @@ public class DocumentAnalyzerUtility
                 // Check if auto-register is enabled for the source
                 if (!skip && document.Source != null)
                 {
-                    RegistrationMetadata registrationMetadata = null;
+                    RegistrationMetadata registrationMetadata;
                     if (document.Source.MetaData != default
                         && document.Source.MetaData.ContainsKey("registration")
                         && (registrationMetadata =
                             document.Source.MetaData["registration"].Deserialize<RegistrationMetadata>()) != null
                         && registrationMetadata.Auto)
                     {
-                        _logger.LogDebug("Skip inbox due to source setting");
-                        await _documentRepository.UpdateStatusAsync(ambientContext, document.DocumentId, DocumentStatus.Registered);
-                        await _observablesRepository.Merge(document);
+                        _logger.LogDebug("Skip inbox for {DocumentId} due to source metadata", document.DocumentId);
+                        await _documentRepository.UpdateStatusAsync(ambientContext,
+                            document.DocumentId,
+                            DocumentStatus.Registered);
+                        await synapseRepository.Merge(document);
                     }
                 }
             }
 
-            _logger.LogDebug($"Status of document '{document.DocumentId}' is '{document.Status}'.");
+            _logger.LogDebug("Status of document {DocumentId} is {DocumentStatus}",
+                document.DocumentId,
+                document.Status);
             
-            var trackingEntity = ambientContext.DatabaseContext.Update(document);
+            ambientContext.DatabaseContext.Update(document);
             
             // TODO Move outside of utility?
             await ambientContext.DatabaseContext.SaveChangesAsync();
             
-            // TODO Use structured logging
-            _logger.LogInformation($"Document {document.Reference} ({document.DocumentId}) successfully analyzed.");
+            _logger.LogInformation("Document {DocumentId} successfully analyzed", document.DocumentId);
             return true;
         }
         catch (Exception e)
         {
-            _logger.LogError($"Document {documentId} could not be analyzed ({e.GetType()} {e.Message})\n{e.StackTrace}\n----\n{e.InnerException?.Message}.");
+            _logger.LogError("Document {DocumentId} could not be analyzed ({ErrorMessage})", documentId, e.Message);
+            _logger.LogDebug("{ErrorMessage}\n{StackTrace}", e.Message, e.StackTrace);
         }
 
         return false;
@@ -265,17 +320,27 @@ public class DocumentAnalyzerUtility
     private async Task DetectAutoExtractFacet(ExtractResponse response, AmbientContext ambientContext,
         Document document, HashSet<Tag> tagCache, HashSet<TagFacet> facetCache)
     {
-        var facets = await _facetRepository.GetAllAsync(ambientContext, new FacetQuery(), new string[] { "Tags" }).ToListAsync();
+        var facets = await _facetRepository.GetAllAsync(ambientContext,
+                new FacetQuery(),
+                new[]
+                {
+                    "Tags"
+                })
+            .ToListAsync();
 
         foreach (var facet in facets)
         {
-            _logger.LogTrace($"Checking for tags in facet '{facet.Title}'");
-            var extractor = new TagFacetFeatureExtractor(facet, _loggerExtractor);
+            _logger.LogTrace("Checking for tags in facet {FacetTitle}", facet.Title);
+            var extractor = new TagFacetFeatureExtractor(facet,
+                _loggerFactory.CreateLogger<TagFacetFeatureExtractor>());
             var patternMatches = extractor.Extract(response.Content).ToList();
 
             if (patternMatches.Any())
             {
-                _logger.LogDebug($"Detected tags in '{facet.Title}': " + string.Join(",", patternMatches));
+                _logger.LogDebug("Detected tags in {FacetTitle}: {DetectedTags}",
+                    facet.Title,
+                    string.Join(",",
+                        patternMatches));
 
                 try
                 {
@@ -284,8 +349,6 @@ public class DocumentAnalyzerUtility
                                 .Where(match => !string.IsNullOrEmpty(match))
                                 .Select(_ => facet.Prefix+":"+_), tagCache,
                             facetCache);
-
-                    _logger.LogDebug($"Detected tags: " + string.Join(",", tags.Select(_ => _.TagId)));
                     
                     foreach (var tag in tags)
                     {
@@ -300,7 +363,11 @@ public class DocumentAnalyzerUtility
                 } 
                 catch (Exception e)
                 {
-                    _logger.LogError(e.Message);
+                    _logger.LogError(e,
+                        "Could not extract tags from facet {FacetId} ({ErrorMessage})",
+                        facet.FacetId,
+                        e.Message);
+                    _logger.LogDebug("{ErrorMessage}\n{StackTrace}", e.Message, e.StackTrace);
                 }
             }
              
