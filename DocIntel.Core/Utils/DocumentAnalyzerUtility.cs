@@ -26,7 +26,7 @@ public class DocumentAnalyzerUtility
     private readonly ITagFacetRepository _facetRepository;
     private readonly ILogger<DocumentAnalyzerUtility> _logger;
     private readonly ILogger<TagFacetFeatureExtractor> _loggerExtractor;
-    private readonly ISynapseRepository _observablesRepository;
+    // private readonly ;
     private readonly IObservablesUtility _observablesUtility;
     private readonly ISolrOperations<IndexedDocument> _solr;
     private readonly TagUtility _tagUtility;
@@ -38,7 +38,7 @@ public class DocumentAnalyzerUtility
         ISolrOperations<IndexedDocument> solr,
         IObservablesUtility observablesUtility,
         TagUtility tagUtility,
-        ISynapseRepository observablesRepository, 
+        // ISynapseRepository observablesRepository, 
         ITagFacetRepository facetRepository)
     {
         _logger = logger;
@@ -48,11 +48,11 @@ public class DocumentAnalyzerUtility
         _solr = solr;
         _observablesUtility = observablesUtility;
         _tagUtility = tagUtility;
-        _observablesRepository = observablesRepository;
+        // _observablesRepository = observablesRepository;
         _facetRepository = facetRepository;
     }
 
-    public async Task<bool> Analyze(Guid documentId, AmbientContext ambientContext)
+    public async Task<bool> Analyze(Guid documentId, AmbientContext ambientContext, ISynapseRepository _observablesRepository)
     {   
         try
         {

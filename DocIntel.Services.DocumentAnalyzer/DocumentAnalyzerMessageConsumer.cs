@@ -25,6 +25,7 @@ using DocIntel.Core.Repositories;
 using DocIntel.Core.Services;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils;
+using DocIntel.Core.Utils.Observables;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -89,7 +90,9 @@ namespace DocIntel.Services.DocumentAnalyzer
         {
             using var scope = _serviceProvider.CreateScope();
             using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
-            await _documentAnalyzerUtility.Analyze(documentId, ambientContext);
+
+            ISynapseRepository observablesRepository = scope.ServiceProvider.GetRequiredService<ISynapseRepository>();
+            await _documentAnalyzerUtility.Analyze(documentId, ambientContext, observablesRepository);
         }
 
         /*
