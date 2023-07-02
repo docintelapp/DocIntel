@@ -30,6 +30,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Synsharp.Telepath;
 
 namespace DocIntel.Services.DocumentAnalyzer
 {
@@ -42,6 +43,7 @@ namespace DocIntel.Services.DocumentAnalyzer
         private readonly ILogger<DocumentAnalyzerMessageConsumer> _logger;
         private readonly DocumentAnalyzerUtility _documentAnalyzerUtility;
         private readonly IDocumentRepository _documentRepository;
+        private readonly TelepathClient _telepathClient;
 
         public DocumentAnalyzerMessageConsumer(ILogger<DocumentAnalyzerMessageConsumer> logger,
             DocumentAnalyzerUtility documentAnalyzerUtility,
@@ -54,6 +56,18 @@ namespace DocIntel.Services.DocumentAnalyzer
             _logger = logger;
             _documentAnalyzerUtility = documentAnalyzerUtility;
             _documentRepository = documentRepository;
+            
+            
+
+            var settings = serviceProvider.GetRequiredService<SynapseSettings>();
+            var uriBuilder = new UriBuilder(settings.URL);
+                
+            if (string.IsNullOrEmpty(uriBuilder.UserName) && !string.IsNullOrEmpty(settings.UserName)) 
+                uriBuilder.UserName = settings.UserName;
+            if (string.IsNullOrEmpty(uriBuilder.Password) && !string.IsNullOrEmpty(settings.Password)) 
+                uriBuilder.Password = settings.Password;
+                
+            _telepathClient = new TelepathClient(uriBuilder.ToString());
         }
 
         public async Task Consume(ConsumeContext<DocumentCreatedMessage> context)
@@ -91,7 +105,8 @@ namespace DocIntel.Services.DocumentAnalyzer
             using var scope = _serviceProvider.CreateScope();
             using var ambientContext = await GetAmbientContext(scope.ServiceProvider);
 
-            ISynapseRepository observablesRepository = scope.ServiceProvider.GetRequiredService<ISynapseRepository>();
+            ISynapseRepository observablesRepository = new SynapseRepository(_telepathClient,
+                scope.ServiceProvider.GetRequiredService<ILoggerFactory>());
             await _documentAnalyzerUtility.Analyze(documentId, ambientContext, observablesRepository);
         }
 
