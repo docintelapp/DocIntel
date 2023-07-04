@@ -88,9 +88,9 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
         } 
         
         var listAsync = await _tagRepository.GetAllAsync(ambientContext,
-                _ => _.Include(__ => __.Facet).Include(__ => __.Documents).ThenInclude(__ => __.Document)
+                _ => _.AsNoTracking().Include(__ => __.Facet).Include(__ => __.Documents).ThenInclude(__ => __.Document)
                     .Where(__ => __.LastIndexDate == DateTime.MinValue 
-                                 || __.LastIndexDate == DateTime.MaxValue 
+                                 || __.LastIndexDate == DateTime.MaxValue
                                  || (__.Documents.Any() && __.Documents.Max(___ => ___.Document.DocumentDate) - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay))
                                  || __.ModificationDate - __.LastIndexDate > TimeSpan.FromMinutes(_appSettings.Schedule.MaxIndexingDelay)))
             .ToListAsync();
@@ -99,8 +99,9 @@ public class TagIndexerTimedConsumer : DynamicContextConsumer, IHostedService, I
             try
             {
                 _indexingUtility.Update(tag);
-                tag.LastIndexDate = DateTime.UtcNow;
-                await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
+                await ambientContext.DatabaseContext.Tags.Where(t => t.TagId == tag.TagId)
+                    .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.LastIndexDate, DateTime.UtcNow));
+                // await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
             }
             catch (UnauthorizedOperationException)
             {

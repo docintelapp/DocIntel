@@ -218,8 +218,11 @@ public class TagIndexerMessageConsumer :
                     "Documents", "Documents.Document"
                 });
             _indexingUtility.Add(tag);
-            tag.LastIndexDate = DateTime.UtcNow;
-            await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
+            
+            await ambientContext.DatabaseContext.Tags.Where(t => t.TagId == tag.TagId)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.LastIndexDate, DateTime.UtcNow));
+            //tag.LastIndexDate = DateTime.UtcNow;
+            //await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
             _logger.LogInformation("Index updated for the tag {0}", tag.TagId);
         }
         catch (UnauthorizedOperationException)
@@ -276,8 +279,8 @@ public class TagIndexerMessageConsumer :
                     nameof(Tag.Facet),
                     "Documents", "Documents.Document"
                 });
-            await UpdateIndex(tag);
-            await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
+            await UpdateIndex(tag, ambientContext);
+            // await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
         }
         catch (UnauthorizedOperationException)
         {
@@ -320,10 +323,12 @@ public class TagIndexerMessageConsumer :
         }
     }
 
-    private async Task UpdateIndex(Tag tag)
+    private async Task UpdateIndex(Tag tag, AmbientContext ambientContext)
     {
             _indexingUtility.Update(tag);
-            tag.LastIndexDate = DateTime.UtcNow;
+            
+            await ambientContext.DatabaseContext.Tags.Where(t => t.TagId == tag.TagId)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.LastIndexDate, DateTime.UtcNow));
             _logger.LogInformation("Index updated for the tag {0} ({1})", tag.TagId, tag.FriendlyName);
         
     }
