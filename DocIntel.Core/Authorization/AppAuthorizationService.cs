@@ -393,12 +393,26 @@ namespace DocIntel.Core.Authorization
 
         public async Task<bool> CanEditUser(ClaimsPrincipal claim, AppUser user)
         {
-            var isAuthorized = await _authorizationService.AuthorizeAsync(claim, user, UserOperations.Edit);
             if (claim.HasClaim("UserId", user.Id) &
                 (await _authorizationService.AuthorizeAsync(claim, user, UserOperations.EditOwn)).Succeeded)
                 return true;
+            var isAuthorized = await _authorizationService.AuthorizeAsync(claim, user, UserOperations.Edit);
             return isAuthorized.Succeeded;
         }
+        
+
+        public async Task<bool> CanManageAPIKey(ClaimsPrincipal claim, AppUser user)
+        {
+            if (claim.HasClaim("UserId", user.Id) &
+                (await _authorizationService.AuthorizeAsync(claim, user, UserOperations.ManageOwnAPIKey)).Succeeded)
+                return true;
+            if (claim.HasClaim("Bot", true.ToString()) &
+                (await _authorizationService.AuthorizeAsync(claim, user, UserOperations.ManageBotAPIKey)).Succeeded)
+                return true;
+            var isAuthorized = await _authorizationService.AuthorizeAsync(claim, user, UserOperations.ManageAPIKey);
+            return isAuthorized.Succeeded;
+        }
+        
 
         public async Task<bool> CanCreateIncomingFeed(ClaimsPrincipal claimsPrincipal, Importer feed)
         {

@@ -16,6 +16,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DocIntel.Core.Authentication;
@@ -29,7 +30,7 @@ using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Search.Documents;
 using DocIntel.WebApp.Helpers;
 using DocIntel.WebApp.ViewModels.UserViewModel;
-
+using DocIntel.WebApp.Views.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -471,7 +472,392 @@ namespace DocIntel.WebApp.Controllers
                 return View(submittedUser);
             }
         }
+        
+        [HttpGet("User/{username}/APIKeys")]
+        public async Task<IActionResult> APIKeys(string username)
+        {
+            var currentUser = await GetCurrentUser();
 
+            try
+            {
+                var user = await _userRepository.GetByUserName(AmbientContext, username,
+                    new[] { nameof(AppUser.APIKeys) });
+                    
+                if (!await _appAuthorizationService.CanManageAPIKey(User, user))
+                {
+                    _logger.Log(LogLevel.Warning,
+                        EventIDs.ProfileUserFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' attempted to edit API keys for user '{user.FriendlyName}' without legitimate rights.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+
+                    return Unauthorized();
+                }
+
+                return View(new APIKeyViewModel
+                {
+                    User = user,
+                    Keys = user?.APIKeys ?? Enumerable.Empty<APIKey>()
+                });
+            }
+            catch (UnauthorizedOperationException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditUserFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to edit API keys for user '{username}'without legitimate rights.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddProperty("user.username", username),
+                    null,
+                    LogEvent.Formatter);
+
+                return Unauthorized();
+            }
+            catch (NotFoundEntityException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditUserFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to edit API keys for a non-existing user '{username}'.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddProperty("user.username", username),
+                    null,
+                    LogEvent.Formatter);
+
+                return NotFound();
+            }
+            
+        }
+
+        [HttpGet("User/{username}/APIKeys/Create")]
+        public async Task<IActionResult> CreateAPIKey(string username)
+        {
+            var currentUser = await GetCurrentUser();
+
+            try
+            {
+                var user = await _userRepository.GetByUserName(AmbientContext, username,
+                    new[] { nameof(AppUser.APIKeys) });
+                    
+                if (!await _appAuthorizationService.CanManageAPIKey(User, user))
+                {
+                    _logger.Log(LogLevel.Warning,
+                        EventIDs.ProfileUserFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' attempted to add an API key for user '{user.FriendlyName}' without legitimate rights.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+
+                    return Unauthorized();
+                }
+
+                return View(new CreateAPIKeyViewModel
+                {
+                    User = user
+                });
+            }
+            catch (UnauthorizedOperationException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditUserFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to add an API key for user '{username}' without legitimate rights.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddProperty("user.username", username),
+                    null,
+                    LogEvent.Formatter);
+
+                return Unauthorized();
+            }
+            catch (NotFoundEntityException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditUserFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to add an API key for a non-existing user '{username}'.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddProperty("user.username", username),
+                    null,
+                    LogEvent.Formatter);
+
+                return NotFound();
+            }
+        }
+
+        [HttpPost("User/{username}/APIKeys/Create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateAPIKey(string username, [Bind("Name", "Description", Prefix = "Key")] APIKey apiKey)
+        {
+            
+            var currentUser = await GetCurrentUser();
+
+            try
+            {
+                var user = await _userRepository.GetByUserName(AmbientContext, username);
+                    
+                if (!await _appAuthorizationService.CanManageAPIKey(User, user))
+                {
+                    _logger.Log(LogLevel.Warning,
+                        EventIDs.ProfileUserFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' attempted to add an API key for user '{user.FriendlyName}' without legitimate rights.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+
+                    return Unauthorized();
+                }
+                
+                apiKey.UserId = user.Id;
+
+                await _userRepository.AddAPIKeyAsync(AmbientContext, apiKey);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(APIKeys), new { username });
+            }
+            catch (UnauthorizedOperationException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditUserFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to add an API key for user '{username}' without legitimate rights.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddProperty("user.username", username),
+                    null,
+                    LogEvent.Formatter);
+
+                return Unauthorized();
+            }
+            catch (NotFoundEntityException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditUserFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to add an API key for a non-existing user '{username}'.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext)
+                        .AddProperty("user.username", username),
+                    null,
+                    LogEvent.Formatter);
+
+                return NotFound();
+            }
+        }
+        
+        
+
+        [HttpGet("User/APIKeys/Edit/{id}")]
+        public async Task<IActionResult> EditAPIKey(Guid id)
+        {
+            var currentUser = await GetCurrentUser();
+
+            try
+            {
+                var apiKey = await _userRepository.GetApiKey(AmbientContext, id,
+                    new[] { nameof(APIKey.User) });
+                var user = apiKey.User;
+                    
+                if (!await _appAuthorizationService.CanManageAPIKey(User, user))
+                {
+                    _logger.Log(LogLevel.Warning,
+                        EventIDs.ProfileUserFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' attempted to edit an API key for user '{user.FriendlyName}' without legitimate rights.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+
+                    return Unauthorized();
+                }
+
+                return View(new EditAPIKeyViewModel
+                {
+                    User = user,
+                    Key = apiKey
+                });
+            }
+            catch (UnauthorizedOperationException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditUserFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to edit API key '{id}' without legitimate rights.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext),
+                    null,
+                    LogEvent.Formatter);
+
+                return Unauthorized();
+            }
+            catch (NotFoundEntityException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditUserFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to edit a non-existing API key '{id}'.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext),
+                    null,
+                    LogEvent.Formatter);
+
+                return NotFound();
+            }
+        }
+        
+        [HttpPost("User/APIKeys/Edit/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditAPIKey(Guid id, [Bind("APIKeyId", "Name", "Description", Prefix = "Key")] APIKey submittedApiKey)
+        {
+            try
+            {
+                var currentUser = await GetCurrentUser();
+                
+                var apiKey = await _userRepository.GetApiKey(AmbientContext, id,
+                    new[] { nameof(APIKey.User) });
+                var user = apiKey.User;
+                
+                if (!await _appAuthorizationService.CanManageAPIKey(User, user))
+                {
+                    _logger.Log(LogLevel.Warning,
+                        EventIDs.ProfileUserFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' attempted to edit an API key for user '{user.FriendlyName}' without legitimate rights.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+
+                    return Unauthorized();
+                }
+
+                apiKey.Name = submittedApiKey.Name;
+                apiKey.Description = submittedApiKey.Description;
+
+                
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(APIKeys), new { username = user.UserName });
+            }
+            catch (UnauthorizedOperationException)
+            {
+                return Unauthorized();
+            }
+            catch (NotFoundEntityException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet("User/APIKeys/Delete/{id}")]
+        public async Task<IActionResult> DeleteAPIKey(Guid id)
+        {
+            var currentUser = await GetCurrentUser();
+
+            try
+            {
+                var apiKey = await _userRepository.GetApiKey(AmbientContext, id,
+                    new[] { nameof(APIKey.User) });
+                var user = apiKey.User;
+                
+                if (!await _appAuthorizationService.CanManageAPIKey(User, user))
+                {
+                    _logger.Log(LogLevel.Warning,
+                        EventIDs.ProfileUserFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' attempted to request delete of an API key '{id}' for user '{user.FriendlyName}' without legitimate rights.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+
+                    return Unauthorized();
+                }
+
+                return View(new DeleteAPIKeyViewModel
+                {
+                    User = user,
+                    Key = apiKey
+                });
+            }
+            catch (UnauthorizedOperationException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditUserFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to request delete of an API key '{id}' without legitimate rights.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext),
+                    null,
+                    LogEvent.Formatter);
+
+                return Unauthorized();
+            }
+            catch (NotFoundEntityException)
+            {
+                _logger.Log(LogLevel.Warning,
+                    EventIDs.EditUserFailed,
+                    new LogEvent(
+                            $"User '{currentUser.UserName}' attempted to request delete of a non-existing API Key '{id}'.")
+                        .AddUser(currentUser)
+                        .AddHttpContext(_accessor.HttpContext),
+                    null,
+                    LogEvent.Formatter);
+
+                return NotFound();
+            }
+        }
+
+        [HttpPost("User/APIKeys/Delete/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAPIKeyConfirmed(Guid id)
+        {
+            try
+            {
+                var currentUser = await GetCurrentUser();
+                
+                var apiKey = await _userRepository.GetApiKey(AmbientContext, id,
+                    new[] { nameof(APIKey.User) });
+                var user = apiKey.User;
+
+                if (!await _appAuthorizationService.CanManageAPIKey(User, user))
+                {
+                    _logger.Log(LogLevel.Warning,
+                        EventIDs.ProfileUserFailed,
+                        new LogEvent(
+                                $"User '{currentUser.UserName}' attempted to edit an API key for user '{user.FriendlyName}' without legitimate rights.")
+                            .AddUser(currentUser)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+
+                    return Unauthorized();
+                }
+
+                await _userRepository.DeleteApiKey(AmbientContext, id);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(APIKeys), new { username = user.UserName });
+            }
+            catch (UnauthorizedOperationException)
+            {
+                return Unauthorized();
+            }
+            catch (NotFoundEntityException)
+            {
+                return NotFound();
+            }
+        }
+        
         [HttpGet]
         public async Task<IActionResult> Create()
         {

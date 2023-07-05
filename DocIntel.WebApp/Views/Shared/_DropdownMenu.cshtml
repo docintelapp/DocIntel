@@ -46,7 +46,7 @@
 
 @if (canView)
 {
-    <a class="dropdown-item fw-500 pt-3 pb-3" asp-controller="Account" asp-action="APIKeys" asp-area="">
+    <a class="dropdown-item fw-500 pt-3 pb-3" asp-controller="User" asp-route-username="@ViewBag.CurrentUser.UserName" asp-action="APIKeys" asp-area="">
         Manage API Keys
     </a>
 }

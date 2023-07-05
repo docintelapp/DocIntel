@@ -1,14 +1,14 @@
 ﻿@using DocIntel.Core.Authorization.Operations
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model DocIntel.WebApp.ViewModels.UserViewModel.ProfileViewModel
+@inject IAppAuthorizationService _appAuthorizationService
 
 @{
     ViewData["Title"] = Model.User.FriendlyName;
     ViewData["Category1"] = "Users";
-    var canEdit = (Model.User.Id == ViewBag.CurrentUser.Id && (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.EditOwn)).Succeeded) 
-                  || (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.Edit)).Succeeded;
-    var canResetPassword = (Model.User.Id == ViewBag.CurrentUser.Id) 
-                           || (await AuthorizationService.AuthorizeAsync(User, null, UserOperations.ResetPassword)).Succeeded;
+    var canManageApiKey = await _appAuthorizationService.CanManageAPIKey(User, ViewBag.CurrentUser);
+    var canEdit = await _appAuthorizationService.CanEditUser(User, ViewBag.CurrentUser);
+    var canResetPassword = await _appAuthorizationService.CanResetPassword(User, ViewBag.CurrentUser);
 }
 
 <div class="subheader">
@@ -36,6 +36,12 @@
         {
             <a asp-action="Edit" asp-route-username="@Model.User.UserName" class= "btn btn-pills btn-primary btn-iconified">
                 <i class="fal fa-edit"></i> Edit
+            </a>
+        }
+        @if (canManageApiKey)
+        {
+            <a asp-action="ApiKeys" asp-route-username="@Model.User.UserName" class= "btn btn-pills btn-primary btn-iconified">
+                <i class="fal fa-key"></i> Manage API Keys
             </a>
         }
         @if (canResetPassword)

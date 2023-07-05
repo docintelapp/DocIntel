@@ -77,6 +77,7 @@ namespace DocIntel.Core.Authorization
         Task<bool> CanCreateUser(ClaimsPrincipal claimsPrincipal, AppUser user);
         Task<bool> CanViewUser(ClaimsPrincipal claimsPrincipal, AppUser user);
         Task<bool> CanEditUser(ClaimsPrincipal claimsPrincipal, AppUser user);
+        Task<bool> CanManageAPIKey(ClaimsPrincipal claimsPrincipal, AppUser user);
 
         Task<bool> CanCreateIncomingFeed(ClaimsPrincipal claimsPrincipal, Importer feed);
         Task<bool> CanViewIncomingFeed(ClaimsPrincipal claimsPrincipal, Importer feed);

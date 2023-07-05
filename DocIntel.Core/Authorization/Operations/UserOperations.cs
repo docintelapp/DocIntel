@@ -42,17 +42,29 @@ namespace DocIntel.Core.Authorization.Operations
 
         public static OperationAuthorizationRequirement Remove =
             new() {Name = UserOperationsConstants.RemoveOperationName};
+
+        public static OperationAuthorizationRequirement ManageAPIKey =
+            new() {Name = UserOperationsConstants.ManageAPIKeyOperationName};
+
+        public static OperationAuthorizationRequirement ManageBotAPIKey =
+            new() {Name = UserOperationsConstants.ManageBotAPIKeyOperationName};
+
+        public static OperationAuthorizationRequirement ManageOwnAPIKey =
+            new() {Name = UserOperationsConstants.ManageOwnAPIKeyOperationName};
     }
 
     [DisplayName("Users")]
     public class UserOperationsConstants : IOperationConstants
     {
         [DisplayName("View user profiles")] public static string ViewProfileOperationName => "ViewProfile";
-        [DisplayName("Edit users")] public static string EditUsersOperationName => "EditUser";
+        [DisplayName("Edit all users")] public static string EditUsersOperationName => "EditUser";
         [DisplayName("Edit own user")] public static string EditOwnUsersOperationName => "EditOwnUser";
         [DisplayName("Change passwords")] public static string ChangePasswordOperationName => "ChangePassword";
         [DisplayName("Reset passwords")] public static string ResetPasswordOperationName => "ResetPassword";
         [DisplayName("Create users")] public static string CreateOperationName => "CreateUser";
         [DisplayName("Delete users")] public static string RemoveOperationName => "RemoveUser";
+        [DisplayName("Manage all API keys")] public static string ManageAPIKeyOperationName => "EditAPIKey";
+        [DisplayName("Manage bot API keys")] public static string ManageBotAPIKeyOperationName => "EditBotAPIKey";
+        [DisplayName("Manage own API keys")] public static string ManageOwnAPIKeyOperationName => "EditOwnAPIKey";
     }
 }

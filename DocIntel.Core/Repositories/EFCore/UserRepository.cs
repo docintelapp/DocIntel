@@ -239,6 +239,34 @@ namespace DocIntel.Core.Repositories.EFCore
             return Task.FromResult(apiKey);
         }
 
+        public Task<APIKey> GetApiKey(AmbientContext ambientContext, Guid id, string[] includeRelatedData = null)
+        {
+            IQueryable<APIKey> enumerable = ambientContext.DatabaseContext.APIKeys;
+
+            if (includeRelatedData != null)
+                foreach (var relatedData in includeRelatedData)
+                    enumerable = enumerable.Include(relatedData);
+
+            var apiKey = enumerable
+                .SingleOrDefault(x => x.APIKeyId == id);
+
+            if (apiKey == null)
+                throw new NotFoundEntityException();
+
+            return Task.FromResult(apiKey);
+        }
+
+        public Task DeleteApiKey(AmbientContext ambientContext, Guid id)
+        {
+            var apiKey = ambientContext.DatabaseContext.APIKeys
+                .SingleOrDefault(x => x.APIKeyId == id);
+
+            if (apiKey == null)
+                throw new NotFoundEntityException();
+
+            return Task.FromResult(ambientContext.DatabaseContext.APIKeys.Remove(apiKey));
+        }
+        
         private async Task UpdateGroupsAsync(AmbientContext ambientContext, AppUser user, Group[] groups)
         {
             var currentGroups = ambientContext.DatabaseContext.Members

@@ -1,37 +1,54 @@
-﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
-@model IEnumerable<APIKey>
+﻿@model DocIntel.WebApp.Views.User.APIKeyViewModel
+
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using System.Security.Claims
+
+@inject IAppAuthorizationService _appAuthorizationService
+
 
 @{
-    ViewData["Title"] = "Your API Keys";
+    if (ViewBag.CurrentUser.Id == Model.User.Id)
+    {
+        ViewData["Title"] = $"Your API keys";
+    }
+    else
+    {
+        ViewData["Title"] = $"API Keys for user '{Model.User.FriendlyName}'";
+    }
+    
+    var canManageApiKey = await _appAuthorizationService.CanManageAPIKey(User, ViewBag.CurrentUser);
 }
 
 <div class="subheader">
     <h1 class="subheader-title">
-        <i class="fal fa-key subheader-icon"></i> Your API Keys
-        <small>Review and manage your API Keys.</small>
+        <i class="fal fa-key subheader-icon"></i> @ViewData["Title"]
+        <small>Review and manage API Keys.</small>
     </h1>
     <div>
         <div class="btn-group">
-            <a asp-action="CreateAPIKey"
-               class= "btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
-                <i class="fal fa-plus mr-1"></i> Create new API key
-            </a>
+            @if (canManageApiKey)
+            {
+                <a asp-action="CreateAPIKey" asp-route-username="@Model.User.UserName"
+                   class="btn btn-pills btn-primary waves-effect waves-themed btn-iconified">
+                    <i class="fal fa-plus mr-1"></i> Create new API key
+                </a>   
+            }
         </div>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-9">
+    <div class="col-12">
 
-        @if (!Model.Any())
+        @if (!Model.Keys.Any())
         {
             <div class="panel">
                 <div class="panel-container show">
                     <div class="panel-content">
                         <div class="text-center fs-xl m-3">
                             <i class="fal fa-key fa-4x opacity-30 color-fusion-30 mb-2"></i><br/>
-                            You have no application password at the moment.<br/>
-                            <small>You can create different password for each application you use.</small>
+                            @Model.User.FriendlyName has no API key at the moment.<br/>
+                            <small>You can create different API key for each application you use.</small>
                         </div>
                     </div>
                 </div>
@@ -42,24 +59,27 @@
             <div class="panel">
                 <div class="panel-hdr">
                     <h2>
-                        Application passwords
+                        API Keys
                     </h2>
                 </div>
                 <div class="panel-container show">
-                    <div class="panel-content">
-                        <table class="table table-bordered m-0">
+                    <div class="panel-content p-0">
+                        <table class="table m-0">
                             <thead class="thead-themed">
                             <tr>
                                 <th>Name</th>
+                                <th>Description</th>
                                 <th>API Key</th>
                                 <th>Last used</th>
                                 <th>Last IP address</th>
+                                <th>Actions</th>
                             </tr>
                             </thead>
-                            @foreach (var apiKey in Model)
+                            @foreach (var apiKey in Model.Keys)
                             {
                                 <tr>
                                     <td>@apiKey.Name</td>
+                                    <td>@apiKey.Description</td>
                                     <td>
                                         <input class="m-0 text-muted" style="width: 100%;" type="text" value="@apiKey.Key" />
                                     </td>
@@ -83,6 +103,11 @@
                                             <text>@apiKey.LastIP</text>
                                         }
                                     </td>
+                                    <td>
+                                        <a asp-action="EditApiKey" asp-route-id="@apiKey.APIKeyId">Edit</a>
+                                        &centerdot;
+                                        <a asp-action="DeleteApiKey" asp-route-id="@apiKey.APIKeyId">Delete</a>
+                                    </td>
                                 </tr>
                             }
                         </table>
@@ -90,47 +115,5 @@
                 </div>
             </div>
         }
-    </div>
-    <div class="col-3">
-
-        <div class="card mb-g">
-            <div class="card-body">
-                <div class="d-flex flex-row">
-                    <div class="icon-stack display-3 flex-shrink-0">
-                        <i class="fal fa-circle icon-stack-3x opacity-100 color-success-400"></i>
-                        <i class="fas fa-book icon-stack-1x opacity-100 color-success-500"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p>
-                            <strong>
-                                Documentation
-                            </strong>
-                        </p>
-                        <p class="mb-0">
-                            Browse <a href="/swagger/index.html">API Documentation</a>.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mb-g">
-            <div class="card-body">
-                <div class="d-flex flex-row">
-                    <div class="icon-stack display-3 flex-shrink-0">
-                        <i class="fal fa-circle icon-stack-3x opacity-100 color-info-400"></i>
-                        <i class="fas fa-thumbs-up icon-stack-1x opacity-100 color-info-500"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p>
-                            <strong>
-                                Tips &amp; tricks
-                            </strong>
-                        </p>
-                        <p class="mb-0">It is best to use different application password for each application so you can disable access if needed.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>

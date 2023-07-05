@@ -1,14 +1,21 @@
 ﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
-@model APIKey
+@model DocIntel.WebApp.Views.User.CreateAPIKeyViewModel
 
 @{
-    ViewData["Title"] = "Create new application password";
+    if (ViewBag.CurrentUser.Id == Model.User.Id)
+    {
+        ViewData["Title"] = $"Create a new API Key";
+    }
+    else
+    {
+        ViewData["Title"] = $"Create a new API Key for user '{Model.User.FriendlyName}'";
+    }
 }
 
 <form method="post" enctype="multipart/form-data">
     <div class="subheader">
         <h1 class="subheader-title">
-            <i class="fal fa-key subheader-icon"></i> Create new API Key
+            <i class="fal fa-key subheader-icon"></i> @ViewData["Title"]
         </h1>
         <div>
             <div class="btn-group">
@@ -20,12 +27,12 @@
     </div>
 
     <div class="row">
-        <div class="col-9">
+        <div class="col-12">
 
             <div id="panel-basic" class="panel">
                 <div class="panel-hdr">
                     <h2>
-                        Application
+                        API Key
                         <span class="fw-300">
                             <i>Information</i>
                         </span>
@@ -34,14 +41,14 @@
                 <div class="panel-container show">
                     <div class="panel-content">
                         <div class="form-group">
-                            <label asp-for="Name" class="control-label">Name</label>
-                            <input asp-for="Name" class="form-control"/>
-                            <input hidden asp-for="Name" class="form-control"/>
+                            <label asp-for="Key.Name" class="control-label">Name</label>
+                            <input asp-for="Key.Name" class="form-control"/>
+                            <input hidden asp-for="Key.Name" class="form-control"/>
                         </div>
                         <div class="form-group">
-                            <label asp-for="Description" class="control-label">Description</label>
-                            <textarea asp-for="Description" class="form-control" ></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
+                            <label asp-for="Key.Description" class="control-label">Description</label>
+                            <textarea asp-for="Key.Description" class="form-control" ></textarea>
+                            <span asp-validation-for="Key.Description" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
@@ -50,7 +57,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <button type="submit" class= "btn btn-pills btn-success btn-iconified waves-effect waves-themed">
-                        <i class="fal fa-save"></i> Save
+                        <i class="fal fa-plus"></i> Create
                     </button>
                 </div>
             </div>

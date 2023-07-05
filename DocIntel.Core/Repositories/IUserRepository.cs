@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DocIntel.Core.Models;
@@ -109,5 +110,8 @@ namespace DocIntel.Core.Repositories
             string username,
             string apikey,
             string[] includeRelatedData = null);
+
+        Task<APIKey> GetApiKey(AmbientContext ambientContext, Guid id, string[] includeRelatedData = null);
+        Task DeleteApiKey(AmbientContext ambientContext, Guid id);
     }
 }

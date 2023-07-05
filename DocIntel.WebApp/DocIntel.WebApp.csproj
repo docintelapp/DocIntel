@@ -68,6 +68,12 @@
     <Compile Update="Areas\Synapse\Views\Node\NodeDetailsViewModel.cs">
       <DependentUpon>Details.cshtml</DependentUpon>
     </Compile>
+    <Compile Update="Views\User\APIKeyViewModel.cs">
+      <DependentUpon>APIKeys.cshtml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\User\CreateAPIKeyViewModel.cs">
+      <DependentUpon>CreateAPIKey.cshtml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\Synapse\Views\Shared" />

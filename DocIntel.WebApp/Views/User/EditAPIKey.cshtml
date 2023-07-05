@@ -1,0 +1,73 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model DocIntel.WebApp.Views.User.EditAPIKeyViewModel
+
+@{
+    if (ViewBag.CurrentUser.Id == Model.User.Id)
+    {
+        ViewData["Title"] = $"Edit your API Key '{Model.Key.Name}'";
+    }
+    else
+    {
+        ViewData["Title"] = $"Edit API Key '{Model.Key.Name}' for user '{Model.User.FriendlyName}'";
+    }
+}
+
+<form method="post" enctype="multipart/form-data">
+    <div class="subheader">
+        <h1 class="subheader-title">
+            <i class="fal fa-key subheader-icon"></i> @ViewData["Title"]
+        </h1>
+        <div>
+            <div class="btn-group">
+                <button type="submit" class= "btn btn-pills btn-success btn-iconified waves-effect waves-themed">
+                    <i class="fal fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <input asp-for="Key.APIKeyId" type="hidden"/>
+
+    <div class="row">
+        <div class="col-12">
+            <div id="panel-basic" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        API Key
+                        <span class="fw-300">
+                            <i>Information</i>
+                        </span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label asp-for="Key.Name" class="control-label">Name</label>
+                            <input asp-for="Key.Name" class="form-control"/>
+                            <input hidden asp-for="Key.Name" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Key.Description" class="control-label">Description</label>
+                            <textarea asp-for="Key.Description" class="form-control" ></textarea>
+                            <span asp-validation-for="Key.Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class= "btn btn-pills btn-success btn-iconified waves-effect waves-themed">
+                        <i class="fal fa-save"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script type="text/javascript">
+    </script>
+}
