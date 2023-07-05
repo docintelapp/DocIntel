@@ -33,7 +33,7 @@ namespace DocIntel.AdminConsole.Commands.Observables
         public ImportWhitelistCommand(DocIntelContext context,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
             ApplicationSettings applicationSettings,
-            LoggerFactory loggerFactory, TelepathClient synapseClient, UserManager<AppUser> userManager,
+            ILoggerFactory loggerFactory, TelepathClient synapseClient, UserManager<AppUser> userManager,
             AppRoleManager roleManager) : base(context,
             userClaimsPrincipalFactory, applicationSettings, userManager, roleManager)
         {
@@ -48,9 +48,58 @@ namespace DocIntel.AdminConsole.Commands.Observables
             if (ambientContext == null)
                 return 1;
 
+            if (settings.Source == Settings.WhitelistSource.Text)
+            {
+                if (File.Exists(settings.List))
+                {
+                    _logger.LogInformation("Will import {FileName}", settings.List);
+                    var tags = "";
+                    if (settings.Ignore)
+                    {
+                        tags += "+#_di.workflow.ignore ";
+                    }
+
+                    if (!string.IsNullOrEmpty(settings.Tag) && Regex.Match(@"[a-zA-Z0-9-_\.]+", settings.Tag).Success)
+                    {
+                        tags += $"+#{settings.Tag} ";
+                    }
+                    
+                    foreach (var line in File.ReadLines(settings.List))
+                    {
+                        var split = line.Split(",", 2);
+                        _logger.LogTrace("Got {Form}={Valu}", split[0], split[1]);
+                        if (new[] { "inet:fqdn", "inet:ipv4", "hash:sha1", "hash:sha256", "hash:md5" }.Contains(
+                                split[0]))
+                        {
+                            var proxy = await _synapseClient.GetProxyAsync();
+                            var query = $"[ *$form?=$valu {tags} ]";
+                            _logger.LogTrace("Executed storm {Query}", query);
+                            
+                            var _ = await proxy.Storm(query, new StormOps()
+                            {
+                                Vars = new Dictionary<string, dynamic>()
+                                {
+                                    {"form", split[0]},
+                                    {"valu", split[1]}    
+                                }
+                            }).ToListAsync();
+                            _logger.LogTrace("Added {Form}={Valu}", split[0], split[1]);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Form {Form} is not recognized", split[0], split[1]);
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Could not find file {FileName}", settings.List);
+                }
+            }
 
             if (settings.Source == Settings.WhitelistSource.MISP)
             {
+                throw new NotImplementedException();
                 AnsiConsole.WriteLine("Import '" + settings.List + "' list");
                 var url = "https://raw.githubusercontent.com/MISP/misp-warninglists/main/lists/" + settings.List + "/list.json";
                 
@@ -141,14 +190,14 @@ namespace DocIntel.AdminConsole.Commands.Observables
 
         public class Settings : DocIntelCommandSettings
         {
-            public enum WhitelistSource { MISP }
+            public enum WhitelistSource { MISP, Text }
             
             [CommandArgument(0, "<Source>")]
-            [Description("Source (one of MISP)")]
+            [Description("Source (one of MISP, Text)")]
             public WhitelistSource Source { get; set; }
             
             [CommandArgument(1, "<List>")]
-            [Description("List, e.g. cisco_top1000")]
+            [Description("List, e.g. cisco_top1000 or a filename when used with text")]
             public string List { get; set; }
             
             [CommandOption("-t|--tag <Tag>")]
