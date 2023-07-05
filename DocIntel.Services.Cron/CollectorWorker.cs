@@ -56,6 +56,8 @@ namespace DocIntel.Services.Cron
         private readonly ISynapseRepository _observablesRepository;
         private readonly IObservablesUtility _observablesUtility;
         private readonly ICollectorRepository _collectorRepository;
+        
+        private static int currentlyRunning = 0;
 
         public CollectorWorker(ILogger<CollectorWorker> logger,
             AppUserClaimsPrincipalFactory userClaimsPrincipalFactory,
@@ -86,15 +88,24 @@ namespace DocIntel.Services.Cron
             {
                 try
                 {
-                    _logger.LogInformation("Will collect feeds...");
-                    await ImportFeeds();
-                    _logger.LogInformation("Sleeping...");
+                    if (0 == Interlocked.Exchange(ref currentlyRunning, 1))
+                    {
+                        _logger.LogInformation("Will collect feeds...");
+                        await ImportFeeds();
+                    
+                        Interlocked.Exchange(ref currentlyRunning, 0);
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"Cron is still running. Skipping this beat.");   
+                    }
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e.GetType().FullName);
                     _logger.LogError(e.Message + "\n" + e.StackTrace);
                 }
+                _logger.LogInformation("Sleeping...");
                 await Task.Delay(TimeSpan.FromMinutes(_appSettings.Schedule.CronFrequencyCheck), cancellationToken);
             }
         }
