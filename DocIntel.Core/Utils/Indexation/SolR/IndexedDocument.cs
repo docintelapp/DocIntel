@@ -134,6 +134,8 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         [Example("contents:bitsadmin")]
         [SolrField("contents")] public IEnumerable<string> FileContents { get; set; }
 
+        [SolrField("stripped_contents")] public IEnumerable<string> StrippedFileContents { get; set; }
+
         [DisplayName("Observables")]
         [HelpText("Filter based on the extracted observables.")]
         [Example("observables:8.8.8.8")]

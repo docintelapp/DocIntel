@@ -68,9 +68,10 @@ namespace DocIntel.Core.Utils.Search.Documents
                               + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.Title)}^10 "
                               + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.Tags)}^10 "
                               + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.ShortDescription)}^5 "
-                              + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.FileContents)}^5 "
+                              + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.StrippedFileContents)}^5 "
                               + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.Observables)}^5 "
-                              + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.Comments)}^3";
+                              + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.Comments)}^3"
+                              + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.FileContents)}^1 ";
 
                 /*
                 _logger.LogDebug("Weights: " + weights);
@@ -123,7 +124,7 @@ namespace DocIntel.Core.Utils.Search.Documents
                         {
                             SolRHelper<IndexedDocument>.GetSolRName(_ => _.Title),
                             SolRHelper<IndexedDocument>.GetSolRName(_ => _.ShortDescription),
-                            SolRHelper<IndexedDocument>.GetSolRName(_ => _.FileContents)
+                            SolRHelper<IndexedDocument>.GetSolRName(_ => _.StrippedFileContents)
                         }
                     },
                     Facet = new FacetParameters
@@ -161,10 +162,9 @@ namespace DocIntel.Core.Utils.Search.Documents
                         item.Excerpt = string.Join(" ",
                             highlightedSnippets[SolRHelper<IndexedDocument>.GetSolRName(_ => _.ShortDescription)]
                                 .Take(3));
-
-                    if (highlightedSnippets.ContainsKey(SolRHelper<IndexedDocument>.GetSolRName(_ => _.FileContents)))
+                    else if (highlightedSnippets.ContainsKey(SolRHelper<IndexedDocument>.GetSolRName(_ => _.StrippedFileContents)))
                         item.Excerpt = string.Join(" ",
-                            highlightedSnippets[SolRHelper<IndexedDocument>.GetSolRName(_ => _.FileContents)].Take(3));
+                            highlightedSnippets[SolRHelper<IndexedDocument>.GetSolRName(_ => _.StrippedFileContents)].Take(3));
 
                     sr.Hits.Add(item);
                 }

@@ -407,7 +407,7 @@ public static class FlightChecks
             
         if (ret)
         {
-            await CheckSolRCore(settings, "document", "dd8797b6467657af39021615b51aba22");
+            await CheckSolRCore(settings, "document", "0daf9f5c7f32aab151a83b1fe7e1726c");
             await CheckSolRCore(settings, "tag", "2352416bd9b7f609fda9aa5ce9429005");
             await CheckSolRCore(settings, "facet", "df64ee714a333057d0a5ebaf0d50f984");
             await CheckSolRCore(settings, "source", "0c50f43a645c5694733359ec9d9731c5");

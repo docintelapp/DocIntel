@@ -23,6 +23,7 @@ using AutoMapper;
 using DocIntel.Core.Models;
 using DocIntel.Core.Settings;
 using DocIntel.Core.Utils.Observables;
+using Ganss.Xss;
 using Microsoft.Extensions.Logging;
 using SolrNet;
 
@@ -53,7 +54,7 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         {
             _logger.LogDebug("Add " + document.DocumentId);
             var indexedDocument = _mapper.Map<IndexedDocument>(document);
-            indexedDocument.FileContents = ExtractFileContent(document);
+            ExtractFileContent(indexedDocument, document);
             indexedDocument.Observables = 
                 (_observableRepository.GetObservables(document).ToListAsync().Result)
                 .Select(_ => (string) (_.Repr ?? _.Valu?.ToString()));
@@ -85,7 +86,7 @@ namespace DocIntel.Core.Utils.Indexation.SolR
         {
             _logger.LogDebug("Update " + document.DocumentId);
             var indexedDocument = _mapper.Map<IndexedDocument>(document);
-            indexedDocument.FileContents = ExtractFileContent(document);
+            ExtractFileContent(indexedDocument, document);
             indexedDocument.Observables =
                 (_observableRepository.GetObservables(document).ToListAsync().Result)
                 .Select(_ => (string) (_.Repr ?? _.Valu?.ToString()));
@@ -102,9 +103,16 @@ namespace DocIntel.Core.Utils.Indexation.SolR
             _solr.Commit();
         }
 
-        private List<string> ExtractFileContent(Document document)
+        private void ExtractFileContent(IndexedDocument indexedDocument, Document document)
         {
             var fileContents = new List<string>();
+            var strippedFileContents = new List<string>();
+
+
+            var htmlSanitizer = new HtmlSanitizer();
+            htmlSanitizer.AllowedTags.Clear();
+            htmlSanitizer.KeepChildNodes = true;
+            
             foreach (var file in document.Files.Where(_ =>
                 _.MimeType == "application/pdf" || _.MimeType.StartsWith("text")))
             {
@@ -121,6 +129,7 @@ namespace DocIntel.Core.Utils.Indexation.SolR
                             StreamType = file.MimeType
                         });
                         fileContents.Add(response.Content);
+                        strippedFileContents.Add(htmlSanitizer.Sanitize(response.Content));
                     }
                     else
                     {
@@ -132,8 +141,9 @@ namespace DocIntel.Core.Utils.Indexation.SolR
                     _logger.LogWarning($"File {file.FileId} for document {document.DocumentId} could not be found: missing filepath.");
                 }
             }
-
-            return fileContents;
+            
+            indexedDocument.FileContents = fileContents;
+            indexedDocument.StrippedFileContents = strippedFileContents;
         }
     }
 }
