@@ -70,7 +70,7 @@ namespace DocIntel.Core.Utils.Search.Documents
                               + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.ShortDescription)}^5 "
                               + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.StrippedFileContents)}^5 "
                               + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.Observables)}^5 "
-                              + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.Comments)}^3"
+                              + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.Comments)}^3 "
                               + $"{SolRHelper<IndexedDocument>.GetSolRName(_ => _.FileContents)}^1 ";
 
                 /*
