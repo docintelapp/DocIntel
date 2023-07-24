@@ -957,8 +957,9 @@ namespace DocIntel.WebApp.Controllers
         {
             if (!_settings.Email.EmailEnabled || _settings.AuthenticationMethod == "LDAP")
                 return NotFound();
-        
+            
             var user = await _userManager.FindByIdAsync(model.UserId);
+
             if (user == null)
             {
                 _logger.Log(LogLevel.Information,
@@ -971,24 +972,36 @@ namespace DocIntel.WebApp.Controllers
                 
                 return View("InvalidConfirmationEmail");
             }
-            
-            var passwordChangeResult
-                = await _userManager.ResetPasswordAsync(user,
-                    model.Code,
-                    model.Password);
-            await _context.SaveChangesAsync();
 
-            if (passwordChangeResult.Succeeded)
+            var passwordValidator = new PasswordValidator<AppUser>();
+            var isValidPassword = await passwordValidator.ValidateAsync(_userManager, null, model.Password);
+
+            if(!isValidPassword.Succeeded) 
             {
-                _logger.Log(LogLevel.Information,
-                    EventIDs.ResetPasswordSuccess,
-                    new LogEvent($"Request password reset successful for '{user.UserName}'.")
-                        .AddUser(user)
-                        .AddHttpContext(_accessor.HttpContext),
-                    null,
-                    LogEvent.Formatter);
-                
-                return RedirectToAction(nameof(Login));    
+                foreach (var error in isValidPassword.Errors)
+                {
+                    ModelState.AddModelError("Password", error.Description);
+                }
+            } else 
+            {
+                var passwordChangeResult
+                    = await _userManager.ResetPasswordAsync(user,
+                        model.Code,
+                        model.Password);
+                await _context.SaveChangesAsync();
+
+                if (passwordChangeResult.Succeeded)
+                {
+                    _logger.Log(LogLevel.Information,
+                        EventIDs.ResetPasswordSuccess,
+                        new LogEvent($"Request password reset successful for '{user.UserName}'.")
+                            .AddUser(user)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+                    
+                    return RedirectToAction(nameof(Login));    
+                }
             }
             
             _logger.Log(LogLevel.Information,

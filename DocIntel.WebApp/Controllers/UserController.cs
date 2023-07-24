@@ -212,58 +212,73 @@ namespace DocIntel.WebApp.Controllers
             {
                 var user = await _userRepository.GetById(AmbientContext, submittedUser.UserId);
 
-                if (!await _appAuthorizationService.CanResetPassword(User, user))
+                var passwordValidator = new PasswordValidator<AppUser>();
+                var isValidPassword = await passwordValidator.ValidateAsync(_userManager, null, submittedUser.Password);
+
+                if(!isValidPassword.Succeeded) 
                 {
-                    _logger.Log(LogLevel.Warning,
-                        EventIDs.EditUserFailed,
-                        new LogEvent(
-                                $"User '{currentUser.UserName}' attempted to change the password for '{user.FriendlyName}' without legitimate rights.")
-                            .AddUser(currentUser)
-                            .AddHttpContext(_accessor.HttpContext)
-                            .AddUser(user, "user_password"),
-                        null,
-                        LogEvent.Formatter);
-
-                    return Unauthorized();
-                }
-
-                if (ModelState.IsValid)
-                {
-                    var resetToken = await _userManager
-                        .GeneratePasswordResetTokenAsync(user);
-
-                    var passwordChangeResult
-                        = await _userManager.ResetPasswordAsync(user,
-                            resetToken,
-                            submittedUser.Password);
-                    await _context.SaveChangesAsync();
-
-                    if (passwordChangeResult.Succeeded)
+                    foreach (var error in isValidPassword.Errors)
                     {
-                        _logger.Log(LogLevel.Information,
-                            EventIDs.PasswordChangeSuccessful,
-                            new LogEvent($"User '{currentUser.UserName}' successfully changed password for user '{user.FriendlyName}'.")
+                        ModelState.AddModelError("Password", error.Description);
+                    }
+                } 
+                else
+                {
+                    if (!await _appAuthorizationService.CanResetPassword(User, user))
+                    {
+                        _logger.Log(LogLevel.Warning,
+                            EventIDs.EditUserFailed,
+                            new LogEvent(
+                                    $"User '{currentUser.UserName}' attempted to change the password for '{user.FriendlyName}' without legitimate rights.")
                                 .AddUser(currentUser)
                                 .AddHttpContext(_accessor.HttpContext)
-                                .AddUser(user),
+                                .AddUser(user, "user_password"),
                             null,
                             LogEvent.Formatter);
-                    }
-                    else
-                    {
-                        _logger.Log(LogLevel.Information,
-                            EventIDs.PasswordChangeFailed,
-                            new LogEvent($"User '{currentUser.UserName}' failed to change password for user '{user.FriendlyName}'.")
-                                .AddUser(currentUser)
-                                .AddHttpContext(_accessor.HttpContext)
-                                .AddUser(user),
-                            null,
-                            LogEvent.Formatter);
+
+                        return Unauthorized();
                     }
 
-                    return RedirectToAction(nameof(Profile), new { username = username });
+                    if (ModelState.IsValid)
+                    {
+                        var resetToken = await _userManager
+                            .GeneratePasswordResetTokenAsync(user);
+
+                        var passwordChangeResult
+                            = await _userManager.ResetPasswordAsync(user,
+                                resetToken,
+                                submittedUser.Password);
+                        await _context.SaveChangesAsync();
+
+                        if (passwordChangeResult.Succeeded)
+                        {
+                            _logger.Log(LogLevel.Information,
+                                EventIDs.PasswordChangeSuccessful,
+                                new LogEvent($"User '{currentUser.UserName}' successfully changed password for user '{user.FriendlyName}'.")
+                                    .AddUser(currentUser)
+                                    .AddHttpContext(_accessor.HttpContext)
+                                    .AddUser(user),
+                                null,
+                                LogEvent.Formatter);
+                        }
+                        else
+                        {
+                            _logger.Log(LogLevel.Information,
+                                EventIDs.PasswordChangeFailed,
+                                new LogEvent($"User '{currentUser.UserName}' failed to change password for user '{user.FriendlyName}'.")
+                                    .AddUser(currentUser)
+                                    .AddHttpContext(_accessor.HttpContext)
+                                    .AddUser(user),
+                                null,
+                                LogEvent.Formatter);
+                        }
+
+                        return RedirectToAction(nameof(Profile), new { username = username });
+                    }
                 }
 
+                submittedUser.User = user;
+                submittedUser.PasswordOptions = _identityOptions.Value.Password;
                 throw new InvalidArgumentException(ModelState);
             }
             catch (UnauthorizedOperationException)
