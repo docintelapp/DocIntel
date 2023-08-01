@@ -49,6 +49,7 @@ namespace DocIntel.AdminConsole.Commands.Index
                 AnsiConsole.Render(new Markup("[grey]Will remove all documents from the index...[/]"));
                 _documentIndexingService.RemoveAll();
                 AnsiConsole.Render(new Markup("[green]Done.[/]\n"));
+                return;
             }
 
             var documents = _documentRepository.GetAllAsync(ambientContext, new DocumentQuery
