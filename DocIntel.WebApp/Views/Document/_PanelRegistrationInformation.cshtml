@@ -1,5 +1,11 @@
 @model DocIntel.WebApp.ViewModels.DocumentViewModel.DocumentDetailsViewModel
 
+ <style>
+    .line-break {
+        word-wrap: break-word; /* use for break line when crosses the limit */
+    }
+</style>
+
 <div id="panel-registration-info" class="panel">
     <div class="panel-hdr">
         <h2>
@@ -18,13 +24,15 @@
                 <dd class="col-sm-6">
                     @Html.DisplayFor(model => model.Document.Reference)
                 </dd>
-                @if (!string.IsNullOrEmpty(Model.Document.ExternalReference))
+                 @if (!string.IsNullOrEmpty(Model.Document.ExternalReference))
                 {
                     <dt class="col-sm-6">
                         @Html.DisplayNameFor(model => model.Document.ExternalReference)
                     </dt>
-                    <dd class="col-sm-6">
-                        @Html.DisplayFor(model => model.Document.ExternalReference)
+                    <dd class="col-sm-6 line-break">
+                        <a class="link" href="@Model.Document.ExternalReference" target="_blank">
+                            @Html.DisplayFor(model => model.Document.ExternalReference)
+                        </a>
                     </dd>
                 }
                 <dt class="col-sm-6">
