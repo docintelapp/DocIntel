@@ -200,6 +200,19 @@ namespace DocIntel.Services.Scraper
                 var screenshotFilename = Path.GetTempFileName();
                 await page.ScreenshotAsync(screenshotFilename);
 
+                await page.EvaluateFunctionAsync<string>(@"
+                    () => {
+                        const images = Array.from(document.querySelectorAll('img'));
+                            images.forEach(image => {
+                                const width = image.clientWidth;
+                                const height = image.clientHeight;
+                                image.style.width = width + 'px';
+                                image.style.height = height + 'px';
+                            });
+                            return document.documentElement.outerHTML;
+                    }
+                ");
+                
                 await page.EvaluateExpressionAsync(readabilityScript);
 
                 var extractedContent =
