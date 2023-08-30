@@ -91,7 +91,7 @@ public class SynapseRepository : ISynapseRepository
         var view = ((await _viewHelper.List()) ?? Array.Empty<SynapseView>()).FirstOrDefault(_ => _.Name == name);
         
         if (view != null)
-            await _viewHelper.Delete(view.Iden);
+            await _viewHelper.Delete(view.Iden, true);
     }
 
     public async IAsyncEnumerable<SynapseNode> GetObservables(Document document, bool unmerged = false, bool includeIgnore = true)
@@ -168,7 +168,7 @@ public class SynapseRepository : ISynapseRepository
             _logger.LogInformation("Document view merged");
             await _viewHelper.Merge(view.Iden);
             if (delete)
-                await _viewHelper.Delete(view.Iden);
+                await _viewHelper.Delete(view.Iden, true);
         }
         else
         {
