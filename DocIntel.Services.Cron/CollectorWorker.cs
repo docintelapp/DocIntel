@@ -91,7 +91,14 @@ namespace DocIntel.Services.Cron
                     if (0 == Interlocked.Exchange(ref currentlyRunning, 1))
                     {
                         _logger.LogInformation("Will collect feeds...");
-                        await ImportFeeds();
+                        try
+                        {
+                            await ImportFeeds();
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogError($"Feed collection failed: {e.Message}");
+                        }
                     
                         Interlocked.Exchange(ref currentlyRunning, 0);
                     }
@@ -120,134 +127,149 @@ namespace DocIntel.Services.Cron
             
             foreach (var collector in collectors)
             {
-                var schedule = NCrontab.CrontabSchedule.Parse(collector.CronExpression);
-                // Console.WriteLine($"updating {collector.LastCollection}");
-                DateTime nextOccurrence = DateTime.MinValue;
-                if (collector.LastCollection != null)
-                    nextOccurrence = schedule.GetNextOccurrence((DateTime)collector.LastCollection);
-                
-                if (nextOccurrence < collectorLastCollection)
+                try
                 {
-                    using var collectorScope = _serviceProvider.CreateScope();
-                    using var collectorContext = await GetAmbientContext(collectorScope.ServiceProvider);
-                    await CollectFeed(collector, collectorContext);
-
+                    var schedule = NCrontab.CrontabSchedule.Parse(collector.CronExpression);
                     // Console.WriteLine($"updating {collector.LastCollection}");
-                    collector.LastCollection = collectorLastCollection;
-                    await collectorContext.DatabaseContext.SaveChangesAsync();
-                    await context.DatabaseContext.SaveChangesAsync();
+                    DateTime nextOccurrence = DateTime.MinValue;
+                    if (collector.LastCollection != null)
+                        nextOccurrence = schedule.GetNextOccurrence((DateTime)collector.LastCollection);
+                    
+                    if (nextOccurrence < collectorLastCollection)
+                    {
+                        using var collectorScope = _serviceProvider.CreateScope();
+                        using var collectorContext = await GetAmbientContext(collectorScope.ServiceProvider);
+                        await CollectFeed(collector, collectorContext);
+
+                        // Console.WriteLine($"updating {collector.LastCollection}");
+                        collector.LastCollection = collectorLastCollection;
+                        await collectorContext.DatabaseContext.SaveChangesAsync();
+                        await context.DatabaseContext.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        // No need to execute, wait for the next occurence. 
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    // No need to execute, wait for the next occurence. 
+                    _logger.LogError($"Collector {collector.Name} failed: {e.Message}");
                 }
             }
         }
 
         private async Task CollectFeed(Collector collector, AmbientContext collectorContext)
         {
-            var lastCollection = collector.LastCollection;
-            var limit = collector.Limit;
-
-            var client = _moduleFactory.GetCollector(collector.Module, collector.CollectorName);
-            // Console.WriteLine(collector.Module);
-            // Console.WriteLine(collector.CollectorName);
-            var collectorSettings = _moduleFactory.GetCollectorSettings(collector.Module, collector.CollectorName);
-            // Console.WriteLine(collectorSettings);
-            var settings = collector.Settings.Deserialize(collectorSettings);
-
-            await foreach (var report in client.Collect(collector, settings))
+            try
             {
-                var document = _mapper.Map<Document>(report);
+                var lastCollection = collector.LastCollection;
+                var limit = collector.Limit;
 
-                document.SourceId = collector.SourceId;
-                document.ClassificationId = collector.ClassificationId;
-                document.ReleasableTo = collector.ReleasableTo;
-                document.EyesOnly = collector.EyesOnly;
-                document.RegisteredById = collector.UserId;
-                document.LastModifiedById = collector.UserId;
+                var client = _moduleFactory.GetCollector(collector.Module, collector.CollectorName);
+                // Console.WriteLine(collector.Module);
+                // Console.WriteLine(collector.CollectorName);
+                var collectorSettings = _moduleFactory.GetCollectorSettings(collector.Module, collector.CollectorName);
+                // Console.WriteLine(collectorSettings);
+                var settings = collector.Settings.Deserialize(collectorSettings);
 
-                // Check if document is already known
-                if (document.SourceId != null
-                    && !string.IsNullOrEmpty(document.ExternalReference)
-                    && collectorContext.DatabaseContext.Documents.Any(_ => _.SourceId == document.SourceId
-                                                                           && _.ExternalReference ==
-                                                                           document.ExternalReference))
+                await foreach (var report in client.Collect(collector, settings))
                 {
-                    _logger.LogDebug(
-                        $"Document '{document.ExternalReference}' from '{document.SourceId}' was already imported.");
-                    // TODO Include a field version in the files
-                    continue;
-                }
+                    var document = _mapper.Map<Document>(report);
 
-                try
-                {
-                    var tags = _tagUtility.GetOrCreateTags(collectorContext, report.Tags);
-                    if (collector.Tags?.Any() ?? false)
-                        tags = tags.Union(collector.Tags).Distinct();
+                    document.SourceId = collector.SourceId;
+                    document.ClassificationId = collector.ClassificationId;
+                    document.ReleasableTo = collector.ReleasableTo;
+                    document.EyesOnly = collector.EyesOnly;
+                    document.RegisteredById = collector.UserId;
+                    document.LastModifiedById = collector.UserId;
 
-                    document = await _documentRepository.AddAsync(collectorContext,
-                        document,
-                        tags.ToArray());
-                }
-                catch (InvalidArgumentException e)
-                {
-                    Console.WriteLine(e.Message);
-                    foreach (var error in e.Errors)
+                    // Check if document is already known
+                    if (document.SourceId != null
+                        && !string.IsNullOrEmpty(document.ExternalReference)
+                        && collectorContext.DatabaseContext.Documents.Any(_ => _.SourceId == document.SourceId
+                                                                               && _.ExternalReference ==
+                                                                               document.ExternalReference))
                     {
-                        foreach(var error2 in error.Value)
-                            Console.WriteLine(error.Key + ": " + error2);
+                        _logger.LogDebug(
+                            $"Document '{document.ExternalReference}' from '{document.SourceId}' was already imported.");
+                        // TODO Include a field version in the files
+                        continue;
                     }
 
-                    throw;
-                }
-
-                if (collector.SkipInbox)
-                {
-                    document.MetaData = new Dictionary<string, JsonObject>();
-                    var registrationMetadata = new RegistrationMetadata()
-                    {
-                        Auto = true
-                    };
-                    var stringJson = JsonSerializer.Serialize(registrationMetadata);
-                    document.MetaData.Add("registration", JsonNode.Parse(stringJson) as JsonObject);
-                }
-
-                foreach (var file in report.Files)
-                {
-                    var f = _mapper.Map<DocumentFile>(file);
-                    f.Document = document;
-
-                    if (file.Content != null)
-                    {
-                        await using var stream = file.Content?.Stream();
-                        if (stream != null)
-                        {
-                            using var memoryStream = new MemoryStream();
-                            await stream.CopyToAsync(memoryStream);
-                            f = await _documentRepository.AddFile(collectorContext, f, memoryStream);
-                        }
-                    }
-                }
-
-                if (report.Nodes != null & collector.ImportStructuredData)
-                {
                     try
                     {
-                        var view = await _observablesRepository.CreateView(document);
-                        var structuredData = _mapper.Map<IEnumerable<SynapseNode>>(report.Nodes);
-                        await _observablesUtility.AnnotateAsync(document, null, structuredData);
-                        _logger.LogDebug($"Found {structuredData.Count()} observables");
-                        await _observablesRepository.Add(structuredData, document, view);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError($"Could not import structured data on document '{document.DocumentId}': {e.Message}");
-                    }
-                }
+                        var tags = _tagUtility.GetOrCreateTags(collectorContext, report.Tags);
+                        if (collector.Tags?.Any() ?? false)
+                            tags = tags.Union(collector.Tags).Distinct();
 
-                await collectorContext.DatabaseContext.SaveChangesAsync();
+                        document = await _documentRepository.AddAsync(collectorContext,
+                            document,
+                            tags.ToArray());
+                    }
+                    catch (InvalidArgumentException e)
+                    {
+                        Console.WriteLine(e.Message);
+                        foreach (var error in e.Errors)
+                        {
+                            foreach (var error2 in error.Value)
+                                Console.WriteLine(error.Key + ": " + error2);
+                        }
+
+                        throw;
+                    }
+
+                    if (collector.SkipInbox)
+                    {
+                        document.MetaData = new Dictionary<string, JsonObject>();
+                        var registrationMetadata = new RegistrationMetadata()
+                        {
+                            Auto = true
+                        };
+                        var stringJson = JsonSerializer.Serialize(registrationMetadata);
+                        document.MetaData.Add("registration", JsonNode.Parse(stringJson) as JsonObject);
+                    }
+
+                    foreach (var file in report.Files)
+                    {
+                        var f = _mapper.Map<DocumentFile>(file);
+                        f.Document = document;
+
+                        if (file.Content != null)
+                        {
+                            await using var stream = file.Content?.Stream();
+                            if (stream != null)
+                            {
+                                using var memoryStream = new MemoryStream();
+                                await stream.CopyToAsync(memoryStream);
+                                f = await _documentRepository.AddFile(collectorContext, f, memoryStream);
+                            }
+                        }
+                    }
+
+                    if (report.Nodes != null & collector.ImportStructuredData)
+                    {
+                        try
+                        {
+                            var view = await _observablesRepository.CreateView(document);
+                            var structuredData = _mapper.Map<IEnumerable<SynapseNode>>(report.Nodes);
+                            await _observablesUtility.AnnotateAsync(document, null, structuredData);
+                            _logger.LogDebug($"Found {structuredData.Count()} observables");
+                            await _observablesRepository.Add(structuredData, document, view);
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogError(
+                                $"Could not import structured data on document '{document.DocumentId}': {e.Message}");
+                        }
+                    }
+
+                    await collectorContext.DatabaseContext.SaveChangesAsync();
+                }
             }
-        }
+            catch (Exception e)
+            {
+                _logger.LogError($"Collector {collector.Name} failed: {e.Message}");
+            }
+        } 
     }
 }
