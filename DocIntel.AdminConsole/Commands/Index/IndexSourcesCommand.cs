@@ -58,6 +58,7 @@ namespace DocIntel.AdminConsole.Commands.Index
             foreach (var source in sources)
                 try
                 {
+                    source.LastIndexDate = DateTime.UtcNow;
                     _sourceIndexingUtility.Update(source);
                 }
                 catch (Exception e)
@@ -66,6 +67,8 @@ namespace DocIntel.AdminConsole.Commands.Index
                     _logger.LogError($"Could not index source '{source.SourceId}' ({e.Message}).");
                 }
 
+            await _context.SaveChangesAsyncWithoutNotification();
+            
             if (settings.ForceCommit)
             {
                 AnsiConsole.Render(new Markup("[green]Committing...[/]\n"));

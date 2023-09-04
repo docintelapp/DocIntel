@@ -56,6 +56,7 @@ namespace DocIntel.AdminConsole.Commands.Index
             foreach (var facet in facets)
                 try
                 {
+                    facet.LastIndexDate = DateTime.UtcNow;
                     _facetIndexingUtility.Update(facet);
                 }
                 catch (Exception e)
@@ -64,6 +65,8 @@ namespace DocIntel.AdminConsole.Commands.Index
                     _logger.LogError($"Could not index facet '{facet.Title}' ({facet.FacetId}) ({e.Message}).");
                 }
 
+            await _context.SaveChangesAsyncWithoutNotification();
+            
             AnsiConsole.Render(new Markup("[green]Done.[/]\n"));
 
             return 0;

@@ -62,12 +62,15 @@ namespace DocIntel.AdminConsole.Commands.Index
                 try
                 {
                     _tagIndexingUtility.Update(tag);
+                    tag.LastIndexDate = DateTime.UtcNow;
                 }
                 catch (Exception e)
                 {
                     // TODO Use structured logging
                     _logger.LogError($"Could not index tag '{tag.TagId}' ({e.Message}).");
                 }
+
+            await _context.SaveChangesAsyncWithoutNotification();
 
             if (settings.ForceCommit)
             {

@@ -70,6 +70,7 @@ namespace DocIntel.AdminConsole.Commands.Index
             await foreach (var document in documents)
                 try
                 {
+                    document.LastIndexDate = DateTime.UtcNow;
                     _documentIndexingService.Update(document);
                 }
                 catch (Exception e)
@@ -78,6 +79,7 @@ namespace DocIntel.AdminConsole.Commands.Index
                     _logger.LogError($"Could not index document '{document.DocumentId}' ({e.Message}).");
                 }
 
+            await ambientContext.DatabaseContext.SaveChangesAsyncWithoutNotification();
 
             if (settings.ForceCommit)
             {
