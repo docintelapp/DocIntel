@@ -67,11 +67,12 @@
                         <text>E - Unreliable</text>
                     }
                 </span>
-                <span class="mr-1">
-                    @Model.Source.NumDocs @Html.Pluralize("document", Model.Source.NumDocs)
-                </span>
-                @if (Model.Source.NumDocs > 0)
+                @if (false & Model.Source.NumDocs > 0)
                 {
+                    <span class="mr-1">
+                        @Model.Source.NumDocs @Html.Pluralize("document", Model.Source.NumDocs)
+                    </span>
+                
                     <text>
                         <span class="mr-1">-</span> Last document
                         <time class="mr-1 timeago" datetime="@Model.Source.LastDocumentDate.ToString("o")">
