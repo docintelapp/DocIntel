@@ -205,6 +205,7 @@ namespace DocIntel.Core.Helpers
             services.AddScoped<TelepathClient>(provider =>
             {
                 var settings = provider.GetRequiredService<SynapseSettings>();
+                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
                 var uriBuilder = new UriBuilder(settings.URL);
                 
                 if (string.IsNullOrEmpty(uriBuilder.UserName) && !string.IsNullOrEmpty(settings.UserName)) 
@@ -212,7 +213,7 @@ namespace DocIntel.Core.Helpers
                 if (string.IsNullOrEmpty(uriBuilder.Password) && !string.IsNullOrEmpty(settings.Password)) 
                     uriBuilder.Password = settings.Password;
                 
-                return new TelepathClient(uriBuilder.ToString());
+                return new TelepathClient(uriBuilder.ToString(), loggerFactory: loggerFactory);
             });
             services.AddScoped<ISynapseRepository, SynapseRepository>();
         }

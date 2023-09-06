@@ -59,8 +59,10 @@ public class DocumentAnalyzerMessageConsumer : DynamicContextConsumer,
             uriBuilder.UserName = settings.UserName;
         if (string.IsNullOrEmpty(uriBuilder.Password) && !string.IsNullOrEmpty(settings.Password)) 
             uriBuilder.Password = settings.Password;
-                
-        _telepathClient = new TelepathClient(uriBuilder.ToString());
+        
+        
+        _telepathClient = new TelepathClient(uriBuilder.ToString(), 
+            loggerFactory: serviceProvider.GetRequiredService<ILoggerFactory>());
         _telepathClient.OnConnect += (_, _) => 
             _logger?.LogTrace("TelepathClient for DocumentAnalyzerMessageConsumer connected");
         _telepathClient.OnDisconnect += (_, _) => 
