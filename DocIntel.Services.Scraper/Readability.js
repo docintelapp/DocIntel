@@ -1714,6 +1714,8 @@ Readability.prototype = {
   _cleanStyles: function(e) {
     if (!e || e.tagName.toLowerCase() === "svg")
       return;
+    if (!e || e.tagName.toLowerCase() === "img")
+      return;
 
     // Remove `style` and deprecated presentational attributes
     for (var i = 0; i < this.PRESENTATIONAL_ATTRIBUTES.length; i++) {
