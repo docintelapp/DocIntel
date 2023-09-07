@@ -202,20 +202,23 @@ namespace DocIntel.Core.Utils.Search.Documents
 
                 var facetRegistrants = new List<VerticalResult<string>>();
                 foreach (var facet in results.FacetFields[
-                    SolRHelper<IndexedDocument>.GetSolRName(_ => _.RegisteredById)])
+                    SolRHelper<IndexedDocument>.GetSolRName(_ => _.RegisteredById)]
+                             .OrderBy(f => f.Value).Take(10))
                     facetRegistrants.Add(new VerticalResult<string>(facet.Key, facet.Value));
                 sr.FacetRegistrants = facetRegistrants;
 
                 var facetClassification = new List<VerticalResult<Guid>>();
                 foreach (var facet in results.FacetFields
-                    [SolRHelper<IndexedDocument>.GetSolRName(_ => _.Classification)])
+                    [SolRHelper<IndexedDocument>.GetSolRName(_ => _.Classification)]
+                             .OrderBy(f => f.Value).Take(10))
                     facetClassification.Add(new VerticalResult<Guid>(
                         (Guid) Guid.Parse(facet.Key), facet.Value));
                 sr.Classifications = facetClassification;
 
                 var facetSource = new List<VerticalResult<Guid>>();
                 foreach (var facet in results.FacetFields
-                    [SolRHelper<IndexedDocument>.GetSolRName(_ => _.SourceId)])
+                    [SolRHelper<IndexedDocument>.GetSolRName(_ => _.SourceId)]
+                             .OrderBy(f => f.Value).Take(10))
                     facetSource.Add(new VerticalResult<Guid>(
                         (Guid) Guid.Parse(facet.Key), facet.Value));
                 sr.Sources = facetSource;
