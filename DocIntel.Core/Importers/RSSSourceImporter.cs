@@ -136,7 +136,11 @@ namespace DocIntel.Core.Importers
                             }
                         }
 
-                        rssMetadata.LastPull = feed.Items.Max(_ => _.PublishDate).DateTime;
+                        if (feed.Items?.Any() ?? false) 
+                            rssMetadata.LastPull = feed.Items.Max(_ => _.PublishDate).DateTime;
+                        else 
+                            rssMetadata.LastPull = DateTime.UtcNow;
+                        
                         await _sourceRepository.UpdateAsync(context, source);
                         await context.DatabaseContext.SaveChangesAsync();
                     }
