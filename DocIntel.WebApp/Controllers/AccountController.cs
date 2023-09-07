@@ -40,7 +40,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
@@ -66,6 +66,7 @@ namespace DocIntel.WebApp.Controllers
         private readonly IUserRepository _userRepository;
         private readonly MailKitEmailSender _emailSender;
         private readonly ApplicationSettings _settings;
+        private readonly IOptions<IdentityOptions> _identityOptions;
 
         public AccountController(
             DocIntelContext context,
@@ -78,7 +79,7 @@ namespace DocIntel.WebApp.Controllers
             ISourceRepository sourceRepository,
             IAuthorizationService authorizationService,
             IAppAuthorizationService appAuthorizationService,
-            IHttpContextAccessor accessor, IUserRepository userRepository, MailKitEmailSender emailSender, ApplicationSettings settings)
+            IHttpContextAccessor accessor, IUserRepository userRepository, MailKitEmailSender emailSender, ApplicationSettings settings, IOptions<IdentityOptions> identityOptions)
             : base(context,
                 userManager,
                 configuration,
@@ -96,6 +97,7 @@ namespace DocIntel.WebApp.Controllers
             _userRepository = userRepository;
             _emailSender = emailSender;
             _settings = settings;
+            _identityOptions = identityOptions;
         }
 
         /// <summary>
@@ -950,7 +952,110 @@ namespace DocIntel.WebApp.Controllers
                 Code = code
             });
         }
+        
+        [HttpGet]
+        public async Task<IActionResult> ChangePassword()
+        {
+            if (!_settings.Email.EmailEnabled || _settings.AuthenticationMethod == "LDAP")
+                return NotFound();
+            
+            var user = await GetCurrentUser();
+            if (user == null)
+            {
+                _logger.Log(LogLevel.Information,
+                    EventIDs.ResetPasswordRequest,
+                    new LogEvent($"Failed to request a reset password for '{user.Id}'.")
+                        .AddProperty("user.id", user.Id)
+                        .AddHttpContext(_accessor.HttpContext),
+                    null,
+                    LogEvent.Formatter);
+                
+                return View("InvalidConfirmationEmail");
+            }
 
+            _logger.Log(LogLevel.Information,
+                EventIDs.ResetPasswordRequest,
+                new LogEvent($"Request password reset for '{user.UserName}'.")
+                    .AddProperty("user.name", user.UserName)
+                    .AddHttpContext(_accessor.HttpContext),
+                null,
+                LogEvent.Formatter);
+            
+            var resetToken = await _userManager
+                .GeneratePasswordResetTokenAsync(user);
+            
+            return View(new ResetPasswordViewModel()
+            {
+                UserId = user.Id,
+                User = user,
+                Code = resetToken,
+                PasswordOptions = _identityOptions.Value.Password
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ResetPasswordViewModel model)
+        {
+            if (_settings.AuthenticationMethod == "LDAP")
+                return NotFound();
+            
+            var user = await _userManager.FindByIdAsync(model.UserId);
+
+            if (user == null)
+            {
+                _logger.Log(LogLevel.Information,
+                    EventIDs.ResetPasswordFailed,
+                    new LogEvent($"Request password reset failed for '{model.UserId}'.")
+                        .AddProperty("user.id", model.UserId)
+                        .AddHttpContext(_accessor.HttpContext),
+                    null,
+                    LogEvent.Formatter);
+                
+                return NotFound();
+            }
+
+            var passwordValidator = new PasswordValidator<AppUser>();
+            var isValidPassword = await passwordValidator.ValidateAsync(_userManager, null, model.Password);
+
+            if(!isValidPassword.Succeeded) 
+            {
+                foreach (var error in isValidPassword.Errors)
+                {
+                    ModelState.AddModelError("Password", error.Description);
+                }
+            } else 
+            {
+                var passwordChangeResult
+                    = await _userManager.ResetPasswordAsync(user,
+                        model.Code,
+                        model.Password);
+                await _context.SaveChangesAsync();
+
+                if (passwordChangeResult.Succeeded)
+                {
+                    _logger.Log(LogLevel.Information,
+                        EventIDs.ResetPasswordSuccess,
+                        new LogEvent($"Request password reset successful for '{user.UserName}'.")
+                            .AddUser(user)
+                            .AddHttpContext(_accessor.HttpContext),
+                        null,
+                        LogEvent.Formatter);
+                    
+                    return RedirectToAction(nameof(HomeController.Index), "Home");    
+                }
+            }
+            
+            _logger.Log(LogLevel.Information,
+                EventIDs.ResetPasswordFailed,
+                new LogEvent($"Request password reset failed for '{user.UserName}'.")
+                    .AddUser(user)
+                    .AddHttpContext(_accessor.HttpContext),
+                null,
+                LogEvent.Formatter);
+            
+            return View(model);
+        }
+        
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)

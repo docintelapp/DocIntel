@@ -39,7 +39,7 @@
 
 @if (canResetPassword)
 {
-    <a class="dropdown-item fw-500 pt-3 pb-3" asp-action="ResetPassword" asp-route-username="@ViewBag.CurrentUser.UserName" asp-area="">
+    <a class="dropdown-item fw-500 pt-3 pb-3" asp-action="ChangePassword" asp-controller="Account" asp-area="">
         Change password
     </a>
 }
