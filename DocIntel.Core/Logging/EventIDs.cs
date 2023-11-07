@@ -154,6 +154,8 @@ namespace DocIntel.Core.Logging
         public static EventId DetailsDocumentFailed = new EventId(18016, "details-document-fail");
         public static EventId RegisterDocumentSuccessful = new EventId(18015, "register-document-success");
         public static EventId RegisterDocumentFailed = new EventId(18016, "register-document-fail");
+        public static EventId GetDocumentsBySourceSuccessful = new EventId(18017, "get-document-by-source-success");
+        public static EventId GetDocumentsBySourceFailed = new EventId(18018, "get-document-by-source-fail");
         public static EventId APIDiscardDocumentSuccessful = APIEventId(DiscardDocumentSuccessful);
         public static EventId APIDiscardDocumentFailed = APIEventId(DiscardDocumentFailed);
         public static EventId APIPendingDocumentSuccessful = APIEventId(PendingDocumentSuccessful);
@@ -171,6 +173,8 @@ namespace DocIntel.Core.Logging
         public static EventId APIDetailsDocumentFailed = APIEventId(DetailsDocumentFailed);
         public static EventId APIRegisterDocumentSuccessful = APIEventId(RegisterDocumentSuccessful);
         public static EventId APIRegisterDocumentFailed = APIEventId(RegisterDocumentFailed);
+        public static EventId APIGetDocumentsBySourceSuccessful = APIEventId(GetDocumentsBySourceSuccessful);
+        public static EventId APIGetDocumentsBySourceFailed = APIEventId(GetDocumentsBySourceFailed);
         public static EventId LocalUserCreated = new EventId(1000, "local-user-created");
         public static EventId UserLogOnSuccess = new EventId(1001, "user-logon-success");
         public static EventId UserLogOff = new EventId(1002, "user-logoff");

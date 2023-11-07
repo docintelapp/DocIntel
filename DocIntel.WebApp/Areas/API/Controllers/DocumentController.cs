@@ -161,6 +161,92 @@ public class DocumentController : DocIntelAPIControllerBase
     }
 
     /// <summary>
+    /// Get all documents from source
+    /// </summary>
+    /// <remarks>
+    /// Get all documents from a specific source.
+    ///
+    /// For example, with cURL
+    ///
+    ///     curl --request GET \
+    ///       --url http://localhost:5001/API/Document/BySource/640afad4-0a3d-416a-b6f0-22cb85e0d638 \
+    ///       --header 'Authorization: Bearer $TOKEN'
+    /// 
+    /// </remarks>
+    /// <param name="sourceId" example="640afad4-0a3d-416a-b6f0-22cb85e0d638">The source identifier</param>
+    /// <param name="page">The page, starting from 1 (default: 1)</param>
+    /// <param name="pageSize">The page size (default: 20)</param>
+    /// <returns>All documents  from a specific source</returns>
+    /// <response code="200">Returns all documents related to a source</response>
+    [HttpGet("BySource/{sourceId}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApiDocumentDetails>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    [SwaggerOperation(
+        OperationId = "GetDocumentsBySource"
+    )]
+    public async Task<IActionResult> GetDocumentsBySource([FromRoute] Guid sourceId, int page = 1, int pageSize = 20)
+    {
+        var currentUser = await GetCurrentUser();
+
+        try
+        {
+            var documents = await _documentRepository.GetAllAsync(AmbientContext,  
+                new DocumentQuery
+                {
+                    SourceId = sourceId,
+                    Page = page,
+                    Limit = pageSize
+                }
+            ).ToListAsync();
+            
+            _logger.Log(LogLevel.Information,
+                EventIDs.APIGetDocumentsBySourceSuccessful,
+                new LogEvent($"User '{currentUser.UserName}' successfully retrieved documents from source '{sourceId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
+
+            return Ok(new
+            {
+                page,
+                Documents = _mapper.Map<IEnumerable<ApiDocumentDetails>>(documents)
+            });
+        }
+        catch (UnauthorizedOperationException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APIGetDocumentsBySourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to retrieve documents from source '{sourceId}' without legitimate rights.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
+
+            return Unauthorized();
+        }
+        catch (NotFoundEntityException)
+        {
+            _logger.Log(LogLevel.Warning,
+                EventIDs.APIGetDocumentsBySourceFailed,
+                new LogEvent(
+                        $"User '{currentUser.UserName}' attempted to retrieve documents for a non-existing source '{sourceId}'.")
+                    .AddUser(currentUser)
+                    .AddHttpContext(_accessor.HttpContext)
+                    .AddProperty("source.id", sourceId),
+                null,
+                LogEvent.Formatter);
+
+            return NotFound();
+        }
+    }
+
+    /// <summary>
     /// Create a document
     /// </summary>
     /// <remarks>
