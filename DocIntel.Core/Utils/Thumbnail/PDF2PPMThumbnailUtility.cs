@@ -95,11 +95,17 @@ namespace DocIntel.Core.Utils.Thumbnail
 
         private async Task<bool> SavePDFThumbnail(AmbientContext context, DocumentFile file)
         {
+            var pdfFilename = Path.Combine(_configuration.DocFolder, file.Filepath);
+            if (!File.Exists(pdfFilename))
+            {
+                _logger.LogWarning("Could not locate file");
+                return false;
+            }
+
+            var tempFilePath = Path.GetTempFileName();
+
             try
             {
-                var tempFilePath = Path.GetTempFileName();
-                var pdfFilename = Path.Combine(_configuration.DocFolder, file.Filepath);
-
                 var command = "pdftoppm";
                 var args = $"{pdfFilename} {tempFilePath} -png -f 1 -singlefile";
                 var psi = new ProcessStartInfo(command)
@@ -128,12 +134,6 @@ namespace DocIntel.Core.Utils.Thumbnail
                 await image.SaveAsPngAsync(memoryStream);
 
                 await SaveThumbnail(context, file, memoryStream);
-
-                if (File.Exists(tempFilePath))
-                    File.Delete(tempFilePath);
-
-                if (File.Exists(tempFilePath + ".png"))
-                    File.Delete(tempFilePath + ".png");
                 
                 return true;
             }
@@ -141,6 +141,14 @@ namespace DocIntel.Core.Utils.Thumbnail
             {
                 _logger.LogError(e.Message);
                 _logger.LogError(e.StackTrace);
+            }
+            finally
+            {
+                if (File.Exists(tempFilePath))
+                    File.Delete(tempFilePath);
+
+                if (File.Exists(tempFilePath + ".png"))
+                    File.Delete(tempFilePath + ".png");
             }
 
             return false;
