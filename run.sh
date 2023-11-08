@@ -91,7 +91,7 @@ echo "📚 Configuring SolR"
 mkdir -p $datafolder/solr
 chown $(id -u):$(id -g) $datafolder/solr
 docker run --name docintel-dev-solr \
-  -v $datafolder/solr/:/var/solr \
+  -v $datafolder/solr/ \
   -d solr
 echo "Wait for SolR to be up-and-running"
 sleep 60
