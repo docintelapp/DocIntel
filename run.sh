@@ -72,6 +72,8 @@ docker pull docintelapp/webapp
 
 echo ""
 echo "🗄️ Configuring PostgreSQL"
+mkdir -p $datafolder/postgres
+chown $(id -u):$(id -g) $datafolder/postgres
 docker run --name docintel-dev-postgresql \
   -e POSTGRES_PASSWORD=$postgrespw \
   -e PGUSER=postgres \
