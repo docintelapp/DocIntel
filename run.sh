@@ -72,6 +72,8 @@ docker pull docintelapp/webapp
 
 echo ""
 echo "🗄️ Configuring PostgreSQL"
+mkdir -p $datafolder/postgres
+chown $(id -u):$(id -g) $datafolder/postgres
 docker run --name docintel-dev-postgresql \
   -e POSTGRES_PASSWORD=$postgrespw \
   -e PGUSER=postgres \
@@ -87,9 +89,9 @@ docker rm docintel-dev-postgresql
 echo ""
 echo "📚 Configuring SolR"
 mkdir -p $datafolder/solr
-chown 8983:8983 $datafolder/solr
+chown $(id -u):$(id -g) $datafolder/solr
 docker run --name docintel-dev-solr \
-  -v $datafolder/solr/:/var/solr \
+  -v $datafolder/solr/ \
   -d solr
 echo "Wait for SolR to be up-and-running"
 sleep 60
@@ -97,6 +99,7 @@ sleep 60
 if [ $(curl -LI http://localhost:8983/solr/admin/cores\?action\=STATUS\&core\=document -o /dev/null -w '%{http_code}\n' -s) != "200" ]
 then
   docker exec -it docintel-dev-solr solr create_core -c document
+  mkdir -p $datafolder/solr/data/document/conf/
   curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/solrconfig-document.xml -o $datafolder/solr/data/document/conf/solrconfig.xml
   curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/managed-schema-document -o $datafolder/solr/data/document/conf/managed-schema.xml 
 fi
@@ -104,6 +107,7 @@ fi
 if [ $(curl -LI http://localhost:8983/solr/admin/cores\?action\=STATUS\&core\=tag -o /dev/null -w '%{http_code}\n' -s) != "200" ]
 then
   docker exec -it docintel-dev-solr solr create_core -c tag
+  mkdir -p $datafolder/solr/data/tag/conf/
   curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/solrconfig-tag.xml -o $datafolder/solr/data/tag/conf/solrconfig.xml
   curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/managed-schema-tag -o $datafolder/solr/data/tag/conf/managed-schema.xml 
 fi
@@ -111,6 +115,7 @@ fi
 if [ $(curl -LI http://localhost:8983/solr/admin/cores\?action\=STATUS\&core\=source -o /dev/null -w '%{http_code}\n' -s) != "200" ]
 then
   docker exec -it docintel-dev-solr solr create_core -c source
+  mkdir -p $datafolder/solr/data/source/conf/
   curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/solrconfig-source.xml -o $datafolder/solr/data/source/conf/solrconfig.xml
   curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/managed-schema-source -o $datafolder/solr/data/source/conf/managed-schema.xml 
 fi
@@ -118,6 +123,7 @@ fi
 if [ $(curl -LI http://localhost:8983/solr/admin/cores\?action\=STATUS\&core\=facet -o /dev/null -w '%{http_code}\n' -s) != "200" ]
 then
   docker exec -it docintel-dev-solr solr create_core -c facet
+  mkdir -p $datafolder/solr/data/facet/conf/
   curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/solrconfig-facet.xml -o $datafolder/solr/data/facet/conf/solrconfig.xml
   curl https://raw.githubusercontent.com/docintelapp/DocIntel/main/conf/managed-schema-facet -o $datafolder/solr/data/facet/conf/managed-schema.xml 
 fi
